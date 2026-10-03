@@ -1,0 +1,4 @@
+ts	phase	decision	why	evidence	result
+2026-10-03T16:05:00Z	frame	Build a local strength-training PWA with four primary screens	The user approved the five-color design and requested autonomous implementation	.audit/brief.md	open
+2026-10-03T16:08:45.123193+00:00	architecture	Select aggregate snapshot with atomic revision checks	Independent judge preferred A; adopt completed-set totals and nonempty finish	docs/architecture.md	VERIFIED design review
+2026-10-03T16:08:45.123312+00:00	audit	Correct the initial row timestamp	Initial frame time was manually estimated; this row records the actual checkpoint time	.audit/decisions.tsv	supersedes timestamp only
