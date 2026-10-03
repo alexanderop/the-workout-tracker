@@ -2,26 +2,26 @@
 
 - [x] Read the Principles section of the poteto-mode skill.
 - [x] Phase A: Frame
-- [ ] Phase B: Design the workflow
-- [ ] Phase C: Run the loop
-- [ ] Ground
-- [ ] Sketch
-- [ ] Agree
-- [ ] Implement
-- [ ] Scrap
-- [ ] Frame
-- [ ] Fan out
-- [ ] Cross-judge
-- [ ] Pick
-- [ ] Graft
-- [ ] Verify
-- [ ] Establish strict Vue/Vite types, verification commands, and a production PWA build.
-- [ ] Implement and verify workout rules and IndexedDB persistence.
-- [ ] Implement and verify four product screens and workout interactions.
-- [ ] Verify reload recovery, backup roundtrip, and real service-worker offline behavior.
-- [ ] Run independent correctness and comment reviews and resolve accepted findings.
-- [ ] Phase D: Keep the audit trail
-- [ ] Phase E: Verify and hand back
+- [x] Phase B: Design the workflow
+- [x] Phase C: Run the loop
+- [x] Ground
+- [x] Sketch
+- [x] Agree
+- [x] Implement
+- [x] Scrap
+- [x] Frame
+- [x] Fan out
+- [x] Cross-judge
+- [x] Pick
+- [x] Graft
+- [x] Verify
+- [x] Establish strict Vue/Vite types, verification commands, and a production PWA build.
+- [x] Implement and verify workout rules and IndexedDB persistence.
+- [x] Implement and verify four product screens and workout interactions.
+- [x] Verify reload recovery, backup roundtrip, and real service-worker offline behavior.
+- [x] Run independent correctness and comment reviews and resolve accepted findings.
+- [x] Phase D: Keep the audit trail
+- [x] Phase E: Verify and hand back
 
 ## Frame
 
@@ -36,3 +36,7 @@ Scope is four primary screens, one active workout workspace, routine and exercis
 The critical path is architecture selection, domain and storage contracts, app integration, then offline acceptance. Three isolated architecture candidates run first. A judge compares them against data integrity, API depth, recovery, testing, and proportional complexity. Implementation fans out only after the contract is settled. Each delegate owns separate files or an isolated checkout. The root owns integration and product UI. Tests and storage adapters can be verified before the UI is complete.
 
 Local agents substitute for cloud workers. No project model configuration exists, so all seats inherit the parent model. Cross-family review is unavailable. No scheduler is required for this foreground session. Browser interaction uses the available computer-use tools as the control-ui equivalent. Publication and a remote PR are outside this local build until a destination exists.
+
+## Verification boundaries
+
+All implementation and local verification phases completed. Separate physical Safari/OS installation, cross-family model review, cloud agents, hosting, and remote PR remain unavailable or outside this local scope. Review uses independent inherited-model agents. No current-workspace transcript path was exposed for file-based transcript replay; audit is checked against the available conversation and resolved files.

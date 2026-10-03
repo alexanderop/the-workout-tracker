@@ -1,0 +1,27 @@
+
+> form-workout@0.1.0 test:e2e /Users/alexanderopalic/Projects/active/form-workout
+> bddgen && playwright test
+
+[WebServer] (node:70293) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:70295) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 10 tests using 2 workers
+
+(node:70301) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:70302) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   2 [chromium] › .test-generated/test/e2e/workout.feature.spec.js:6:3 › A private training journal › Log and recover a workout offline (1.3s)
+  ✓   1 [mobile] › .test-generated/test/e2e/workout.feature.spec.js:6:3 › A private training journal › Log and recover a workout offline (1.6s)
+  ✓   3 [chromium] › .test-generated/test/e2e/workout.feature.spec.js:14:3 › A private training journal › Make a routine and move a backup to a fresh browser (1.2s)
+  ✓   4 [mobile] › .test-generated/test/e2e/workout.feature.spec.js:14:3 › A private training journal › Make a routine and move a backup to a fresh browser (1.3s)
+  ✓   5 [chromium] › .test-generated/test/e2e/workout.feature.spec.js:21:3 › A private training journal › Discard a workout without inventing history (604ms)
+  ✓   6 [mobile] › .test-generated/test/e2e/workout.feature.spec.js:21:3 › A private training journal › Discard a workout without inventing history (654ms)
+  ✓   7 [chromium] › .test-generated/test/e2e/workout.feature.spec.js:27:3 › A private training journal › A stale draft cannot overwrite another tab (629ms)
+  ✓   8 [mobile] › .test-generated/test/e2e/workout.feature.spec.js:27:3 › A private training journal › A stale draft cannot overwrite another tab (777ms)
+  ✓   9 [chromium] › .test-generated/test/e2e/workout.feature.spec.js:33:3 › A private training journal › Train with a custom exercise entirely offline (875ms)
+  ✓  10 [mobile] › .test-generated/test/e2e/workout.feature.spec.js:33:3 › A private training journal › Train with a custom exercise entirely offline (968ms)
+
+  10 passed (6.1s)

@@ -1,0 +1,55 @@
+import { computed, onScopeDispose, ref, shallowRef } from "vue";
+import { openWorkouts } from "./workouts";
+import type { LoadState } from "./workouts";
+import type { Command, Snapshot } from "./domain";
+
+export function useWorkouts() {
+  const service = openWorkouts({
+    databaseName: "form-workout-v1",
+    now: Date.now,
+    id: () => crypto.randomUUID(),
+  });
+  const state = shallowRef<LoadState>({ kind: "loading" });
+  const saving = ref(false);
+  const message = ref("");
+  const error = ref("");
+  const snapshot = computed(() =>
+    state.value.kind === "ready" ? state.value.snapshot : null,
+  );
+  const stop = service.subscribe((value) => {
+    state.value = value;
+  });
+  onScopeDispose(() => {
+    stop();
+    service.close();
+  });
+  async function run(
+    command: Command,
+    expectedRevision = snapshot.value?.revision,
+  ): Promise<Snapshot | null> {
+    if (saving.value || expectedRevision === undefined) return null;
+    saving.value = true;
+    error.value = "";
+    try {
+      const result = await service.execute(command, expectedRevision);
+      if (result.kind === "saved") {
+        state.value = { kind: "ready", snapshot: result.snapshot };
+        message.value = "Saved on this device";
+        return result.snapshot;
+      }
+      if (result.kind === "conflict") {
+        state.value = { kind: "ready", snapshot: result.snapshot };
+        error.value =
+          "This workout changed in another tab. Your draft is still visible. Reload to use the latest saved values.";
+      } else error.value = result.message;
+      return null;
+    } catch {
+      error.value =
+        "Could not save. Your previous saved workout is safe. Try again.";
+      return null;
+    } finally {
+      saving.value = false;
+    }
+  }
+  return { service, state, snapshot, saving, message, error, run };
+}

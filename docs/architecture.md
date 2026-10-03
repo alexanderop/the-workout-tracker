@@ -37,12 +37,13 @@ Commands have the following fields.
 - add-exercise has sessionId and exerciseId, identifying a catalog exercise.
 - remove-exercise has sessionId and exerciseId, identifying the session exercise.
 - finish has sessionId. Reject zero completed sets. Retain unfinished rows but exclude them from totals.
+- discard has sessionId. Require the matching active workout; clear it without adding history.
 - stop-rest has sessionId.
 - save-routine has routine, the full Routine value.
 - save-exercise has exercise, the full Exercise value.
 - settings has settings, the full Settings value.
 
-`src/workouts.ts` exports openWorkouts({ databaseName, now, id }). It returns execute(command, expectedRevision), subscribe(listener), exportBackup(), importBackup(json, expectedRevision), close(). Results are {kind:'saved',snapshot}, {kind:'conflict',snapshot}, {kind:'invalid',message}, or {kind:'unavailable',message}. LoadState is {kind:'loading'}, {kind:'ready',snapshot}, {kind:'recovery',message,rawExport}, or {kind:'unavailable',message}. Subscribe initializes the database and emits ready or a failure. exportBackup returns a Promise<string>. All writes validate at the boundary. Zod supplies validation. A corrupt read never silently replaces data. Import merges complete records atomically, skips exact duplicates, rejects conflicting IDs, validates all references, and keeps local settings. Import cannot introduce two active workouts.
+`src/workouts.ts` exports openWorkouts({ databaseName, now, id }). It returns execute(command, expectedRevision), subscribe(listener), exportBackup(), importBackup(json, expectedRevision), close(). Results are {kind:'saved',snapshot}, {kind:'conflict',snapshot}, {kind:'invalid',message}, or {kind:'unavailable',message}. LoadState is {kind:'loading'}, {kind:'ready',snapshot}, {kind:'recovery',message,rawExport}, or {kind:'unavailable',message}. Subscribe initializes the database and emits ready or a failure. exportBackup returns a Promise<string>. All writes validate at the boundary. Zod supplies validation. A corrupt read never silently replaces data. Import merges complete records atomically, skips exact duplicates, rejects conflicting IDs, validates all references, and keeps local settings. Import cannot introduce two active workouts. A revision-zero snapshot identical to initialSnapshot is a pristine installation; only that state may restore incoming starter definitions. It still retains local settings and advances the local revision.
 
 ## Ownership
 
