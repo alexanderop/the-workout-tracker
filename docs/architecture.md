@@ -2,6 +2,16 @@
 
 The Workout Tracker groups training behavior in one workout feature. Sessions, routines, settings, history, and backups share the same snapshot and revision rules. A screen is not an independent storage boundary.
 
+Domain terminology lives in [context](context.md); recurring implementation tasks are in [workflows](workflows.md).
+
+## Workspace ownership
+
+- `apps/workout` owns the PWA, workout feature, persistence, and application layout.
+- `packages/ui` owns generic Vue components, shared tokens, and the workout theme mapping. It has no workout-domain or persistence dependencies.
+- `apps/design-system` owns Histoire foundations, component examples, and illustrative patterns. It imports public UI exports and uses isolated story state rather than the workout service.
+
+Applications consume the UI package; the UI package cannot depend on applications. Cross-workspace relative imports and private deep imports are forbidden. The UI package ships source compiled by its consumers, not a separately built distribution.
+
 ## Module ownership
 
 The app lives in `apps/workout`. Its source has these responsibilities:
@@ -9,6 +19,7 @@ The app lives in `apps/workout`. Its source has these responsibilities:
 - `features/workouts/domain.ts` owns readonly models, Zod schemas, starter data, and the pure `reduceWorkout` transition. Time and ID generation are explicit inputs.
 - `features/workouts/ports.ts` declares the storage contract using domain types. It imports no runtime implementation.
 - `features/workouts/application.ts` owns commands, backup merging, revision checks, and the service lifetime. `createWorkouts` receives storage, a clock, and an ID generator.
+- `features/workouts/domain/drafts.ts` owns draft values and their validation; `features/workouts/adapters/browser-drafts.ts` implements the injected draft journal using browser storage.
 - `features/workouts/adapters/dexie.ts` owns IndexedDB initialization, validation of persisted data, atomic writes, observation, and connection cleanup.
 - `features/workouts/ui/` owns training-specific components and `useWorkouts`. The composable receives a service and removes its own subscription on disposal.
 - `app/composition.ts` selects Dexie and the real clock and ID generator. `main.ts` creates one service, passes it to the app, and closes it when the app unmounts.
@@ -47,7 +58,7 @@ The feature UI receives PWA capabilities from the application shell. It cannot i
 
 Other features may import only the public index and only from their application layer. `featureDependencies` in `tooling/architecture/policy.mjs` declares permitted feature dependencies. It starts empty. Dependency cycles are rejected.
 
-`packages/ui` owns generic components and design tokens. It has no workout, application, or persistence dependencies. Its public package exports remain `@form/ui` and `@form/ui/tokens.css`.
+`packages/ui` owns generic components and design tokens. It has no workout, application, or persistence dependencies. Its public package exports are `@form/ui`, `@form/ui/tokens.css`, `@form/ui/styles.css`, and `@form/ui/workout-theme.css`. Palette values live in `tokens.css`; `workout-theme.css` maps those values to generic component roles for both applications.
 
 ## Storage contract
 
