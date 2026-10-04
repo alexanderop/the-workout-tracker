@@ -5,6 +5,7 @@ import {
   ChevronRight,
   CircleHelp,
   Dumbbell,
+  Library,
   Settings2,
   ShieldCheck,
   TrendingUp,
@@ -31,6 +32,7 @@ const { state, snapshot, saving, message, error, history, routines, active } =
   workspace;
 const dialogs = ref<InstanceType<typeof WorkoutDialogs> | null>(null);
 const settingsOpen = ref(false);
+const workoutView = ref<"history" | "templates">("history");
 const progressExercise = ref("");
 const {
   online,
@@ -43,7 +45,7 @@ const {
 } = usePwa();
 const navigation = [
   { id: "workouts", label: "Workouts", icon: Dumbbell },
-  { id: "exercises", label: "Exercises", icon: Dumbbell },
+  { id: "exercises", label: "Exercises", icon: Library },
   { id: "progress", label: "Progress", icon: TrendingUp },
 ] as const;
 type Page = WorkoutPage;
@@ -62,7 +64,11 @@ const navigate = (next: Page) => {
   window.scrollTo({ top: 0, behavior: "instant" });
 };
 const routeChanged = () => {
-  page.value = route();
+  if (location.hash === "#main") return;
+  const next = route();
+  if (page.value !== next) message.value = "";
+  page.value = next;
+  window.scrollTo({ top: 0, behavior: "instant" });
 };
 onMounted(() => window.addEventListener("hashchange", routeChanged));
 onUnmounted(() => window.removeEventListener("hashchange", routeChanged));
@@ -207,6 +213,7 @@ const title = computed(() =>
 
           <WorkoutsPage
             v-if="page === 'workouts'"
+            v-model:view="workoutView"
             :routines="routines"
             :history="history"
             :active="active"
@@ -270,7 +277,12 @@ const title = computed(() =>
     </nav>
   </div>
 
-  <WorkoutDialogs ref="dialogs" :workspace="workspace" @navigate="navigate" />
+  <WorkoutDialogs
+    ref="dialogs"
+    :workspace="workspace"
+    @navigate="navigate"
+    @template-saved="workoutView = 'templates'"
+  />
   <WorkoutSettings v-model:open="settingsOpen" :workspace="workspace">
     <section class="settings-section">
       <div class="settings-row">

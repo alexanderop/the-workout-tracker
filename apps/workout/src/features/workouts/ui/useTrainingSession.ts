@@ -108,8 +108,7 @@ export function useTrainingSession(options: {
               reps: recovered?.reps ?? String(set.reps),
               base: recovered?.base ?? { ...set },
               touched: !!recovered,
-              recoveredStale:
-                !!recovered && recovered.revision !== snapshot.revision,
+              recoveredStale: !!recovered && !sameSet(recovered.base, set),
               revision: recovered?.revision ?? snapshot.revision,
               records,
               alternatives: distinct.length ? records : [],
@@ -244,7 +243,7 @@ export function useTrainingSession(options: {
     row.reps = draft.reps;
     row.base = draft.base;
     row.revision = draft.revision;
-    row.recoveredStale = draft.revision !== options.snapshot.value?.revision;
+    row.recoveredStale = !sameSet(draft.base, row.set);
     row.alternatives = [];
     row.touched = true;
     persist(row);
@@ -313,6 +312,30 @@ export function useTrainingSession(options: {
       lastLog.value = null;
       notice.value = "Set marked as not logged.";
     }
+  }
+  async function addSet(exerciseId: string) {
+    const session = active.value;
+    const exercise = session?.exercises.find((item) => item.id === exerciseId);
+    const last = exercise?.sets.at(-1);
+    const row = last ? rows.get(last.id) : undefined;
+    if (!session || !exercise || options.saving.value) return;
+    const values = row ? parseSetValues(row) : null;
+    if (row && (!values || conflict(row))) {
+      row.issue =
+        "Review this set's weight and repetitions before adding another set.";
+      selectSet(row.set.id);
+      return;
+    }
+    const result = await options.run({
+      type: "add-set",
+      sessionId: session.id,
+      exerciseId,
+      ...(values ? { values } : {}),
+    });
+    const added = result?.active?.exercises
+      .find((item) => item.id === exerciseId)
+      ?.sets.at(-1);
+    if (added) selectSet(added.id);
   }
   async function undo() {
     const last = lastLog.value,
@@ -444,6 +467,7 @@ export function useTrainingSession(options: {
     keepInput,
     chooseDraft,
     commit,
+    addSet,
     undo,
   };
 }

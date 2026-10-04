@@ -122,7 +122,15 @@ const records = computed(() =>
           </option>
         </select>
       </div>
+      <div v-if="trend.length === 1" class="first-progress-point">
+        <strong>{{ fmt(trend[0]!.weight) }} <span>kg</span></strong>
+        <p class="muted">Your starting point · {{ shortDate(trend[0]!.at) }}</p>
+        <p class="muted small">
+          Log this exercise in another workout to see your trend.
+        </p>
+      </div>
       <svg
+        v-else
         class="trend-chart"
         viewBox="0 0 600 190"
         role="img"
@@ -142,7 +150,7 @@ const records = computed(() =>
           class="chart-point"
         />
       </svg>
-      <div class="chart-values">
+      <div v-if="trend.length > 1" class="chart-values">
         <span v-for="(point, index) in trend" :key="index"
           >{{ shortDate(point.at)
           }}<strong>{{ fmt(point.weight) }} kg</strong></span

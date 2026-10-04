@@ -27,9 +27,15 @@ function advance() {
     <a href="#/workouts" class="training-bar-back" aria-label="Back to workouts"
       ><ArrowLeft :size="20" aria-hidden="true"
     /></a>
-    <template v-if="rest > 0">
+    <template v-if="rest > 0 && nextExercise">
       <div>
         <strong>{{ duration(rest) }} rest</strong>
+        <small
+          >Next:
+          {{
+            training.current.value?.exercise.name ?? nextExercise.name
+          }}</small
+        >
       </div>
       <button
         class="btn primary"
@@ -59,8 +65,8 @@ function advance() {
           training.current.value.set.completed
             ? training.dirty(training.current.value)
               ? "Update set"
-              : "Mark set incomplete"
-            : "Complete set"
+              : "Undo set"
+            : "Log set"
         }}
       </button>
     </template>
@@ -79,11 +85,11 @@ function advance() {
               exercise.sets.some((set) => !set.completed),
             )
           "
-          >Choose your next exercise above.</small
+          >Next: {{ nextExercise?.name }}</small
         >
       </div>
       <button class="btn primary" :disabled="saving" @click="advance">
-        {{ nextExercise ? "Next exercise" : "Finish training" }}
+        {{ nextExercise ? "Next exercise" : "Finish workout" }}
       </button>
     </template>
     <template v-else>

@@ -36,7 +36,10 @@ const {
   activeTotals,
   elapsed,
 } = props.workspace;
-const emit = defineEmits<{ navigate: [page: WorkoutPage] }>();
+const emit = defineEmits<{
+  navigate: [page: WorkoutPage];
+  templateSaved: [];
+}>();
 const navigate = (page: WorkoutPage) => emit("navigate", page);
 const optionSetId = ref<string | null>(null);
 const optionRow = computed(() =>
@@ -113,6 +116,7 @@ async function saveRoutine(routine: Routine) {
   if (await run({ type: "save-routine", routine }, routineRevision)) {
     routineOpen.value = false;
     message.value = "Template saved";
+    emit("templateSaved");
   }
 }
 async function addExercises() {
@@ -246,7 +250,9 @@ defineExpose({
   </Sheet>
   <Sheet
     :open="routineOpen"
-    :title="editingRoutine ? 'Edit template' : 'Create template'"
+    :title="
+      editingRoutine && !templateSource ? 'Edit template' : 'Create template'
+    "
     description="Set up the exercises you want to come back to."
     wide
     @close="routineOpen = false"

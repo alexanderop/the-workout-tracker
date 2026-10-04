@@ -31,7 +31,9 @@ const emit = defineEmits<{
   repeat: [id: string];
   convert: [id: string];
 }>();
-const tab = ref<"history" | "templates">("history");
+const tab = defineModel<"history" | "templates">("view", {
+  default: "history",
+});
 const search = ref("");
 const history = computed(() =>
   props.history.filter((session) =>
@@ -197,7 +199,10 @@ const history = computed(() =>
             :key="index"
           >
             <span>{{ exercises[entry.exerciseId]?.name }}</span
-            ><span class="muted">{{ entry.sets.length }} sets</span>
+            ><span class="muted"
+              >{{ entry.sets.length }}
+              {{ entry.sets.length === 1 ? "set" : "sets" }}</span
+            >
           </li>
           <li v-if="routine.exercises.length > 4" class="muted">
             + {{ routine.exercises.length - 4 }} more

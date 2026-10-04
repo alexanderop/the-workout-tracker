@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, watch, nextTick } from "vue";
 import { Check, MoreHorizontal, Save } from "@lucide/vue";
 import type { TrainingRow } from "./useTrainingSession";
 import type { RawValues, SetDraft } from "../domain/drafts";
@@ -18,6 +19,19 @@ const emit = defineEmits<{
   keep: [];
   recover: [draft: SetDraft];
 }>();
+const form = ref<HTMLFormElement | null>(null);
+watch(
+  () => props.row.issue,
+  async (issue) => {
+    if (!issue) return;
+    await nextTick();
+    form.value?.scrollIntoView({ block: "center", behavior: "instant" });
+  },
+);
+function selectInput(event: FocusEvent) {
+  emit("select");
+  if (event.target instanceof HTMLInputElement) event.target.select();
+}
 function input(field: "weight" | "reps", event: Event) {
   if (event.target instanceof HTMLInputElement)
     emit("edit", { [field]: event.target.value });
@@ -25,6 +39,7 @@ function input(field: "weight" | "reps", event: Event) {
 </script>
 <template>
   <form
+    ref="form"
     :id="`set-form-${row.set.id}`"
     class="set-form"
     :class="{ 'is-current': current }"
@@ -49,10 +64,12 @@ function input(field: "weight" | "reps", event: Event) {
         type="text"
         inputmode="decimal"
         maxlength="64"
+        :aria-invalid="!!row.issue"
+        :aria-describedby="row.issue ? `set-issue-${row.set.id}` : undefined"
         :aria-label="`Set ${row.index + 1} weight for ${row.exercise.name}`"
         :disabled="busy"
         @input="input('weight', $event)"
-        @focus="emit('select')"
+        @focus="selectInput"
       />
       <input
         :value="row.reps"
@@ -60,10 +77,12 @@ function input(field: "weight" | "reps", event: Event) {
         type="text"
         inputmode="numeric"
         maxlength="64"
+        :aria-invalid="!!row.issue"
+        :aria-describedby="row.issue ? `set-issue-${row.set.id}` : undefined"
         :aria-label="`Set ${row.index + 1} repetitions for ${row.exercise.name}`"
         :disabled="busy"
         @input="input('reps', $event)"
-        @focus="emit('select')"
+        @focus="selectInput"
       />
       <button
         type="submit"
@@ -88,7 +107,14 @@ function input(field: "weight" | "reps", event: Event) {
         <MoreHorizontal :size="20" />
       </button>
     </div>
-    <p v-if="row.issue" class="field-error" role="alert">{{ row.issue }}</p>
+    <p
+      v-if="row.issue"
+      :id="`set-issue-${row.set.id}`"
+      class="field-error"
+      role="alert"
+    >
+      {{ row.issue }}
+    </p>
     <div v-if="conflict" class="draft-conflict">
       <p>
         This set changed in another tab or has different recovered drafts. Your
