@@ -1,5 +1,7 @@
 # Workout-first redesign
 
+Historical record of the redesign plan and implementation context. Descriptions of tools, worktrees, review, and delivery below refer to that effort and do not establish current status or instructions. Current behavior is defined in [domain context](../context.md), [architecture](../architecture.md), and [design](../design.md).
+
 The app starts with an exercise catalog and an empty training journal. A workout becomes a historical record when the user finishes it. Repeating that record starts a new workout. Saving it as a template creates an editable plan, separate from the record.
 
 ## Data model

@@ -73,7 +73,19 @@ This project does not maintain automated tests or a testing strategy. `pnpm veri
 pnpm verify
 ```
 
-Architecture decisions are in [docs/architecture.md](docs/architecture.md), the design tokens in [docs/design.md](docs/design.md), the workout-first design in [docs/workout-first.md](docs/workout-first.md), and the implementation trail in [.audit/workout-first.tsv](.audit/workout-first.tsv).
+## Documentation map
+
+| Question | Document |
+| --- | --- |
+| How should an agent work here? | [AGENTS.md](AGENTS.md) |
+| What do templates, workouts, sets, drafts, and revisions mean? | [Domain context](docs/context.md) |
+| Which workspace or module owns a behavior? | [Architecture](docs/architecture.md) |
+| What are the visual and interaction rules? | [Design](docs/design.md) |
+| How do I add a command, component, or persistence change? | [Development workflows](docs/workflows.md) |
+| Which references informed our choices? | [Prior art](docs/prior-art.md) |
+| What did earlier work decide or report? | [Implementation history](docs/history/README.md) |
+
+Context, architecture, and design describe current contracts. History preserves earlier plans and evidence, not current instructions. Update the authoritative document when its contract changes and link to it from other guides.
 
 ## GitHub Pages
 
@@ -87,12 +99,13 @@ The display name and download filenames use The Workout Tracker. The internal In
 
 ## Component explorer
 
-The previous custom gallery is replaced by Histoire. Stories live in `apps/design-system/src/stories/**/*.story.vue` and import only public `@form/ui` exports. Use the Controls panel to edit props, the Docs panel for usage guidance, and the viewport controls for mobile layouts. The explorer is organized into Foundations, Components and Patterns, with 20 stories and 29 variants. Each story documents Usage, Variants, States, Behavior, and Examples and limitations.
+The previous custom gallery is replaced by Histoire. Stories live in `apps/design-system/src/stories/**/*.story.vue` and import only public `@form/ui` exports. Use the Controls panel to edit props, the Docs panel for usage guidance, and the viewport controls for mobile layouts. The explorer is organized into Start here, Foundations, Components and Patterns, with 21 stories and 30 variants. Each story documents Usage, Variants, States, Behavior, and Examples and limitations.
 
 `pnpm dev:ui` starts the explorer; `pnpm build:ui` produces its standalone static site in `apps/design-system/.histoire/dist`. The explorer uses Histoire 1.0 beta with its supported Vite 7 version in its own workspace. The workout app remains on Vite 8. Stories are interactive documentation, with no automated tests or test runner. `pnpm verify` still runs only type checking and linting. The workout Pages deployment remains separate.
 
 ### Design-system organization
 
+- `stories/StartHere.story.vue`: product audience, core needs, design principles and review questions.
 - `stories/foundations/`: semantic color roles, typography, spacing and touch sizes, corners and borders, icons, motion.
 - `stories/components/`: Button, Input, Textarea, Select, Switch, Field, Dialog, Sheet and Numeric Input. Form controls each have their own page instead of one combined Forms page.
 - `stories/patterns/`: training-set entry, exercise selection, template editing, settings, empty states and errors. These are interactive design examples with isolated local state, not copies of workout persistence or domain logic.
