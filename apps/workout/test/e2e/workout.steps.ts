@@ -13,7 +13,7 @@ const nav = (page: Page, name: string) =>
 async function openJournal(page: Page) {
   await page.goto("./");
   await expect(
-    page.getByRole("heading", { name: "A little stronger, every day." }),
+    page.getByRole("heading", { name: "Today", exact: true }),
   ).toBeVisible();
 }
 async function log(page: Page, index: number, weight: string, reps: string) {
@@ -32,9 +32,7 @@ async function log(page: Page, index: number, weight: string, reps: string) {
 }
 Given("a new training journal", async ({ page, $testInfo: testInfo }) => {
   await openJournal(page);
-  await expect(
-    page.getByText("Your story starts with one workout."),
-  ).toBeVisible();
+  await expect(page.getByText("No workouts yet")).toBeVisible();
   await expect(page.locator("body")).not.toHaveJSProperty("scrollWidth", 0);
   expect(
     await page.evaluate(
@@ -142,7 +140,7 @@ When("I finish the workout offline", async ({ page, context }) => {
 Then(
   "history and progress show only my logged work",
   async ({ page, $testInfo: testInfo }) => {
-    await expect(page.getByText("1 session. Every one counts.")).toBeVisible();
+    await expect(page.getByText("1 session", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: /Upper body.*870/ }).click();
     await expect(page.getByRole("dialog")).toContainText("60 kg × 8 reps");
     await expect(page.getByRole("dialog")).toContainText("65 kg × 6 reps");
@@ -152,7 +150,7 @@ Then(
     await page.getByRole("button", { name: "Close dialog" }).click();
     await nav(page, "Progress").click();
     await expect(
-      page.getByRole("heading", { name: "See how far you’ve come." }),
+      page.getByRole("heading", { name: "Progress", exact: true }),
     ).toBeVisible();
     await expect(page.locator(".record-card")).toContainText("65 kg");
     await expect(page.getByLabel("Exercise progress")).toHaveValue(
@@ -289,7 +287,7 @@ When("I discard an empty free workout", async ({ page }) => {
 Then("I can start a different routine with empty history", async ({ page }) => {
   await nav(page, "History").click();
   await expect(
-    page.getByRole("heading", { name: "Every story has a first session." }),
+    page.getByRole("heading", { name: "No workouts yet", exact: true }),
   ).toBeVisible();
   await nav(page, "Workouts").click();
   await page
