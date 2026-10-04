@@ -5,7 +5,7 @@
   "packageManager": "pnpm@10.28.2",
   "scripts": {
     "dev": "pnpm --filter @form/workout dev",
-    "build": "pnpm typecheck && pnpm --filter @form/workout build && pnpm --filter @form/ui-gallery build",
+    "build": "pnpm typecheck && pnpm --filter @form/workout build",
     "preview": "pnpm --filter @form/workout preview",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
@@ -14,7 +14,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check:architecture": "node scripts/check-architecture.mjs",
-    "dev:ui": "pnpm --filter @form/ui-gallery dev"
+    "dev:ui": "pnpm --filter @form/design-system dev",
+    "build:ui": "pnpm --filter @form/design-system build"
   },
   "devDependencies": {
     "oxlint": "^1.86.0",

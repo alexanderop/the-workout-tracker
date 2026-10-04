@@ -62,14 +62,14 @@ The fixed reference is [shadcn-vue b251d9f](https://github.com/unovue/shadcn-vue
 
 Button heights are 24/32/36/40px at a 16px root font size. Input is 36px tall. Dialog has 24px padding, 16px gaps, a 512px desktop maximum width and a 16px viewport inset. Responsive Field layout uses a container query. The neutral theme radius is 0.625rem; control radii subtract 2px. Slots, native semantics and Reka behavior follow the reference.
 
-Intentional differences are explicit CSS imports and namespaced `--ui-*` tokens, local control resets instead of Tailwind Preflight, native form reset synchronization, filtering empty errors, an accessible close label directly on the icon button, reduced-motion support, and configurable dialog portal destination. Destructive-button hover uses adjusted light and dark background blends to preserve the required 4.5:1 text contrast across browser engines. `buttonVariants`, `fieldVariants` and their Tailwind class APIs are not exported. `DialogScrollContent` is deferred. Consumer class names are merged by Vue; there is no Tailwind class conflict resolver. The gallery supplies a bundled Inter font, while the library inherits its consumer's font.
+Intentional differences are explicit CSS imports and namespaced `--ui-*` tokens, local control resets instead of Tailwind Preflight, native form reset synchronization, filtering empty errors, an accessible close label directly on the icon button, reduced-motion support, and configurable dialog portal destination. Destructive-button hover uses adjusted light and dark background blends to preserve the required 4.5:1 text contrast across browser engines. `buttonVariants`, `fieldVariants` and their Tailwind class APIs are not exported. `DialogScrollContent` is deferred. Consumer class names are merged by Vue; there is no Tailwind class conflict resolver. The Histoire explorer supplies a bundled Inter font, while the library inherits its consumer's font.
 
 ## Code quality
 
 Keep component APIs small, strictly typed, accessible and consistent with the reference contract. Preserve native form semantics, keyboard navigation, focus management and resource cleanup.
 
 - `pnpm --filter @form/ui typecheck` and `pnpm --filter @form/ui lint` check the public source.
-- `pnpm dev:ui` opens the standalone consumer gallery. Its build imports only public library exports and styles.
+- `pnpm dev:ui` opens Histoire at http://127.0.0.1:4186. Stories are organized into foundations, individual components and application patterns. Every page covers usage, variants, states, behavior and examples. Patterns use isolated demo state; foundations show semantic roles before technical token names. Its build imports only public library exports and styles.
 - Root `pnpm verify` runs type checking and linting only. This project does not maintain automated tests or a testing strategy.
 
 ## Catalog roadmap

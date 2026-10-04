@@ -1,0 +1,16 @@
+/* Shared workout palette for the app and component explorer. */
+:root {
+  --ui-background: var(--background);
+  --ui-foreground: var(--text);
+  --ui-primary: var(--purple);
+  --ui-primary-foreground: var(--background);
+  --ui-secondary: var(--surface);
+  --ui-secondary-foreground: var(--text);
+  --ui-accent: var(--surface);
+  --ui-accent-foreground: var(--text);
+  --ui-muted-foreground: var(--muted);
+  --ui-input: var(--surface);
+  --ui-border: var(--surface);
+  --ui-ring: var(--purple);
+  --ui-dark: 1;
+}

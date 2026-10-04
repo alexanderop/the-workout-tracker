@@ -1,0 +1,27 @@
+{
+  "name": "@form/design-system",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "histoire dev --host 127.0.0.1 --port 4186",
+    "build": "histoire build",
+    "typecheck": "vue-tsc --noEmit",
+    "lint": "oxlint src --deny-warnings",
+    "preview": "histoire preview --host 127.0.0.1 --port 4186"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.2.8",
+    "@form/ui": "workspace:*",
+    "@lucide/vue": "^1.51.0",
+    "vue": "^3.5.43"
+  },
+  "devDependencies": {
+    "@histoire/plugin-vue": "1.0.0-beta.1",
+    "@vitejs/plugin-vue": "^6.0.9",
+    "histoire": "1.0.0-beta.1",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.0",
+    "vue-tsc": "^3.3.12"
+  }
+}
