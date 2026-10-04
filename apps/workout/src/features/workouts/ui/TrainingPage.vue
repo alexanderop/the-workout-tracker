@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import {
   Clock3,
   Check,
@@ -46,6 +46,32 @@ const emit = defineEmits<{
   navigate: [page: "workouts"];
 }>();
 const navigate = (page: "workouts") => emit("navigate", page);
+const exerciseTabs = ref<HTMLElement | null>(null);
+watch(
+  () => training.currentExercise.value?.id,
+  async () => {
+    await nextTick();
+    const tabs = exerciseTabs.value;
+    const selected = tabs?.querySelector<HTMLElement>('[aria-pressed="true"]');
+    if (!tabs || !selected) return;
+    const container = tabs.getBoundingClientRect();
+    const item = selected.getBoundingClientRect();
+    if (item.left < container.left)
+      tabs.scrollLeft += item.left - container.left - 4;
+    else if (item.right > container.right)
+      tabs.scrollLeft += item.right - container.right + 4;
+  },
+  { flush: "post" },
+);
+async function addSet(exerciseId: string) {
+  await training.addSet(exerciseId);
+  await nextTick();
+  const id = training.current.value?.set.id;
+  if (id)
+    document
+      .getElementById(`set-form-${id}`)
+      ?.scrollIntoView({ block: "nearest", behavior: "instant" });
+}
 const name = ref("");
 const nameIssue = ref("");
 watch(
@@ -106,9 +132,10 @@ const previous = computed(() => {
       <button
         class="btn secondary"
         :disabled="saving || !activeTotals.completedSets"
+        aria-label="Finish workout"
         @click="emit('finish')"
       >
-        Finish workout<Check :size="17" />
+        <span class="finish-label">Finish</span><Check :size="17" />
       </button>
     </div>
     <div v-if="training.notice.value" class="training-notice">
@@ -124,6 +151,7 @@ const previous = computed(() => {
     </div>
     <nav
       v-if="active.exercises.length"
+      ref="exerciseTabs"
       class="exercise-tabs"
       aria-label="Workout exercises"
     >
@@ -257,13 +285,7 @@ const previous = computed(() => {
           <button
             class="add-set text-button"
             :disabled="saving || exercise.sets.length >= 30"
-            @click="
-              run({
-                type: 'add-set',
-                sessionId: active.id,
-                exerciseId: exercise.id,
-              })
-            "
+            @click="addSet(exercise.id)"
           >
             <Plus :size="15" />Add set
           </button>
@@ -273,7 +295,11 @@ const previous = computed(() => {
           <h2>What are we training?</h2>
           <p class="muted">Add your first exercise to start logging sets.</p>
         </div>
-        <button class="btn secondary full-width" @click="emit('pick')">
+        <button
+          class="btn secondary full-width"
+          :disabled="saving || active.exercises.length >= 50"
+          @click="emit('pick')"
+        >
           <Plus :size="18" />Add exercises
         </button>
       </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { Check, Dumbbell, Search } from "@lucide/vue";
 import type { Exercise } from "../domain";
 const props = defineProps<{
@@ -8,6 +8,7 @@ const props = defineProps<{
   busy?: boolean;
 }>();
 const emit = defineEmits<{ toggle: [id: string] }>();
+const list = ref<HTMLElement | null>(null);
 const search = ref("");
 const muscle = ref("");
 const equipment = ref("");
@@ -27,6 +28,9 @@ const results = computed(() =>
         .includes(search.value.trim().toLowerCase()),
   ),
 );
+watch([search, muscle, equipment], () => {
+  if (list.value) list.value.scrollTop = 0;
+});
 </script>
 <template>
   <div class="catalog-controls">
@@ -42,14 +46,14 @@ const results = computed(() =>
       <label class="field"
         ><span>Muscle group</span
         ><select v-model="muscle" class="input">
-          <option value="">All muscles</option>
+          <option value="">{{ selected ? "All" : "All muscles" }}</option>
           <option v-for="group in groups" :key="group">{{ group }}</option>
         </select></label
       >
       <label class="field"
         ><span>Equipment</span
         ><select v-model="equipment" class="input">
-          <option value="">All equipment</option>
+          <option value="">{{ selected ? "All" : "All equipment" }}</option>
           <option v-for="item in equipmentOptions" :key="item">
             {{ item }}
           </option>
@@ -62,7 +66,7 @@ const results = computed(() =>
       · {{ selected.length }} selected</span
     >
   </p>
-  <div class="picker-list catalog-list">
+  <div ref="list" class="picker-list catalog-list">
     <component
       :is="selected ? 'button' : 'div'"
       v-for="exercise in results"

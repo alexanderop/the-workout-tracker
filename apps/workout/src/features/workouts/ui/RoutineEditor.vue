@@ -152,6 +152,7 @@ function save() {
               v-model="set.weightKg"
               class="input"
               type="number"
+              inputmode="decimal"
               min="0"
               max="1000"
               step="any"
@@ -164,6 +165,7 @@ function save() {
               v-model="set.reps"
               class="input"
               type="number"
+              inputmode="numeric"
               min="1"
               max="1000"
               step="1"
@@ -272,5 +274,25 @@ function save() {
   display: block;
   font-size: 9px;
   margin-top: 4px;
+}
+@media (max-width: 380px) {
+  .template-set {
+    grid-template-columns: 20px minmax(0, 1fr) minmax(0, 1fr) 44px;
+    gap: 6px;
+    align-items: end;
+  }
+  .template-set > .muted {
+    align-self: center;
+  }
+  .template-set .field > span {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .template-set .input {
+    padding-inline: 6px;
+  }
+  .routine-exercise {
+    padding: 12px;
+  }
 }
 </style>

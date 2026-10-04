@@ -61,7 +61,7 @@ IndexedDB holds your journal in this browser profile, on this origin. Clearing s
 
 Imports restore a completely untouched installation, including templates. Otherwise they add missing records, skip exact duplicates and reject conflicting IDs without partially importing. Local settings stay unchanged. Two different active workouts cannot be merged. A newer backup with edits to records already on another device can therefore require a fresh browser profile for restoration. Import is not multi-device synchronization.
 
-An unreadable database offers a raw recovery export rather than silently clearing your data. Simultaneous edits use revision checks; if another tab changed the set you are editing, The Workout Tracker keeps your draft visible and offers an explicit choice to keep your input against the latest saved values or discard the draft. Recovered drafts from an older revision also require review.
+An unreadable database offers a raw recovery export rather than silently clearing your data. Simultaneous edits use revision checks; if another tab changed the set you are editing, The Workout Tracker keeps your draft visible and offers an explicit choice to keep your input against the latest saved values or discard the draft. Recovered drafts require review when the saved values of that set changed; unrelated workout edits do not create a conflict.
 
 ## Code quality
 

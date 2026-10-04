@@ -229,6 +229,7 @@ export const commandSchema = z
         type: z.literal("add-set"),
         ...sessionId,
         exerciseId: identifier,
+        values: z.object(values).strict().optional(),
       })
       .strict(),
     z
@@ -501,8 +502,8 @@ export function reduceWorkout(
         ...exercise.sets,
         {
           id: inputs.id(),
-          weightKg: previous?.weightKg ?? 0,
-          reps: previous?.reps ?? 8,
+          weightKg: command.values?.weightKg ?? previous?.weightKg ?? 0,
+          reps: command.values?.reps ?? previous?.reps ?? 8,
           completed: false,
         },
       ],

@@ -1,4 +1,4 @@
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import type { Workouts, DraftJournal } from "../application";
 import { sessionTotals, remainingRestSeconds } from "../domain";
 import { useWorkouts } from "./useWorkouts";
@@ -34,6 +34,12 @@ export function useWorkoutWorkspace(service: Workouts, journal: DraftJournal) {
     ),
   );
   const active = computed(() => snapshot.value?.active ?? null);
+  watch(
+    () => active.value?.rest?.endsAt,
+    () => {
+      now.value = Date.now();
+    },
+  );
   const training = useTrainingSession({
     snapshot,
     saving,
