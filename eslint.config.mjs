@@ -6,6 +6,7 @@ import tseslint from "typescript-eslint";
 import oxlint from "eslint-plugin-oxlint";
 
 export default [
+  { ignores: ["apps/workout/src/route-map.d.ts"] },
   ...vue.configs["flat/essential"].map((config) => ({
     ...config,
     files: ["**/*.vue"],

@@ -10,6 +10,16 @@ Read [AGENTS.md](../AGENTS.md) first. Use [context](context.md) for behavior, [a
 4. Handle invalid input, unavailable storage, and conflicts without discarding visible user input. Update the domain context if product meaning changes and architecture if ownership changes.
 5. Run `pnpm verify` for code changes. When interaction changes, inspect the affected flow in the running app, including keyboard use and focus where relevant. Report what was actually checked.
 
+## Add or change a route
+
+Routing belongs to the workout application. Add a PascalCase `*Route.vue` adapter under `apps/workout/src/pages`, with an explicit lowercase `path` and named route in `definePage`. Import feature UI through its public entry point and use `useWorkoutRouteContext` for the persistent workspace. Keep router imports out of feature components. Use generated route names for navigation. The fallback uses the file-routing convention `[...pathMatch].vue`; keep that dynamic filename so the experimental generator ranks it after static routes.
+
+Declare parsed query parameters in `definePage.params.query` and their Zod parsers in `src/app/route-params`. The experimental resolver exposes parsed query values through `route.params`; named navigation supplies them through `params`. Do not cast raw URL strings to domain values.
+
+Run `pnpm --filter @form/workout routes:generate` after changing routes or parsers and include the generated `src/route-map.d.ts` in the change. This runs the configured Vite plugin without a build or listening server. Development and builds also generate the declarations. Committed declarations let a clean checkout run `pnpm verify` before starting Vite. Verification remains type checking and linting only.
+
+Vue Router is pinned to 5.3.1. Its [experimental resolver](https://router.vuejs.org/experimental/router-resolver) is explicitly not production-ready upstream. Upgrades require reviewing that API and regenerating route declarations. Inspect deep links, malformed query defaults, navigation history, and dialog focus in the running app after routing changes.
+
 ## Add a reusable component and story
 
 For work focused on a new reusable UI component, use Histoire as the first development feedback loop, then check the integrated component in the workout app. This is component-driven development: edit, inspect, interact, and refine in isolation before wiring the component into a real flow.

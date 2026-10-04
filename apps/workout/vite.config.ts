@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import VueRouter from "vue-router/vite";
 import vue from "@vitejs/plugin-vue";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
@@ -8,6 +9,11 @@ const base = process.env.VITE_BASE_PATH ?? "/";
 export default defineConfig({
   base,
   plugins: [
+    VueRouter({
+      routesFolder: "src/pages",
+      dts: "src/route-map.d.ts",
+      experimental: { paramParsers: { dir: "src/app/route-params" } },
+    }),
     vue(),
     tailwindcss(),
     VitePWA({

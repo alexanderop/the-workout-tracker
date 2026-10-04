@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IconButton, Button } from "@form/ui";
-import { computed, onMounted, onUnmounted, ref, useTemplateRef } from "vue";
+import { computed, ref, useTemplateRef } from "vue";
 import {
   ArrowDownToLine,
   ChevronRight,
@@ -15,16 +15,14 @@ import {
 } from "@lucide/vue";
 import {
   useWorkoutWorkspace,
-  WorkoutsPage,
-  TrainingPage,
-  ExercisesPage,
-  ProgressPage,
   TrainingDock,
   WorkoutDialogs,
   WorkoutSettings,
   download,
 } from "./features/workouts/ui";
-import type { WorkoutPage } from "./features/workouts/ui";
+import { RouterLink, RouterView } from "vue-router";
+import { useWorkoutNavigation } from "./app/useWorkoutNavigation";
+import { provideWorkoutRouteContext } from "./app/workoutRouteContext";
 import type { Workouts, DraftJournal } from "./features/workouts";
 import { usePwa } from "./usePwa";
 const { workouts, drafts } = defineProps<{
@@ -32,12 +30,31 @@ const { workouts, drafts } = defineProps<{
   drafts: DraftJournal;
 }>();
 const workspace = useWorkoutWorkspace(workouts, drafts);
-const { state, snapshot, saving, message, error, history, routines, active } =
+const { state, snapshot, saving, message, error, history, active } =
   workspace;
 const dialogs = useTemplateRef<InstanceType<typeof WorkoutDialogs>>("dialogs");
 const settingsOpen = ref(false);
-const workoutView = ref<"history" | "templates">("history");
+const main = useTemplateRef<HTMLElement>("main");
+function focusMain() {
+  main.value?.focus({ preventScroll: true });
+}
+const {
+  page,
+  destination,
+  navigate,
+  selectWorkoutView,
+  workoutsHref,
+  prepareLinkNavigation,
+} = useWorkoutNavigation(message, error, focusMain);
 const progressExercise = ref("");
+provideWorkoutRouteContext({
+  workspace,
+  dialogs,
+  progressExercise,
+  navigate,
+  selectWorkoutView,
+  workoutsHref,
+});
 const {
   online,
   installed,
@@ -52,29 +69,6 @@ const navigation = [
   { id: "exercises", label: "Exercises", icon: Library },
   { id: "progress", label: "Progress", icon: TrendingUp },
 ] as const;
-type Page = WorkoutPage;
-function route(): Page {
-  const value = location.hash.slice(2);
-  if (value === "session") return value;
-  return navigation.find((item) => item.id === value)?.id ?? "workouts";
-}
-const page = ref<Page>(route());
-const navigate = (next: Page) => {
-  const destination =
-    next === "today" || next === "history" ? "workouts" : next;
-  location.hash = `/${destination}`;
-  page.value = destination;
-  window.scrollTo({ top: 0, behavior: "instant" });
-};
-const routeChanged = () => {
-  if (location.hash === "#main") return;
-  const next = route();
-  if (page.value !== next) message.value = "";
-  page.value = next;
-  window.scrollTo({ top: 0, behavior: "instant" });
-};
-onMounted(() => window.addEventListener("hashchange", routeChanged));
-onUnmounted(() => window.removeEventListener("hashchange", routeChanged));
 function reload() {
   window.location.reload();
 }
@@ -86,20 +80,25 @@ const title = computed(() =>
 </script>
 
 <template>
-  <a class="skip-link" href="#main">Skip to content</a>
+  <a class="skip-link" href="#main" @click.prevent="focusMain">Skip to content</a>
   <div class="app-layout">
     <aside class="sidebar">
-      <a href="#/workouts" class="brand" aria-label="The Workout Tracker home"
+      <RouterLink
+        :to="destination('workouts')"
+        @click="prepareLinkNavigation($event, 'workouts')"
+        class="brand"
+        aria-label="The Workout Tracker home"
         ><span class="brand-mark"
           ><Dumbbell :size="20" aria-hidden="true" /></span
-        ><span class="brand-name">The Workout<br />Tracker</span></a
+        ><span class="brand-name">The Workout<br />Tracker</span></RouterLink
       >
       <div class="workspace-label">YOUR TRAINING SPACE</div>
       <nav class="desktop-nav" aria-label="Main navigation">
-        <a
+        <RouterLink
           v-for="item in navigation"
           :key="item.id"
-          :href="`#/${item.id}`"
+          :to="destination(item.id)"
+          @click="prepareLinkNavigation($event, item.id)"
           :class="{
             selected:
               page === item.id ||
@@ -111,7 +110,7 @@ const title = computed(() =>
             v-if="item.id === 'workouts' && history.length"
             class="nav-count"
             >{{ history.length }}</span
-          ></a
+          ></RouterLink
         >
       </nav>
       <Button
@@ -178,7 +177,7 @@ const title = computed(() =>
           </IconButton>
         </div>
       </header>
-      <main id="main" class="main">
+      <main id="main" ref="main" class="main" tabindex="-1">
         <div v-if="state.kind === 'loading'" class="empty-state loading-state">
           <div class="brand-mark">
             <Dumbbell :size="20" aria-hidden="true" />
@@ -234,41 +233,7 @@ const title = computed(() =>
             </IconButton>
           </div>
 
-          <WorkoutsPage
-            v-if="page === 'workouts'"
-            v-model:view="workoutView"
-            :routines="routines"
-            :history="history"
-            :active="active"
-            :exercises="snapshot.exercises"
-            :saving="saving"
-            @start="dialogs?.startWorkout($event)"
-            @edit="dialogs?.editRoutine($event)"
-            @detail="dialogs?.showDetail($event)"
-            @repeat="dialogs?.repeatWorkout($event)"
-            @convert="dialogs?.convertWorkout($event)"
-            @navigate="navigate"
-          />
-          <TrainingPage
-            v-else-if="page === 'session'"
-            :workspace="workspace"
-            @finish="dialogs?.openFinish()"
-            @pick="dialogs?.openPicker()"
-            @options="dialogs?.showOptions($event)"
-            @confirm="dialogs?.confirm($event)"
-            @navigate="navigate"
-          />
-          <ExercisesPage
-            v-else-if="page === 'exercises'"
-            :exercises="workspace.catalog.value"
-            @create="dialogs?.openCreateExercise()"
-          />
-          <ProgressPage
-            v-else-if="page === 'progress'"
-            v-model:exercise="progressExercise"
-            :history="history"
-            @navigate="navigate"
-          />
+          <RouterView />
           <footer class="main-footer">
             <span class="save-status" role="status">{{
               saving ? "Saving…" : message || ""
@@ -278,16 +243,18 @@ const title = computed(() =>
       </main>
     </div>
     <TrainingDock
+      :workouts-href="workoutsHref"
       v-if="page === 'session' && active"
       :workspace="workspace"
       @finish="dialogs?.openFinish()"
       @pick="dialogs?.openPicker()"
     />
     <nav v-else class="mobile-nav" aria-label="Mobile navigation">
-      <a
+      <RouterLink
         v-for="item in navigation"
         :key="item.id"
-        :href="`#/${item.id}`"
+        :to="destination(item.id)"
+          @click="prepareLinkNavigation($event, item.id)"
         :class="{
           selected:
             page === item.id || (page === 'session' && item.id === 'workouts'),
@@ -295,7 +262,7 @@ const title = computed(() =>
         :aria-current="page === item.id ? 'page' : undefined"
         ><component :is="item.icon" :size="20" /><span>{{
           item.label
-        }}</span></a
+        }}</span></RouterLink
       >
     </nav>
   </div>
@@ -304,7 +271,7 @@ const title = computed(() =>
     ref="dialogs"
     :workspace="workspace"
     @navigate="navigate"
-    @template-saved="workoutView = 'templates'"
+    @template-saved="selectWorkoutView('templates')"
   />
   <WorkoutSettings v-model:open="settingsOpen" :workspace="workspace">
     <section class="settings-section">

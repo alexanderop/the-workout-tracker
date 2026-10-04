@@ -3,14 +3,17 @@ import { Button } from "@form/ui";
 import { ArrowLeft } from "@lucide/vue";
 import { duration } from "./presentation";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
-const { workspace } = defineProps<{ workspace: WorkoutWorkspace }>();
+const { workspace, workoutsHref } = defineProps<{
+  workspace: WorkoutWorkspace;
+  workoutsHref: string;
+}>();
 const { active, rest, saving, training, run, activeSetCount } = workspace;
 const emit = defineEmits<{ finish: []; pick: [] }>();
 const next = training.next;
 </script>
 <template>
   <section v-if="active" class="training-bar" aria-label="Training controls">
-    <a href="#/workouts" class="training-bar-back" aria-label="Back to workouts"
+    <a :href="workoutsHref" class="training-bar-back" aria-label="Back to workouts"
       ><ArrowLeft :size="20"
     /></a>
     <template v-if="active.rest && next"

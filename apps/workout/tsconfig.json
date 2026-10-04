@@ -1,7 +1,22 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "types": ["vite/client", "vite-plugin-pwa/client", "node"]
+    "types": [
+      "vite/client",
+      "vite-plugin-pwa/client",
+      "node"
+    ],
+    "rootDir": "."
   },
-  "include": ["src/**/*.ts", "src/**/*.vue", "*.config.ts"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.vue",
+    "*.config.ts"
+  ],
+  "vueCompilerOptions": {
+    "plugins": [
+      "vue-router/volar/sfc-route-blocks",
+      "vue-router/volar/sfc-typed-router"
+    ]
+  }
 }

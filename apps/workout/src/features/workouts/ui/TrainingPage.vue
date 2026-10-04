@@ -10,7 +10,10 @@ import ExerciseConfiguration from "./ExerciseConfiguration.vue";
 import TrainingSetEditor from "./TrainingSetEditor.vue";
 import { duration, fmt } from "./presentation";
 import "./training.css";
-const { workspace } = defineProps<{ workspace: WorkoutWorkspace }>();
+const { workspace, workoutsHref } = defineProps<{
+  workspace: WorkoutWorkspace;
+  workoutsHref: string;
+}>();
 const {
   active,
   snapshot,
@@ -161,7 +164,7 @@ function discard() {
 </script>
 <template>
   <section v-if="active" class="circle-workout">
-    <a class="training-back text-button" href="#/workouts">Back to workouts</a>
+    <a class="training-back text-button" :href="workoutsHref">Back to workouts</a>
     <header class="circle-workout-heading">
       <div>
         <p class="eyebrow">ACTIVE WORKOUT · {{ elapsed }}</p>

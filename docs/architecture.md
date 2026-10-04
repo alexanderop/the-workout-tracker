@@ -42,11 +42,15 @@ Solid arrows show source dependencies. At runtime the application calls the inje
 
 The workout pages remain inside the workout feature. Workouts, templates, training, the exercise catalog, and progress are views of the same snapshot, not independent persistence boundaries.
 
-`App.vue` owns the application shell, hash navigation, and PWA integration. Feature pages receive the data they display and emit user actions. Calendar, history filtering, and chart projections belong with their pages. Shared formatting stays in the feature UI.
+`App.vue` owns the application shell and PWA integration. `app/router.ts` owns Vue Router 5 hash navigation with the deployment base path. The generated routes in `pages/` are application adapters that import feature pages through `features/workouts/ui.ts`. They share the shell-owned workspace and dialogs through `app/workoutRouteContext.ts`; they do not create controllers. Feature pages receive the data they display and emit user actions. Calendar, history filtering, and chart projections belong with their pages. Shared formatting stays in the feature UI.
 
 `WorkoutsPage`, `ExercisesPage`, `TrainingPage`, and `ProgressPage` own the main page templates. History is part of the workout overview. `TrainingDock` owns the mobile training controls. `WorkoutDialogs` owns routine editing, exercise selection, set options, confirmations, and completed-session details. `WorkoutSettings` owns preferences and backup controls.
 
 `App.vue` calls `useWorkoutWorkspace` once to create `useWorkouts`, `useTrainingSession`, and the shared clock. Page navigation does not recreate either composable. This preserves the shared saving lock, selected set, live draft baselines, and last-log undo. The training page and mobile controls use that same training instance. Circle logging, explicit clearing and atomic exercise configuration reuse its draft and revision guards. Detailed set forms remain in a persistent correction sheet. The dock derives its next set from canonical exercise/set order.
+
+The Workouts URL owns the current History/Templates selection. The experimental resolver parses `?view=history|templates` through a Zod enum and exposes the result as typed `route.params.view`. Missing or invalid values default to History. `app/useWorkoutNavigation.ts` remembers the last selection for links back from other pages. Saving a template selects Templates but does not leave another page. Tab changes replace the current history entry. Root, legacy `/today` and `/history`, and unknown paths redirect to Workouts.
+
+Navigation errors appear through the workspace error notice. Shell links and feature navigation clear an old status synchronously when changing pages; completion never clears a newly saved status or steals dialog focus. Browser back/forward retains status until another action. Shell links focus the main region after navigation only if focus is still on the initiating link. The skip link focuses main without changing the hash URL.
 
 Progress selection and cross-page dialog state also survive page navigation. Routine editing retains the revision captured when the editor opens. Backup import retains the revision captured when the file is read. Completing a workout opens its detail after returning to the workout overview.
 
