@@ -127,17 +127,23 @@ const title = computed(() =>
       </Button>
       <div class="sidebar-bottom">
         <Button unstyled class="sidebar-action" @click="settingsOpen = true">
-          <Settings2 :size="17" />Settings</Button
+          <Settings2 :size="17" aria-hidden="true" /><span
+            >Settings</span
+          ></Button
         ><Button
           unstyled
           v-if="!installed"
           class="sidebar-action"
           @click="install"
         >
-          <ArrowDownToLine :size="17" />Install The Workout Tracker
+          <ArrowDownToLine :size="17" aria-hidden="true" /><span
+            >Install The Workout Tracker</span
+          >
         </Button>
         <div class="local-note">
-          <ShieldCheck :size="15" /><span>Yours. On this device.</span>
+          <ShieldCheck :size="17" aria-hidden="true" /><span
+            >Yours. On this device.</span
+          >
         </div>
       </div>
     </aside>

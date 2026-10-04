@@ -42,6 +42,9 @@ const tab = defineModel<"history" | "templates">("view", {
   default: "history",
 });
 const search = ref("");
+const isFreshJournal = computed(
+  () => !active && !routines.length && !allHistory.length,
+);
 const history = computed(() =>
   allHistory.filter((session) =>
     session.name.toLowerCase().includes(search.value.toLowerCase()),
@@ -51,11 +54,14 @@ const history = computed(() =>
 <template>
   <div class="page-heading">
     <div>
-      <span class="eyebrow">YOUR TRAINING JOURNAL</span>
+      <span v-if="!isFreshJournal" class="eyebrow">YOUR TRAINING JOURNAL</span>
       <h1>Workouts</h1>
-      <p class="muted">A little stronger, one session at a time.</p>
+      <p v-if="!isFreshJournal" class="muted">
+        A little stronger, one session at a time.
+      </p>
     </div>
     <Button
+      v-if="!isFreshJournal"
       unstyled
       class="btn primary"
       :disabled="saving"
@@ -79,25 +85,18 @@ const history = computed(() =>
       ></span
     ><span class="text-link">Continue<ArrowRight :size="17" /></span>
   </Button>
-  <section
-    v-if="!active && !routines.length && !allHistory.length"
-    class="workout-welcome panel"
-  >
-    <span class="welcome-mark"><Dumbbell :size="34" /></span
-    ><span class="eyebrow">START WITH ONE SET</span>
-    <h2>Your first workout<br />starts here.</h2>
-    <p class="muted">
-      Choose your exercises. Log your sets.<br />Build a routine that works for
-      you.
-    </p>
+  <section v-if="isFreshJournal" class="workout-welcome panel">
+    <span class="welcome-mark" aria-hidden="true"><Dumbbell :size="26" /></span>
+    <h2>Your first workout starts here.</h2>
+    <p class="muted">Choose an exercise and log your first set.</p>
     <Button
       unstyled
       class="btn primary"
       :disabled="saving"
       @click="emit('start', null)"
     >
-      <Plus :size="18" />Start your first workout</Button
-    ><span class="small muted">Your exercise library is already waiting.</span>
+      <Plus :size="18" aria-hidden="true" /><span>Start your first workout</span>
+    </Button>
   </section>
   <div class="overview-toolbar">
     <div class="overview-tabs" aria-label="Workout views">

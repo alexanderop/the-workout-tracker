@@ -57,9 +57,13 @@ Icon-only actions use the shared `IconButton`: a required accessible label, deco
 
 Standard buttons retain the UI package's variant and size styling. Existing custom cards, rows and text actions explicitly use `Button unstyled` with an app-owned layout class. Global resets must exclude shared buttons; removing their flex layout is what previously displaced the settings icon. Histoire's Icon Button story owns the isolated interaction examples.
 
+Desktop sidebar footer actions use left-aligned labels with a shared icon column. Wrapped labels stay aligned with their first line; the local-storage note uses the same icon and label offsets.
+
 ## Workout-first screens
 
 The main page groups history and templates under Workouts. A fresh journal has one prominent start action. The exercise picker supports search, filters, and multiple selection. The active workout shows named exercise controls above a focused set table. Selected and completed states use the existing purple token, text, and icons. The bottom training control refers to the same exercise as the visible table.
+
+For a fresh journal, the welcome card owns the only start action. Its copy wraps naturally and its height follows its content. Mobile uses a compact mark and a full-width action; the page header omits repeated introductory copy. Returning journals keep the header action. The mobile navigation divides the available width equally among its rendered links, without unused columns.
 
 Closing an exercise panel preserves its input drafts. Finishing requires pending edits to be resolved. Converting a workout to a template opens an editor so the user can remove skipped sets and adjust targets before saving. Domain meanings belong in [context](context.md).
 
