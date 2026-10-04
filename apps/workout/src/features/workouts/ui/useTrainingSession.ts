@@ -31,6 +31,7 @@ export function useTrainingSession(options: {
 }) {
   const rows = reactive(new Map<string, TrainingRow>());
   const selected = ref<string | null>(null);
+  const selectedExerciseId = ref<string | null>(null);
   const lastLog = ref<{
     sessionId: string;
     setId: string;
@@ -39,6 +40,15 @@ export function useTrainingSession(options: {
   } | null>(null);
   const notice = ref("");
   const active = computed(() => options.snapshot.value?.active ?? null);
+  watch(
+    () => active.value?.id,
+    () => {
+      notice.value = "";
+      selected.value = null;
+      selectedExerciseId.value = null;
+      lastLog.value = null;
+    },
+  );
   function consume(row: TrainingRow) {
     try {
       options.journal.consume(row.records);
@@ -123,12 +133,34 @@ export function useTrainingSession(options: {
     },
     { immediate: true },
   );
+  const currentExercise = computed(
+    () =>
+      active.value?.exercises.find(
+        (exercise) => exercise.id === selectedExerciseId.value,
+      ) ??
+      active.value?.exercises[0] ??
+      null,
+  );
   const current = computed(() => {
     const chosen = selected.value ? rows.get(selected.value) : undefined;
+    if (chosen?.exercise.id === currentExercise.value?.id) return chosen;
     return (
-      chosen ?? [...rows.values()].find((row) => !row.set.completed) ?? null
+      [...rows.values()].find(
+        (row) =>
+          row.exercise.id === currentExercise.value?.id && !row.set.completed,
+      ) ?? null
     );
   });
+  function selectExercise(id: string) {
+    selectedExerciseId.value = id;
+    selected.value = null;
+  }
+  function selectSet(id: string) {
+    const row = rows.get(id);
+    if (!row) return;
+    selectedExerciseId.value = row.exercise.id;
+    selected.value = id;
+  }
   const conflict = (row: TrainingRow) =>
     row.touched &&
     (row.recoveredStale ||
@@ -172,7 +204,7 @@ export function useTrainingSession(options: {
     row.touched = true;
     Object.assign(row, values);
     row.issue = "";
-    selected.value = setId;
+    selectSet(setId);
     persist(row);
   }
   function useSaved(setId: string) {
@@ -217,7 +249,7 @@ export function useTrainingSession(options: {
     row.touched = true;
     persist(row);
   }
-  async function commit(setId: string) {
+  async function commit(setId: string, valuesOnly = false) {
     const row = rows.get(setId),
       snapshot = options.snapshot.value,
       session = active.value;
@@ -232,7 +264,11 @@ export function useTrainingSession(options: {
       row.issue = "Enter 0–1000 kg and 1–1000 whole repetitions.";
       return;
     }
-    const completed = dirty(row) ? true : !row.set.completed;
+    const completed = valuesOnly
+      ? row.set.completed
+      : dirty(row)
+        ? true
+        : !row.set.completed;
     try {
       row.records = [
         ...row.records,
@@ -241,12 +277,13 @@ export function useTrainingSession(options: {
     } catch {}
     const result = await options.run(
       {
-        type: "set-entry",
+        ...(valuesOnly
+          ? { type: "set-values" as const }
+          : { type: "set-entry" as const, completed }),
         sessionId: session.id,
         exerciseId: row.exercise.id,
         setId,
         ...values,
-        completed,
       },
       snapshot.revision,
     );
@@ -259,6 +296,10 @@ export function useTrainingSession(options: {
     row.base = { ...values, completed };
     row.weight = String(values.weightKg);
     row.reps = String(values.reps);
+    if (valuesOnly) {
+      notice.value = "Set values saved. Logging is unchanged.";
+      return;
+    }
     if (completed) {
       lastLog.value = {
         sessionId: session.id,
@@ -293,13 +334,66 @@ export function useTrainingSession(options: {
         snapshot.revision,
       )
     ) {
-      selected.value = last.setId;
+      selectSet(last.setId);
       lastLog.value = null;
       notice.value = "Set marked as not logged.";
     }
   }
+  const pending = computed(() =>
+    [...rows.values()].filter((row) => row.touched || conflict(row)),
+  );
+  async function saveEdits() {
+    for (const row of pending.value) {
+      await commit(row.set.id, true);
+      if (row.touched) {
+        selectSet(row.set.id);
+        return false;
+      }
+    }
+    return true;
+  }
+  function recoverUnseenDrafts(sessionId: string): boolean {
+    for (const row of rows.values()) {
+      let recovered: readonly SetDraft[];
+      try {
+        recovered = options.journal.recover(sessionId, row.set.id);
+      } catch {
+        row.storageIssue =
+          "Could not check saved drafts. Try again before finishing.";
+        selectSet(row.set.id);
+        notice.value = row.storageIssue;
+        return false;
+      }
+      const known = new Set(row.records.map((record) => record.id));
+      const unseen = recovered.filter((record) => !known.has(record.id));
+      const first = unseen[0];
+      if (!first) continue;
+      if (!row.touched) {
+        row.weight = first.weight;
+        row.reps = first.reps;
+        row.base = first.base;
+        row.revision = first.revision;
+      }
+      row.records = [...row.records, ...unseen];
+      row.alternatives = [...row.records];
+      row.touched = true;
+      row.recoveredStale = true;
+      row.issue =
+        "Another tab has input drafts for this set. Review them before finishing.";
+    }
+    return true;
+  }
   async function run(command: Command) {
     const session = active.value;
+    if (command.type === "finish" && session) {
+      if (!recoverUnseenDrafts(session.id)) return null;
+      if (pending.value.length) {
+        notice.value = "Save or discard your input drafts before finishing.";
+        const first = pending.value[0];
+        if (first) selectSet(first.set.id);
+        return null;
+      }
+    }
     const retiring = [...rows.values()].filter(
       (row) =>
         command.type === "finish" ||
@@ -309,6 +403,7 @@ export function useTrainingSession(options: {
           command.exerciseId === row.exercise.id),
     );
     const observed = retiring.flatMap((row) => {
+      if (command.type === "finish") return row.records;
       try {
         return [
           ...row.records,
@@ -334,6 +429,12 @@ export function useTrainingSession(options: {
     run,
     current,
     selected,
+    selectedExerciseId,
+    currentExercise,
+    selectExercise,
+    selectSet,
+    pending,
+    saveEdits,
     lastLog,
     notice,
     conflict,

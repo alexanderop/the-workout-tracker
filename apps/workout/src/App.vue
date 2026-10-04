@@ -5,8 +5,6 @@ import {
   ChevronRight,
   CircleHelp,
   Dumbbell,
-  History,
-  House,
   Settings2,
   ShieldCheck,
   TrendingUp,
@@ -15,10 +13,9 @@ import {
 } from "@lucide/vue";
 import {
   useWorkoutWorkspace,
-  TodayPage,
   WorkoutsPage,
   TrainingPage,
-  HistoryPage,
+  ExercisesPage,
   ProgressPage,
   TrainingDock,
   WorkoutDialogs,
@@ -30,21 +27,10 @@ import type { Workouts, DraftJournal } from "./features/workouts";
 import { usePwa } from "./usePwa";
 const props = defineProps<{ workouts: Workouts; drafts: DraftJournal }>();
 const workspace = useWorkoutWorkspace(props.workouts, props.drafts);
-const {
-  state,
-  snapshot,
-  saving,
-  message,
-  error,
-  history,
-  routines,
-  active,
-  now,
-  elapsed,
-} = workspace;
+const { state, snapshot, saving, message, error, history, routines, active } =
+  workspace;
 const dialogs = ref<InstanceType<typeof WorkoutDialogs> | null>(null);
 const settingsOpen = ref(false);
-const historySearch = ref("");
 const progressExercise = ref("");
 const {
   online,
@@ -56,9 +42,8 @@ const {
   updateServiceWorker,
 } = usePwa();
 const navigation = [
-  { id: "today", label: "Today", icon: House },
   { id: "workouts", label: "Workouts", icon: Dumbbell },
-  { id: "history", label: "History", icon: History },
+  { id: "exercises", label: "Exercises", icon: Dumbbell },
   { id: "progress", label: "Progress", icon: TrendingUp },
 ] as const;
 type Page = WorkoutPage;
@@ -66,12 +51,14 @@ function route(): Page {
   const value = location.hash.slice(2);
   return value === "session" || navigation.some((item) => item.id === value)
     ? (value as Page)
-    : "today";
+    : "workouts";
 }
 const page = ref<Page>(route());
 const navigate = (next: Page) => {
-  location.hash = `/${next}`;
-  page.value = next;
+  const destination =
+    next === "today" || next === "history" ? "workouts" : next;
+  location.hash = `/${destination}`;
+  page.value = destination;
   window.scrollTo({ top: 0, behavior: "instant" });
 };
 const routeChanged = () => {
@@ -85,7 +72,7 @@ function reload() {
 const title = computed(() =>
   page.value === "session"
     ? "Active workout"
-    : (navigation.find((item) => item.id === page.value)?.label ?? "Today"),
+    : (navigation.find((item) => item.id === page.value)?.label ?? "Workouts"),
 );
 </script>
 
@@ -93,7 +80,7 @@ const title = computed(() =>
   <a class="skip-link" href="#main">Skip to content</a>
   <div class="app-layout">
     <aside class="sidebar">
-      <a href="#/today" class="brand" aria-label="The Workout Tracker home"
+      <a href="#/workouts" class="brand" aria-label="The Workout Tracker home"
         ><span class="brand-mark"
           ><Dumbbell :size="20" aria-hidden="true" /></span
         ><span class="brand-name">The Workout<br />Tracker</span></a
@@ -112,7 +99,7 @@ const title = computed(() =>
           :aria-current="page === item.id ? 'page' : undefined"
           ><component :is="item.icon" :size="18" /><span>{{ item.label }}</span
           ><span
-            v-if="item.id === 'history' && history.length"
+            v-if="item.id === 'workouts' && history.length"
             class="nav-count"
             >{{ history.length }}</span
           ></a
@@ -218,26 +205,18 @@ const title = computed(() =>
             </button>
           </div>
 
-          <TodayPage
-            v-if="page === 'today'"
-            :history="history"
-            :routines="routines"
-            :active="active"
-            :now="now"
-            :elapsed="elapsed"
-            :saving="saving"
-            @start="dialogs?.startWorkout($event)"
-            @detail="dialogs?.showDetail($event)"
-            @navigate="navigate"
-          />
           <WorkoutsPage
-            v-else-if="page === 'workouts'"
+            v-if="page === 'workouts'"
             :routines="routines"
+            :history="history"
             :active="active"
             :exercises="snapshot.exercises"
             :saving="saving"
             @start="dialogs?.startWorkout($event)"
             @edit="dialogs?.editRoutine($event)"
+            @detail="dialogs?.showDetail($event)"
+            @repeat="dialogs?.repeatWorkout($event)"
+            @convert="dialogs?.convertWorkout($event)"
             @navigate="navigate"
           />
           <TrainingPage
@@ -249,12 +228,10 @@ const title = computed(() =>
             @confirm="dialogs?.confirm($event)"
             @navigate="navigate"
           />
-          <HistoryPage
-            v-else-if="page === 'history'"
-            v-model:search="historySearch"
-            :history="history"
-            @detail="dialogs?.showDetail($event)"
-            @navigate="navigate"
+          <ExercisesPage
+            v-else-if="page === 'exercises'"
+            :exercises="workspace.catalog.value"
+            @create="dialogs?.openCreateExercise()"
           />
           <ProgressPage
             v-else-if="page === 'progress'"

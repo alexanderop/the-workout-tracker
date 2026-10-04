@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { Sheet } from "@form/ui";
-import { Search, Dumbbell, Plus, Check } from "@lucide/vue";
+import { Plus, Check, Repeat2, BookmarkPlus } from "@lucide/vue";
+import ExerciseCatalog from "./ExerciseCatalog.vue";
 import RoutineEditor from "./RoutineEditor.vue";
-import type { Routine } from "../domain";
-import { sessionTotals } from "../domain";
+import type { CompletedSession, Routine } from "../domain";
+import { sessionTotals, routineFromSession } from "../domain";
 import type { WorkoutWorkspace, WorkoutPage } from "./useWorkoutWorkspace";
 import type { Confirmation } from "./dialogTypes";
 import { fmt, longDate, sessionMinutes } from "./presentation";
@@ -72,18 +73,23 @@ const detail = computed(() =>
 );
 const routineOpen = ref(false);
 const editingRoutine = ref<Routine | null>(null);
+const templateSource = ref<CompletedSession | null>(null);
 let routineRevision = 0;
 const pickerOpen = ref(false);
-const exerciseSearch = ref("");
+const selectedExercises = ref<string[]>([]);
 const customName = ref("");
 const customCategory = ref("Other");
-const pickerResults = computed(() =>
-  catalog.value.filter((ex) =>
-    `${ex.name} ${ex.category}`
-      .toLowerCase()
-      .includes(exerciseSearch.value.toLowerCase()),
-  ),
-);
+const customEquipment = ref("Other");
+const createOpen = ref(false);
+function toggleExercise(id: string) {
+  selectedExercises.value = selectedExercises.value.includes(id)
+    ? selectedExercises.value.filter((value) => value !== id)
+    : [...selectedExercises.value, id];
+}
+function openPicker() {
+  selectedExercises.value = [];
+  pickerOpen.value = true;
+}
 const finishOpen = ref(false);
 const confirmation = ref<Confirmation | null>(null);
 async function startWorkout(routineId: string | null) {
@@ -94,10 +100,11 @@ async function startWorkout(routineId: string | null) {
   const saved = await run({ type: "start", routineId });
   if (saved?.active) {
     navigate("session");
-    if (saved.active.exercises.length === 0) pickerOpen.value = true;
+    if (saved.active.exercises.length === 0) openPicker();
   }
 }
 function editRoutine(routine: Routine | null) {
+  templateSource.value = null;
   editingRoutine.value = routine;
   routineRevision = snapshot.value?.revision ?? 0;
   routineOpen.value = true;
@@ -105,17 +112,36 @@ function editRoutine(routine: Routine | null) {
 async function saveRoutine(routine: Routine) {
   if (await run({ type: "save-routine", routine }, routineRevision)) {
     routineOpen.value = false;
-    message.value = "Routine saved";
+    message.value = "Template saved";
   }
 }
-async function addExercise(exerciseId: string) {
-  if (!active.value) return;
-  if (
-    await run({ type: "add-exercise", sessionId: active.value.id, exerciseId })
-  ) {
+async function addExercises() {
+  if (!active.value || !selectedExercises.value.length) return;
+  const previousCount = active.value.exercises.length;
+  const saved = await run({
+    type: "add-exercises",
+    sessionId: active.value.id,
+    exerciseIds: selectedExercises.value,
+  });
+  if (saved?.active) {
+    const first = saved.active.exercises[previousCount];
+    if (first) training.selectExercise(first.id);
     pickerOpen.value = false;
-    exerciseSearch.value = "";
+    selectedExercises.value = [];
   }
+}
+async function repeatWorkout(id: string) {
+  if (await run({ type: "repeat", completedId: id })) {
+    selectedSession.value = null;
+    navigate("session");
+  }
+}
+function convertWorkout(id: string) {
+  const session = snapshot.value?.completed[id];
+  if (!session) return;
+  selectedSession.value = null;
+  editRoutine(routineFromSession(session, crypto.randomUUID()));
+  templateSource.value = session;
 }
 async function createExercise() {
   if (!customName.value.trim() || saving.value) return;
@@ -127,11 +153,14 @@ async function createExercise() {
       name: customName.value.trim(),
       category: customCategory.value,
       custom: true,
+      equipment: customEquipment.value,
     },
   });
   if (saved) {
     customName.value = "";
-    await addExercise(id);
+    createOpen.value = false;
+    if (pickerOpen.value)
+      selectedExercises.value = [...selectedExercises.value, id];
   }
 }
 async function finishWorkout() {
@@ -139,7 +168,7 @@ async function finishWorkout() {
   if (!id) return;
   if (await training.run({ type: "finish", sessionId: id })) {
     finishOpen.value = false;
-    navigate("history");
+    navigate("workouts");
     selectedSession.value = id;
     message.value = "Workout saved. Another session in the books.";
   }
@@ -158,8 +187,11 @@ defineExpose({
   showDetail: (id: string) => {
     selectedSession.value = id;
   },
-  openPicker: () => {
-    pickerOpen.value = true;
+  openPicker,
+  repeatWorkout,
+  convertWorkout,
+  openCreateExercise: () => {
+    createOpen.value = true;
   },
   openFinish: () => {
     finishOpen.value = true;
@@ -214,7 +246,7 @@ defineExpose({
   </Sheet>
   <Sheet
     :open="routineOpen"
-    :title="editingRoutine ? 'Edit routine' : 'Create routine'"
+    :title="editingRoutine ? 'Edit template' : 'Create template'"
     description="Set up the exercises you want to come back to."
     wide
     @close="routineOpen = false"
@@ -222,6 +254,7 @@ defineExpose({
       v-if="routineOpen"
       :key="editingRoutine?.id ?? 'new'"
       :routine="editingRoutine"
+      :source="templateSource"
       :exercises="catalog"
       :busy="saving"
       @save="saveRoutine"
@@ -231,34 +264,38 @@ defineExpose({
   >
   <Sheet
     :open="pickerOpen"
-    title="Add exercise"
-    description="Choose an exercise or add your own."
+    title="Add exercises"
+    description="Choose the movements for this workout."
     @close="pickerOpen = false"
-    ><div class="search-field picker-search">
-      <Search :size="18" /><input
-        v-model="exerciseSearch"
-        aria-label="Search exercises"
-        placeholder="Search exercises or muscle groups"
-      />
-    </div>
-    <div class="picker-list">
-      <button
-        v-for="exercise in pickerResults"
-        :key="exercise.id"
-        :disabled="saving"
-        @click="addExercise(exercise.id)"
+  >
+    <ExerciseCatalog
+      :exercises="catalog"
+      :selected="selectedExercises"
+      :busy="saving"
+      @toggle="toggleExercise"
+    />
+    <div class="picker-actions">
+      <button class="text-button" :disabled="saving" @click="createOpen = true">
+        <Plus :size="16" />Create your own</button
+      ><button
+        class="btn primary full-width"
+        :disabled="saving || !selectedExercises.length"
+        @click="addExercises"
       >
-        <span class="routine-symbol"><Dumbbell :size="17" /></span
-        ><span
-          >{{ exercise.name }}<small>{{ exercise.category }}</small></span
-        ><Plus :size="18" />
+        Add {{ selectedExercises.length }}
+        {{ selectedExercises.length === 1 ? "exercise" : "exercises"
+        }}<Check :size="17" />
       </button>
-      <p v-if="!pickerResults.length" class="muted">
-        No exercises found. Add your own below.
-      </p>
     </div>
-    <form class="custom-exercise" @submit.prevent="createExercise">
-      <h3>Create an exercise</h3>
+    <p v-if="error" class="field-error" role="alert">{{ error }}</p>
+  </Sheet>
+  <Sheet
+    :open="createOpen"
+    title="Create exercise"
+    description="Add a movement to your personal library."
+    @close="createOpen = false"
+  >
+    <form class="form-stack" @submit.prevent="createExercise">
       <label class="field"
         ><span>Exercise name</span
         ><input
@@ -266,8 +303,9 @@ defineExpose({
           class="input"
           required
           maxlength="80"
-          placeholder="e.g. Cable lateral raise" /></label
-      ><label class="field"
+          placeholder="e.g. Cable lateral raise"
+      /></label>
+      <label class="field"
         ><span>Muscle group</span
         ><select v-model="customCategory" class="input">
           <option
@@ -285,16 +323,37 @@ defineExpose({
             {{ group }}
           </option>
         </select></label
-      ><button
-        class="btn secondary full-width"
+      >
+      <label class="field"
+        ><span>Equipment</span
+        ><select v-model="customEquipment" class="input">
+          <option
+            v-for="item in [
+              'Barbell',
+              'Dumbbell',
+              'Cable',
+              'Machine',
+              'Bodyweight',
+              'Band',
+              'Kettlebell',
+              'Other',
+            ]"
+            :key="item"
+          >
+            {{ item }}
+          </option>
+        </select></label
+      >
+      <button
+        class="btn primary full-width"
         type="submit"
         :disabled="saving || !customName.trim()"
       >
-        <Plus :size="17" />Create and add exercise
+        <Plus :size="17" />Create exercise
       </button>
+      <p v-if="error" class="field-error" role="alert">{{ error }}</p>
     </form>
-    <p v-if="error" role="alert">{{ error }}</p></Sheet
-  >
+  </Sheet>
   <Sheet
     :open="finishOpen"
     title="Finish this workout?"
@@ -314,6 +373,31 @@ defineExpose({
         ><span>elapsed</span>
       </div>
     </div>
+    <div v-if="training.pending.value.length" class="draft-finish-notice">
+      <p>
+        You have input drafts in {{ training.pending.value.length }} sets. Save
+        the values before finishing. This does not log any additional sets.
+      </p>
+      <button
+        class="btn secondary"
+        :disabled="saving"
+        @click="training.saveEdits()"
+      >
+        Save input values
+      </button>
+      <button class="text-button" @click="finishOpen = false">
+        Review my sets
+      </button>
+      <p
+        v-if="training.pending.value.some((row) => row.issue)"
+        class="field-error"
+        role="alert"
+      >
+        Some values need attention. Return to the highlighted set to review
+        them.
+      </p>
+    </div>
+    <p v-if="error" class="field-error" role="alert">{{ error }}</p>
     <div class="form-actions">
       <button
         class="btn secondary"
@@ -321,7 +405,11 @@ defineExpose({
         @click="finishOpen = false"
       >
         Keep training</button
-      ><button class="btn primary" :disabled="saving" @click="finishWorkout">
+      ><button
+        class="btn primary"
+        :disabled="saving || !!training.pending.value.length"
+        @click="finishWorkout"
+      >
         Save workout<Check :size="17" />
       </button></div
   ></Sheet>
@@ -366,6 +454,17 @@ defineExpose({
           <strong>{{ sessionMinutes(detail) }}</strong
           ><span>minutes</span>
         </div>
+      </div>
+      <div class="detail-actions">
+        <button
+          class="btn primary"
+          :disabled="saving || !!active"
+          @click="repeatWorkout(detail.id)"
+        >
+          <Repeat2 :size="17" />Repeat workout</button
+        ><button class="btn secondary" @click="convertWorkout(detail.id)">
+          <BookmarkPlus :size="17" />Save as template
+        </button>
       </div>
       <section
         v-for="exercise in detail.exercises"

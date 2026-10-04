@@ -18,7 +18,7 @@ export type WorkoutDependencies = {
 const backupSchema = z
   .object({
     format: z.literal("form-workout"),
-    version: z.literal(1),
+    version: z.literal(2),
     snapshot: snapshotSchema,
   })
   .strict();
@@ -154,7 +154,7 @@ export function createWorkouts({ storage, now, id }: WorkoutDependencies) {
       if (current.kind === "unavailable") throw new Error(current.message);
       if (current.kind === "recovery") return current.rawExport;
       return JSON.stringify(
-        { format: "form-workout", version: 1, snapshot: current.snapshot },
+        { format: "form-workout", version: 2, snapshot: current.snapshot },
         null,
         2,
       );
