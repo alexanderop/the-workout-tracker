@@ -23,18 +23,18 @@ import {
   X,
 } from "@lucide/vue";
 import { Sheet } from "@form/ui";
-import { SetRow, RoutineEditor, useWorkouts } from "./features/workouts/ui";
-import type { Workouts } from "./features/workouts";
+import {
+  SetRow,
+  RoutineEditor,
+  useWorkouts,
+  useTrainingSession,
+} from "./features/workouts/ui";
+import type { Workouts, DraftJournal } from "./features/workouts";
 import { usePwa } from "./usePwa";
 import { sessionTotals, remainingRestSeconds } from "./features/workouts";
-import type {
-  Command,
-  CompletedSession,
-  Routine,
-  SessionExercise,
-} from "./features/workouts";
+import type { Command, CompletedSession, Routine } from "./features/workouts";
 
-const props = defineProps<{ workouts: Workouts }>();
+const props = defineProps<{ workouts: Workouts; drafts: DraftJournal }>();
 const { service, state, snapshot, saving, message, error, run } = useWorkouts(
   props.workouts,
 );
@@ -94,6 +94,39 @@ const history = computed(() =>
   ),
 );
 const active = computed(() => snapshot.value?.active ?? null);
+const training = useTrainingSession({
+  snapshot,
+  saving,
+  journal: props.drafts,
+  run,
+});
+const optionSetId = ref<string | null>(null);
+const optionRow = computed(() =>
+  optionSetId.value ? training.rows.get(optionSetId.value) : undefined,
+);
+function removeOptionSet() {
+  const row = optionRow.value;
+  if (!row || !active.value) return;
+  optionSetId.value = null;
+  confirmation.value = {
+    title: "Remove set?",
+    description: "This removes the set and its draft from your active workout.",
+    command: {
+      type: "remove-set",
+      sessionId: active.value.id,
+      exerciseId: row.exercise.id,
+      setId: row.set.id,
+    },
+  };
+}
+function adjustReps(amount: number) {
+  const row = optionRow.value;
+  if (!row) return;
+  const value = Number(row.reps);
+  if (Number.isInteger(value) && value + amount >= 1 && value + amount <= 1000)
+    training.edit(row.set.id, { reps: String(value + amount) });
+}
+
 const nextRoutine = computed(() => {
   const last = history.value[0];
   const index = last
@@ -255,35 +288,10 @@ async function createExercise() {
     await addExercise(id);
   }
 }
-async function logSet(
-  exercise: SessionExercise,
-  setId: string,
-  values: {
-    weightKg: number;
-    reps: number;
-    completed: boolean;
-    revision: number;
-  },
-) {
-  if (!active.value) return;
-  await run(
-    {
-      type: "set-entry",
-      sessionId: active.value.id,
-      exerciseId: exercise.id,
-      setId,
-      weightKg: values.weightKg,
-      reps: values.reps,
-      completed: values.completed,
-    },
-    values.revision,
-  );
-  now.value = Date.now();
-}
 async function finishWorkout() {
   const id = active.value?.id;
   if (!id) return;
-  if (await run({ type: "finish", sessionId: id })) {
+  if (await training.run({ type: "finish", sessionId: id })) {
     finishOpen.value = false;
     navigate("history");
     selectedSession.value = id;
@@ -293,7 +301,7 @@ async function finishWorkout() {
 async function confirmAction() {
   if (!confirmation.value) return;
   const command = confirmation.value.command;
-  if (await run(command)) {
+  if (await training.run(command)) {
     confirmation.value = null;
     if (command.type === "discard") navigate("workouts");
   }
@@ -871,7 +879,10 @@ const title = computed(() =>
 
           <template v-else-if="page === 'session'">
             <template v-if="active"
-              ><div class="page-heading session-heading">
+              ><a class="training-back text-button" href="#/workouts"
+                >Back to workouts</a
+              >
+              <div class="page-heading session-heading">
                 <div>
                   <div class="eyebrow">{{ longDate(active.startedAt) }}</div>
                   <h1>{{ active.name }}</h1>
@@ -890,19 +901,34 @@ const title = computed(() =>
                   Finish workout<Check :size="17" />
                 </button>
               </div>
+              <div v-if="training.notice.value" class="training-notice">
+                <span role="status">{{ training.notice.value }}</span
+                ><button
+                  v-if="training.lastLog.value"
+                  class="text-button"
+                  :disabled="saving"
+                  @click="training.undo"
+                >
+                  Undo last log
+                </button>
+              </div>
               <div class="session-layout">
                 <div class="exercise-stack">
                   <div class="session-guide">
                     <span class="activity-dot"></span
                     ><span
-                      >Enter your weight and reps, then check the set to
-                      save.</span
+                      >Drafts save as you type. Log each set when you finish
+                      it.</span
                     >
                   </div>
                   <article
                     v-for="(exercise, exIndex) in active.exercises"
                     :key="exercise.id"
                     class="exercise-card"
+                    :class="{
+                      'current-exercise':
+                        training.current.value?.exercise.id === exercise.id,
+                    }"
                   >
                     <header>
                       <div class="exercise-title">
@@ -945,28 +971,20 @@ const title = computed(() =>
                       ><span>LOG</span><span></span>
                     </div>
                     <SetRow
-                      v-for="(set, index) in exercise.sets"
+                      v-for="set in exercise.sets"
                       :key="set.id"
-                      :set="set"
-                      :index="index"
-                      :exercise-name="exercise.name"
-                      :revision="snapshot.revision"
+                      :row="training.rows.get(set.id)!"
                       :busy="saving"
-                      :removable="exercise.sets.length > 1"
-                      @commit="(values) => logSet(exercise, set.id, values)"
-                      @remove="
-                        confirmation = {
-                          title: 'Remove set?',
-                          description:
-                            'This removes the set from your active workout.',
-                          command: {
-                            type: 'remove-set',
-                            sessionId: active.id,
-                            exerciseId: exercise.id,
-                            setId: set.id,
-                          },
-                        }
-                      "
+                      :current="training.current.value?.set.id === set.id"
+                      :dirty="training.dirty(training.rows.get(set.id)!)"
+                      :conflict="training.conflict(training.rows.get(set.id)!)"
+                      @edit="(values) => training.edit(set.id, values)"
+                      @select="training.selected.value = set.id"
+                      @commit="training.commit(set.id)"
+                      @options="optionSetId = set.id"
+                      @discard="training.useSaved(set.id)"
+                      @keep="training.keepInput(set.id)"
+                      @recover="(draft) => training.chooseDraft(set.id, draft)"
                     /><button
                       class="add-set text-button"
                       :disabled="saving || exercise.sets.length >= 30"
@@ -1267,7 +1285,78 @@ const title = computed(() =>
         </template>
       </main>
     </div>
-    <nav class="mobile-nav" aria-label="Mobile navigation">
+    <section
+      v-if="page === 'session' && active"
+      class="training-bar"
+      aria-label="Training controls"
+    >
+      <a href="#/workouts" class="training-bar-back">Back to workouts</a>
+      <template v-if="rest > 0">
+        <div>
+          <strong>{{ duration(rest) }} rest</strong
+          ><small v-if="training.current.value"
+            >{{ training.current.value.set.completed ? "Selected" : "Next" }}:
+            {{ training.current.value.exercise.name }} · set
+            {{ training.current.value.index + 1 }}</small
+          >
+        </div>
+        <button
+          class="btn primary"
+          :disabled="saving"
+          @click="run({ type: 'stop-rest', sessionId: active.id })"
+        >
+          End rest
+        </button>
+      </template>
+      <template v-else-if="training.current.value">
+        <div>
+          <strong>{{ training.current.value.exercise.name }}</strong
+          ><small
+            >Set {{ training.current.value.index + 1 }} of
+            {{ training.current.value.exercise.sets.length }} ·
+            {{ training.current.value.weight || "—" }} kg ×
+            {{ training.current.value.reps || "—" }}</small
+          >
+        </div>
+        <button
+          class="btn primary"
+          type="submit"
+          :form="`set-form-${training.current.value.set.id}`"
+          :disabled="saving"
+        >
+          {{
+            training.current.value.set.completed
+              ? training.dirty(training.current.value)
+                ? "Update set"
+                : "Mark set incomplete"
+              : "Complete set"
+          }}
+        </button>
+      </template>
+      <template v-else-if="activeSetCount">
+        <div>
+          <strong>All sets logged</strong
+          ><small>Ready to save your workout.</small>
+        </div>
+        <button
+          class="btn primary"
+          :disabled="saving"
+          @click="finishOpen = true"
+        >
+          Finish training
+        </button>
+      </template>
+      <template v-else>
+        <div>
+          <strong>Choose your first exercise</strong
+          ><small>Build your workout as you go.</small>
+        </div>
+        <button class="btn primary" @click="pickerOpen = true">
+          Choose exercise
+        </button>
+      </template>
+    </section>
+    <nav v-else class="mobile-nav" aria-label="Mobile navigation">
       <a
         v-for="item in navigation"
         :key="item.id"
@@ -1284,6 +1373,44 @@ const title = computed(() =>
     </nav>
   </div>
 
+  <Sheet
+    :open="!!optionRow"
+    :title="
+      optionRow
+        ? `Set ${optionRow.index + 1} of ${optionRow.exercise.name}`
+        : 'Set options'
+    "
+    description="Adjust repetitions or remove this set."
+    @close="optionSetId = null"
+  >
+    <template v-if="optionRow">
+      <div class="repetition-adjuster">
+        <button
+          class="btn secondary"
+          :disabled="saving || Number(optionRow.reps) <= 1"
+          aria-label="Decrease repetitions"
+          @click="adjustReps(-1)"
+        >
+          −</button
+        ><strong>{{ optionRow.reps || "—" }} reps</strong
+        ><button
+          class="btn secondary"
+          :disabled="saving || Number(optionRow.reps) >= 1000"
+          aria-label="Increase repetitions"
+          @click="adjustReps(1)"
+        >
+          +
+        </button>
+      </div>
+      <button
+        class="btn secondary full-width"
+        :disabled="saving || optionRow.exercise.sets.length <= 1"
+        @click="removeOptionSet"
+      >
+        Remove set
+      </button>
+    </template>
+  </Sheet>
   <Sheet
     :open="routineOpen"
     :title="editingRoutine ? 'Edit routine' : 'Create routine'"

@@ -192,3 +192,4 @@ export function createWorkouts({ storage, now, id }: WorkoutDependencies) {
   };
 }
 export type Workouts = ReturnType<typeof createWorkouts>;
+export type { DraftJournal } from "./ports";

@@ -6,3 +6,5 @@ export type {
   Result,
 } from "./application";
 export * from "./domain";
+export type { DraftJournal } from "./application";
+export * from "./domain/drafts";

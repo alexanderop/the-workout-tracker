@@ -1,147 +1,135 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import { Check, Minus, Save } from "@lucide/vue";
-import type { WorkoutSet } from "../domain";
+import { Check, MoreHorizontal, Save } from "@lucide/vue";
+import type { TrainingRow } from "./useTrainingSession";
+import type { RawValues, SetDraft } from "../domain/drafts";
 const props = defineProps<{
-  set: WorkoutSet;
-  index: number;
-  exerciseName: string;
-  revision: number;
+  row: TrainingRow;
   busy: boolean;
-  removable: boolean;
+  current: boolean;
+  dirty: boolean;
+  conflict: boolean;
 }>();
 const emit = defineEmits<{
-  commit: [
-    values: {
-      weightKg: number;
-      reps: number;
-      completed: boolean;
-      revision: number;
-    },
-  ];
-  remove: [];
+  edit: [values: Partial<RawValues>];
+  commit: [];
+  select: [];
+  options: [];
+  discard: [];
+  keep: [];
+  recover: [draft: SetDraft];
 }>();
-const weight = ref<string | number>(String(props.set.weightKg));
-const reps = ref<string | number>(String(props.set.reps));
-const editedRevision = ref(props.revision);
-const touched = ref(false);
-let draftBase = props.set;
-const issue = ref("");
-const dirty = computed(
-  () =>
-    String(weight.value) !== String(props.set.weightKg) ||
-    String(reps.value) !== String(props.set.reps),
-);
-watch(
-  () => props.set,
-  (set) => {
-    if (
-      !touched.value ||
-      (String(weight.value) === String(set.weightKg) &&
-        String(reps.value) === String(set.reps))
-    ) {
-      weight.value = String(set.weightKg);
-      reps.value = String(set.reps);
-      touched.value = false;
-      editedRevision.value = props.revision;
-    } else if (
-      set.weightKg === draftBase.weightKg &&
-      set.reps === draftBase.reps &&
-      set.completed === draftBase.completed
-    ) {
-      editedRevision.value = props.revision;
-    }
-  },
-);
-function edit() {
-  if (!touched.value) {
-    editedRevision.value = props.revision;
-    draftBase = props.set;
-  }
-  touched.value = true;
-  issue.value = "";
+function input(field: "weight" | "reps", event: Event) {
+  if (event.target instanceof HTMLInputElement)
+    emit("edit", { [field]: event.target.value });
 }
-function submit() {
-  const weightKg = Number(weight.value),
-    repetitions = Number(reps.value);
-  if (
-    String(weight.value).trim() === "" ||
-    String(reps.value).trim() === "" ||
-    !Number.isFinite(weightKg) ||
-    weightKg < 0 ||
-    weightKg > 1000 ||
-    !Number.isInteger(repetitions) ||
-    repetitions < 1 ||
-    repetitions > 1000
-  ) {
-    issue.value = "Enter 0–1000 kg and 1–1000 whole repetitions.";
-    return;
-  }
-  emit("commit", {
-    weightKg,
-    reps: repetitions,
-    completed: dirty.value ? true : !props.set.completed,
-    revision: touched.value ? editedRevision.value : props.revision,
-  });
-}
-const actionLabel = computed(
-  () =>
-    `${props.set.completed ? (dirty.value ? "Save" : "Undo") : "Log"} set ${props.index + 1} of ${props.exerciseName}`,
-);
 </script>
 <template>
-  <div class="set-row" :class="{ completed: set.completed, edited: dirty }">
-    <span class="set-number">{{ index + 1 }}</span>
-    <input
-      v-model="weight"
-      class="set-input"
-      type="number"
-      min="0"
-      max="1000"
-      step="any"
-      inputmode="decimal"
-      :aria-label="`Set ${index + 1} weight for ${exerciseName}`"
-      :disabled="busy"
-      @input="edit"
-      @keydown.enter.prevent="submit"
-    />
-    <input
-      v-model="reps"
-      class="set-input"
-      type="number"
-      min="1"
-      max="1000"
-      step="1"
-      inputmode="numeric"
-      :aria-label="`Set ${index + 1} repetitions for ${exerciseName}`"
-      :disabled="busy"
-      @input="edit"
-      @keydown.enter.prevent="submit"
-    />
-    <button
-      class="set-toggle"
-      :class="{ logged: set.completed, 'has-draft': dirty }"
-      :aria-label="actionLabel"
-      :aria-pressed="set.completed"
-      :disabled="busy"
-      @click="submit"
+  <form
+    :id="`set-form-${row.set.id}`"
+    class="set-form"
+    :class="{ 'is-current': current }"
+    @submit.prevent="emit('commit')"
+  >
+    <div
+      class="set-row"
+      :class="{ completed: row.set.completed, edited: dirty }"
     >
-      <Save v-if="dirty && set.completed" :size="18" /><Check
-        v-else
-        :size="19"
+      <button
+        type="button"
+        class="set-number"
+        :aria-label="`Select set ${row.index + 1} of ${row.exercise.name}`"
+        :aria-pressed="current"
+        @click="emit('select')"
+      >
+        {{ row.index + 1 }}
+      </button>
+      <input
+        :value="row.weight"
+        class="set-input"
+        type="text"
+        inputmode="decimal"
+        maxlength="64"
+        :aria-label="`Set ${row.index + 1} weight for ${row.exercise.name}`"
+        :disabled="busy"
+        @input="input('weight', $event)"
+        @focus="emit('select')"
       />
-    </button>
-    <button
-      class="icon-button remove-set"
-      :aria-label="`Remove set ${index + 1} of ${exerciseName}`"
-      :disabled="!removable || busy"
-      @click="emit('remove')"
-    >
-      <Minus :size="14" />
-    </button>
-  </div>
-  <p v-if="issue" class="field-error" role="alert">{{ issue }}</p>
-  <p v-else-if="dirty" class="draft-note">
-    Changes save when you {{ set.completed ? "save" : "log" }} this set.
-  </p>
+      <input
+        :value="row.reps"
+        class="set-input"
+        type="text"
+        inputmode="numeric"
+        maxlength="64"
+        :aria-label="`Set ${row.index + 1} repetitions for ${row.exercise.name}`"
+        :disabled="busy"
+        @input="input('reps', $event)"
+        @focus="emit('select')"
+      />
+      <button
+        type="submit"
+        class="set-toggle"
+        :class="{ logged: row.set.completed, 'has-draft': dirty }"
+        :aria-label="`${row.set.completed ? (dirty ? 'Save' : 'Undo') : 'Log'} set ${row.index + 1} of ${row.exercise.name}`"
+        :aria-pressed="row.set.completed"
+        :disabled="busy"
+      >
+        <Save v-if="dirty && row.set.completed" :size="18" /><Check
+          v-else
+          :size="19"
+        />
+      </button>
+      <button
+        type="button"
+        class="icon-button set-options"
+        :aria-label="`Options for set ${row.index + 1} of ${row.exercise.name}`"
+        :disabled="busy"
+        @click="emit('options')"
+      >
+        <MoreHorizontal :size="20" />
+      </button>
+    </div>
+    <p v-if="row.issue" class="field-error" role="alert">{{ row.issue }}</p>
+    <div v-if="conflict" class="draft-conflict">
+      <p>
+        This set changed in another tab or has different recovered drafts. Your
+        input is preserved.
+      </p>
+      <p>
+        Saved: {{ row.set.weightKg }} kg × {{ row.set.reps }} reps ·
+        {{ row.set.completed ? "logged" : "not logged" }}.
+      </p>
+      <button
+        type="button"
+        class="text-button"
+        :disabled="busy"
+        @click="emit('keep')"
+      >
+        Keep my input
+      </button>
+      <button
+        v-for="draft in row.alternatives"
+        :key="draft.id"
+        type="button"
+        class="text-button"
+        @click="emit('recover', draft)"
+      >
+        Review {{ draft.weight || "empty" }} kg ×
+        {{ draft.reps || "empty" }} reps
+      </button>
+      <button type="button" class="text-button" @click="emit('discard')">
+        Discard drafts and use saved values
+      </button>
+    </div>
+    <p v-if="row.storageIssue" class="field-error" role="alert">
+      {{ row.storageIssue }}
+    </p>
+    <p v-else-if="row.touched && !conflict" class="draft-note">
+      Draft saved on this device.
+      {{
+        row.set.completed
+          ? "Save to update this set."
+          : "Log when you finish this set."
+      }}
+    </p>
+  </form>
 </template>

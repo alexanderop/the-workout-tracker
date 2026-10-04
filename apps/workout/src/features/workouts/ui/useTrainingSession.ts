@@ -1,0 +1,348 @@
+import { computed, reactive, ref, watch, type Ref } from "vue";
+import type { DraftJournal } from "../application";
+import type { Command, SessionExercise, Snapshot, WorkoutSet } from "../domain";
+import {
+  parseSetValues,
+  sameSet,
+  type RawValues,
+  type SetDraft,
+} from "../domain/drafts";
+
+export type TrainingRow = {
+  set: WorkoutSet;
+  exercise: SessionExercise;
+  index: number;
+  weight: string;
+  reps: string;
+  base: SetDraft["base"];
+  touched: boolean;
+  recoveredStale: boolean;
+  revision: number;
+  records: SetDraft[];
+  alternatives: SetDraft[];
+  issue: string;
+  storageIssue: string;
+};
+export function useTrainingSession(options: {
+  snapshot: Ref<Snapshot | null>;
+  saving: Ref<boolean>;
+  journal: DraftJournal;
+  run: (command: Command, revision?: number) => Promise<Snapshot | null>;
+}) {
+  const rows = reactive(new Map<string, TrainingRow>());
+  const selected = ref<string | null>(null);
+  const lastLog = ref<{
+    sessionId: string;
+    setId: string;
+    exerciseId: string;
+    base: WorkoutSet;
+  } | null>(null);
+  const notice = ref("");
+  const active = computed(() => options.snapshot.value?.active ?? null);
+  function consume(row: TrainingRow) {
+    try {
+      options.journal.consume(row.records);
+      row.records = [];
+      row.storageIssue = "";
+      return true;
+    } catch {
+      row.storageIssue =
+        "Draft recovery could not be cleared. Keep this page open and try again.";
+      return false;
+    }
+  }
+  watch(
+    options.snapshot,
+    (snapshot) => {
+      if (!snapshot) return;
+      try {
+        options.journal.prune(snapshot);
+      } catch {}
+      const session = snapshot.active;
+      const present = new Set<string>();
+      for (const exercise of session?.exercises ?? [])
+        for (const [index, set] of exercise.sets.entries()) {
+          present.add(set.id);
+          const row = rows.get(set.id);
+          if (row) {
+            if (row.touched && !sameSet(row.base, set))
+              row.recoveredStale = true;
+            row.set = set;
+            row.exercise = exercise;
+            row.index = index;
+            if (!row.touched) {
+              row.weight = String(set.weightKg);
+              row.reps = String(set.reps);
+              row.base = { ...set };
+            }
+          } else {
+            let records: SetDraft[] = [];
+            let storageIssue = "";
+            try {
+              records = [...options.journal.recover(session!.id, set.id)];
+            } catch {
+              storageIssue =
+                "Draft recovery is unavailable. New edits may not survive closing this page.";
+            }
+            const recovered = records[0];
+            const distinct = records.filter(
+              (candidate) =>
+                candidate.weight !== recovered?.weight ||
+                candidate.reps !== recovered?.reps,
+            );
+            rows.set(set.id, {
+              set,
+              exercise,
+              index,
+              weight: recovered?.weight ?? String(set.weightKg),
+              reps: recovered?.reps ?? String(set.reps),
+              base: recovered?.base ?? { ...set },
+              touched: !!recovered,
+              recoveredStale:
+                !!recovered && recovered.revision !== snapshot.revision,
+              revision: recovered?.revision ?? snapshot.revision,
+              records,
+              alternatives: distinct.length ? records : [],
+              issue: "",
+              storageIssue,
+            });
+          }
+        }
+      for (const [id, row] of rows)
+        if (!present.has(id)) {
+          consume(row);
+          rows.delete(id);
+        }
+      if (
+        lastLog.value &&
+        (lastLog.value.sessionId !== session?.id ||
+          !rows.has(lastLog.value.setId) ||
+          !sameSet(lastLog.value.base, rows.get(lastLog.value.setId)!.set))
+      )
+        lastLog.value = null;
+    },
+    { immediate: true },
+  );
+  const current = computed(() => {
+    const chosen = selected.value ? rows.get(selected.value) : undefined;
+    return (
+      chosen ?? [...rows.values()].find((row) => !row.set.completed) ?? null
+    );
+  });
+  const conflict = (row: TrainingRow) =>
+    row.touched &&
+    (row.recoveredStale ||
+      !sameSet(row.base, row.set) ||
+      row.alternatives.length > 0);
+  const dirty = (row: TrainingRow) =>
+    row.weight !== String(row.set.weightKg) ||
+    row.reps !== String(row.set.reps);
+  function persist(row: TrainingRow) {
+    if (!active.value || !options.snapshot.value) return;
+    try {
+      const saved = options.journal.write({
+        sessionId: active.value.id,
+        setId: row.set.id,
+        weight: row.weight,
+        reps: row.reps,
+        base: {
+          weightKg: row.base.weightKg,
+          reps: row.base.reps,
+          completed: row.base.completed,
+        },
+        revision: row.revision,
+      });
+      const predecessors = row.records;
+      row.records = [saved];
+      if (row.alternatives.length) row.records.unshift(...predecessors);
+      else options.journal.consume(predecessors);
+      row.storageIssue = "";
+    } catch {
+      row.storageIssue =
+        "Draft not saved on this device. Keep this page open and try again.";
+    }
+  }
+  function edit(setId: string, values: Partial<RawValues>) {
+    const row = rows.get(setId);
+    if (!row || options.saving.value) return;
+    if (!row.touched) {
+      row.base = { ...row.set };
+      row.revision = options.snapshot.value?.revision ?? 0;
+    }
+    row.touched = true;
+    Object.assign(row, values);
+    row.issue = "";
+    selected.value = setId;
+    persist(row);
+  }
+  function useSaved(setId: string) {
+    const row = rows.get(setId);
+    if (!row) return;
+    try {
+      row.records = [
+        ...row.records,
+        ...options.journal.recover(active.value!.id, setId),
+      ];
+    } catch {}
+    if (!consume(row)) return;
+    row.weight = String(row.set.weightKg);
+    row.reps = String(row.set.reps);
+    row.base = { ...row.set };
+    row.touched = false;
+    row.recoveredStale = false;
+    row.alternatives = [];
+    row.issue = "";
+  }
+  function keepInput(setId: string) {
+    const row = rows.get(setId);
+    const snapshot = options.snapshot.value;
+    if (!row || !snapshot || options.saving.value) return;
+    row.base = { ...row.set };
+    row.revision = snapshot.revision;
+    row.recoveredStale = false;
+    row.alternatives = [];
+    row.issue = "";
+    row.touched = true;
+    persist(row);
+  }
+  function chooseDraft(setId: string, draft: SetDraft) {
+    const row = rows.get(setId);
+    if (!row) return;
+    row.weight = draft.weight;
+    row.reps = draft.reps;
+    row.base = draft.base;
+    row.revision = draft.revision;
+    row.recoveredStale = draft.revision !== options.snapshot.value?.revision;
+    row.alternatives = [];
+    row.touched = true;
+    persist(row);
+  }
+  async function commit(setId: string) {
+    const row = rows.get(setId),
+      snapshot = options.snapshot.value,
+      session = active.value;
+    if (!row || !snapshot || !session || options.saving.value) return;
+    if (conflict(row)) {
+      row.issue =
+        "This set changed in another tab or has different recovered drafts. Review it before logging.";
+      return;
+    }
+    const values = parseSetValues(row);
+    if (!values) {
+      row.issue = "Enter 0–1000 kg and 1–1000 whole repetitions.";
+      return;
+    }
+    const completed = dirty(row) ? true : !row.set.completed;
+    try {
+      row.records = [
+        ...row.records,
+        ...options.journal.recover(session.id, setId),
+      ];
+    } catch {}
+    const result = await options.run(
+      {
+        type: "set-entry",
+        sessionId: session.id,
+        exerciseId: row.exercise.id,
+        setId,
+        ...values,
+        completed,
+      },
+      snapshot.revision,
+    );
+    if (!result) return;
+    consume(row);
+    row.touched = false;
+    row.recoveredStale = false;
+    row.alternatives = [];
+    row.issue = "";
+    row.base = { ...values, completed };
+    row.weight = String(values.weightKg);
+    row.reps = String(values.reps);
+    if (completed) {
+      lastLog.value = {
+        sessionId: session.id,
+        setId,
+        exerciseId: row.exercise.id,
+        base: { id: setId, ...values, completed: true },
+      };
+      notice.value = `${row.exercise.name} · set ${row.index + 1} logged.`;
+      selected.value = null;
+    } else {
+      lastLog.value = null;
+      notice.value = "Set marked as not logged.";
+    }
+  }
+  async function undo() {
+    const last = lastLog.value,
+      snapshot = options.snapshot.value;
+    if (!last || !snapshot) return;
+    const row = rows.get(last.setId);
+    if (!row || !sameSet(last.base, row.set)) {
+      lastLog.value = null;
+      return;
+    }
+    if (
+      await options.run(
+        {
+          type: "set-completed",
+          sessionId: last.sessionId,
+          setId: last.setId,
+          completed: false,
+        },
+        snapshot.revision,
+      )
+    ) {
+      selected.value = last.setId;
+      lastLog.value = null;
+      notice.value = "Set marked as not logged.";
+    }
+  }
+  async function run(command: Command) {
+    const session = active.value;
+    const retiring = [...rows.values()].filter(
+      (row) =>
+        command.type === "finish" ||
+        command.type === "discard" ||
+        (command.type === "remove-set" && command.setId === row.set.id) ||
+        (command.type === "remove-exercise" &&
+          command.exerciseId === row.exercise.id),
+    );
+    const observed = retiring.flatMap((row) => {
+      try {
+        return [
+          ...row.records,
+          ...options.journal.recover(session!.id, row.set.id),
+        ];
+      } catch {
+        return row.records;
+      }
+    });
+    const result = await options.run(command);
+    if (result) {
+      try {
+        options.journal.consume(observed);
+      } catch {
+        notice.value =
+          "Workout saved, but old input drafts could not be cleared on this device.";
+      }
+    }
+    return result;
+  }
+  return {
+    rows,
+    run,
+    current,
+    selected,
+    lastLog,
+    notice,
+    conflict,
+    dirty,
+    edit,
+    useSaved,
+    keepInput,
+    chooseDraft,
+    commit,
+    undo,
+  };
+}
