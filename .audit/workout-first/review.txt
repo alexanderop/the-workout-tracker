@@ -1,0 +1,26 @@
+Final independent review: APPROVE for the reviewed scope; no remaining actionable findings from the three reported scenarios.
+Scope: workout-first application diff against main
+Read-only source review; no application edits or automated tests performed.
+
+Finding resolution
+1. Unseen existing peer drafts before finish: fixed. useTrainingSession.ts:346-380 recovers current journal records into row review state, marks unseen records as conflicts, blocks finishing, and selects a pending row. Recovery failure also blocks finishing. The finishing cleanup now only consumes already-observed row.records instead of recovering previously unseen records for deletion. This addresses the reported tab-B-edits-before-tab-A-finishes sequence. This review is not a claim of atomic coordination between asynchronous IndexedDB writes and concurrently arriving localStorage drafts.
+2. Undo selection: fixed. useTrainingSession.ts:328 calls selectSet(last.setId), updating both exercise and set selection. Page and dock share currentExercise/current.
+3. Search Enter submission: fixed. ExerciseCatalog.vue:38 prevents implicit form submission from the search field. Explicit Save template continues to use native form submission.
+
+Changes since initial review
+- Completed-exercise dock now advances to an unfinished exercise through the shared selector, and only offers Finish training when none remains.
+- Catalog equipment is read directly from the canonical Exercise structure; no legacy metadata fallback remains.
+- Canonical backup import and export both declare version 2. No legacy compatibility claims are imposed on the code.
+- Existing focused-panel inputs remain owned by the persistent training controller. Explicit value-only saving leaves completion unchanged; finalization checks local pending input and recovered peer drafts.
+
+Comment review
+No scoped application comments or lint/TypeScript suppressions found. Deletion count 0; MUST KILL flags none; files edited none. Markdown explanations and historical audit records are documentation, not code comments. No exception-protected comment deletions or restoration needed.
+
+Attention audit
+- docs/workout-first.md accurately describes canonical per-set templates, exact repeat, shared selection, explicit template editing, v2 backups, no legacy migration, and the user-directed removal of backward compatibility.
+- .audit/workout-first.tsv is chronological: initial legacy-compatibility decisions are explicitly superseded by its scope row. They are not presented as the final shape in docs/workout-first.md.
+- The catalog has 82 entries, matching the audit claim.
+- The baseline image referenced in the audit exists at .audit/workout-first/baseline.jpg.
+- Model diversity and unavailable Cursor tooling limitations are stated explicitly rather than claimed as completed tooling runs.
+- Type/lint success and browser coverage are reported by implementation owner/parent; this reviewer did not independently rerun them. Parent reported a complete log/finish journey with hidden drafts. Automated tests were not run by this reviewer.
+- The audit still ends at the scope change; append final review/verification and eventual PR/merge outcomes after they occur. The document's one-PR wording describes delivery intent, not proof of completed merge.

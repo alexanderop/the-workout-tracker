@@ -42,8 +42,10 @@ The preview uses the same address. Stop the development server first. Keep the s
 
 ## What you can do
 
-- Start one of three editable starter routines or a free workout.
-- Create routines and custom exercises.
+- Start a workout from an empty journal and choose exercises from the built-in catalog.
+- Search and filter exercises by muscle group or equipment, select several at once, or create a custom exercise.
+- Switch between exercises while keeping each set's input.
+- Repeat a past workout with its original set values, or save an editable template with targets for each set.
 - During a workout, the mobile training bar shows the selected set, running pause, or completion action. Set options offer repetition adjustments and removal; the last log can be undone.
 - Enter weights in kg and repetitions, then log each set. Logged sets save when confirmed. Raw input drafts save as you type and recover after navigation, reload and reopening, including unfinished fields. A storage error leaves the input visible and reports when recovery is unavailable.
 - Resume a workout, use the rest timer, add or remove sets and exercises, finish or explicitly discard the session.
@@ -51,13 +53,13 @@ The preview uses the same address. Stop the development server first. Keep the s
 - Export and import JSON backups from Settings.
 - Use the app offline after its first complete production load. Use your browser's installation option, or Share → Add to Home Screen on iOS.
 
-No accounts, analytics, cloud sync, or demo workout history. Starter weights are zero until you enter your own values. Later routine sessions prefill from your previous logged sets.
+No accounts, analytics, cloud sync, or demo workout history. New installations contain exercises but no workouts or templates. New exercise weights start at zero. Repeated workouts and templates keep their own set values; previous performance is shown as a reference.
 
 ## Your data
 
 IndexedDB holds your journal in this browser profile, on this origin. Clearing site data removes it. Export backups regularly; installation is not a backup.
 
-Imports restore a completely untouched installation, including edited starter routines. Otherwise they add missing records, skip exact duplicates and reject conflicting IDs without partially importing. Local settings stay unchanged. Two different active workouts cannot be merged. A newer backup with edits to records already on another device can therefore require a fresh browser profile for restoration. Import is not multi-device synchronization.
+Imports restore a completely untouched installation, including templates. Otherwise they add missing records, skip exact duplicates and reject conflicting IDs without partially importing. Local settings stay unchanged. Two different active workouts cannot be merged. A newer backup with edits to records already on another device can therefore require a fresh browser profile for restoration. Import is not multi-device synchronization.
 
 An unreadable database offers a raw recovery export rather than silently clearing your data. Simultaneous edits use revision checks; if another tab changed the set you are editing, The Workout Tracker keeps your draft visible and offers an explicit choice to keep your input against the latest saved values or discard the draft. Recovered drafts from an older revision also require review.
 
@@ -71,14 +73,14 @@ This project does not maintain automated tests or a testing strategy. `pnpm veri
 pnpm verify
 ```
 
-Architecture decisions are in [docs/architecture.md](docs/architecture.md), the design tokens in [docs/design.md](docs/design.md), and the historical implementation trail in [.audit/decisions.tsv](.audit/decisions.tsv).
+Architecture decisions are in [docs/architecture.md](docs/architecture.md), the design tokens in [docs/design.md](docs/design.md), the workout-first design in [docs/workout-first.md](docs/workout-first.md), and the implementation trail in [.audit/workout-first.tsv](.audit/workout-first.tsv).
 
 ## GitHub Pages
 
 The verification workflow checks code quality and builds the actual Pages project path before deployment. It publishes `apps/workout/dist` through the official GitHub Pages actions only after verification succeeds.
 
-The repository variable `PAGES_BRANCH` selects the publication branch. If unset, it defaults to `main`. While the architecture PR is open, it selects `codex/feature-architecture` so the reviewed changes remain unmerged. After merging, set the variable to `main` or delete it. Pull requests run verification without deployment permissions.
+The repository variable `PAGES_BRANCH` selects the publication branch. It is set to `main`, which is also the default when the variable is absent. Pull requests run verification without deployment permissions.
 
 For a local deployment build, run `VITE_BASE_PATH=/the-workout-tracker/ pnpm build`. The same base path scopes the manifest, icons, application navigation, and service worker. The app remains installable and works offline after its first complete online load.
 
-The display name and download filenames use The Workout Tracker. The internal IndexedDB name and versioned backup identifiers retain their existing values so the rename does not discard data or invalidate backups.
+The display name and download filenames use The Workout Tracker. The internal IndexedDB name remains unchanged. The workout-first model uses backup version 2 and does not migrate older snapshots or version 1 backups.
