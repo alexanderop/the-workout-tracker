@@ -110,6 +110,7 @@ function focusDisplay(event: Event) {
         v-bind="$attrs"
         type="button"
         class="ui-numeric-trigger"
+        variant="secondary"
         :disabled="disabled"
         :aria-label="label"
         :aria-description="`Current value: ${modelValue === '' ? 'empty' : modelValue}${unit ? ` ${unit}` : ''}`"

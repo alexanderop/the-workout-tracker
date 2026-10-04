@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button } from "@form/ui";
+import { IconButton, Button } from "@form/ui";
 import { computed, onMounted, onUnmounted, ref, useTemplateRef } from "vue";
 import {
   ArrowDownToLine,
@@ -114,16 +114,26 @@ const title = computed(() =>
           ></a
         >
       </nav>
-      <Button v-if="active" class="active-sidebar" @click="navigate('session')">
+      <Button
+        unstyled
+        v-if="active"
+        class="active-sidebar"
+        @click="navigate('session')"
+      >
         <span class="activity-dot"></span
         ><span
           >Workout in progress<small>{{ active.name }}</small></span
         ><ChevronRight :size="16" />
       </Button>
       <div class="sidebar-bottom">
-        <Button class="sidebar-action" @click="settingsOpen = true">
+        <Button unstyled class="sidebar-action" @click="settingsOpen = true">
           <Settings2 :size="17" />Settings</Button
-        ><Button v-if="!installed" class="sidebar-action" @click="install">
+        ><Button
+          unstyled
+          v-if="!installed"
+          class="sidebar-action"
+          @click="install"
+        >
           <ArrowDownToLine :size="17" />Install The Workout Tracker
         </Button>
         <div class="local-note">
@@ -151,13 +161,15 @@ const title = computed(() =>
                   ? "Ready offline"
                   : "Local workspace"
             }}</span
-          ><Button
+          ><IconButton
             class="avatar"
-            aria-label="Open settings"
+            shape="circle"
+            variant="outline"
+            label="Open settings"
             @click="settingsOpen = true"
           >
             <Settings2 :size="15" aria-hidden="true" />
-          </Button>
+          </IconButton>
         </div>
       </header>
       <main id="main" class="main">
@@ -176,6 +188,7 @@ const title = computed(() =>
           <h1>Your data needs attention</h1>
           <p>{{ state.message }}</p>
           <Button
+            unstyled
             v-if="state.kind === 'recovery'"
             class="btn secondary"
             @click="
@@ -183,35 +196,36 @@ const title = computed(() =>
             "
           >
             Export recovery data</Button
-          ><Button class="btn primary" @click="reload">Try again</Button>
+          ><Button unstyled class="btn primary" @click="reload"
+            >Try again</Button
+          >
         </div>
         <template v-else-if="snapshot">
           <div v-if="error" class="notice" role="alert">
             <CircleHelp :size="18" /><span>{{ error }}</span
-            ><Button class="text-button" @click="reload">Reload</Button
-            ><Button
-              class="icon-button"
-              aria-label="Dismiss error"
-              @click="error = ''"
-            >
+            ><Button unstyled class="text-button" @click="reload">Reload</Button
+            ><IconButton label="Dismiss error" @click="error = ''">
               <X :size="16" />
-            </Button>
+            </IconButton>
           </div>
           <div v-if="needRefresh && !active" class="notice">
             <span>A new version of The Workout Tracker is ready.</span
-            ><Button class="text-button" @click="updateServiceWorker(true)">
+            ><Button
+              unstyled
+              class="text-button"
+              @click="updateServiceWorker(true)"
+            >
               Update app
             </Button>
           </div>
           <div v-if="installMessage" class="notice" role="status">
             <span>{{ installMessage }}</span
-            ><Button
-              class="icon-button"
-              aria-label="Dismiss install instructions"
+            ><IconButton
+              label="Dismiss install instructions"
               @click="installMessage = ''"
             >
               <X :size="16" />
-            </Button>
+            </IconButton>
           </div>
 
           <WorkoutsPage
@@ -293,7 +307,12 @@ const title = computed(() =>
           >The Workout Tracker on your home screen<small
             >Open your journal like any other app.</small
           ></span
-        ><Button class="btn secondary" :disabled="installed" @click="install">
+        ><Button
+          unstyled
+          class="btn secondary"
+          :disabled="installed"
+          @click="install"
+        >
           {{ installed ? "Installed" : "Install app" }}
         </Button>
       </div>

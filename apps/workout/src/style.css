@@ -17,7 +17,7 @@ body {
   margin: 0;
   min-width: 320px;
 }
-button,
+button:not(.ui-button),
 input,
 select,
 textarea {
@@ -45,37 +45,23 @@ a {
   color: inherit;
   text-decoration: none;
 }
-button,
+button:not(.ui-button),
 input,
 textarea,
 select {
   color: inherit;
 }
-button {
+button:not(.ui-button) {
   border: 0;
   background: none;
 }
 button:disabled svg {
   color: var(--muted);
 }
-/* Shared shadcn controls keep the tracker's compact, context-specific layouts. */
-:where(.ui-button) {
-  display: inline-block;
-  height: auto;
-  padding: 0;
-  border-radius: 0;
-  white-space: normal;
-  font: inherit;
-  flex-shrink: 1;
-}
 :where(.ui-input, .ui-native-select, .ui-textarea) {
   height: auto;
   padding: 0;
   box-shadow: none;
-}
-:where(.ui-button) svg {
-  width: revert-layer;
-  height: revert-layer;
 }
 .ui-switch {
   background: var(--surface);
@@ -324,8 +310,6 @@ svg {
   height: 4px;
 }
 .avatar {
-  width: 32px;
-  height: 32px;
   background: var(--surface);
   border: 1px solid var(--muted);
   border-radius: 50%;
@@ -393,20 +377,6 @@ svg {
 }
 .full-width {
   width: 100%;
-}
-.icon-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 6px;
-  flex-shrink: 0;
-  color: var(--muted);
-}
-.icon-button:hover {
-  background: var(--surface);
-  color: var(--text);
 }
 .text-button,
 .text-link {
@@ -1534,10 +1504,6 @@ textarea::placeholder {
   .topbar-right {
     gap: 14px;
   }
-  .avatar {
-    width: 44px;
-    height: 44px;
-  }
   .connection {
     font-size: 9px;
   }
@@ -1565,10 +1531,6 @@ textarea::placeholder {
   }
   .btn {
     min-height: 48px;
-  }
-  .icon-button {
-    width: 44px;
-    height: 44px;
   }
   .today-grid {
     gap: 16px;

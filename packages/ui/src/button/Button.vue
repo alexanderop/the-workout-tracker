@@ -5,7 +5,11 @@ export type ButtonVariant =
 export type ButtonSize =
   "default" | "xs" | "sm" | "lg" | "icon" | "icon-xs" | "icon-sm" | "icon-lg";
 const { as = "button" } = defineProps<
-  PrimitiveProps & { variant?: ButtonVariant; size?: ButtonSize }
+  PrimitiveProps & {
+    variant?: ButtonVariant;
+    size?: ButtonSize;
+    unstyled?: boolean;
+  }
 >();
 defineSlots<{ default?: () => unknown }>();
 </script>
@@ -15,6 +19,7 @@ defineSlots<{ default?: () => unknown }>();
     :as-child="asChild"
     class="ui-button"
     data-slot="button"
+    :data-unstyled="unstyled ? '' : undefined"
     :data-variant="variant"
     :data-size="size"
     ><slot

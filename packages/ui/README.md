@@ -17,6 +17,10 @@ import "@form/ui/styles.css";
 <Button type="submit">Save</Button>
 ```
 
+`IconButton` is the shared control for icon-only actions. Its required `label` supplies the accessible name, its decorative slot contains the icon, and `shape="circle"` selects a round surface. It defaults to a native `type="button"`, supports Button color variants, and owns a centered 20px icon and a minimum 44 × 44px target. Forward native attributes such as `disabled` and event listeners normally. Consumers own placement, not internal geometry.
+
+`Button unstyled` explicitly opts into consumer-owned card, row or text-action layout while retaining native semantics and shared focus/disabled behavior. Use it only with a layout class. Do not globally reset `.ui-button`: that also changes nested library controls and makes app rendering diverge from Histoire. Standard Button variants and sizes remain styled by the library.
+
 Native attributes and listeners fall through. `Button` keeps native button submission behavior. Specify `type="button"` for actions inside forms. `as` and `as-child` support alternate semantic elements; callers must use appropriate attributes for the rendered element. An anchor does not gain native button disabled behavior.
 
 `Input` supports controlled `modelValue`/`update:modelValue` and browser-owned `defaultValue`. Native `name`, `required`, `disabled`, `readonly`, `min`, and `form` attributes work. Number inputs emit a number when their value parses, or an empty string when cleared. Form reset restores `defaultValue`; a controlled input also emits that value, or an empty string when no default is supplied. Cancelling the reset prevents that update.

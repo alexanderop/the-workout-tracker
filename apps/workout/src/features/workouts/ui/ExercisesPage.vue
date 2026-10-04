@@ -13,7 +13,7 @@ const emit = defineEmits<{ create: [] }>();
       <h1>Exercises</h1>
       <p class="muted">Find your next movement. Make it your own.</p>
     </div>
-    <Button class="btn secondary" @click="emit('create')">
+    <Button unstyled class="btn secondary" @click="emit('create')">
       <Plus :size="17" />Create exercise
     </Button>
   </div>

@@ -223,6 +223,7 @@ defineExpose({
     <template v-if="optionRow">
       <div class="repetition-adjuster">
         <Button
+          unstyled
           class="btn secondary"
           :disabled="saving || Number(optionRow.reps) <= 1"
           aria-label="Decrease repetitions"
@@ -231,6 +232,7 @@ defineExpose({
           −</Button
         ><strong>{{ optionRow.reps || "—" }} reps</strong
         ><Button
+          unstyled
           class="btn secondary"
           :disabled="saving || Number(optionRow.reps) >= 1000"
           aria-label="Increase repetitions"
@@ -240,6 +242,7 @@ defineExpose({
         </Button>
       </div>
       <Button
+        unstyled
         class="btn secondary full-width"
         :disabled="saving || optionRow.exercise.sets.length <= 1"
         @click="removeOptionSet"
@@ -281,9 +284,15 @@ defineExpose({
       @toggle="toggleExercise"
     />
     <div class="picker-actions">
-      <Button class="text-button" :disabled="saving" @click="createOpen = true">
+      <Button
+        unstyled
+        class="text-button"
+        :disabled="saving"
+        @click="createOpen = true"
+      >
         <Plus :size="16" />Create your own</Button
       ><Button
+        unstyled
         class="btn primary full-width"
         :disabled="saving || !selectedExercises.length"
         @click="addExercises"
@@ -351,6 +360,7 @@ defineExpose({
         </NativeSelect></label
       >
       <Button
+        unstyled
         class="btn primary full-width"
         type="submit"
         :disabled="saving || !customName.trim()"
@@ -385,13 +395,14 @@ defineExpose({
         the values before finishing. This does not log any additional sets.
       </p>
       <Button
+        unstyled
         class="btn secondary"
         :disabled="saving"
         @click="training.saveEdits()"
       >
         Save input values
       </Button>
-      <Button class="text-button" @click="finishOpen = false">
+      <Button unstyled class="text-button" @click="finishOpen = false">
         Review my sets
       </Button>
       <p
@@ -406,12 +417,14 @@ defineExpose({
     <p v-if="error" class="field-error" role="alert">{{ error }}</p>
     <div class="form-actions">
       <Button
+        unstyled
         class="btn secondary"
         :disabled="saving"
         @click="finishOpen = false"
       >
         Keep training</Button
       ><Button
+        unstyled
         class="btn primary"
         :disabled="saving || !!training.pending.value.length"
         @click="finishWorkout"
@@ -426,12 +439,18 @@ defineExpose({
     @close="confirmation = null"
     ><div class="form-actions">
       <Button
+        unstyled
         class="btn secondary"
         :disabled="saving"
         @click="confirmation = null"
       >
         Keep it</Button
-      ><Button class="btn primary" :disabled="saving" @click="confirmAction">
+      ><Button
+        unstyled
+        class="btn primary"
+        :disabled="saving"
+        @click="confirmAction"
+      >
         {{
           confirmation?.command.type === "discard"
             ? "Discard workout"
@@ -463,12 +482,17 @@ defineExpose({
       </div>
       <div class="detail-actions">
         <Button
+          unstyled
           class="btn primary"
           :disabled="saving || !!active"
           @click="repeatWorkout(detail.id)"
         >
           <Repeat2 :size="17" />Repeat workout</Button
-        ><Button class="btn secondary" @click="convertWorkout(detail.id)">
+        ><Button
+          unstyled
+          class="btn secondary"
+          @click="convertWorkout(detail.id)"
+        >
           <BookmarkPlus :size="17" />Save as template
         </Button>
       </div>

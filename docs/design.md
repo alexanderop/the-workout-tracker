@@ -51,6 +51,12 @@ Inter Variable is bundled locally for offline use. Lucide icons use a consistent
 
 The interface uses a quiet visual hierarchy; empty states show actual data rather than fabricated statistics. [Prior art](prior-art.md) records the original reference and adaptations.
 
+## Button ownership
+
+Icon-only actions use the shared `IconButton`: a required accessible label, decorative icon, centered content and a minimum 44px square touch target at every viewport size. Circle and square surfaces share this geometry. Application classes position these controls without resetting their internals.
+
+Standard buttons retain the UI package's variant and size styling. Existing custom cards, rows and text actions explicitly use `Button unstyled` with an app-owned layout class. Global resets must exclude shared buttons; removing their flex layout is what previously displaced the settings icon. Histoire's Icon Button story owns the isolated interaction examples.
+
 ## Workout-first screens
 
 The main page groups history and templates under Workouts. A fresh journal has one prominent start action. The exercise picker supports search, filters, and multiple selection. The active workout shows named exercise controls above a focused set table. Selected and completed states use the existing purple token, text, and icons. The bottom training control refers to the same exercise as the visible table.

@@ -42,6 +42,7 @@ function advance() {
         >
       </div>
       <Button
+        unstyled
         class="btn primary"
         :disabled="saving"
         @click="run({ type: 'stop-rest', sessionId: active.id })"
@@ -60,6 +61,7 @@ function advance() {
         >
       </div>
       <Button
+        unstyled
         class="btn primary"
         type="submit"
         :form="`set-form-${training.current.value.set.id}`"
@@ -92,7 +94,7 @@ function advance() {
           >Next: {{ nextExercise?.name }}</small
         >
       </div>
-      <Button class="btn primary" :disabled="saving" @click="advance">
+      <Button unstyled class="btn primary" :disabled="saving" @click="advance">
         {{ nextExercise ? "Next exercise" : "Finish workout" }}
       </Button>
     </template>
@@ -100,7 +102,9 @@ function advance() {
       <div>
         <strong>Choose your first exercise</strong>
       </div>
-      <Button class="btn primary" @click="emit('pick')">Choose exercise</Button>
+      <Button unstyled class="btn primary" @click="emit('pick')"
+        >Choose exercise</Button
+      >
     </template>
   </section>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button, NumericInput } from "@form/ui";
+import { IconButton, Button, NumericInput } from "@form/ui";
 import { useTemplateRef, watch, nextTick } from "vue";
 import { Check, MoreHorizontal, Save } from "@lucide/vue";
 import type { TrainingRow } from "./useTrainingSession";
@@ -51,6 +51,7 @@ defineExpose({
       :class="{ completed: row.set.completed, edited: dirty }"
     >
       <Button
+        unstyled
         type="button"
         class="set-number"
         :aria-label="`Select set ${row.index + 1} of ${row.exercise.name}`"
@@ -86,6 +87,7 @@ defineExpose({
         @open="emit('select')"
       />
       <Button
+        unstyled
         type="submit"
         class="set-toggle"
         :class="{ logged: row.set.completed, 'has-draft': dirty }"
@@ -98,15 +100,15 @@ defineExpose({
           :size="19"
         />
       </Button>
-      <Button
+      <IconButton
         type="button"
-        class="icon-button set-options"
-        :aria-label="`Options for set ${row.index + 1} of ${row.exercise.name}`"
+        class="set-options"
+        :label="`Options for set ${row.index + 1} of ${row.exercise.name}`"
         :disabled="busy"
         @click="emit('options')"
       >
         <MoreHorizontal :size="20" />
-      </Button>
+      </IconButton>
     </div>
     <p
       v-if="row.issue"
@@ -126,6 +128,7 @@ defineExpose({
         {{ row.set.completed ? "logged" : "not logged" }}.
       </p>
       <Button
+        unstyled
         type="button"
         class="text-button"
         :disabled="busy"
@@ -134,6 +137,7 @@ defineExpose({
         Keep my input
       </Button>
       <Button
+        unstyled
         v-for="draft in row.alternatives"
         :key="draft.id"
         type="button"
@@ -143,7 +147,12 @@ defineExpose({
         Review {{ draft.weight || "empty" }} kg ×
         {{ draft.reps || "empty" }} reps
       </Button>
-      <Button type="button" class="text-button" @click="emit('discard')">
+      <Button
+        unstyled
+        type="button"
+        class="text-button"
+        @click="emit('discard')"
+      >
         Discard drafts and use saved values
       </Button>
     </div>

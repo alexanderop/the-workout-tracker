@@ -2,6 +2,7 @@ export { default as Sheet } from "./Sheet.vue";
 export { DialogRoot as Dialog, DialogPortal } from "reka-ui";
 export type { ButtonVariant, ButtonSize } from "./button/Button.vue";
 export { default as Button } from "./button/Button.vue";
+export { default as IconButton } from "./button/IconButton.vue";
 export { default as Input } from "./input/Input.vue";
 export { default as Textarea } from "./textarea/Textarea.vue";
 export { default as NativeSelect } from "./native-select/NativeSelect.vue";

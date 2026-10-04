@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button, Input, Textarea, NumericInput } from "@form/ui";
+import { IconButton, Button, Input, Textarea, NumericInput } from "@form/ui";
 import { computed, ref } from "vue";
 import { Plus, Trash2 } from "@lucide/vue";
 import type { CompletedSession, Exercise, Routine } from "../domain";
@@ -125,14 +125,13 @@ function save() {
       >
         <div class="exercise-heading">
           <h3>{{ index + 1 }}. {{ names.get(entry.exerciseId) }}</h3>
-          <Button
+          <IconButton
             type="button"
-            class="icon-button"
-            :aria-label="`Remove ${names.get(entry.exerciseId)}`"
+            :label="`Remove ${names.get(entry.exerciseId)}`"
             @click="entries.splice(index, 1)"
           >
             <Trash2 :size="17" />
-          </Button>
+          </IconButton>
         </div>
         <div
           v-for="(set, setIndex) in entry.sets"
@@ -170,17 +169,17 @@ function save() {
               :max="1000"
               :label="`${names.get(entry.exerciseId)} set ${setIndex + 1} reps`"
           /></label>
-          <Button
+          <IconButton
             type="button"
-            class="icon-button"
             :disabled="entry.sets.length <= 1"
-            :aria-label="`Remove set ${setIndex + 1} of ${names.get(entry.exerciseId)}`"
+            :label="`Remove set ${setIndex + 1} of ${names.get(entry.exerciseId)}`"
             @click="entry.sets.splice(setIndex, 1)"
           >
             <Trash2 :size="16" />
-          </Button>
+          </IconButton>
         </div>
         <Button
+          unstyled
           type="button"
           class="text-button add-set"
           :disabled="entry.sets.length >= 30"
@@ -190,6 +189,7 @@ function save() {
         </Button>
       </section>
       <Button
+        unstyled
         type="button"
         class="btn secondary full-width"
         :disabled="entries.length >= 50"
@@ -206,6 +206,7 @@ function save() {
           :busy="busy"
           @toggle="toggle"
         /><Button
+          unstyled
           type="button"
           class="btn primary full-width"
           :disabled="!selected.length"
@@ -218,13 +219,14 @@ function save() {
     <p v-if="error" class="field-error" role="alert">{{ error }}</p>
     <div class="form-actions">
       <Button
+        unstyled
         type="button"
         class="btn secondary"
         :disabled="busy"
         @click="emit('cancel')"
       >
         Cancel</Button
-      ><Button type="submit" class="btn primary" :disabled="busy">
+      ><Button unstyled type="submit" class="btn primary" :disabled="busy">
         {{ busy ? "Saving…" : "Save template" }}
       </Button>
     </div>

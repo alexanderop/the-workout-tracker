@@ -97,7 +97,7 @@ const records = computed(() =>
     <TrendingUp :size="34" />
     <h2>No progress yet</h2>
     <p class="muted">Complete a workout to track your progress.</p>
-    <Button class="btn primary" @click="navigate('workouts')">
+    <Button unstyled class="btn primary" @click="navigate('workouts')">
       Start training<ArrowRight :size="17" />
     </Button>
   </div>

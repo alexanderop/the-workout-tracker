@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button, Input } from "@form/ui";
+import { IconButton, Button, Input } from "@form/ui";
 import { useTemplateRef, computed, nextTick, ref, watch } from "vue";
 import {
   Clock3,
@@ -140,6 +140,7 @@ const previous = computed(() => {
         </p>
       </div>
       <Button
+        unstyled
         class="btn secondary"
         :disabled="saving || !activeTotals.completedSets"
         aria-label="Finish workout"
@@ -151,6 +152,7 @@ const previous = computed(() => {
     <div v-if="training.notice.value" class="training-notice">
       <span role="status">{{ training.notice.value }}</span
       ><Button
+        unstyled
         v-if="training.lastLog.value"
         class="text-button"
         :disabled="saving"
@@ -166,6 +168,7 @@ const previous = computed(() => {
       aria-label="Workout exercises"
     >
       <Button
+        unstyled
         v-for="(exercise, index) in active.exercises"
         :key="exercise.id"
         :aria-pressed="training.currentExercise.value?.id === exercise.id"
@@ -188,6 +191,7 @@ const previous = computed(() => {
         ><Check v-if="exercise.sets.every((set) => set.completed)" :size="15" />
       </Button>
       <Button
+        unstyled
         class="exercise-tab-add"
         aria-label="Add exercises"
         :disabled="saving || active.exercises.length >= 50"
@@ -211,9 +215,7 @@ const previous = computed(() => {
         >
           <header>
             <div class="exercise-title">
-              <ExerciseThumbnail
-                :exercise="currentCatalogExercise"
-              />
+              <ExerciseThumbnail :exercise="currentCatalogExercise" />
               <div>
                 <h2>{{ exercise.name }}</h2>
                 <p class="muted small">
@@ -225,9 +227,8 @@ const previous = computed(() => {
                 </p>
               </div>
             </div>
-            <Button
-              class="icon-button"
-              :aria-label="`Remove ${exercise.name} from workout`"
+            <IconButton
+              :label="`Remove ${exercise.name} from workout`"
               :disabled="saving"
               @click="
                 emit('confirm', {
@@ -242,7 +243,7 @@ const previous = computed(() => {
               "
             >
               <X :size="16" />
-            </Button>
+            </IconButton>
           </header>
           <div v-if="previous" class="previous-performance">
             <span class="eyebrow">LAST TIME</span>
@@ -283,6 +284,7 @@ const previous = computed(() => {
             class="save-inputs"
           >
             <Button
+              unstyled
               class="text-button"
               :disabled="saving"
               @click="training.saveEdits()"
@@ -291,6 +293,7 @@ const previous = computed(() => {
             </Button>
           </div>
           <Button
+            unstyled
             class="add-set text-button"
             :disabled="saving || exercise.sets.length >= 30"
             @click="addSet(exercise.id)"
@@ -304,6 +307,7 @@ const previous = computed(() => {
           <p class="muted">Add your first exercise to start logging sets.</p>
         </div>
         <Button
+          unstyled
           class="btn secondary full-width"
           :disabled="saving || active.exercises.length >= 50"
           @click="emit('pick')"
@@ -357,6 +361,7 @@ const previous = computed(() => {
             }}
           </p>
           <Button
+            unstyled
             v-if="rest > 0"
             class="btn secondary full-width"
             :disabled="saving"
@@ -366,6 +371,7 @@ const previous = computed(() => {
           </Button>
         </section>
         <Button
+          unstyled
           class="text-button discard-button"
           :disabled="saving"
           @click="
@@ -391,7 +397,7 @@ const previous = computed(() => {
     <Dumbbell :size="32" />
     <h1>Ready for your next session?</h1>
     <p class="muted">Start a workout or choose one of your templates.</p>
-    <Button class="btn primary" @click="navigate('workouts')">
+    <Button unstyled class="btn primary" @click="navigate('workouts')">
       Choose a workout<ArrowRight :size="17" />
     </Button>
   </div>

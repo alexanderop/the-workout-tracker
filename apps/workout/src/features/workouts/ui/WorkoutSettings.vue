@@ -154,12 +154,14 @@ defineSlots<{ default?: () => unknown }>();
         </p>
         <div class="backup-actions">
           <Button
+            unstyled
             class="btn secondary"
             :disabled="backupBusy || saving"
             @click="exportBackup"
           >
             <ArrowDownToLine :size="17" />Export backup</Button
           ><Button
+            unstyled
             class="btn secondary"
             :disabled="backupBusy || saving"
             @click="importInput?.click()"
@@ -184,12 +186,14 @@ defineSlots<{ default?: () => unknown }>();
           </p>
           <div class="form-actions">
             <Button
+              unstyled
               class="btn ghost"
               :disabled="backupBusy"
               @click="backupFile = null"
             >
               Cancel import</Button
             ><Button
+              unstyled
               class="btn primary"
               :disabled="backupBusy || saving"
               @click="importBackup"
