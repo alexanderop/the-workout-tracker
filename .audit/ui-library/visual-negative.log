@@ -1,0 +1,299 @@
+Visual test evidence: /private<temporary-workspace>/packages/ui/test-results/visual/run.f7VdDz
+! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-10.28.2.tgz
+Scope: all 4 workspace projects
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +485
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 485, reused 0, downloaded 0, added 0
+Progress: resolved 485, reused 0, downloaded 7, added 7
+Progress: resolved 485, reused 0, downloaded 14, added 14
+ WARN  Tarball download average speed 15 KiB/s (size 29 KiB) is below 50 KiB/s: https://registry.npmjs.org/undici-types/-/undici-types-8.9.0.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 20, added 20
+ WARN  Tarball download average speed 8 KiB/s (size 17 KiB) is below 50 KiB/s: https://registry.npmjs.org/@jridgewell/gen-mapping/-/gen-mapping-0.3.13.tgz (GET)
+ WARN  Tarball download average speed 2 KiB/s (size 3 KiB) is below 50 KiB/s: https://registry.npmjs.org/vue-tsc/-/vue-tsc-3.3.12.tgz (GET)
+
+   ╭──────────────────────────────────────────────╮
+   │                                              │
+   │     Update available! 10.28.2 → 12.9.1.      │
+   │     Changelog: https://pnpm.io/v/12.9.1      │
+   │   To update, run: corepack use pnpm@12.9.1   │
+   │                                              │
+   ╰──────────────────────────────────────────────╯
+
+ WARN  Tarball download average speed 17 KiB/s (size 50 KiB) is below 50 KiB/s: https://registry.npmjs.org/postcss/-/postcss-8.5.28.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 36, added 36
+ WARN  Tarball download average speed 49 KiB/s (size 57 KiB) is below 50 KiB/s: https://registry.npmjs.org/vscode-uri/-/vscode-uri-3.2.0.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 46, added 46
+ WARN  Tarball download average speed 11 KiB/s (size 23 KiB) is below 50 KiB/s: https://registry.npmjs.org/picomatch/-/picomatch-4.0.7.tgz (GET)
+ WARN  Tarball download average speed 37 KiB/s (size 81 KiB) is below 50 KiB/s: https://registry.npmjs.org/@vue/reactivity/-/reactivity-3.5.43.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 69, added 69
+ WARN  Tarball download average speed 39 KiB/s (size 84 KiB) is below 50 KiB/s: https://registry.npmjs.org/lightningcss/-/lightningcss-1.32.0.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 84, added 84
+ WARN  Tarball download average speed 5 KiB/s (size 10 KiB) is below 50 KiB/s: https://registry.npmjs.org/@vitest/spy/-/spy-5.0.3.tgz (GET)
+ WARN  Tarball download average speed 17 KiB/s (size 31 KiB) is below 50 KiB/s: https://registry.npmjs.org/expect-type/-/expect-type-1.4.0.tgz (GET)
+ WARN  Tarball download average speed 27 KiB/s (size 34 KiB) is below 50 KiB/s: https://registry.npmjs.org/ws/-/ws-8.22.0.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 102, added 102
+ WARN  Tarball download average speed 36 KiB/s (size 54 KiB) is below 50 KiB/s: https://registry.npmjs.org/@cucumber/messages/-/messages-32.3.1.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 119, added 119
+ WARN  Tarball download average speed 13 KiB/s (size 19 KiB) is below 50 KiB/s: https://registry.npmjs.org/@cucumber/tag-expressions/-/tag-expressions-9.1.0.tgz (GET)
+ WARN  Tarball download average speed 8 KiB/s (size 13 KiB) is below 50 KiB/s: https://registry.npmjs.org/cli-table3/-/cli-table3-0.6.5.tgz (GET)
+ WARN  Tarball download average speed 38 KiB/s (size 91 KiB) is below 50 KiB/s: https://registry.npmjs.org/@cucumber/gherkin/-/gherkin-39.1.0.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 132, added 132
+ WARN  Tarball download average speed 30 KiB/s (size 61 KiB) is below 50 KiB/s: https://registry.npmjs.org/xmlbuilder/-/xmlbuilder-15.1.1.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 162, added 162
+ WARN  Tarball download average speed 25 KiB/s (size 34 KiB) is below 50 KiB/s: https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.5.444.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 178, added 178
+ WARN  Tarball download average speed 5 KiB/s (size 40 KiB) is below 50 KiB/s: https://registry.npmjs.org/@vitest/utils/-/utils-5.0.3.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 207, added 207
+ WARN  Tarball download average speed 43 KiB/s (size 283 KiB) is below 50 KiB/s: https://registry.npmjs.org/playwright-bdd/-/playwright-bdd-9.2.1.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 244, added 244
+ WARN  Tarball download average speed 33 KiB/s (size 209 KiB) is below 50 KiB/s: https://registry.npmjs.org/sharp/-/sharp-0.35.5.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 292, added 292
+ WARN  Tarball download average speed 13 KiB/s (size 19 KiB) is below 50 KiB/s: https://registry.npmjs.org/babel-plugin-polyfill-corejs2/-/babel-plugin-polyfill-corejs2-0.4.17.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 389, added 389
+ WARN  Tarball download average speed 24 KiB/s (size 92 KiB) is below 50 KiB/s: https://registry.npmjs.org/@babel/helper-create-class-features-plugin/-/helper-create-class-features-plugin-7.29.7.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 452, added 452
+Progress: resolved 485, reused 0, downloaded 475, added 475
+Progress: resolved 485, reused 0, downloaded 476, added 476
+ WARN  Tarball download average speed 41 KiB/s (size 99 KiB) is below 50 KiB/s: https://registry.npmjs.org/path-scurry/-/path-scurry-2.0.2.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 479, added 479
+Progress: resolved 485, reused 0, downloaded 482, added 482
+Progress: resolved 485, reused 0, downloaded 483, added 483
+Progress: resolved 485, reused 0, downloaded 484, added 483
+Progress: resolved 485, reused 0, downloaded 484, added 484
+Progress: resolved 485, reused 0, downloaded 485, added 485, done
+
+devDependencies:
++ @playwright/test 1.63.0
++ @vue/compiler-sfc 3.5.43
++ oxlint 1.86.0
++ prettier 3.9.9
++ typescript 5.9.3
+
+╭ Warning ─────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│   Ignored build scripts: vue-demi@0.14.10.                                   │
+│   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+│   to run scripts.                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Done in 26.6s using pnpm v10.28.2
+
+> @form/ui@0.1.0 test:visual /work/packages/ui
+> vitest run --config vitest.visual.config.ts
+
+
+ RUN  v5.0.3 /work/packages/ui
+
+ ❯  chromium  test/components.visual.test.ts (7 tests | 7 failed) 3938ms
+   × preserves light component variants and focused input 1536ms
+   × preserves light dialog portal styling 656ms
+   × preserves dark component variants and focused input 468ms
+   × preserves dark dialog portal styling 281ms
+   × preserves narrow layouts and long labels 358ms
+   × preserves keyboard focus on outline buttons 411ms
+   × preserves the narrow dialog layout 223ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL   chromium  test/components.visual.test.ts > preserves light component variants and focused input
+Error: expect(element).toMatchScreenshot()
+
+Screenshot does not match the stored reference.
+384 pixels (ratio 0.01) differ.
+
+Reference screenshot:
+  /work/packages/ui/test/__screenshots__/light-components.png
+
+Actual screenshot:
+  /work/packages/ui/.vitest/attachments/test/components.visual.test.ts/light-components-actual-chromium-linux.png
+
+Diff image:
+  /work/packages/ui/.vitest/attachments/test/components.visual.test.ts/light-components-diff-chromium-linux.png
+
+ ❯ node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/index.C4tKZ0yW-BtkFIiTc.js?v=2f243e20:2394:50
+ ❯ test/components.visual.test.ts:16:5
+     14|     await document.fonts.ready;
+     15|     await page.getByRole("textbox", { name: "Workout name" }).click();
+     16|     await expect(page.getByRole("main")).toMatchScreenshot(
+       |     ^
+     17|       `${theme}-components`,
+     18|     );
+ ❯ node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/plugins.D2ut1V9b-NpPgH04A.js?v=2f243e20:5211:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL   chromium  test/components.visual.test.ts > preserves light dialog portal styling
+Error: expect(element).toMatchScreenshot()
+
+Screenshot does not match the stored reference.
+32 pixels (ratio 0.01) differ.
+
+Reference screenshot:
+  /work/packages/ui/test/__screenshots__/light-dialog.png
+
+Actual screenshot:
+  /work/packages/ui/.vitest/attachments/test/components.visual.test.ts/light-dialog-actual-chromium-linux.png
+
+Diff image:
+  /work/packages/ui/.vitest/attachments/test/components.visual.test.ts/light-dialog-diff-chromium-linux.png
+
+ ❯ node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/index.C4tKZ0yW-BtkFIiTc.js?v=2f243e20:2394:50
+ ❯ test/components.visual.test.ts:26:5
+     24|     await document.fonts.ready;
+     25|     await page.getByRole("button", { name: "Edit workout" }).click();
+     26|     await expect(page.getByRole("dialog")).toMatchScreenshot(`${theme}…
+       |     ^
+     27|   });
+     28| }
+ ❯ node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/plugins.D2ut1V9b-NpPgH04A.js?v=2f243e20:5211:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL   chromium  test/components.visual.test.ts > preserves dark component variants and focused input
+Error: expect(element).toMatchScreenshot()
+
+Screenshot does not match the stored reference.
+506 pixels (ratio 0.01) differ.
+
+Reference screenshot:
+  /work/packages/ui/test/__screenshots__/dark-components.png
+
+Actual screenshot:
+  /work/packages/ui/.vitest/attachments/test/components.visual.test.ts/dark-components-actual-chromium-linux.png
+
+Diff image:
+  /work/packages/ui/.vitest/attachments/test/components.visual.test.ts/dark-components-diff-chromium-linux.png
+
+ ❯ node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/index.C4tKZ0yW-BtkFIiTc.js?v=2f243e20:2394:50
+ ❯ test/components.visual.test.ts:16:5
+     14|     await document.fonts.ready;
+     15|     await page.getByRole("textbox", { name: "Workout name" }).click();
+     16|     await expect(page.getByRole("main")).toMatchScreenshot(
+       |     ^
+     17|       `${theme}-components`,
+     18|     );
+ ❯ node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/plugins.D2ut1V9b-NpPgH04A.js?v=2f243e20:5211:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL   chromium  test/components.visual.test.ts > preserves dark dialog portal styling
+Error: expect(element).toMatchScreenshot()
+
+Screenshot does not match the stored reference.
+32 pixels (ratio 0.01) differ.
+
+Reference screenshot:
+  /work/packages/ui/test/__screenshots__/dark-dialog.png
+
+Actual screenshot:
+  /work/packages/ui/.vitest/attachments/test/components.visual.test.ts/dark-dialog-actual-chromium-linux.png
+
+Diff image:
+  /work/packages/ui/.vitest/attachments/test/components.visual.test.ts/dark-dialog-diff-chromium-linux.png
+
+ ❯ node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/index.C4tKZ0yW-BtkFIiTc.js?v=2f243e20:2394:50
+ ❯ test/components.visual.test.ts:26:5
+     24|     await document.fonts.ready;
+     25|     await page.getByRole("button", { name: "Edit workout" }).click();
+     26|     await expect(page.getByRole("dialog")).toMatchScreenshot(`${theme}…
+       |     ^
+     27|   });
+     28| }
+ ❯ node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/plugins.D2ut1V9b-NpPgH04A.js?v=2f243e20:5211:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL   chromium  test/components.visual.test.ts > preserves narrow layouts and long labels
+Error: expect(element).toMatchScreenshot()
+
+Screenshot does not match the stored reference.
+368 pixels (ratio 0.01) differ.
+
+Reference screenshot:
+  /work/packages/ui/test/__screenshots__/narrow-components.png
+
+Actual screenshot:
+  /work/packages/ui/.vitest/attachments/test/components.visual.test.ts/narrow-components-actual-chromium-linux.png
+
+Diff image:
+  /work/packages/ui/.vitest/attachments/test/components.visual.test.ts/narrow-components-diff-chromium-linux.png
+
+ ❯ node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/index.C4tKZ0yW-BtkFIiTc.js?v=2f243e20:2394:50
+ ❯ test/components.visual.test.ts:33:3
+     31|   await render(VisualHarness);
+     32|   await document.fonts.ready;
+     33|   await expect(page.getByRole("main")).toMatchScreenshot("narrow-compo…
+       |   ^
+     34| });
+     35|
+ ❯ node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/plugins.D2ut1V9b-NpPgH04A.js?v=2f243e20:5211:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL   chromium  test/components.visual.test.ts > preserves keyboard focus on outline buttons
+Error: expect(element).toMatchScreenshot()
+
+Screenshot does not match the stored reference.
+504 pixels (ratio 0.01) differ.
+
+Reference screenshot:
+  /work/packages/ui/test/__screenshots__/outline-keyboard-focus.png
+
+Actual screenshot:
+  /work/packages/ui/.vitest/attachments/test/components.visual.test.ts/outline-keyboard-focus-actual-chromium-linux.png
+
+Diff image:
+  /work/packages/ui/.vitest/attachments/test/components.visual.test.ts/outline-keyboard-focus-diff-chromium-linux.png
+
+ ❯ node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/index.C4tKZ0yW-BtkFIiTc.js?v=2f243e20:2394:50
+ ❯ test/components.visual.test.ts:45:3
+     43|     .element(page.getByRole("button", { name: "Focused outline" }))
+     44|     .toHaveFocus();
+     45|   await expect(page.getByRole("main")).toMatchScreenshot(
+       |   ^
+     46|     "outline-keyboard-focus",
+     47|   );
+ ❯ node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/plugins.D2ut1V9b-NpPgH04A.js?v=2f243e20:5211:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL   chromium  test/components.visual.test.ts > preserves the narrow dialog layout
+Error: expect(element).toMatchScreenshot()
+
+Screenshot does not match the stored reference.
+23 pixels (ratio 0.01) differ.
+
+Reference screenshot:
+  /work/packages/ui/test/__screenshots__/narrow-dialog.png
+
+Actual screenshot:
+  /work/packages/ui/.vitest/attachments/test/components.visual.test.ts/narrow-dialog-actual-chromium-linux.png
+
+Diff image:
+  /work/packages/ui/.vitest/attachments/test/components.visual.test.ts/narrow-dialog-diff-chromium-linux.png
+
+ ❯ node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/index.C4tKZ0yW-BtkFIiTc.js?v=2f243e20:2394:50
+ ❯ test/components.visual.test.ts:55:3
+     53|   await document.fonts.ready;
+     54|   await page.getByRole("button", { name: "Edit workout" }).click();
+     55|   await expect(page.getByRole("dialog")).toMatchScreenshot("narrow-dia…
+       |   ^
+     56| });
+     57|
+ ❯ node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/plugins.D2ut1V9b-NpPgH04A.js?v=2f243e20:5211:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed (7)
+   Start at  07:17:17
+   Duration  9.31s (tests 77%, worker 12%, import 10%, setup 1%)
+
+/work/packages/ui:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @form/ui@0.1.0 test:visual: `vitest run --config vitest.visual.config.ts`
+Exit status 1
+
+Negative control exit code: 1

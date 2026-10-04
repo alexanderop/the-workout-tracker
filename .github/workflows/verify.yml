@@ -25,13 +25,37 @@ jobs:
         if: failure()
         with:
           name: browser-evidence
+          include-hidden-files: true
           path: |
             apps/workout/test-results/
             apps/workout/playwright-report/
             packages/ui/test-results/
+            packages/ui/.vitest/
+  visual:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @form/ui test:visual
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: ui-visual-evidence
+          include-hidden-files: true
+          path: |
+            packages/ui/.vitest/
+            packages/ui/test-results/
   deploy:
     if: github.event_name != 'pull_request' && github.ref_name == (vars.PAGES_BRANCH || 'main')
-    needs: verify
+    needs: [verify, visual]
     runs-on: ubuntu-latest
     permissions:
       pages: write

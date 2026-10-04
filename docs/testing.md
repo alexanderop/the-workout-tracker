@@ -24,6 +24,16 @@ Browser Mode uses Playwright as its browser provider. These tests render a compo
 
 The existing workout persistence tests retain coverage for backup merging, restoration, recovery exports, retries, and cross-instance notifications. Lifecycle tests verify that component cleanup unsubscribes without closing an app-owned service.
 
+## UI library visual regression
+
+The UI library keeps visual tests separate from behavior tests. Run `pnpm test:visual` with Docker available. The runner uses the same pinned Linux amd64 Playwright image as the CI visual job. It copies the workspace into the container and installs dependencies from the lockfile. It does not use host `node_modules` or generate macOS reference images.
+
+Run `pnpm test:visual:update` to create reference images in that environment. Inspect the changed images in `packages/ui/test/__screenshots__` before committing them. The check command never updates references. Failure evidence stays in `packages/ui/test-results/visual`; CI uploads the Vitest attachments.
+
+Visual fixtures load a local font and use fixed viewports. Screenshots protect the accepted library appearance. They do not prove pixel equivalence to upstream shadcn-vue. The UI package reference contract records the pinned source, supported API, and intentional differences.
+
+Accessibility tests combine semantic queries, keyboard and focus assertions, and axe scans that include open portals. Passing these automated tests does not replace a manual screenreader review.
+
 ## Application acceptance
 
 `pnpm build` followed by `pnpm test:e2e` tests the served production build with Playwright. `playwright-bdd` turns the Gherkin scenarios in `test/e2e/workout.feature` into executable tests. BDD is the scenario format for this suite, not a second copy of the E2E tests.

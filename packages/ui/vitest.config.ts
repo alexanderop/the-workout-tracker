@@ -7,6 +7,7 @@ export default defineConfig({
   optimizeDeps: { include: ["vue", "@lucide/vue", "reka-ui"] },
   test: {
     include: ["test/**/*.test.ts"],
+    exclude: ["test/**/*.visual.test.ts"],
     browser: {
       enabled: true,
       provider: playwright(),

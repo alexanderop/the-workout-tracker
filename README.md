@@ -6,14 +6,15 @@ A quiet, local-first workout journal. Dark mode, five colors, purple as the prim
 
 ## Workspace
 
-This pnpm monorepo contains two independently owned packages:
+This pnpm monorepo contains three independently owned workspaces:
 
 - `apps/workout` (`@form/workout`): the PWA, workout domain, IndexedDB storage, application styles and application tests.
 - `packages/ui` (`@form/ui`): reusable Vue components, design tokens and isolated component browser tests. It has no workout or persistence dependencies.
+- `apps/ui-gallery` (`@form/ui-gallery`): an independent consumer of the public UI exports and styles. Run `pnpm dev:ui` to inspect the components.
 
 The app imports `Sheet` from `@form/ui` and the shared colors from `@form/ui/tokens.css`. The dependency uses `workspace:*`. Each workspace declares its own dependencies and uses strict TypeScript settings from `tsconfig.base.json`.
 
-`@form/ui` is a private source package: Vite compiles its Vue source as part of the consuming app. It does not yet produce a standalone npm distribution. Its public API is limited by package exports; import paths into another workspace's source are forbidden.
+`@form/ui` is a private source package: Vite compiles its Vue source as part of the consuming app. It does not yet produce a standalone npm distribution. New component consumers import `@form/ui/styles.css` alongside the tokens. Its public API is limited by package exports; import paths into another workspace's source are forbidden.
 
 `pnpm check:boundaries` checks workspace manifests and imports in source, tests and configuration. It rejects cross-workspace relative imports, private deep imports, undeclared dependencies and dependencies on applications. Source cannot rely on development-only dependencies. The check runs during `pnpm lint` and CI verification.
 

@@ -5,12 +5,15 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./tokens.css": "./src/tokens.css"
+    "./tokens.css": "./src/tokens.css",
+    "./styles.css": "./src/styles.css"
   },
   "scripts": {
     "typecheck": "vue-tsc --noEmit",
     "lint": "oxlint src test --deny-warnings",
-    "test:browser": "vitest run"
+    "test:browser": "vitest run",
+    "test:visual": "vitest run --config vitest.visual.config.ts",
+    "test:visual:update": "vitest run --config vitest.visual.config.ts --update"
   },
   "peerDependencies": {
     "vue": "^3.5.0"
@@ -28,6 +31,11 @@
     "typescript": "^5.9.3",
     "vite": "^8.3.2",
     "@types/node": "^26.6.4",
-    "vue": "^3.5.43"
-  }
+    "vue": "^3.5.43",
+    "axe-core": "^4.11.1",
+    "@fontsource/inter": "^5.2.8"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ]
 }

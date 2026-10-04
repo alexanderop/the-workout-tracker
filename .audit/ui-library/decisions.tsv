@@ -1,0 +1,14 @@
+ts	phase	decision	why	evidence	result
+2026-10-04T06:54:25.602786+00:00	frame	Deliver the agreed first increment through an open PR	One complete pattern for Button, fields and dialog precedes the remaining catalog	.audit/ui-library/workflow.md	open
+2026-10-04T06:54:25.603049+00:00	baseline	Preserve legacy Sheet and tokens	Six workout callers depend on its existing layout and close event	packages/ui/test/sheet.test.ts	2 browser tests passed
+2026-10-04T07:04:54.501568+00:00	baseline	Run the full pre-change verification	Establish behavior before adding library components	.audit/ui-library/baseline.log	pnpm verify passed including 12 E2E tests
+2026-10-04T07:04:54.502636+00:00	design	Choose explicit field composition and CSS delivery	Match reference composition while keeping native form behavior	.audit/ui-library/synthesis.md	three candidates and independent same-model judge reviewed
+2026-10-04T07:04:54.502642+00:00	visual	Pin Linux amd64 Playwright container by digest	Keep browser and font rasterization environment fixed	scripts/test-ui-visual.sh	image available locally
+2026-10-04T07:18:21.026227+00:00	implementation	Preserve uncontrolled values and defer composition updates	Native input behavior must survive rerenders and composed text entry	packages/ui/test/controls.test.ts	11 component browser tests passed
+2026-10-04T07:18:21.026361+00:00	visual	Correct outline keyboard focus cascade	Variant shadow overrode the focus ring	packages/ui/test/__screenshots__/outline-keyboard-focus.png	visible ring inspected and tested
+2026-10-04T07:18:21.026363+00:00	review	Accept independent source and comment reviews	Review forwarding, a11y, behavior tests and CI before commit	.audit/ui-library/review.md	no actionable findings
+2026-10-04T07:18:21.026365+00:00	integration	Move gallery dev server to port 4182 with strictPort	Port 4181 belongs to the workout E2E server	apps/ui-gallery/package.json	12 E2E tests passed after correction
+2026-10-04T07:18:21.026366+00:00	visual	Inspect seven Linux baseline images then compare without updates	Reference generation alone cannot prove regression checks	packages/ui/test/__screenshots__	7 comparisons passed
+2026-10-04T07:18:21.026367+00:00	negative-control	Make buttons square in a temporary workspace copy	Prove screenshot checks detect a real presentation change	.audit/ui-library/visual-negative.log	7 screenshot mismatches detected; expected exit 1
+2026-10-04T07:19:44.014805+00:00	verification	Complete all repository checks after port fix	Require passing checks on the delivered source	.audit/ui-library/verified.log	pnpm verify passed
+2026-10-04T07:21:31.860937+00:00	audit	Correct the reference-image link after independent trail review	The path traversed one directory too far	.audit/ui-library/verification.md	link resolves inside repository
