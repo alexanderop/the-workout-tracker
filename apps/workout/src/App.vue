@@ -23,19 +23,21 @@ import {
   X,
 } from "@lucide/vue";
 import { Sheet } from "@form/ui";
-import SetRow from "./components/SetRow.vue";
-import RoutineEditor from "./components/RoutineEditor.vue";
-import { useWorkouts } from "./useWorkouts";
+import { SetRow, RoutineEditor, useWorkouts } from "./features/workouts/ui";
+import type { Workouts } from "./features/workouts";
 import { usePwa } from "./usePwa";
-import { sessionTotals, remainingRestSeconds } from "./domain";
+import { sessionTotals, remainingRestSeconds } from "./features/workouts";
 import type {
   Command,
   CompletedSession,
   Routine,
   SessionExercise,
-} from "./domain";
+} from "./features/workouts";
 
-const { service, state, snapshot, saving, message, error, run } = useWorkouts();
+const props = defineProps<{ workouts: Workouts }>();
+const { service, state, snapshot, saving, message, error, run } = useWorkouts(
+  props.workouts,
+);
 const {
   online,
   installed,
@@ -312,7 +314,7 @@ async function exportBackup() {
   try {
     download(
       await service.exportBackup(),
-      `form-backup-${new Date().toISOString().slice(0, 10)}.json`,
+      `the-workout-tracker-backup-${new Date().toISOString().slice(0, 10)}.json`,
     );
     backupMessage.value = "Backup downloaded.";
   } catch {
@@ -447,9 +449,10 @@ const title = computed(() =>
   <a class="skip-link" href="#main">Skip to content</a>
   <div class="app-layout">
     <aside class="sidebar">
-      <a href="#/today" class="brand" aria-label="Form home"
-        ><span class="brand-mark">f</span
-        ><span>form<span class="accent">.</span></span></a
+      <a href="#/today" class="brand" aria-label="The Workout Tracker home"
+        ><span class="brand-mark"
+          ><Dumbbell :size="20" aria-hidden="true" /></span
+        ><span class="brand-name">The Workout<br />Tracker</span></a
       >
       <div class="workspace-label">YOUR TRAINING SPACE</div>
       <nav class="desktop-nav" aria-label="Main navigation">
@@ -481,7 +484,7 @@ const title = computed(() =>
         <button class="sidebar-action" @click="settingsOpen = true">
           <Settings2 :size="17" />Settings</button
         ><button v-if="!installed" class="sidebar-action" @click="install">
-          <ArrowDownToLine :size="17" />Install Form
+          <ArrowDownToLine :size="17" />Install The Workout Tracker
         </button>
         <div class="local-note">
           <ShieldCheck :size="15" /><span>Yours. On this device.</span>
@@ -513,13 +516,15 @@ const title = computed(() =>
             aria-label="Open settings"
             @click="settingsOpen = true"
           >
-            F
+            <Settings2 :size="15" aria-hidden="true" />
           </button>
         </div>
       </header>
       <main id="main" class="main">
         <div v-if="state.kind === 'loading'" class="empty-state loading-state">
-          <div class="brand-mark">f</div>
+          <div class="brand-mark">
+            <Dumbbell :size="20" aria-hidden="true" />
+          </div>
           <h1>Opening your training journal</h1>
           <p class="muted">Loading your saved workouts.</p>
         </div>
@@ -533,7 +538,9 @@ const title = computed(() =>
           <button
             v-if="state.kind === 'recovery'"
             class="btn secondary"
-            @click="download(state.rawExport, 'form-recovery.json')"
+            @click="
+              download(state.rawExport, 'the-workout-tracker-recovery.json')
+            "
           >
             Export recovery data</button
           ><button class="btn primary" @click="reload">Try again</button>
@@ -551,7 +558,7 @@ const title = computed(() =>
             </button>
           </div>
           <div v-if="needRefresh && !active" class="notice">
-            <span>A new version of Form is ready.</span
+            <span>A new version of The Workout Tracker is ready.</span
             ><button class="text-button" @click="updateServiceWorker(true)">
               Update app
             </button>
@@ -1565,7 +1572,7 @@ const title = computed(() =>
       <section class="settings-section">
         <div class="settings-row">
           <span
-            >Form on your home screen<small
+            >The Workout Tracker on your home screen<small
               >Open your journal like any other app.</small
             ></span
           ><button class="btn secondary" :disabled="installed" @click="install">
@@ -1585,7 +1592,7 @@ const title = computed(() =>
         </p>
       </section>
       <p class="settings-signoff">
-        <span class="brand small">form<span class="accent">.</span></span
+        <span class="brand small">The Workout Tracker</span
         ><span class="muted small">A quieter space to get stronger.</span>
       </p></template
     ></Sheet

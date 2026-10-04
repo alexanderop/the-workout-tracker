@@ -1,8 +1,12 @@
-name: Verify Form
-on: [push, pull_request]
+name: Verify and deploy The Workout Tracker
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
 jobs:
   verify:
     runs-on: ubuntu-latest
+    env:
+      VITE_BASE_PATH: /${{ github.event.repository.name }}/
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -13,6 +17,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm verify
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request' && github.ref_name == (vars.PAGES_BRANCH || 'main')
+        with:
+          path: apps/workout/dist
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -21,3 +29,20 @@ jobs:
             apps/workout/test-results/
             apps/workout/playwright-report/
             packages/ui/test-results/
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref_name == (vars.PAGES_BRANCH || 'main')
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - uses: actions/deploy-pages@v4
+        id: deployment

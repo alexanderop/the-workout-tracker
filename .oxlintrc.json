@@ -1,0 +1,4 @@
+{
+  "jsPlugins": ["./tooling/architecture/oxlint-plugin.mjs"],
+  "rules": { "architecture/boundaries": "error" }
+}

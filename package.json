@@ -1,5 +1,5 @@
 {
-  "name": "form-workspace",
+  "name": "the-workout-tracker",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.28.2",
@@ -8,14 +8,16 @@
     "build": "pnpm typecheck && pnpm --filter @form/workout build",
     "preview": "pnpm --filter @form/workout preview",
     "typecheck": "pnpm -r typecheck",
-    "lint": "pnpm check:boundaries && pnpm -r lint",
+    "lint": "pnpm check:boundaries && pnpm check:architecture && pnpm -r lint",
     "check:boundaries": "node --test scripts/check-boundaries.test.mjs && node scripts/check-boundaries.mjs",
     "test:unit": "pnpm --filter @form/workout test:unit",
     "test:browser": "pnpm -r --workspace-concurrency=1 test:browser",
     "test:e2e": "pnpm --filter @form/workout test:e2e",
     "verify": "pnpm format:check && pnpm lint && pnpm build && pnpm test:unit && pnpm test:browser && pnpm test:e2e",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test:architecture": "node --test scripts/check-architecture.test.mjs",
+    "check:architecture": "pnpm test:architecture && node scripts/check-architecture.mjs"
   },
   "devDependencies": {
     "oxlint": "^1.86.0",

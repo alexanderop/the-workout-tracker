@@ -1,54 +1,92 @@
-# Workout state and persistence
+# Workout feature and dependency boundaries
 
-Candidate A is the selected design. The independent judge and root both preferred its atomic snapshot and small command API. Each mutation reads the current revision inside a Dexie transaction, applies one transition, and commits the new snapshot. The UI never reports success before persistence succeeds.
+The Workout Tracker groups training behavior in one workout feature. Sessions, routines, settings, history, and backups share the same snapshot and revision rules. A screen is not an independent storage boundary.
 
-The implementation retains A's additive import and raw recovery export. It adopts B's refusal to finish an empty session and completed-set-only totals. It retains immutable exercise snapshots in active and completed sessions. Candidate C's extra storage interface and destructive backup replacement are excluded. Settings and routines use the same revision protection as sets.
+## Module ownership
 
-The app has one active workout. Session IDs also identify completed records, making finish idempotent. Rest stores its deadline and source set, so reload or background throttling cannot extend the countdown. History and progress derive from completed session snapshots.
+The app lives in `apps/workout`. Its source has these responsibilities:
 
-Whole-snapshot writes simplify this small local app. A future measured write-latency problem can justify separate history records. No Effect runtime is needed for one local transaction source. Explicit time and ID capabilities support deterministic tests.
+- `features/workouts/domain.ts` owns readonly models, Zod schemas, starter data, and the pure `reduceWorkout` transition. Time and ID generation are explicit inputs.
+- `features/workouts/ports.ts` declares the storage contract using domain types. It imports no runtime implementation.
+- `features/workouts/application.ts` owns commands, backup merging, revision checks, and the service lifetime. `createWorkouts` receives storage, a clock, and an ID generator.
+- `features/workouts/adapters/dexie.ts` owns IndexedDB initialization, validation of persisted data, atomic writes, observation, and connection cleanup.
+- `features/workouts/ui/` owns training-specific components and `useWorkouts`. The composable receives a service and removes its own subscription on disposal.
+- `app/composition.ts` selects Dexie and the real clock and ID generator. `main.ts` creates one service, passes it to the app, and closes it when the app unmounts.
 
-## Implementation contract
+The existing IndexedDB name, schema version, `state` store, `snapshot` key, and backup format remain unchanged. No storage migration is needed.
 
-`apps/workout/src/domain.ts` exports these readonly shapes and functions.
+```mermaid
+flowchart LR
+  UI[Vue UI] --> Application[Workout application]
+  Application --> Domain[Pure domain rules]
+  Application --> Port[Storage port]
+  Dexie[Dexie adapter] -. implements .-> Port
+  Composition[App composition] --> Application
+  Composition --> Dexie
+```
 
-- Exercise has id, name, category, and custom.
-- Routine has id, name, description, and exercises. Each routine exercise has exerciseId, sets, reps, and weightKg.
-- WorkoutSet has id, weightKg, reps, and completed.
-- SessionExercise has id, exerciseId, name, category, and sets.
-- ActiveSession has id, status equal to active, name, startedAt, exercises, and rest. Rest is null or an object with setId and endsAt.
-- CompletedSession has id, status equal to completed, name, startedAt, finishedAt, and exercises.
-- Settings has restSeconds and autoRest.
-- Snapshot has revision, exercises keyed by ID, routines keyed by ID, active, completed keyed by ID, and settings.
-- Command is a discriminated union listed below.
-- initialSnapshot() supplies a real exercise catalog and starter routines, with no history.
-- sessionTotals(session) returns completedSets and volumeKg.
-- remainingRestSeconds(active, at) returns a nonnegative integer.
-- reduceWorkout(snapshot, command, inputs) returns changed, unchanged, or rejected. Inputs contain at and id, an injected ID function. The transition returns snapshot or message.
+Solid arrows show source dependencies. At runtime the application calls the injected adapter through the port.
 
-Commands have the following fields.
+## Public entry points
 
-- start has routineId, a string or null. Null starts an empty workout called Free workout.
-- set-entry has sessionId, exerciseId, setId, weightKg, reps, and completed. It atomically saves the entered values and desired completion state.
-- set-values has sessionId, exerciseId, setId, weightKg, and reps. exerciseId identifies the session exercise.
-- set-completed has sessionId, setId, and completed.
-- add-set has sessionId and exerciseId, identifying the session exercise.
-- remove-set has sessionId, exerciseId, and setId. Require at least one set per exercise.
-- add-exercise has sessionId and exerciseId, identifying a catalog exercise.
-- remove-exercise has sessionId and exerciseId, identifying the session exercise.
-- finish has sessionId. Reject zero completed sets. Retain unfinished rows but exclude them from totals.
-- discard has sessionId. Require the matching active workout; clear it without adding history.
-- stop-rest has sessionId.
-- save-routine has routine, the full Routine value.
-- save-exercise has exercise, the full Exercise value.
-- settings has settings, the full Settings value.
+`features/workouts/index.ts` exports the domain and application API. `ui.ts` exports the components and composable. `infrastructure.ts` exports the adapter factory exclusively for the composition root.
 
-`apps/workout/src/workouts.ts` exports openWorkouts({ databaseName, now, id }). It returns execute(command, expectedRevision), subscribe(listener), exportBackup(), importBackup(json, expectedRevision), close(). Results are {kind:'saved',snapshot}, {kind:'conflict',snapshot}, {kind:'invalid',message}, or {kind:'unavailable',message}. LoadState is {kind:'loading'}, {kind:'ready',snapshot}, {kind:'recovery',message,rawExport}, or {kind:'unavailable',message}. Subscribe initializes the database and emits ready or a failure. exportBackup returns a Promise<string>. All writes validate at the boundary. Zod supplies validation. A corrupt read never silently replaces data. Import merges complete records atomically, skips exact duplicates, rejects conflicting IDs, validates all references, and keeps local settings. Import cannot introduce two active workouts. A revision-zero snapshot identical to initialSnapshot is a pristine installation; only that state may restore incoming starter definitions. It still retains local settings and advances the local revision.
+Other features may import only the public index and only from their application layer. `featureDependencies` in `tooling/architecture/policy.mjs` declares permitted feature dependencies. It starts empty. Dependency cycles are rejected.
 
-## Package boundaries
+`packages/ui` owns generic components and design tokens. It has no workout, application, or persistence dependencies. Its public package exports remain `@form/ui` and `@form/ui/tokens.css`.
 
-The workout app owns all domain, storage, PWA and training-specific UI code in `apps/workout`. The reusable UI package owns `Sheet`, its responsive component styles, design tokens and dialog browser tests in `packages/ui`. The dependency direction is `@form/workout` → `@form/ui`; the UI package must never import an application.
+## Storage contract
 
-Public UI entry points are `@form/ui` and `@form/ui/tokens.css`. Each package declares its direct dependencies. Shared strict TypeScript options live at the repository root, while package-specific types and test configuration stay with their package. UI is consumed as Vue/TypeScript source, so no separate library build is required for local development.
+`WorkoutStorage` provides `read`, `compareAndSave`, `subscribe`, and `close`. It exposes domain values and explicit results, not database clients, queries, or transaction callbacks.
 
-The root verification command runs the architecture guard, per-package checks and app acceptance tests. The guard checks declared internal dependencies and static, dynamic, type and re-export imports in TypeScript and Vue scripts, plus CSS imports. Computed dynamic imports are rejected because their package target cannot be determined statically.
+`read` returns a ready snapshot, recoverable corrupt data, or an unavailable result. Corrupt data stays intact and can be exported. Initialization inserts starter data only when the snapshot does not exist.
+
+`compareAndSave(expectedRevision, next)` validates and compares the current revision inside the same transaction as the write:
+
+- A stale expected revision returns `conflict` with the current snapshot.
+- A changed snapshot must advance the revision by exactly one.
+- A snapshot with the same revision must have the same validated serialized content. It returns the persisted snapshot without a write.
+- Invalid data and failed writes never report success.
+- A closed handle rejects reads and writes. Closing one handle does not close another handle.
+
+The application first reads the snapshot, rejects stale requests, and applies the domain transition. It then calls `compareAndSave`, including for no-op transitions. The second revision check catches writes that happened after the initial read. There are no automatic retries, so a conflict cannot silently regenerate IDs or overwrite another change.
+
+The service owns its storage handle. Components own subscriptions only. Disposing a component does not close the service used by other components.
+
+## Preserved behavior
+
+There is one active workout. Session IDs also identify completed records, so finishing an already finished session is idempotent. Finishing an empty session is rejected. History and progress count completed sets only. Exercise details are immutable snapshots within each session.
+
+Rest stores its deadline and source set. Reload and background throttling cannot extend the countdown.
+
+Backups merge complete records atomically. Imports skip identical records, reject conflicting IDs, validate references, and preserve local settings. Imports cannot introduce two active sessions. A pristine installation can restore edited starter definitions. Imports advance the local revision rather than trusting the backup revision. Import is not device synchronization.
+
+## Executable import rules
+
+The Oxlint plugin and standalone checker share one policy in `tooling/architecture/policy.mjs`.
+
+| Layer                | Allowed internal dependencies | Allowed external dependencies   |
+| -------------------- | ----------------------------- | ------------------------------- |
+| Domain               | Domain                        | Zod                             |
+| Ports                | Domain types                  | None                            |
+| Application          | Domain, ports, application    | Zod                             |
+| Adapters             | Domain, ports, adapters       | Explicitly registered SDKs      |
+| UI                   | Domain, application, UI       | Vue and registered UI libraries |
+| Public index         | Domain, application           | None                            |
+| Infrastructure entry | Adapters                      | None                            |
+
+Dexie is registered only for `adapters/dexie.ts`. Future SDKs require an explicit adapter ownership rule. Concrete SDK types are not allowed in ports.
+
+The policy resolves relative imports and configured TypeScript aliases. It checks type imports, re-exports, dynamic imports, and CommonJS imports. Nonliteral imports are rejected. The standalone check parses Vue script blocks and cannot be disabled with inline lint comments.
+
+Domain, ports, and application code cannot read ambient network, storage, time, randomness, or browser state. Pass inputs or inject capabilities instead. Scope checks allow injected parameters with these names and ordinary object properties.
+
+`pnpm lint` runs package boundaries, architecture rule tests, the standalone architecture check, and workspace Oxlint. Editor diagnostics provide early feedback. Required CI checks and repository branch protection must be configured on the hosting service to prevent merges after a failed check. The rules are architectural guardrails, not a sandbox for arbitrary JavaScript execution.
+
+## Future adapters
+
+A new storage adapter implements the same contract and runs the shared contract suite. The composition root selects it. Supabase, DynamoDB, authentication, and synchronization are not implemented by this refactor.
+
+A remote database still needs a suitable data model and server-side authorization. Local-first synchronization needs its own conflict policy and workflow. An AI capability belongs behind a task-specific port with validated results; it does not bypass domain rules.
+
+See [Testing responsibilities](testing.md) for verification of each boundary.

@@ -1,4 +1,6 @@
-# Form
+# The Workout Tracker
+
+[Open the app](https://alexanderop.github.io/the-workout-tracker/) · [Source](https://github.com/alexanderop/the-workout-tracker)
 
 A quiet, local-first workout journal. Dark mode, five colors, purple as the primary accent. Built with Vue 3, strict TypeScript, Vite, Dexie, Reka UI, Lucide and a service worker.
 
@@ -15,7 +17,9 @@ The app imports `Sheet` from `@form/ui` and the shared colors from `@form/ui/tok
 
 `pnpm check:boundaries` checks workspace manifests and imports in source, tests and configuration. It rejects cross-workspace relative imports, private deep imports, undeclared dependencies and dependencies on applications. Source cannot rely on development-only dependencies. The check runs during `pnpm lint` and CI verification.
 
-Run an individual package with `pnpm --filter @form/ui test:browser` or `pnpm --filter @form/workout dev`. Root commands coordinate the workspace. Add generic components to the UI package; keep `SetRow` and `RoutineEditor` in the app because they use workout domain types.
+Within the app, `src/features/workouts` contains the domain, application, storage port, Dexie adapter, and feature UI. The app composition root supplies concrete dependencies. Shared Oxlint and standalone rules enforce feature entry points and layer direction; `pnpm check:architecture` also tests the rules with real TypeScript and Vue fixtures.
+
+Run an individual package with `pnpm --filter @form/ui test:browser` or `pnpm --filter @form/workout dev`. Root commands coordinate the workspace. Add generic components to the UI package; keep `SetRow` and `RoutineEditor` in the workout feature because they use workout domain types.
 
 ## Run
 
@@ -53,7 +57,7 @@ IndexedDB holds your journal in this browser profile, on this origin. Clearing s
 
 Imports restore a completely untouched installation, including edited starter routines. Otherwise they add missing records, skip exact duplicates and reject conflicting IDs without partially importing. Local settings stay unchanged. Two different active workouts cannot be merged. A newer backup with edits to records already on another device can therefore require a fresh browser profile for restoration. Import is not multi-device synchronization.
 
-An unreadable database offers a raw recovery export rather than silently clearing your data. Simultaneous edits use revision checks; if another tab changed the set you are editing, Form keeps your draft visible and asks you to reload the saved version.
+An unreadable database offers a raw recovery export rather than silently clearing your data. Simultaneous edits use revision checks; if another tab changed the set you are editing, The Workout Tracker keeps your draft visible and asks you to reload the saved version.
 
 ## Verify
 
@@ -64,6 +68,16 @@ pnpm verify
 
 Verification includes formatting, lint, type checking, production build, pure domain tests, real Chromium IndexedDB and component tests, and desktop/mobile browser journeys. Acceptance tests exercise production service-worker offline reload, custom exercise logging, routine editing, real backup downloads and imports, discard and stale-tab conflicts. Screenshots are written to `apps/workout/test-results/`.
 
-The mobile suite uses Chromium device emulation. It does not establish physical iPhone/Safari installation behavior. The manifest and assets are generated; no native OS installation or remote deployment is part of this local build.
+The mobile suite uses Chromium device emulation. It does not establish physical iPhone/Safari installation behavior. The manifest and assets are generated; native OS installation still requires a user action.
 
-Architecture decisions are in [docs/architecture.md](docs/architecture.md), the design tokens in [docs/design.md](docs/design.md), and the implementation trail in [.audit/decisions.tsv](.audit/decisions.tsv).
+Architecture decisions are in [docs/architecture.md](docs/architecture.md), test responsibilities in [docs/testing.md](docs/testing.md), the design tokens in [docs/design.md](docs/design.md), and the implementation trail in [.audit/decisions.tsv](.audit/decisions.tsv).
+
+## GitHub Pages
+
+The verification workflow builds and tests the actual Pages project path before deployment. It publishes `apps/workout/dist` through the official GitHub Pages actions only after verification succeeds.
+
+The repository variable `PAGES_BRANCH` selects the publication branch. If unset, it defaults to `main`. While the architecture PR is open, it selects `codex/feature-architecture` so the reviewed changes remain unmerged. After merging, set the variable to `main` or delete it. Pull requests run verification without deployment permissions.
+
+For a local deployment rehearsal, run `VITE_BASE_PATH=/the-workout-tracker/ pnpm verify`. The same base path scopes the manifest, icons, application navigation, and service worker. The app remains installable and works offline after its first complete online load.
+
+The display name and download filenames use The Workout Tracker. The internal IndexedDB name and versioned backup identifiers retain their existing values so the rename does not discard data or invalidate backups.

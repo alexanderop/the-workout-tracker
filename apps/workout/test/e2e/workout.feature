@@ -26,3 +26,7 @@ Feature: A private training journal
     Given a new training journal
     When I start and log a custom exercise offline
     Then that custom workout survives an offline reload
+
+  Scenario: Install the app from its published project path
+    Given a new training journal
+    Then the app has its published name and installable assets

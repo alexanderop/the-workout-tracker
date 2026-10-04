@@ -1,14 +1,8 @@
 import { computed, onScopeDispose, ref, shallowRef } from "vue";
-import { openWorkouts } from "./workouts";
-import type { LoadState } from "./workouts";
-import type { Command, Snapshot } from "./domain";
+import type { Workouts, LoadState } from "../application";
+import type { Command, Snapshot } from "../domain";
 
-export function useWorkouts() {
-  const service = openWorkouts({
-    databaseName: "form-workout-v1",
-    now: Date.now,
-    id: () => crypto.randomUUID(),
-  });
+export function useWorkouts(service: Workouts) {
   const state = shallowRef<LoadState>({ kind: "loading" });
   const saving = ref(false);
   const message = ref("");
@@ -21,7 +15,6 @@ export function useWorkouts() {
   });
   onScopeDispose(() => {
     stop();
-    service.close();
   });
   async function run(
     command: Command,

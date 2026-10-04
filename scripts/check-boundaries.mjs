@@ -4,6 +4,7 @@ import { dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
 import { parse } from "@vue/compiler-sfc";
+import { resolveImport } from "../tooling/architecture/policy.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const inside = (parent, file) => {
@@ -15,8 +16,9 @@ const inside = (parent, file) => {
 };
 
 export function checkImport(specifier, file, owner, workspaces) {
-  if (specifier.startsWith(".")) {
-    return inside(owner.directory, resolve(dirname(file), specifier))
+  const localTarget = resolveImport(specifier, file);
+  if (localTarget) {
+    return inside(owner.directory, localTarget)
       ? null
       : "Relative imports must stay inside their workspace";
   }

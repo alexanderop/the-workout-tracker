@@ -5,7 +5,7 @@ const { Given, When, Then } = createBdd();
 const nav = (page: Page, name: string) =>
   page.getByRole("link", { name, exact: true }).filter({ visible: true });
 async function openJournal(page: Page) {
-  await page.goto("/");
+  await page.goto("./");
   await expect(
     page.getByRole("heading", { name: "A little stronger, every day." }),
   ).toBeVisible();
@@ -298,7 +298,7 @@ When("two tabs edit the same set", async ({ page, context }) => {
     .click();
   await log(page, 1, "70", "5");
   const other = await context.newPage();
-  await other.goto("/#/session");
+  await other.goto("./#/session");
   await log(other, 1, "60", "8");
   await other
     .getByRole("button", { name: "Log set 1 of Bench press", exact: true })
@@ -425,3 +425,57 @@ Then("that custom workout survives an offline reload", async ({ page }) => {
     page.getByRole("dialog").getByText("Logged", { exact: true }),
   ).toHaveCount(1);
 });
+
+Then(
+  "the app has its published name and installable assets",
+  async ({ page, baseURL }) => {
+    await expect(page).toHaveTitle("The Workout Tracker");
+    const href = await page
+      .locator('link[rel="manifest"]')
+      .getAttribute("href");
+    expect(href).toBeTruthy();
+    const manifestURL = new URL(href!, page.url());
+    const response = await page.request.get(manifestURL.href);
+    expect(response.ok()).toBe(true);
+    const manifest: {
+      name: string;
+      short_name: string;
+      id: string;
+      start_url: string;
+      scope: string;
+      display: string;
+      icons: { src: string; sizes: string; type: string; purpose?: string }[];
+    } = await response.json();
+    expect(manifest).toMatchObject({
+      name: "The Workout Tracker",
+      short_name: "Workout Tracker",
+      display: "standalone",
+    });
+    for (const path of [manifest.id, manifest.start_url, manifest.scope]) {
+      expect(new URL(path, manifestURL).href).toBe(baseURL);
+    }
+    expect(manifest.icons.map((icon) => icon.sizes)).toEqual([
+      "192x192",
+      "512x512",
+      "512x512",
+    ]);
+    expect(manifest.icons.some((icon) => icon.purpose === "maskable")).toBe(
+      true,
+    );
+    for (const icon of manifest.icons) {
+      const url = new URL(icon.src, manifestURL);
+      expect(url.href.startsWith(baseURL!)).toBe(true);
+      const size = await page.evaluate(async (source) => {
+        const image = new Image();
+        image.src = source;
+        await image.decode();
+        return `${image.naturalWidth}x${image.naturalHeight}`;
+      }, url.href);
+      expect(size).toBe(icon.sizes);
+    }
+    const scope = await page.evaluate(
+      async () => (await navigator.serviceWorker.ready).scope,
+    );
+    expect(scope).toBe(baseURL);
+  },
+);
