@@ -1,18 +1,19 @@
+import { openDexieWorkoutStorage } from "../../src/features/workouts/infrastructure";
 import Dexie from "dexie";
 import { afterEach, describe, expect, it } from "vitest";
-import { initialSnapshot, type Snapshot } from "../../src/domain";
+import { initialSnapshot, type Snapshot } from "../../src/features/workouts";
 import {
-  openWorkouts,
+  createWorkouts,
   type LoadState,
   type Workouts,
-} from "../../src/workouts";
+} from "../../src/features/workouts";
 
 const names: string[] = [];
 const handles: Workouts[] = [];
 function open(name = `form-test-${crypto.randomUUID()}`) {
   if (!names.includes(name)) names.push(name);
-  const store = openWorkouts({
-    databaseName: name,
+  const store = createWorkouts({
+    storage: openDexieWorkoutStorage(name, initialSnapshot()),
     now: () => 10000,
     id: () => crypto.randomUUID(),
   });

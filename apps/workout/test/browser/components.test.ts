@@ -1,8 +1,8 @@
 import { expect, it } from "vitest";
 import { page } from "vitest/browser";
 import { render } from "vitest-browser-vue";
-import SetRow from "../../src/components/SetRow.vue";
-import type { WorkoutSet } from "../../src/domain";
+import SetRow from "../../src/features/workouts/ui/SetRow.vue";
+import type { WorkoutSet } from "../../src/features/workouts";
 
 it("validates number inputs and emits one atomic set entry", async () => {
   const commits: unknown[] = [];

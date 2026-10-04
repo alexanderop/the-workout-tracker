@@ -23,19 +23,21 @@ import {
   X,
 } from "@lucide/vue";
 import { Sheet } from "@form/ui";
-import SetRow from "./components/SetRow.vue";
-import RoutineEditor from "./components/RoutineEditor.vue";
-import { useWorkouts } from "./useWorkouts";
+import { SetRow, RoutineEditor, useWorkouts } from "./features/workouts/ui";
+import type { Workouts } from "./features/workouts";
 import { usePwa } from "./usePwa";
-import { sessionTotals, remainingRestSeconds } from "./domain";
+import { sessionTotals, remainingRestSeconds } from "./features/workouts";
 import type {
   Command,
   CompletedSession,
   Routine,
   SessionExercise,
-} from "./domain";
+} from "./features/workouts";
 
-const { service, state, snapshot, saving, message, error, run } = useWorkouts();
+const props = defineProps<{ workouts: Workouts }>();
+const { service, state, snapshot, saving, message, error, run } = useWorkouts(
+  props.workouts,
+);
 const {
   online,
   installed,

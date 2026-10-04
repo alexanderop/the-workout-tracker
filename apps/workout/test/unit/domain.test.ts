@@ -9,7 +9,7 @@ import {
   type ActiveSession,
   type Command,
   type Snapshot,
-} from "../../src/domain";
+} from "../../src/features/workouts";
 
 function scenario() {
   let number = 0;
