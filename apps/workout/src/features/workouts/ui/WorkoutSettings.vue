@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useTemplateRef, ref } from "vue";
-import { Sheet, Button, NativeSelect, Switch } from "@form/ui";
+import { Button, NativeSelect, Switch } from "@form/ui";
 import { ArrowDownToLine, Upload } from "@lucide/vue";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import { download } from "./presentation";
@@ -11,7 +11,6 @@ const { workspace } = defineProps<{
   >;
 }>();
 const { service, snapshot, state, saving, run } = workspace;
-const settingsOpen = defineModel<boolean>("open", { required: true });
 const backupFile = ref<{ name: string; json: string; revision: number } | null>(
   null,
 );
@@ -103,14 +102,13 @@ defineSlots<{ default?: () => unknown }>();
 </script>
 
 <template>
-  <Sheet
-    :open="settingsOpen"
-    title="Make it your space"
-    description="Your training preferences and local data."
-    @close="settingsOpen = false"
-    ><template v-if="snapshot"
-      ><section class="settings-section">
-        <h3>Training preferences</h3>
+  <section class="settings-page" aria-labelledby="settings-title">
+    <header class="page-heading">
+      <h1 id="settings-title">Settings</h1>
+    </header>
+    <template v-if="snapshot">
+      <section class="settings-section">
+        <h2>Training preferences</h2>
         <label class="settings-row"
           ><span
             >Automatic rest timer<small
@@ -147,7 +145,7 @@ defineSlots<{ default?: () => unknown }>();
         </div>
       </section>
       <section class="settings-section">
-        <h3>Keep a copy of your progress</h3>
+        <h2>Keep a copy of your progress</h2>
         <p class="muted small">
           Workouts live in this browser. Export a backup to keep them safe or
           move them to another device.
@@ -210,7 +208,7 @@ defineSlots<{ default?: () => unknown }>();
       <p class="settings-signoff">
         <span class="brand small">The Workout Tracker</span
         ><span class="muted small">A quieter space to get stronger.</span>
-      </p></template
-    ></Sheet
-  >
+      </p>
+    </template>
+  </section>
 </template>

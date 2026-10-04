@@ -64,6 +64,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'settings': RouteRecordInfo<
+      'settings',
+      '/settings',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'workouts': RouteRecordInfo<
       'workouts',
       '/workouts',
@@ -111,6 +118,14 @@ declare module 'vue-router/auto-routes' {
     'src/pages/SessionRoute.vue': {
       routes:
         | 'session'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/SettingsRoute.vue': {
+      routes:
+        | 'settings'
       views:
         | never
       pathParamNames:

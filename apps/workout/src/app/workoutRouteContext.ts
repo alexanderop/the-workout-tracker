@@ -6,7 +6,15 @@ import type {
   WorkoutPage,
 } from "../features/workouts/ui";
 
+type InstallationCapability = {
+  readonly installed: Readonly<Ref<boolean>>;
+  readonly offlineReady: Readonly<Ref<boolean>>;
+  readonly message: Readonly<Ref<string>>;
+  readonly install: () => Promise<void>;
+};
+
 type WorkoutRouteContext = {
+  readonly installation: InstallationCapability;
   readonly workspace: ReturnType<typeof useWorkoutWorkspace>;
   readonly dialogs: Readonly<
     Ref<Pick<

@@ -57,7 +57,13 @@ Icon-only actions use the shared `IconButton`: a required accessible label, deco
 
 Standard buttons retain the UI package's variant and size styling. Existing custom cards, rows and text actions explicitly use `Button unstyled` with an app-owned layout class. Global resets must exclude shared buttons; removing their flex layout is what previously displaced the settings icon. Histoire's Icon Button story owns the isolated interaction examples.
 
-Desktop sidebar footer actions use left-aligned labels with a shared icon column. Wrapped labels stay aligned with their first line; the local-storage note uses the same icon and label offsets.
+The desktop sidebar installation action uses a left-aligned label with an icon column. Wrapped labels stay aligned with their first line; the local-storage note uses the same icon and label offsets.
+
+## Settings navigation
+
+Settings is a full page at `/settings`, reached through the content footer on desktop and mobile. The footer uses a native navigation link with a visible focus outline and a minimum 44px touch target. The current Settings link announces its active page. Settings has no header or sidebar trigger and does not open an overlay. The main workout navigation keeps its three destinations.
+
+The page groups training preferences, backup controls, and installation under the Settings heading. Browser Back returns to the previous page. Leaving Settings clears an unsubmitted backup selection. Saved preferences and workout drafts remain in the shared workspace.
 
 ## Workout-first screens
 

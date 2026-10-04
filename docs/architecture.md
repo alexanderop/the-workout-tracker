@@ -44,7 +44,7 @@ The workout pages remain inside the workout feature. Workouts, templates, traini
 
 `App.vue` owns the application shell and PWA integration. `app/router.ts` owns Vue Router 5 hash navigation with the deployment base path. The generated routes in `pages/` are application adapters that import feature pages through `features/workouts/ui.ts`. They share the shell-owned workspace and dialogs through `app/workoutRouteContext.ts`; they do not create controllers. Feature pages receive the data they display and emit user actions. Calendar, history filtering, and chart projections belong with their pages. Shared formatting stays in the feature UI.
 
-`WorkoutsPage`, `ExercisesPage`, `TrainingPage`, and `ProgressPage` own the main page templates. History is part of the workout overview. `TrainingDock` owns the mobile training controls. `WorkoutDialogs` owns routine editing, exercise selection, set options, confirmations, and completed-session details. `WorkoutSettings` owns preferences and backup controls.
+`WorkoutsPage`, `ExercisesPage`, `TrainingPage`, and `ProgressPage` own the main page templates. History is part of the workout overview. `TrainingDock` owns the mobile training controls. `WorkoutDialogs` owns routine editing, exercise selection, set options, confirmations, and completed-session details. `WorkoutSettings` owns the Settings page body, preferences, and backup controls. `pages/SettingsRoute.vue` exposes it at `/settings` and composes its installation section through the existing slot.
 
 `App.vue` calls `useWorkoutWorkspace` once to create `useWorkouts`, `useTrainingSession`, and the shared clock. Page navigation does not recreate either composable. This preserves the shared saving lock, selected set, live draft baselines, and last-log undo. The training page and mobile controls use that same training instance. Inline set rows, explicit clearing and atomic exercise configuration reuse its draft and revision guards. Detailed set operations remain in a correction sheet. The dock derives its next set from canonical exercise/set order.
 
@@ -52,9 +52,9 @@ The Workouts URL owns the current History/Templates selection. The experimental 
 
 Navigation errors appear through the workspace error notice. Shell links and feature navigation clear an old status synchronously when changing pages; completion never clears a newly saved status or steals dialog focus. Browser back/forward retains status until another action. Shell links focus the main region after navigation only if focus is still on the initiating link. The skip link focuses main without changing the hash URL.
 
-Progress selection and cross-page dialog state also survive page navigation. Routine editing retains the revision captured when the editor opens. Backup import retains the revision captured when the file is read. Completing a workout opens its detail after returning to the workout overview.
+Progress selection and cross-page dialog state also survive page navigation. Routine editing retains the revision captured when the editor opens. Backup import retains the revision captured when the file is read. Its pending file selection is local to the Settings page and is cleared when the page unmounts. Completing a workout opens its detail after returning to the workout overview.
 
-The feature UI receives PWA capabilities from the application shell. It cannot import application wiring or select a storage adapter. The existing architecture checks enforce this boundary.
+`App.vue` creates `usePwa` once. The Settings route receives readonly installation state and an install action through `app/workoutRouteContext.ts`. The route owns the installation presentation, so the workout feature does not depend on PWA infrastructure. It cannot import application wiring or select a storage adapter. The existing architecture checks enforce this boundary.
 
 ## Public entry points
 

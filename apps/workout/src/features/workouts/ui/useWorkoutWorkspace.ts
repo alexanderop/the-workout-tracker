@@ -5,7 +5,7 @@ import { useWorkouts } from "./useWorkouts";
 import { useTrainingSession } from "./useTrainingSession";
 import { duration } from "./presentation";
 export type WorkoutPage =
-  "today" | "workouts" | "history" | "exercises" | "progress" | "session";
+  "today" | "workouts" | "history" | "exercises" | "progress" | "session" | "settings";
 export function useWorkoutWorkspace(service: Workouts, journal: DraftJournal) {
   const workouts = useWorkouts(service);
   const { snapshot, saving, run } = workouts;

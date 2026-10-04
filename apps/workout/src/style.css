@@ -311,12 +311,6 @@ svg {
   width: 4px;
   height: 4px;
 }
-.avatar {
-  background: var(--surface);
-  border: 1px solid var(--muted);
-  border-radius: 50%;
-  font-size: 11px;
-}
 .main {
   max-width: 1220px;
   margin: 0 auto;
@@ -655,6 +649,22 @@ svg {
   font-size: 9px;
   color: var(--muted);
   line-height: 1.7;
+}
+.main-footer nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+.main-footer nav a:hover,
+.main-footer nav a[aria-current="page"] {
+  color: var(--purple);
+}
+.main-footer nav a:focus-visible {
+  outline: 2px solid var(--purple);
+  outline-offset: 2px;
 }
 .mobile-nav {
   display: none;
@@ -1293,12 +1303,16 @@ textarea::placeholder {
 .detail-status svg {
   color: var(--purple);
 }
+.settings-page {
+  max-width: 720px;
+}
 .settings-section {
   padding: 0 0 24px;
   margin-bottom: 24px;
   border-bottom: 1px solid var(--surface);
 }
-.settings-section h3 {
+.settings-section h2 {
+  font-size: 16px;
   margin-bottom: 17px;
 }
 .settings-row {

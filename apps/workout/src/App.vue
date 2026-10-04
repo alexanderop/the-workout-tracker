@@ -7,7 +7,6 @@ import {
   CircleHelp,
   Dumbbell,
   Library,
-  Settings2,
   ShieldCheck,
   TrendingUp,
   WifiOff,
@@ -17,7 +16,6 @@ import {
   useWorkoutWorkspace,
   TrainingDock,
   WorkoutDialogs,
-  WorkoutSettings,
   download,
 } from "./features/workouts/ui";
 import { RouterLink, RouterView } from "vue-router";
@@ -33,7 +31,6 @@ const workspace = useWorkoutWorkspace(workouts, drafts);
 const { state, snapshot, saving, message, error, history, active } =
   workspace;
 const dialogs = useTemplateRef<InstanceType<typeof WorkoutDialogs>>("dialogs");
-const settingsOpen = ref(false);
 const main = useTemplateRef<HTMLElement>("main");
 function focusMain() {
   main.value?.focus({ preventScroll: true });
@@ -47,14 +44,6 @@ const {
   prepareLinkNavigation,
 } = useWorkoutNavigation(message, error, focusMain);
 const progressExercise = ref("");
-provideWorkoutRouteContext({
-  workspace,
-  dialogs,
-  progressExercise,
-  navigate,
-  selectWorkoutView,
-  workoutsHref,
-});
 const {
   online,
   installed,
@@ -64,6 +53,20 @@ const {
   install,
   updateServiceWorker,
 } = usePwa();
+provideWorkoutRouteContext({
+  workspace,
+  dialogs,
+  progressExercise,
+  navigate,
+  selectWorkoutView,
+  workoutsHref,
+  installation: {
+    installed,
+    offlineReady,
+    message: installMessage,
+    install,
+  },
+});
 const navigation = [
   { id: "workouts", label: "Workouts", icon: Dumbbell },
   { id: "exercises", label: "Exercises", icon: Library },
@@ -72,11 +75,11 @@ const navigation = [
 function reload() {
   window.location.reload();
 }
-const title = computed(() =>
-  page.value === "session"
-    ? "Active workout"
-    : (navigation.find((item) => item.id === page.value)?.label ?? "Workouts"),
-);
+const title = computed(() => {
+  if (page.value === "session") return "Active workout";
+  if (page.value === "settings") return "Settings";
+  return navigation.find((item) => item.id === page.value)?.label ?? "Workouts";
+});
 </script>
 
 <template>
@@ -125,11 +128,7 @@ const title = computed(() =>
         ><ChevronRight :size="16" />
       </Button>
       <div class="sidebar-bottom">
-        <Button unstyled class="sidebar-action" @click="settingsOpen = true">
-          <Settings2 :size="17" aria-hidden="true" /><span
-            >Settings</span
-          ></Button
-        ><Button
+        <Button
           unstyled
           v-if="!installed"
           class="sidebar-action"
@@ -166,15 +165,7 @@ const title = computed(() =>
                   ? "Ready offline"
                   : "Local workspace"
             }}</span
-          ><IconButton
-            class="avatar"
-            shape="circle"
-            variant="outline"
-            label="Open settings"
-            @click="settingsOpen = true"
           >
-            <Settings2 :size="15" aria-hidden="true" />
-          </IconButton>
         </div>
       </header>
       <main id="main" ref="main" class="main" tabindex="-1">
@@ -235,6 +226,14 @@ const title = computed(() =>
 
           <RouterView />
           <footer class="main-footer">
+            <nav aria-label="Footer navigation">
+              <RouterLink
+                :to="destination('settings')"
+                @click="prepareLinkNavigation($event, 'settings')"
+                :aria-current="page === 'settings' ? 'page' : undefined"
+                >Settings</RouterLink
+              >
+            </nav>
             <span class="save-status" role="status">{{
               saving ? "Saving…" : message || ""
             }}</span>
@@ -273,33 +272,4 @@ const title = computed(() =>
     @navigate="navigate"
     @template-saved="selectWorkoutView('templates')"
   />
-  <WorkoutSettings v-model:open="settingsOpen" :workspace="workspace">
-    <section class="settings-section">
-      <div class="settings-row">
-        <span
-          >The Workout Tracker on your home screen<small
-            >Open your journal like any other app.</small
-          ></span
-        ><Button
-          unstyled
-          class="btn secondary"
-          :disabled="installed"
-          @click="install"
-        >
-          {{ installed ? "Installed" : "Install app" }}
-        </Button>
-      </div>
-      <p v-if="installMessage" class="small" role="status">
-        {{ installMessage }}
-      </p>
-      <p class="muted small">
-        {{
-          offlineReady
-            ? "Ready for offline use."
-            : "Offline availability starts after the first complete load."
-        }}
-        No account. No cloud sync.
-      </p>
-    </section>
-  </WorkoutSettings>
 </template>
