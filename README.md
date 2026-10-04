@@ -15,7 +15,9 @@ The app imports `Sheet` from `@form/ui` and the shared colors from `@form/ui/tok
 
 `pnpm check:boundaries` checks workspace manifests and imports in source, tests and configuration. It rejects cross-workspace relative imports, private deep imports, undeclared dependencies and dependencies on applications. Source cannot rely on development-only dependencies. The check runs during `pnpm lint` and CI verification.
 
-Run an individual package with `pnpm --filter @form/ui test:browser` or `pnpm --filter @form/workout dev`. Root commands coordinate the workspace. Add generic components to the UI package; keep `SetRow` and `RoutineEditor` in the app because they use workout domain types.
+Within the app, `src/features/workouts` contains the domain, application, storage port, Dexie adapter, and feature UI. The app composition root supplies concrete dependencies. Shared Oxlint and standalone rules enforce feature entry points and layer direction; `pnpm check:architecture` also tests the rules with real TypeScript and Vue fixtures.
+
+Run an individual package with `pnpm --filter @form/ui test:browser` or `pnpm --filter @form/workout dev`. Root commands coordinate the workspace. Add generic components to the UI package; keep `SetRow` and `RoutineEditor` in the workout feature because they use workout domain types.
 
 ## Run
 
@@ -66,4 +68,4 @@ Verification includes formatting, lint, type checking, production build, pure do
 
 The mobile suite uses Chromium device emulation. It does not establish physical iPhone/Safari installation behavior. The manifest and assets are generated; no native OS installation or remote deployment is part of this local build.
 
-Architecture decisions are in [docs/architecture.md](docs/architecture.md), the design tokens in [docs/design.md](docs/design.md), and the implementation trail in [.audit/decisions.tsv](.audit/decisions.tsv).
+Architecture decisions are in [docs/architecture.md](docs/architecture.md), test responsibilities in [docs/testing.md](docs/testing.md), the design tokens in [docs/design.md](docs/design.md), and the implementation trail in [.audit/decisions.tsv](.audit/decisions.tsv).
