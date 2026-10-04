@@ -95,15 +95,13 @@ The policy resolves relative imports and configured TypeScript aliases. It check
 
 Domain, ports, and application code cannot read ambient network, storage, time, randomness, or browser state. Pass inputs or inject capabilities instead. Scope checks allow injected parameters with these names and ordinary object properties.
 
-`pnpm lint` runs package boundaries, architecture rule tests, the standalone architecture check, and workspace Oxlint. Editor diagnostics provide early feedback. Required CI checks and repository branch protection must be configured on the hosting service to prevent merges after a failed check. The rules are architectural guardrails, not a sandbox for arbitrary JavaScript execution.
+`pnpm lint` runs workspace Oxlint, including its architecture rules. Standalone package and architecture checks are optional and are not part of verification. Editor diagnostics provide early feedback. Required CI checks and repository branch protection must be configured on the hosting service to prevent merges after a failed check. The rules are architectural guardrails, not a sandbox for arbitrary JavaScript execution.
 
 ## Future adapters
 
-A new storage adapter implements the same contract and runs the shared contract suite. The composition root selects it. Supabase, DynamoDB, authentication, and synchronization are not implemented by this refactor.
+A new storage adapter implements the same contract. The composition root selects it. Supabase, DynamoDB, authentication, and synchronization are not implemented by this refactor.
 
 A remote database still needs a suitable data model and server-side authorization. Local-first synchronization needs its own conflict policy and workflow. An AI capability belongs behind a task-specific port with validated results; it does not bypass domain rules.
-
-See [Testing responsibilities](testing.md) for verification of each boundary.
 
 ## Training drafts
 
@@ -114,5 +112,3 @@ The session controller owns input, current-set selection, validation, conflicts 
 Obsolete records are pruned only when their source revision is older than the observed canonical snapshot and their session or set is absent. A stale observer cannot prune a draft from a newer revision.
 
 Draft recovery can fail independently from confirmed IndexedDB storage. The app keeps the entered text visible and reports that closing the page may lose it. Acknowledgement failures remain visible; recovered stale input cannot silently overwrite newer work. Backups contain confirmed workout data, not raw drafts.
-
-Run the mobile application suite in WebKit with `WORKOUT_BROWSER=webkit pnpm --filter @form/workout test:e2e --project mobile` after building. CI runs it on Linux alongside the default desktop/mobile Chromium suite. The two offline-reload scenarios run in Chromium and are explicitly skipped in WebKit due to the pinned engine’s [offline-emulation defect](https://github.com/microsoft/playwright/issues/42775); they are not counted as WebKit offline proof. Browser emulation does not verify physical iPhone keyboard placement or operating-system process termination.

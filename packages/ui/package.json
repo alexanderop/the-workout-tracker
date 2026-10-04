@@ -10,11 +10,7 @@
   },
   "scripts": {
     "typecheck": "vue-tsc --noEmit",
-    "lint": "oxlint src test --deny-warnings",
-    "test:browser": "vitest run",
-    "test:visual": "vitest run --config vitest.visual.config.ts",
-    "test:visual:update": "vitest run --config vitest.visual.config.ts --update",
-    "test:cross-browser": "UI_BROWSER=firefox vitest run && UI_BROWSER=webkit vitest run"
+    "lint": "oxlint src --deny-warnings"
   },
   "peerDependencies": {
     "vue": "^3.5.0"
@@ -25,15 +21,11 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.9",
-    "@vitest/browser-playwright": "^5.0.3",
-    "vitest": "^5.0.3",
-    "vitest-browser-vue": "^3.1.0",
     "vue-tsc": "^3.3.12",
     "typescript": "^5.9.3",
     "vite": "^8.3.2",
     "@types/node": "^26.6.4",
     "vue": "^3.5.43",
-    "axe-core": "^4.11.1",
     "@fontsource/inter": "^5.2.8"
   },
   "sideEffects": [
