@@ -1,0 +1,102 @@
+
+> the-workout-tracker@ test:visual <workspace>
+> bash scripts/test-ui-visual.sh
+
+Visual test evidence: <workspace>/packages/ui/test-results/visual/run.a3HZi9
+! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-10.28.2.tgz
+Scope: all 4 workspace projects
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +485
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   ╭──────────────────────────────────────────────╮
+   │                                              │
+   │     Update available! 10.28.2 → 12.9.1.      │
+   │     Changelog: https://pnpm.io/v/12.9.1      │
+   │   To update, run: corepack use pnpm@12.9.1   │
+   │                                              │
+   ╰──────────────────────────────────────────────╯
+
+Progress: resolved 485, reused 0, downloaded 15, added 15
+Progress: resolved 485, reused 0, downloaded 64, added 64
+Progress: resolved 485, reused 0, downloaded 108, added 108
+Progress: resolved 485, reused 0, downloaded 121, added 121
+ WARN  Tarball download average speed 21 KiB/s (size 28 KiB) is below 50 KiB/s: https://registry.npmjs.org/mime-db/-/mime-db-1.54.0.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 124, added 124
+ WARN  Tarball download average speed 37 KiB/s (size 50 KiB) is below 50 KiB/s: https://registry.npmjs.org/commander/-/commander-13.1.0.tgz (GET)
+ WARN  Tarball download average speed 20 KiB/s (size 53 KiB) is below 50 KiB/s: https://registry.npmjs.org/vite-plugin-pwa/-/vite-plugin-pwa-2.0.0.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 141, added 141
+Progress: resolved 485, reused 0, downloaded 149, added 149
+Progress: resolved 485, reused 0, downloaded 165, added 165
+ WARN  Tarball download average speed 33 KiB/s (size 49 KiB) is below 50 KiB/s: https://registry.npmjs.org/json5/-/json5-2.2.3.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 179, added 179
+ WARN  Tarball download average speed 15 KiB/s (size 40 KiB) is below 50 KiB/s: https://registry.npmjs.org/baseline-browser-mapping/-/baseline-browser-mapping-2.11.27.tgz (GET)
+ WARN  Tarball download average speed 20 KiB/s (size 36 KiB) is below 50 KiB/s: https://registry.npmjs.org/@babel/helper-module-transforms/-/helper-module-transforms-7.29.7.tgz (GET)
+ WARN  Tarball download average speed 33 KiB/s (size 34 KiB) is below 50 KiB/s: https://registry.npmjs.org/regexpu-core/-/regexpu-core-6.5.2.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 196, added 196
+ WARN  Tarball download average speed 4 KiB/s (size 7 KiB) is below 50 KiB/s: https://registry.npmjs.org/@babel/plugin-bugfix-v8-static-class-fields-redefine-readonly/-/plugin-bugfix-v8-static-class-fields-redefine-readonly-7.29.7.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 213, added 213
+ WARN  Tarball download average speed 34 KiB/s (size 109 KiB) is below 50 KiB/s: https://registry.npmjs.org/regenerate-unicode-properties/-/regenerate-unicode-properties-10.3.0.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 222, added 222
+ WARN  Tarball download average speed 32 KiB/s (size 92 KiB) is below 50 KiB/s: https://registry.npmjs.org/@babel/helper-create-class-features-plugin/-/helper-create-class-features-plugin-7.29.7.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 251, added 251
+Progress: resolved 485, reused 0, downloaded 264, added 264
+ WARN  Tarball download average speed 48 KiB/s (size 54 KiB) is below 50 KiB/s: https://registry.npmjs.org/@babel/runtime/-/runtime-7.29.7.tgz (GET)
+ WARN  Tarball download average speed 22 KiB/s (size 32 KiB) is below 50 KiB/s: https://registry.npmjs.org/resolve/-/resolve-1.22.12.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 277, added 277
+Progress: resolved 485, reused 0, downloaded 288, added 288
+ WARN  Tarball download average speed 43 KiB/s (size 69 KiB) is below 50 KiB/s: https://registry.npmjs.org/core-js-compat/-/core-js-compat-3.50.0.tgz (GET)
+ WARN  Tarball download average speed 4 KiB/s (size 5 KiB) is below 50 KiB/s: https://registry.npmjs.org/call-bind-apply-helpers/-/call-bind-apply-helpers-1.0.2.tgz (GET)
+ WARN  Tarball download average speed 21 KiB/s (size 49 KiB) is below 50 KiB/s: https://registry.npmjs.org/babel-plugin-polyfill-corejs3/-/babel-plugin-polyfill-corejs3-0.14.2.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 306, added 306
+ WARN  Tarball download average speed 15 KiB/s (size 39 KiB) is below 50 KiB/s: https://registry.npmjs.org/jake/-/jake-10.9.4.tgz (GET)
+ WARN  Tarball download average speed 9 KiB/s (size 39 KiB) is below 50 KiB/s: https://registry.npmjs.org/@rollup/plugin-node-resolve/-/plugin-node-resolve-16.0.3.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 338, added 338
+ WARN  Tarball download average speed 15 KiB/s (size 70 KiB) is below 50 KiB/s: https://registry.npmjs.org/@babel/helper-define-polyfill-provider/-/helper-define-polyfill-provider-0.6.8.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 383, added 383
+ WARN  Tarball download average speed 28 KiB/s (size 146 KiB) is below 50 KiB/s: https://registry.npmjs.org/async/-/async-3.2.6.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 404, added 404
+ WARN  Tarball download average speed 44 KiB/s (size 50 KiB) is below 50 KiB/s: https://registry.npmjs.org/source-map/-/source-map-0.8.0.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 447, added 447
+ WARN  Tarball download average speed 47 KiB/s (size 81 KiB) is below 50 KiB/s: https://registry.npmjs.org/minipass/-/minipass-7.1.3.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 469, added 469
+ WARN  Tarball download average speed 37 KiB/s (size 99 KiB) is below 50 KiB/s: https://registry.npmjs.org/path-scurry/-/path-scurry-2.0.2.tgz (GET)
+Progress: resolved 485, reused 0, downloaded 474, added 474
+Progress: resolved 485, reused 0, downloaded 476, added 475
+Progress: resolved 485, reused 0, downloaded 479, added 479
+Progress: resolved 485, reused 0, downloaded 482, added 482
+Progress: resolved 485, reused 0, downloaded 484, added 484
+Progress: resolved 485, reused 0, downloaded 485, added 484
+Progress: resolved 485, reused 0, downloaded 485, added 485, done
+
+devDependencies:
++ @playwright/test 1.63.0
++ @vue/compiler-sfc 3.5.43
++ oxlint 1.86.0
++ prettier 3.9.9
++ typescript 5.9.3
+
+╭ Warning ─────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│   Ignored build scripts: vue-demi@0.14.10.                                   │
+│   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+│   to run scripts.                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Done in 29.6s using pnpm v10.28.2
+
+> @form/ui@0.1.0 test:visual /work/packages/ui
+> vitest run --config vitest.visual.config.ts
+
+
+ RUN  v5.0.3 /work/packages/ui
+
+ ✓  chromium  test/components.visual.test.ts (7 tests) 1699ms
+   ✓ preserves light component variants and focused input 533ms
+   ✓ preserves light dialog portal styling 380ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  07:17:20
+   Duration  7.20s (tests 61%, worker 27%, import 10%, setup 2%)

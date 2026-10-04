@@ -1,0 +1,249 @@
+
+> the-workout-tracker@ verify <workspace>
+> pnpm format:check && pnpm lint && pnpm build && pnpm test:unit && pnpm test:browser && pnpm test:e2e
+
+
+> the-workout-tracker@ format:check <workspace>
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> the-workout-tracker@ lint <workspace>
+> pnpm check:boundaries && pnpm check:architecture && pnpm -r lint
+
+
+> the-workout-tracker@ check:boundaries <workspace>
+> node --test scripts/check-boundaries.test.mjs && node scripts/check-boundaries.mjs
+
+TAP version 13
+# Subtest: allows public exports and local imports
+ok 1 - allows public exports and local imports
+  ---
+  duration_ms: 0.72525
+  type: 'test'
+  ...
+# Subtest: rejects cross-workspace paths, deep imports and undeclared dependencies
+ok 2 - rejects cross-workspace paths, deep imports and undeclared dependencies
+  ---
+  duration_ms: 0.162208
+  type: 'test'
+  ...
+# Subtest: UI cannot depend on the application even when declared
+ok 3 - UI cannot depend on the application even when declared
+  ---
+  duration_ms: 0.136
+  type: 'test'
+  ...
+# Subtest: extracts imports from scripts, Vue and CSS including dynamic and type imports
+ok 4 - extracts imports from scripts, Vue and CSS including dynamic and type imports
+  ---
+  duration_ms: 7.008875
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 934.418583
+Package boundaries verified for 2 workspaces.
+
+> the-workout-tracker@ check:architecture <workspace>
+> pnpm test:architecture && node scripts/check-architecture.mjs
+
+
+> the-workout-tracker@ test:architecture <workspace>
+> node --test scripts/check-architecture.test.mjs
+
+TAP version 13
+# Subtest: layer matrix rejects SDKs, reverse imports, and re-export leaks
+ok 1 - layer matrix rejects SDKs, reverse imports, and re-export leaks
+  ---
+  duration_ms: 24.735
+  type: 'test'
+  ...
+# Subtest: ports reject every supported runtime loading form and preserve type-only forms
+ok 2 - ports reject every supported runtime loading form and preserve type-only forms
+  ---
+  duration_ms: 5.534125
+  type: 'test'
+  ...
+# Subtest: feature roles and import.meta cannot bypass import boundaries
+ok 3 - feature roles and import.meta cannot bypass import boundaries
+  ---
+  duration_ms: 4.728
+  type: 'test'
+  ...
+# Subtest: permitted dependency directions remain usable
+ok 4 - permitted dependency directions remain usable
+  ---
+  duration_ms: 4.219584
+  type: 'test'
+  ...
+# Subtest: cross-feature dependencies require public entry and explicit acyclic allowlist
+ok 5 - cross-feature dependencies require public entry and explicit acyclic allowlist
+  ---
+  duration_ms: 0.80675
+  type: 'test'
+  ...
+# Subtest: ambient effects include aliases but distinguish scoped names and ordinary properties
+ok 6 - ambient effects include aliases but distinguish scoped names and ordinary properties
+  ---
+  duration_ms: 8.439625
+  type: 'test'
+  ...
+# Subtest: configured aliases cannot bypass the same matrix
+ok 7 - configured aliases cannot bypass the same matrix
+  ---
+  duration_ms: 4.592917
+  type: 'test'
+  ...
+# Subtest: installed Oxlint loads the real plugin for TypeScript and Vue; standalone check ignores disables
+ok 8 - installed Oxlint loads the real plugin for TypeScript and Vue; standalone check ignores disables
+  ---
+  duration_ms: 5514.945833
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5862.051666
+Feature architecture verified.
+Scope: 2 of 3 workspace projects
+packages/ui lint$ oxlint src test --deny-warnings
+packages/ui lint: Done
+apps/workout lint$ oxlint src test --deny-warnings
+apps/workout lint: Done
+
+> the-workout-tracker@ build <workspace>
+> pnpm typecheck && pnpm --filter @form/workout build
+
+
+> the-workout-tracker@ typecheck <workspace>
+> pnpm -r typecheck
+
+Scope: 2 of 3 workspace projects
+packages/ui typecheck$ vue-tsc --noEmit
+packages/ui typecheck: Done
+apps/workout typecheck$ vue-tsc --noEmit
+apps/workout typecheck: Done
+
+> @form/workout@0.1.0 build <workspace>/apps/workout
+> vue-tsc --noEmit && vite build
+
+vite v8.3.2 building client environment for production...
+transforming...
+✓ 2614 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/manifest.webmanifest                                    0.47 kB
+dist/index.html                                              0.89 kB │ gzip:   0.45 kB
+dist/assets/inter-vietnamese-wght-normal-CBcvBZtf.woff2     10.25 kB
+dist/assets/inter-greek-ext-wght-normal-DlzME5K_.woff2      11.23 kB
+dist/assets/inter-cyrillic-wght-normal-DqGufNeO.woff2       18.74 kB
+dist/assets/inter-greek-wght-normal-CkhJZR-_.woff2          18.99 kB
+dist/assets/inter-cyrillic-ext-wght-normal-BOeWTOD4.woff2   25.96 kB
+dist/assets/inter-latin-wght-normal-Dx4kXJAl.woff2          48.25 kB
+dist/assets/inter-latin-ext-wght-normal-DO1Apj_S.woff2      85.06 kB
+dist/assets/index-CgAeIw3w.css                              35.62 kB │ gzip:   8.02 kB
+dist/assets/workbox-window.prod.es5-Bd17z0YL.js              5.65 kB │ gzip:   2.20 kB
+dist/assets/index-CTepTXxS.js                              400.53 kB │ gzip: 131.24 kB
+
+✓ built in 7.48s
+
+PWA v2.0.0
+mode      generateSW
+precache  22 entries (684.12 KiB)
+files generated
+  dist/sw.js
+  dist/workbox-9c191d2f.js
+
+> the-workout-tracker@ test:unit <workspace>
+> pnpm --filter @form/workout test:unit
+
+
+> @form/workout@0.1.0 test:unit <workspace>/apps/workout
+> vitest run --project unit
+
+
+ RUN  v5.0.3 <workspace>/apps/workout
+
+
+ Test Files  3 passed (3)
+      Tests  28 passed (28)
+   Start at  08:56:45
+   Duration  624ms (import 71%, transform 23%, tests 5%, worker 1%)
+
+
+> the-workout-tracker@ test:browser <workspace>
+> pnpm -r --workspace-concurrency=1 test:browser
+
+Scope: 2 of 3 workspace projects
+
+> @form/ui@0.1.0 test:browser <workspace>/packages/ui
+> vitest run
+
+
+ RUN  v5.0.3 <workspace>/packages/ui
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  08:56:48
+   Duration  6.38s (tests 37%, import 36%, worker 26%)
+
+
+> @form/workout@0.1.0 test:browser <workspace>/apps/workout
+> vitest run --project browser
+
+
+ RUN  v5.0.3 <workspace>/apps/workout
+
+
+ Test Files  4 passed (4)
+      Tests  22 passed (22)
+   Start at  08:57:04
+   Duration  4.22s (tests 45%, worker 32%, import 24%)
+
+
+> the-workout-tracker@ test:e2e <workspace>
+> pnpm --filter @form/workout test:e2e
+
+
+> @form/workout@0.1.0 test:e2e <workspace>/apps/workout
+> bddgen && playwright test
+
+[WebServer] (node:17474) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:17483) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 12 tests using 2 workers
+
+(node:17974) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:17973) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   2 [chromium] › .test-generated/test/e2e/workout.feature.spec.js:6:3 › A private training journal › Log and recover a workout offline (2.7s)
+  ✓   1 [mobile] › .test-generated/test/e2e/workout.feature.spec.js:6:3 › A private training journal › Log and recover a workout offline (3.0s)
+  ✓   3 [chromium] › .test-generated/test/e2e/workout.feature.spec.js:14:3 › A private training journal › Make a routine and move a backup to a fresh browser (2.1s)
+  ✓   4 [mobile] › .test-generated/test/e2e/workout.feature.spec.js:14:3 › A private training journal › Make a routine and move a backup to a fresh browser (2.4s)
+  ✓   5 [chromium] › .test-generated/test/e2e/workout.feature.spec.js:21:3 › A private training journal › Discard a workout without inventing history (721ms)
+  ✓   6 [mobile] › .test-generated/test/e2e/workout.feature.spec.js:21:3 › A private training journal › Discard a workout without inventing history (855ms)
+  ✓   7 [chromium] › .test-generated/test/e2e/workout.feature.spec.js:27:3 › A private training journal › A stale draft cannot overwrite another tab (2.1s)
+  ✓   8 [mobile] › .test-generated/test/e2e/workout.feature.spec.js:27:3 › A private training journal › A stale draft cannot overwrite another tab (2.3s)
+  ✓  10 [mobile] › .test-generated/test/e2e/workout.feature.spec.js:33:3 › A private training journal › Train with a custom exercise entirely offline (9.7s)
+  ✓   9 [chromium] › .test-generated/test/e2e/workout.feature.spec.js:33:3 › A private training journal › Train with a custom exercise entirely offline (10.5s)
+  ✓  12 [chromium] › .test-generated/test/e2e/workout.feature.spec.js:39:3 › A private training journal › Install the app from its published project path (27.7s)
+  ✓  11 [mobile] › .test-generated/test/e2e/workout.feature.spec.js:39:3 › A private training journal › Install the app from its published project path (27.6s)
+
+  12 passed (1.0m)
