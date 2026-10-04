@@ -1,7 +1,13 @@
 import { expect, type Page } from "@playwright/test";
 import { createBdd } from "playwright-bdd";
 import { readFile } from "node:fs/promises";
-const { Given, When, Then } = createBdd();
+const { Given, When, Then, Before } = createBdd();
+Before({ tags: "@offline-reload" }, async ({ browserName, $testInfo }) => {
+  $testInfo.skip(
+    browserName === "webkit",
+    "Playwright 1.63 WebKit offline emulation rejects service-worker responses: https://github.com/microsoft/playwright/issues/42775",
+  );
+});
 const nav = (page: Page, name: string) =>
   page.getByRole("link", { name, exact: true }).filter({ visible: true });
 async function openJournal(page: Page) {

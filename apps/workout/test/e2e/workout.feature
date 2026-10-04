@@ -1,4 +1,5 @@
 Feature: A private training journal
+  @offline-reload
   Scenario: Log and recover a workout offline
     Given a new training journal
     When I start the upper body workout and log two edited sets
@@ -22,6 +23,7 @@ Feature: A private training journal
     When two tabs edit the same set
     Then the stale draft is preserved and the saved set is not overwritten
 
+  @offline-reload
   Scenario: Train with a custom exercise entirely offline
     Given a new training journal
     When I start and log a custom exercise offline
