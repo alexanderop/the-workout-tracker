@@ -58,13 +58,14 @@ The fixed reference is [shadcn-vue b251d9f](https://github.com/unovue/shadcn-vue
 
 Button heights are 24/32/36/40px at a 16px root font size. Input is 36px tall. Dialog has 24px padding, 16px gaps, a 512px desktop maximum width and a 16px viewport inset. Responsive Field layout uses a container query. The neutral theme radius is 0.625rem; control radii subtract 2px. Slots, native semantics and Reka behavior follow the reference.
 
-Intentional differences are explicit CSS imports and namespaced `--ui-*` tokens, local control resets instead of Tailwind Preflight, native form reset synchronization, filtering empty errors, an accessible close label directly on the icon button, reduced-motion support, and configurable dialog portal destination. Dark destructive-button hover uses a darker background blend to preserve the required 4.5:1 text contrast. `buttonVariants`, `fieldVariants` and their Tailwind class APIs are not exported. `DialogScrollContent` is deferred. Consumer class names are merged by Vue; there is no Tailwind class conflict resolver. The gallery supplies a bundled Inter font, while the library inherits its consumer's font.
+Intentional differences are explicit CSS imports and namespaced `--ui-*` tokens, local control resets instead of Tailwind Preflight, native form reset synchronization, filtering empty errors, an accessible close label directly on the icon button, reduced-motion support, and configurable dialog portal destination. Destructive-button hover uses adjusted light and dark background blends to preserve the required 4.5:1 text contrast across browser engines. `buttonVariants`, `fieldVariants` and their Tailwind class APIs are not exported. `DialogScrollContent` is deferred. Consumer class names are merged by Vue; there is no Tailwind class conflict resolver. The gallery supplies a bundled Inter font, while the library inherits its consumer's font.
 
 Screenshots verify our implementation's visual regressions in a canonical Linux environment. They do not establish measured pixel equivalence with upstream. The reference contract records the properties derived from pinned source.
 
 ## Verification
 
-- `pnpm --filter @form/ui test:browser` runs behavior and axe accessibility checks in real Chromium, including native forms and body portals.
+- `pnpm --filter @form/ui test:browser` runs behavior, axe, and strict ARIA-tree checks in real Chromium, including native forms and body portals.
+- `pnpm test:ui:cross-browser` runs the same tests in Firefox and WebKit. CI runs each engine separately on Linux. See [the Reka-inspired test contracts](test/README.md) for coverage, fixture conventions, and snapshot review rules.
 - `pnpm --filter @form/ui typecheck` and `pnpm --filter @form/ui lint` check the public source and fixtures.
 - Root `pnpm test:visual` compares canonical Linux screenshots. Root `pnpm test:visual:update` updates them in the same environment; review image differences before accepting changes.
 - `pnpm dev:ui` opens the standalone consumer gallery. Its build imports only public library exports and styles.

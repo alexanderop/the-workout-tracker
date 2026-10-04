@@ -6,7 +6,8 @@ import SheetHarness from "./fixtures/SheetHarness.vue";
 it("returns keyboard focus to the opener when a dialog closes", async () => {
   await render(SheetHarness);
   const opener = page.getByRole("button", { name: "Open preferences" });
-  await opener.click();
+  opener.element().focus();
+  await userEvent.keyboard("{Enter}");
   await expect
     .element(page.getByRole("dialog", { name: "Preferences" }))
     .toBeVisible();
@@ -18,7 +19,8 @@ it("returns keyboard focus to the opener when a dialog closes", async () => {
 it("ships its own styles and closes through its accessible close button", async () => {
   await render(SheetHarness);
   const opener = page.getByRole("button", { name: "Open preferences" });
-  await opener.click();
+  opener.element().focus();
+  await userEvent.keyboard("{Enter}");
   const dialog = page.getByRole("dialog", { name: "Preferences" });
   await expect.element(dialog).toBeVisible();
   const element = document.querySelector('[role="dialog"]');

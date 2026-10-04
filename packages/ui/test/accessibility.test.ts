@@ -42,7 +42,7 @@ for (const theme of ["light", "dark"]) {
       await button.hover();
       expect(button.element().matches(":hover")).toBe(true);
       await expectAccessible(`${theme} ${variant} hover`);
-      await button.click();
+      button.element().focus();
       await page.getByRole("heading", { name: "Form UI", exact: true }).hover();
       await userEvent.tab();
       await userEvent.tab({ shift: true });

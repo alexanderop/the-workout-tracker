@@ -1,0 +1,175 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`preserves form semantics when validation appears and clears 1`] = `
+- document:
+  - /children: deep-equal
+  - main:
+    - form "Workout":
+      - group:
+        - text: Workout name
+        - textbox "Workout name": Morning
+        - paragraph: Shown in your list.
+      - group:
+        - text: Repetitions
+        - spinbutton "Repetitions": "8"
+      - group:
+        - text: Locked value
+        - textbox "Locked value" [disabled]: hidden
+      - button "Save"
+      - button "Reset"
+      - button "Unavailable" [disabled]
+    - button "Set name"
+    - button "Toggle error"
+    - link "Documentation":
+      - /url: "#destination"
+    - status "Current name": Morning
+    - status "Submitted values"
+`;
+
+exports[`preserves form semantics when validation appears and clears 2`] = `
+- document:
+  - /children: deep-equal
+  - main:
+    - form "Workout":
+      - group:
+        - text: Workout name
+        - textbox "Workout name": Morning
+        - paragraph: Shown in your list.
+        - alert: Choose a different name.
+      - group:
+        - text: Repetitions
+        - spinbutton "Repetitions": "8"
+      - group:
+        - text: Locked value
+        - textbox "Locked value" [disabled]: hidden
+      - button "Save"
+      - button "Reset"
+      - button "Unavailable" [disabled]
+    - button "Set name"
+    - button "Toggle error"
+    - link "Documentation":
+      - /url: "#destination"
+    - status "Current name": Morning
+    - status "Submitted values"
+`;
+
+exports[`preserves form semantics when validation appears and clears 3`] = `
+- document:
+  - /children: deep-equal
+  - main:
+    - form "Workout":
+      - group:
+        - text: Workout name
+        - textbox "Workout name": Morning
+        - paragraph: Shown in your list.
+      - group:
+        - text: Repetitions
+        - spinbutton "Repetitions": "8"
+      - group:
+        - text: Locked value
+        - textbox "Locked value" [disabled]: hidden
+      - button "Save"
+      - button "Reset"
+      - button "Unavailable" [disabled]
+    - button "Set name"
+    - button "Toggle error"
+    - link "Documentation":
+      - /url: "#destination"
+    - status "Current name": Morning
+    - status "Submitted values"
+`;
+
+exports[`preserves the Sheet accessibility tree through open and close 1`] = `
+- document:
+  - /children: deep-equal
+  - button "Open preferences"
+`;
+
+exports[`preserves the Sheet accessibility tree through open and close 2`] = `
+- document:
+  - /children: deep-equal
+  - dialog "Preferences":
+    - banner:
+      - heading "Preferences" [level=2]
+      - paragraph: Choose your settings
+      - button "Close dialog"
+    - textbox "Example preference"
+`;
+
+exports[`preserves the Sheet accessibility tree through open and close 3`] = `
+- document:
+  - /children: deep-equal
+  - button "Open preferences"
+`;
+
+exports[`preserves the accessible catalog of button and field variants 1`] = `
+- document:
+  - /children: deep-equal
+  - main "Component states":
+    - heading "Form UI" [level=1]
+    - heading "Buttons" [level=2]
+    - button "default"
+    - button "destructive"
+    - button "outline"
+    - button "secondary"
+    - button "ghost"
+    - button "link"
+    - button "default" [disabled]
+    - button "destructive" [disabled]
+    - button "outline" [disabled]
+    - button "secondary" [disabled]
+    - button "ghost" [disabled]
+    - button "link" [disabled]
+    - button "default"
+    - button "xs"
+    - button "sm"
+    - button "lg"
+    - button "icon": +
+    - button "icon-xs": +
+    - button "icon-sm": +
+    - button "icon-lg": +
+    - button "Focused outline"
+    - heading "Fields" [level=2]
+    - group:
+      - text: Workout name
+      - textbox "Workout name": Morning strength
+      - paragraph: Shown in your workout list.
+    - group:
+      - text: Email address
+      - textbox "Email address": invalid address
+      - alert: Enter a valid email address.
+    - group:
+      - text: Unavailable
+      - textbox "Unavailable" [disabled]: Managed by your coach
+    - group:
+      - text: A longer label that wraps naturally on smaller viewports
+      - textbox "A longer label that wraps naturally on smaller viewports":
+        - /placeholder: Enter a value
+`;
+
+exports[`preserves the dialog accessibility tree through keyboard open and close 1`] = `
+- document:
+  - /children: deep-equal
+  - main:
+    - button "Edit workout"
+    - status "Dialog state": closed
+`;
+
+exports[`preserves the dialog accessibility tree through keyboard open and close 2`] = `
+- document:
+  - /children: deep-equal
+  - dialog "Edit workout":
+    - heading "Edit workout" [level=2]
+    - paragraph: Change your next session.
+    - textbox "Workout title": Morning
+    - button "Done"
+    - button "Close"
+`;
+
+exports[`preserves the dialog accessibility tree through keyboard open and close 3`] = `
+- document:
+  - /children: deep-equal
+  - main:
+    - button "Edit workout"
+    - status "Dialog state": closed
+`;

@@ -70,7 +70,7 @@
 .ui-button[data-variant="destructive"]:hover {
   background: color-mix(
     in oklab,
-    var(--ui-destructive) calc(90% - var(--ui-dark) * 40%),
+    var(--ui-destructive) calc(95% - var(--ui-dark) * 45%),
     transparent
   );
 }

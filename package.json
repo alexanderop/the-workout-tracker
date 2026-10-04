@@ -20,7 +20,8 @@
     "check:architecture": "pnpm test:architecture && node scripts/check-architecture.mjs",
     "dev:ui": "pnpm --filter @form/ui-gallery dev",
     "test:visual": "bash scripts/test-ui-visual.sh",
-    "test:visual:update": "bash scripts/test-ui-visual.sh update"
+    "test:visual:update": "bash scripts/test-ui-visual.sh update",
+    "test:ui:cross-browser": "pnpm --filter @form/ui test:cross-browser"
   },
   "devDependencies": {
     "oxlint": "^1.86.0",

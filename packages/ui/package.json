@@ -13,7 +13,8 @@
     "lint": "oxlint src test --deny-warnings",
     "test:browser": "vitest run",
     "test:visual": "vitest run --config vitest.visual.config.ts",
-    "test:visual:update": "vitest run --config vitest.visual.config.ts --update"
+    "test:visual:update": "vitest run --config vitest.visual.config.ts --update",
+    "test:cross-browser": "UI_BROWSER=firefox vitest run && UI_BROWSER=webkit vitest run"
   },
   "peerDependencies": {
     "vue": "^3.5.0"

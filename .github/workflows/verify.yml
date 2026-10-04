@@ -53,9 +53,33 @@ jobs:
           path: |
             packages/ui/.vitest/
             packages/ui/test-results/
+  ui-cross-browser:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [firefox, webkit]
+    env:
+      UI_BROWSER: ${{ matrix.browser }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
+      - run: pnpm --filter @form/ui test:browser
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: ui-${{ matrix.browser }}-evidence
+          include-hidden-files: true
+          path: packages/ui/.vitest/
   deploy:
     if: github.event_name != 'pull_request' && github.ref_name == (vars.PAGES_BRANCH || 'main')
-    needs: [verify, visual]
+    needs: [verify, visual, ui-cross-browser]
     runs-on: ubuntu-latest
     permissions:
       pages: write

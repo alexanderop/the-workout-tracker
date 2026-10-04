@@ -71,7 +71,7 @@ it("keeps explicit field descriptions and errors associated without duplicate ID
 
 it("shows a visible keyboard focus ring on outline buttons", async () => {
   await render(ControlsHarness);
-  await page.getByRole("button", { name: "Save", exact: true }).click();
+  page.getByRole("button", { name: "Save", exact: true }).element().focus();
   await userEvent.tab();
   const reset = page.getByRole("button", { name: "Reset", exact: true });
   await expect.element(reset).toHaveFocus();
@@ -115,4 +115,18 @@ it("publishes composed text only after composition finishes", async () => {
   await expect
     .element(page.getByLabelText("Current name"))
     .toHaveTextContent("東京");
+});
+
+it("lets the browser suppress disabled activation and omit disabled form data", async () => {
+  await render(ControlsHarness);
+  await page
+    .getByRole("button", { name: "Unavailable" })
+    .click({ force: true });
+  await expect
+    .element(page.getByLabelText("Submitted values"))
+    .toBeEmptyDOMElement();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect
+    .element(page.getByLabelText("Submitted values"))
+    .toHaveTextContent('{"name":"Morning","repetitions":"8"}');
 });
