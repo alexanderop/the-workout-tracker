@@ -10,7 +10,7 @@ This pnpm monorepo contains three independently owned workspaces:
 
 - `apps/workout` (`@form/workout`): the PWA, workout domain, IndexedDB storage, application styles.
 - `packages/ui` (`@form/ui`): reusable Vue components, design tokens. It has no workout or persistence dependencies.
-- `apps/ui-gallery` (`@form/ui-gallery`): an independent consumer of the public UI exports and styles. Run `pnpm dev:ui` to inspect the components.
+- `apps/design-system` (`@form/design-system`): Histoire stories for components, variants, controls, usage documentation and the shared workout palette. Run `pnpm dev:ui` and open http://127.0.0.1:4186.
 
 The app imports its buttons, form controls, dialogs and mobile numeric editor from `@form/ui`, with shared colors from `@form/ui/tokens.css`. The dependency uses `workspace:*`. Each workspace declares its own dependencies and uses strict TypeScript settings from `tsconfig.base.json`.
 
@@ -84,3 +84,17 @@ The repository variable `PAGES_BRANCH` selects the publication branch. It is set
 For a local deployment build, run `VITE_BASE_PATH=/the-workout-tracker/ pnpm build`. The same base path scopes the manifest, icons, application navigation, and service worker. The app remains installable and works offline after its first complete online load.
 
 The display name and download filenames use The Workout Tracker. The internal IndexedDB name remains unchanged. The workout-first model uses backup version 2 and does not migrate older snapshots or version 1 backups.
+
+## Component explorer
+
+The previous custom gallery is replaced by Histoire. Stories live in `apps/design-system/src/stories/**/*.story.vue` and import only public `@form/ui` exports. Use the Controls panel to edit props, the Docs panel for usage guidance, and the viewport controls for mobile layouts. The explorer is organized into Foundations, Components and Patterns, with 20 stories and 29 variants. Each story documents Usage, Variants, States, Behavior, and Examples and limitations.
+
+`pnpm dev:ui` starts the explorer; `pnpm build:ui` produces its standalone static site in `apps/design-system/.histoire/dist`. The explorer uses Histoire 1.0 beta with its supported Vite 7 version in its own workspace. The workout app remains on Vite 8. Stories are interactive documentation, with no automated tests or test runner. `pnpm verify` still runs only type checking and linting. The workout Pages deployment remains separate.
+
+### Design-system organization
+
+- `stories/foundations/`: semantic color roles, typography, spacing and touch sizes, corners and borders, icons, motion.
+- `stories/components/`: Button, Input, Textarea, Select, Switch, Field, Dialog, Sheet and Numeric Input. Form controls each have their own page instead of one combined Forms page.
+- `stories/patterns/`: training-set entry, exercise selection, template editing, settings, empty states and errors. These are interactive design examples with isolated local state, not copies of workout persistence or domain logic.
+
+Start documentation with what a component means and when to use it. Put implementation names and token values second. Document real keyboard/focus behavior rather than displaying a fake focus state. Explain which parts of a pattern are illustrative; never present sample feedback as a real save. Spacing examples are design reference values, not a second source of global tokens.
