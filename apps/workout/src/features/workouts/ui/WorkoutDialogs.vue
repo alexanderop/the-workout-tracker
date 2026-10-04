@@ -9,7 +9,7 @@ import { sessionTotals, routineFromSession } from "../domain";
 import type { WorkoutWorkspace, WorkoutPage } from "./useWorkoutWorkspace";
 import type { Confirmation } from "./dialogTypes";
 import { fmt, longDate, sessionMinutes } from "./presentation";
-const props = defineProps<{
+const { workspace } = defineProps<{
   workspace: Pick<
     WorkoutWorkspace,
     | "snapshot"
@@ -35,10 +35,10 @@ const {
   catalog,
   activeTotals,
   elapsed,
-} = props.workspace;
+} = workspace;
 const emit = defineEmits<{
   navigate: [page: WorkoutPage];
-  templateSaved: [];
+  "template-saved": [];
 }>();
 const navigate = (page: WorkoutPage) => emit("navigate", page);
 const optionSetId = ref<string | null>(null);
@@ -116,7 +116,7 @@ async function saveRoutine(routine: Routine) {
   if (await run({ type: "save-routine", routine }, routineRevision)) {
     routineOpen.value = false;
     message.value = "Template saved";
-    emit("templateSaved");
+    emit("template-saved");
   }
 }
 async function addExercises() {

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { DialogClose, type DialogCloseProps, useForwardProps } from "reka-ui";
-const props = defineProps<DialogCloseProps>();
+const { ...props } = defineProps<DialogCloseProps>();
 const forwarded = useForwardProps(props);
+defineSlots<{ default?: () => unknown }>();
 </script>
 <template>
   <DialogClose v-bind="forwarded" data-slot="dialog-close"

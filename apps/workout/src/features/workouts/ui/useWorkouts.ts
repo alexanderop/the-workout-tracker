@@ -34,7 +34,9 @@ export function useWorkouts(service: Workouts) {
         state.value = { kind: "ready", snapshot: result.snapshot };
         error.value =
           "This workout changed in another tab. Your draft is still visible. Reload to use the latest saved values.";
-      } else error.value = result.message;
+        return null;
+      }
+      error.value = result.message;
       return null;
     } catch {
       error.value =

@@ -4,8 +4,9 @@ import {
   type DialogDescriptionProps,
   useForwardProps,
 } from "reka-ui";
-const props = defineProps<DialogDescriptionProps>();
+const { ...props } = defineProps<DialogDescriptionProps>();
 const forwarded = useForwardProps(props);
+defineSlots<{ default?: () => unknown }>();
 </script>
 <template>
   <DialogDescription

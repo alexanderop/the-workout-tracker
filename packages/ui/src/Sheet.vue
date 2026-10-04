@@ -7,19 +7,21 @@ import DialogClose from "./dialog/DialogClose.vue";
 import Button from "./button/Button.vue";
 import { watch } from "vue";
 import { X } from "@lucide/vue";
-const props = withDefaults(
-  defineProps<{
-    open: boolean;
-    title: string;
-    description?: string;
-    wide?: boolean;
-  }>(),
-  { description: "", wide: false },
-);
+const {
+  open,
+  title,
+  description = "",
+  wide = false,
+} = defineProps<{
+  open: boolean;
+  title: string;
+  description?: string;
+  wide?: boolean;
+}>();
 const emit = defineEmits<{ close: [] }>();
 let opener: HTMLElement | null = null;
 watch(
-  () => props.open,
+  () => open,
   (open) => {
     if (open && document.activeElement instanceof HTMLElement)
       opener = document.activeElement;
@@ -30,6 +32,7 @@ function restoreFocus(event: Event) {
   event.preventDefault();
   if (opener?.isConnected) opener.focus();
 }
+defineSlots<{ default?: () => unknown }>();
 </script>
 <template>
   <DialogRoot

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 defineProps<{ orientation?: "vertical" | "horizontal" | "responsive" }>();
+defineSlots<{ default?: () => unknown }>();
 </script>
 <template>
   <div

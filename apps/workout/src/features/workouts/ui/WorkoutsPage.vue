@@ -17,7 +17,13 @@ import {
   type CompletedSession,
 } from "../domain";
 import { fmt, sessionMinutes, longDate } from "./presentation";
-const props = defineProps<{
+const {
+  routines,
+  history: allHistory,
+  active,
+  exercises,
+  saving,
+} = defineProps<{
   routines: Routine[];
   history: CompletedSession[];
   active: Snapshot["active"];
@@ -37,7 +43,7 @@ const tab = defineModel<"history" | "templates">("view", {
 });
 const search = ref("");
 const history = computed(() =>
-  props.history.filter((session) =>
+  allHistory.filter((session) =>
     session.name.toLowerCase().includes(search.value.toLowerCase()),
   ),
 );
@@ -68,7 +74,7 @@ const history = computed(() =>
     ><span class="text-link">Continue<ArrowRight :size="17" /></span>
   </Button>
   <section
-    v-if="!active && !routines.length && !props.history.length"
+    v-if="!active && !routines.length && !allHistory.length"
     class="workout-welcome panel"
   >
     <span class="welcome-mark"><Dumbbell :size="34" /></span
@@ -89,7 +95,7 @@ const history = computed(() =>
         :class="{ selected: tab === 'history' }"
         @click="tab = 'history'"
       >
-        History <span>{{ props.history.length }}</span></Button
+        History <span>{{ allHistory.length }}</span></Button
       ><Button
         :aria-pressed="tab === 'templates'"
         :class="{ selected: tab === 'templates' }"
@@ -107,14 +113,14 @@ const history = computed(() =>
     </Button>
   </div>
   <template v-if="tab === 'history'">
-    <div v-if="props.history.length" class="search-field history-search">
+    <div v-if="allHistory.length" class="search-field history-search">
       <Search :size="17" /><Input
         v-model="search"
         aria-label="Search workout history"
         placeholder="Find a past workout"
       />
     </div>
-    <div v-if="!props.history.length" class="overview-empty">
+    <div v-if="!allHistory.length" class="overview-empty">
       <p class="muted">
         Your completed workouts will appear here, ready to repeat.
       </p>
@@ -159,7 +165,9 @@ const history = computed(() =>
           </Button>
         </footer>
       </article>
-      <p v-if="!history.length" class="muted">No workouts match your search.</p>
+      <p v-if="!allHistory.length" class="muted">
+        No workouts match your search.
+      </p>
     </div>
   </template>
   <template v-else>

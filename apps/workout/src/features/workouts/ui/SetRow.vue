@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Button, NumericInput } from "@form/ui";
-import { ref, watch, nextTick } from "vue";
+import { useTemplateRef, watch, nextTick } from "vue";
 import { Check, MoreHorizontal, Save } from "@lucide/vue";
 import type { TrainingRow } from "./useTrainingSession";
 import type { RawValues, SetDraft } from "../domain/drafts";
-const props = defineProps<{
+const { row, busy, current, dirty, conflict } = defineProps<{
   row: TrainingRow;
   busy: boolean;
   current: boolean;
@@ -20,15 +20,23 @@ const emit = defineEmits<{
   keep: [];
   recover: [draft: SetDraft];
 }>();
-const form = ref<HTMLFormElement | null>(null);
+const form = useTemplateRef<HTMLFormElement>("form");
 watch(
-  () => props.row.issue,
+  () => row.issue,
   async (issue) => {
     if (!issue) return;
     await nextTick();
     form.value?.scrollIntoView({ block: "center", behavior: "instant" });
   },
 );
+defineExpose({
+  get setId() {
+    return row.set.id;
+  },
+  scrollIntoView() {
+    form.value?.scrollIntoView({ block: "nearest", behavior: "instant" });
+  },
+});
 </script>
 <template>
   <form

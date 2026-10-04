@@ -1,5 +1,6 @@
 <script setup lang="ts">
 defineProps<{ variant?: "legend" | "label" }>();
+defineSlots<{ default?: () => unknown }>();
 </script>
 <template>
   <legend

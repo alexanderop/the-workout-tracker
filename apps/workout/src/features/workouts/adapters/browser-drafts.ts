@@ -1,4 +1,5 @@
 import { draftSchema, type DraftInput, type SetDraft } from "../domain/drafts";
+import type { Snapshot } from "../domain";
 import type { DraftJournal } from "../ports";
 
 type KeyValueStorage = Pick<
@@ -6,6 +7,25 @@ type KeyValueStorage = Pick<
   "getItem" | "setItem" | "removeItem" | "key" | "length"
 >;
 const prefix = "form-workout:draft:v1:";
+function obsoleteDraft(
+  raw: string,
+  name: string,
+  snapshot: Snapshot,
+  retained: ReadonlySet<string>,
+): boolean {
+  try {
+    const parsed = draftSchema.safeParse(JSON.parse(raw));
+    if (!parsed.success) return false;
+    const draft = parsed.data;
+    return (
+      name === prefix + draft.id &&
+      draft.revision < snapshot.revision &&
+      (draft.sessionId !== snapshot.active?.id || !retained.has(draft.setId))
+    );
+  } catch {
+    return false;
+  }
+}
 export function createDraftJournal(deps: {
   storage: () => KeyValueStorage;
   id: () => string;
@@ -66,17 +86,7 @@ export function createDraftJournal(deps: {
         if (!name?.startsWith(prefix)) continue;
         const raw = storage.getItem(name);
         if (!raw || raw.length > 3000) continue;
-        try {
-          const parsed = draftSchema.safeParse(JSON.parse(raw));
-          if (
-            parsed.success &&
-            name === key(parsed.data) &&
-            parsed.data.revision < snapshot.revision &&
-            (parsed.data.sessionId !== snapshot.active?.id ||
-              !retained.has(parsed.data.setId))
-          )
-            obsolete.push(name);
-        } catch {}
+        if (obsoleteDraft(raw, name, snapshot, retained)) obsolete.push(name);
       }
       for (const name of obsolete) storage.removeItem(name);
     },

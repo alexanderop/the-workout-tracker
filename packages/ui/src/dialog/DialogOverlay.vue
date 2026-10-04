@@ -4,8 +4,9 @@ import {
   type DialogOverlayProps,
   useForwardProps,
 } from "reka-ui";
-const props = defineProps<DialogOverlayProps>();
+const { ...props } = defineProps<DialogOverlayProps>();
 const forwarded = useForwardProps(props);
+defineSlots<{ default?: () => unknown }>();
 </script>
 <template>
   <DialogOverlay

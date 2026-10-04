@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button } from "@form/ui";
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref, useTemplateRef } from "vue";
 import {
   ArrowDownToLine,
   ChevronRight,
@@ -27,11 +27,14 @@ import {
 import type { WorkoutPage } from "./features/workouts/ui";
 import type { Workouts, DraftJournal } from "./features/workouts";
 import { usePwa } from "./usePwa";
-const props = defineProps<{ workouts: Workouts; drafts: DraftJournal }>();
-const workspace = useWorkoutWorkspace(props.workouts, props.drafts);
+const { workouts, drafts } = defineProps<{
+  workouts: Workouts;
+  drafts: DraftJournal;
+}>();
+const workspace = useWorkoutWorkspace(workouts, drafts);
 const { state, snapshot, saving, message, error, history, routines, active } =
   workspace;
-const dialogs = ref<InstanceType<typeof WorkoutDialogs> | null>(null);
+const dialogs = useTemplateRef<InstanceType<typeof WorkoutDialogs>>("dialogs");
 const settingsOpen = ref(false);
 const workoutView = ref<"history" | "templates">("history");
 const progressExercise = ref("");
@@ -52,9 +55,8 @@ const navigation = [
 type Page = WorkoutPage;
 function route(): Page {
   const value = location.hash.slice(2);
-  return value === "session" || navigation.some((item) => item.id === value)
-    ? (value as Page)
-    : "workouts";
+  if (value === "session") return value;
+  return navigation.find((item) => item.id === value)?.id ?? "workouts";
 }
 const page = ref<Page>(route());
 const navigate = (next: Page) => {

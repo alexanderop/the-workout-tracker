@@ -1,26 +1,26 @@
 <script setup lang="ts">
 import { Input, NativeSelect, Button } from "@form/ui";
-import { computed, ref, watch } from "vue";
+import { useTemplateRef, computed, ref, watch } from "vue";
 import { Check, Dumbbell, Search } from "@lucide/vue";
 import type { Exercise } from "../domain";
-const props = defineProps<{
+const { exercises, selected, busy } = defineProps<{
   exercises: readonly Exercise[];
   selected?: readonly string[];
   busy?: boolean;
 }>();
 const emit = defineEmits<{ toggle: [id: string] }>();
-const list = ref<HTMLElement | null>(null);
+const list = useTemplateRef<HTMLElement>("list");
 const search = ref("");
 const muscle = ref("");
 const equipment = ref("");
 const groups = computed(() =>
-  [...new Set(props.exercises.map((exercise) => exercise.category))].sort(),
+  [...new Set(exercises.map((exercise) => exercise.category))].sort(),
 );
 const equipmentOptions = computed(() =>
-  [...new Set(props.exercises.map((exercise) => exercise.equipment))].sort(),
+  [...new Set(exercises.map((exercise) => exercise.equipment))].sort(),
 );
 const results = computed(() =>
-  props.exercises.filter(
+  exercises.filter(
     (exercise) =>
       (!muscle.value || exercise.category === muscle.value) &&
       (!equipment.value || exercise.equipment === equipment.value) &&

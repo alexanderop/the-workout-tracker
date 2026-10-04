@@ -16,33 +16,40 @@ import {
 } from "./editing";
 
 defineOptions({ inheritAttrs: false });
-const props = withDefaults(
-  defineProps<{
-    modelValue: string | number;
-    label: string;
-    title: string;
-    unit?: string;
-    min?: number;
-    max?: number;
-    decimals?: number;
-    presetStep?: number;
-    disabled?: boolean;
-  }>(),
-  { unit: "", min: 0, max: 1000, decimals: 0, presetStep: 1 },
-);
+const {
+  modelValue,
+  label,
+  title,
+  unit = "",
+  min = 0,
+  max = 1000,
+  decimals = 0,
+  presetStep = 1,
+  disabled,
+} = defineProps<{
+  modelValue: string | number;
+  label: string;
+  title: string;
+  unit?: string;
+  min?: number;
+  max?: number;
+  decimals?: number;
+  presetStep?: number;
+  disabled?: boolean;
+}>();
 const emit = defineEmits<{
   "update:modelValue": [value: string];
   open: [];
 }>();
 const open = ref(false);
-const draft = ref(beginEditing(props.modelValue));
+const draft = ref(beginEditing(modelValue));
 const display = useTemplateRef<HTMLElement>("display");
 const hintId = useId();
 const limits = computed(() => ({
-  min: props.min,
-  max: props.max,
-  decimals: props.decimals,
-  presetStep: props.presetStep,
+  min: min,
+  max: max,
+  decimals: decimals,
+  presetStep: presetStep,
 }));
 const presets = ref<number[]>([]);
 const value = computed(() => validNumber(draft.value.text, limits.value));
@@ -51,14 +58,14 @@ watch(
   open,
   (isOpen) => {
     if (!isOpen) return;
-    draft.value = beginEditing(props.modelValue);
-    presets.value = numericPresets(props.modelValue, limits.value);
+    draft.value = beginEditing(modelValue);
+    presets.value = numericPresets(modelValue, limits.value);
     emit("open");
   },
   { flush: "sync" },
 );
 watch(
-  () => props.disabled,
+  () => disabled,
   (disabled) => {
     if (disabled) open.value = false;
   },
@@ -67,7 +74,7 @@ function press(key: string) {
   draft.value = editNumber(draft.value, key, limits.value);
 }
 function confirm(next = value.value) {
-  if (props.disabled || next === null) return;
+  if (disabled || next === null) return;
   emit("update:modelValue", String(next));
   open.value = false;
 }
@@ -80,7 +87,9 @@ function keyboard(event: KeyboardEvent) {
       return;
     event.preventDefault();
     confirm();
-  } else if (
+    return;
+  }
+  if (
     /^\d$/.test(event.key) ||
     [".", ",", "Backspace", "Delete"].includes(event.key)
   ) {

@@ -128,8 +128,8 @@ function files(directory) {
   });
 }
 
-function main() {
-  const workspaces = ["apps", "packages"].flatMap((kind) =>
+export function getWorkspaces() {
+  return ["apps", "packages"].flatMap((kind) =>
     readdirSync(resolve(root, kind), { withFileTypes: true })
       .filter((entry) => entry.isDirectory())
       .map((entry) => {
@@ -143,6 +143,10 @@ function main() {
         };
       }),
   );
+}
+
+function main() {
+  const workspaces = getWorkspaces();
   const errors = [];
   for (const owner of workspaces) {
     for (const [name, version] of Object.entries({

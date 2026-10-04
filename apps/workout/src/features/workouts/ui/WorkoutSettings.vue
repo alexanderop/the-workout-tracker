@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { useTemplateRef, ref } from "vue";
 import { Sheet, Button, NativeSelect, Switch } from "@form/ui";
 import { ArrowDownToLine, Upload } from "@lucide/vue";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import { download } from "./presentation";
-const props = defineProps<{
+const { workspace } = defineProps<{
   workspace: Pick<
     WorkoutWorkspace,
     "service" | "snapshot" | "state" | "saving" | "run"
   >;
 }>();
-const { service, snapshot, state, saving, run } = props.workspace;
+const { service, snapshot, state, saving, run } = workspace;
 const settingsOpen = defineModel<boolean>("open", { required: true });
 const backupFile = ref<{ name: string; json: string; revision: number } | null>(
   null,
 );
 const backupBusy = ref(false);
 const backupMessage = ref("");
-const importInput = ref<HTMLInputElement | null>(null);
+const importInput = useTemplateRef<HTMLInputElement>("importInput");
 
 async function exportBackup() {
   backupBusy.value = true;
@@ -67,10 +67,14 @@ async function importBackup() {
       backupFile.value = null;
       backupMessage.value =
         "Backup imported. Your existing workouts are preserved.";
-    } else if (result.kind === "conflict")
+      return;
+    }
+    if (result.kind === "conflict") {
       backupMessage.value =
         "Your data changed. Select the backup again to review the current import.";
-    else backupMessage.value = result.message;
+      return;
+    }
+    backupMessage.value = result.message;
   } catch {
     backupMessage.value =
       "Import failed. Your saved workouts have not been replaced.";
@@ -95,6 +99,7 @@ function changeRestDuration(event: Event) {
       },
     });
 }
+defineSlots<{ default?: () => unknown }>();
 </script>
 
 <template>
