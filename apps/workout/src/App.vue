@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import {
   ArrowDownToLine,
+  ArrowLeft,
   ArrowRight,
   ArrowUpRight,
   Check,
@@ -507,7 +508,7 @@ const title = computed(() =>
           ><span>{{ title }}</span>
         </div>
         <div class="topbar-right">
-          <span class="connection" :class="{ accent: !online }"
+          <span v-if="!online" class="connection accent"
             ><WifiOff v-if="!online" :size="14" /><span
               v-else
               class="connection-dot"
@@ -586,8 +587,7 @@ const title = computed(() =>
             <div class="page-heading">
               <div>
                 <div class="eyebrow">{{ longDate(now) }}</div>
-                <h1>A little stronger, every day.</h1>
-                <p class="muted">Make time for your next good session.</p>
+                <h1>Today</h1>
               </div>
               <button
                 class="btn secondary"
@@ -601,7 +601,7 @@ const title = computed(() =>
               <section class="next-workout panel">
                 <div class="panel-overline">
                   <span class="eyebrow">{{
-                    active ? "PICK UP WHERE YOU LEFT OFF" : "UP NEXT"
+                    active ? "IN PROGRESS" : "UP NEXT"
                   }}</span
                   ><span class="pill"><Dumbbell :size="13" />Strength</span>
                 </div>
@@ -614,14 +614,6 @@ const title = computed(() =>
                         "Your first workout"
                       }}
                     </h2>
-                    <p class="muted">
-                      {{
-                        active
-                          ? "Your logged sets are saved. Keep going when you are ready."
-                          : nextRoutine?.description ||
-                            "Start with a routine or build a session as you go."
-                      }}
-                    </p>
                     <div class="workout-facts">
                       <span
                         ><ListChecks :size="15" />{{
@@ -630,10 +622,8 @@ const title = computed(() =>
                           0
                         }}
                         exercises</span
-                      ><span
-                        ><Clock3 :size="15" />{{
-                          active ? elapsed : "At your own pace"
-                        }}</span
+                      ><span v-if="active"
+                        ><Clock3 :size="15" />{{ elapsed }}</span
                       >
                     </div>
                   </div>
@@ -662,11 +652,9 @@ const title = computed(() =>
                   >
                     {{ active ? "Resume workout" : "Start workout"
                     }}<ArrowRight :size="17" /></button
-                  ><span class="muted small">{{
-                    active
-                      ? `${activeTotals.completedSets} sets logged`
-                      : "One set at a time."
-                  }}</span>
+                  ><span v-if="active" class="muted small"
+                    >{{ activeTotals.completedSets }} sets logged</span
+                  >
                 </div>
               </section>
               <section class="week-panel panel">
@@ -693,20 +681,6 @@ const title = computed(() =>
                     /><span v-else class="day-dot"></span>
                   </div>
                 </div>
-                <div class="week-caption">
-                  <span class="accent">{{
-                    weekCount
-                      ? "Keep showing up."
-                      : "A fresh week of possibility."
-                  }}</span>
-                  <p class="muted small">
-                    {{
-                      weekCount
-                        ? "Every session adds up over time."
-                        : "Your first session starts the story."
-                    }}
-                  </p>
-                </div>
               </section>
             </div>
             <section class="metrics" aria-label="Training totals">
@@ -727,7 +701,6 @@ const title = computed(() =>
               <div class="section-heading">
                 <div>
                   <h2>Your routines</h2>
-                  <p class="muted small">A plan to come back to.</p>
                 </div>
                 <a class="text-link" href="#/workouts"
                   >View all<ArrowUpRight :size="15"
@@ -782,7 +755,7 @@ const title = computed(() =>
               <div v-else class="empty-inline">
                 <History :size="21" />
                 <div>
-                  <strong>Your story starts with one workout.</strong>
+                  <strong>No workouts yet</strong>
                   <p class="muted small">
                     Completed sessions will appear here.
                   </p>
@@ -794,11 +767,7 @@ const title = computed(() =>
           <template v-else-if="page === 'workouts'">
             <div class="page-heading">
               <div>
-                <div class="eyebrow">A PLAN THAT FITS YOU</div>
                 <h1>Your workouts</h1>
-                <p class="muted">
-                  Keep your favorites. Make each session your own.
-                </p>
               </div>
               <button class="btn primary" @click="editRoutine(null)">
                 <Plus :size="17" />Create routine
@@ -884,7 +853,6 @@ const title = computed(() =>
               >
               <div class="page-heading session-heading">
                 <div>
-                  <div class="eyebrow">{{ longDate(active.startedAt) }}</div>
                   <h1>{{ active.name }}</h1>
                   <p class="muted">
                     <Clock3 :size="14" />{{ elapsed }} elapsed<span
@@ -914,13 +882,6 @@ const title = computed(() =>
               </div>
               <div class="session-layout">
                 <div class="exercise-stack">
-                  <div class="session-guide">
-                    <span class="activity-dot"></span
-                    ><span
-                      >Drafts save as you type. Log each set when you finish
-                      it.</span
-                    >
-                  </div>
                   <article
                     v-for="(exercise, exIndex) in active.exercises"
                     :key="exercise.id"
@@ -1102,13 +1063,12 @@ const title = computed(() =>
           <template v-else-if="page === 'history'">
             <div class="page-heading">
               <div>
-                <div class="eyebrow">THE WORK YOU PUT IN</div>
                 <h1>Your training history</h1>
                 <p class="muted">
                   {{
                     history.length
-                      ? `${history.length} ${history.length === 1 ? "session" : "sessions"}. Every one counts.`
-                      : "A record of showing up for yourself."
+                      ? `${history.length} ${history.length === 1 ? "session" : "sessions"}`
+                      : "No workouts yet"
                   }}
                 </p>
               </div>
@@ -1122,11 +1082,8 @@ const title = computed(() =>
             </div>
             <div v-if="!history.length" class="empty-state panel">
               <History :size="34" />
-              <h2>Every story has a first session.</h2>
-              <p class="muted">
-                Finish a workout to see your sets, volume,<br />and time
-                together in one place.
-              </p>
+              <h2>No workouts yet</h2>
+              <p class="muted">Your completed workouts appear here.</p>
               <button class="btn primary" @click="navigate('workouts')">
                 Find your workout<ArrowRight :size="17" />
               </button>
@@ -1167,9 +1124,7 @@ const title = computed(() =>
           <template v-else-if="page === 'progress'">
             <div class="page-heading">
               <div>
-                <div class="eyebrow">BUILT ONE SESSION AT A TIME</div>
-                <h1>See how far you’ve come.</h1>
-                <p class="muted">Your training, made tangible.</p>
+                <h1>Progress</h1>
               </div>
               <span class="pill">All time</span>
             </div>
@@ -1189,11 +1144,8 @@ const title = computed(() =>
             </section>
             <div v-if="!history.length" class="empty-state panel">
               <TrendingUp :size="34" />
-              <h2>Progress starts where you are.</h2>
-              <p class="muted">
-                Log your first workout to start tracking<br />your lifting
-                history and personal bests.
-              </p>
+              <h2>No progress yet</h2>
+              <p class="muted">Complete a workout to track your progress.</p>
               <button class="btn primary" @click="navigate('workouts')">
                 Start training<ArrowRight :size="17" />
               </button>
@@ -1275,11 +1227,8 @@ const title = computed(() =>
             >
           </template>
           <footer class="main-footer">
-            <span>Small steps. Lasting strength.</span
-            ><span class="save-status" role="status">{{
-              saving
-                ? "Saving…"
-                : message || "Private by default. Saved on your device."
+            <span class="save-status" role="status">{{
+              saving ? "Saving…" : message || ""
             }}</span>
           </footer>
         </template>
@@ -1290,15 +1239,15 @@ const title = computed(() =>
       class="training-bar"
       aria-label="Training controls"
     >
-      <a href="#/workouts" class="training-bar-back">Back to workouts</a>
+      <a
+        href="#/workouts"
+        class="training-bar-back"
+        aria-label="Back to workouts"
+        ><ArrowLeft :size="20" aria-hidden="true"
+      /></a>
       <template v-if="rest > 0">
         <div>
-          <strong>{{ duration(rest) }} rest</strong
-          ><small v-if="training.current.value"
-            >{{ training.current.value.set.completed ? "Selected" : "Next" }}:
-            {{ training.current.value.exercise.name }} · set
-            {{ training.current.value.index + 1 }}</small
-          >
+          <strong>{{ duration(rest) }} rest</strong>
         </div>
         <button
           class="btn primary"
@@ -1335,8 +1284,7 @@ const title = computed(() =>
       </template>
       <template v-else-if="activeSetCount">
         <div>
-          <strong>All sets logged</strong
-          ><small>Ready to save your workout.</small>
+          <strong>All sets logged</strong>
         </div>
         <button
           class="btn primary"
@@ -1348,8 +1296,7 @@ const title = computed(() =>
       </template>
       <template v-else>
         <div>
-          <strong>Choose your first exercise</strong
-          ><small>Build your workout as you go.</small>
+          <strong>Choose your first exercise</strong>
         </div>
         <button class="btn primary" @click="pickerOpen = true">
           Choose exercise
