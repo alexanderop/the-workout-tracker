@@ -1,6 +1,7 @@
 import { computed, reactive, ref, watch, type Ref } from "vue";
 import type { DraftJournal } from "../application";
 import type { Command, SessionExercise, Snapshot, WorkoutSet } from "../domain";
+import { setTargetReps } from "../domain";
 import {
   parseSetValues,
   sameSet,
@@ -165,6 +166,12 @@ export function useTrainingSession(options: {
       alternatives: distinct ? row.records : [],
     };
   }
+  const next = computed(() => {
+    const set = active.value?.exercises
+      .flatMap((exercise) => exercise.sets)
+      .find((set) => !set.completed);
+    return set ? rows.get(set.id) : undefined;
+  });
   const currentExercise = computed(
     () =>
       active.value?.exercises.find(
@@ -213,6 +220,7 @@ export function useTrainingSession(options: {
           weightKg: row.base.weightKg,
           reps: row.base.reps,
           completed: row.base.completed,
+          targetReps: row.base.targetReps,
         },
         revision: row.revision,
       });
@@ -295,7 +303,8 @@ export function useTrainingSession(options: {
     }
     const values = parseSetValues(row);
     if (!values) {
-      row.issue = "Enter 0–1000 kg and 1–1000 whole repetitions.";
+      row.issue =
+        "Enter 0–1000 kg and 0–1000 whole repetitions. Planned sets need at least one rep.";
       return;
     }
     return values;
@@ -336,10 +345,21 @@ export function useTrainingSession(options: {
     row.recoveredStale = false;
     row.alternatives = [];
     row.issue = "";
-    row.base = { ...values, completed };
-    row.weight = String(values.weightKg);
-    row.reps = String(values.reps);
+    row.base = savedSetBaseline(result, setId, { ...values, completed });
+    row.weight = String(row.base.weightKg);
+    row.reps = String(row.base.reps);
     reportCommit(row, session.id, completed, valuesOnly);
+  }
+  function savedSetBaseline(
+    snapshot: Snapshot,
+    setId: string,
+    fallback: SetDraft["base"],
+  ) {
+    return (
+      snapshot.active?.exercises
+        .flatMap((exercise) => exercise.sets)
+        .find((set) => set.id === setId) ?? fallback
+    );
   }
   function reportCommit(
     row: TrainingRow,
@@ -361,6 +381,7 @@ export function useTrainingSession(options: {
           weightKg: Number(row.weight),
           reps: Number(row.reps),
           completed: true,
+          targetReps: row.base.targetReps,
         },
       };
       notice.value = `${row.exercise.name} · set ${row.index + 1} logged.`;
@@ -374,12 +395,17 @@ export function useTrainingSession(options: {
     const last = exercise?.sets.at(-1);
     return last ? rows.get(last.id) : undefined;
   }
+  function addedSetValues(row: TrainingRow | undefined) {
+    if (!row) return null;
+    const values = parseSetValues(row);
+    return values ? { ...values, reps: setTargetReps(row.set) } : null;
+  }
   async function addSet(exerciseId: string) {
     const session = active.value;
     const exercise = session?.exercises.find((item) => item.id === exerciseId);
     const row = lastExerciseRow(exercise);
     if (!session || !exercise || options.saving.value) return;
-    const values = row ? parseSetValues(row) : null;
+    const values = addedSetValues(row);
     if (row && (!values || conflict(row))) {
       row.issue =
         "Review this set's weight and repetitions before adding another set.";
@@ -424,6 +450,75 @@ export function useTrainingSession(options: {
       lastLog.value = null;
       notice.value = "Set marked as not logged.";
     }
+  }
+  async function tapSet(setId: string): Promise<boolean> {
+    const row = rows.get(setId),
+      session = active.value,
+      snapshot = options.snapshot.value;
+    if (!row || !session || !snapshot || options.saving.value) return false;
+    if (!recoverUnseenDrafts(session.id)) return false;
+    if (row.touched || conflict(row)) {
+      selectSet(setId);
+      notice.value =
+        "Review this set's input before using the circle shortcut.";
+      return false;
+    }
+    const result = await options.run(
+      {
+        type: "set-entry",
+        sessionId: session.id,
+        exerciseId: row.exercise.id,
+        setId,
+        weightKg: row.set.weightKg,
+        reps: row.set.completed ? Math.max(0, row.set.reps - 1) : row.set.reps,
+        completed: true,
+      },
+      snapshot.revision,
+    );
+    if (!result) return false;
+    selectSet(setId);
+    lastLog.value = null;
+    notice.value = `${row.exercise.name} · set ${row.index + 1} recorded. Tap again for fewer reps.`;
+    return true;
+  }
+  async function clearSet(setId: string): Promise<boolean> {
+    const row = rows.get(setId),
+      session = active.value;
+    if (!row || !session || options.saving.value) return false;
+    if (!recoverUnseenDrafts(session.id)) return false;
+    if (row.touched) {
+      notice.value = "Save or discard this set's draft before clearing it.";
+      return false;
+    }
+    const result = await options.run({
+      type: "set-completed",
+      sessionId: session.id,
+      setId,
+      completed: false,
+    });
+    if (!result) return false;
+    selectSet(setId);
+    notice.value = `${row.exercise.name} returned to unfinished work.`;
+    return true;
+  }
+  async function configureExercise(
+    command: Extract<Command, { type: "configure-exercise" }>,
+    revision: number,
+  ): Promise<boolean> {
+    if (!recoverUnseenDrafts(command.sessionId)) return false;
+    if (
+      [...rows.values()].some(
+        (row) => row.exercise.id === command.exerciseId && row.touched,
+      )
+    ) {
+      notice.value =
+        "Save or discard this exercise's drafts before changing its configuration.";
+      return false;
+    }
+    const saved = await options.run(command, revision);
+    if (saved)
+      notice.value = "Exercise configuration saved. Logged sets are unchanged.";
+    return !!saved;
   }
   const pending = computed(() =>
     [...rows.values()].filter((row) => row.touched || conflict(row)),
@@ -512,8 +607,12 @@ export function useTrainingSession(options: {
   }
   return {
     rows,
+    tapSet,
+    clearSet,
+    configureExercise,
     run,
     current,
+    next,
     selected,
     selectedExerciseId,
     currentExercise,

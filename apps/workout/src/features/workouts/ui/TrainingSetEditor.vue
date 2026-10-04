@@ -1,0 +1,78 @@
+<script setup lang="ts">
+import { computed } from "vue";
+import { Sheet, Button } from "@form/ui";
+import SetRow from "./SetRow.vue";
+import type { useTrainingSession } from "./useTrainingSession";
+const { setId, training, busy } = defineProps<{
+  setId: string | null;
+  training: ReturnType<typeof useTrainingSession>;
+  busy: boolean;
+}>();
+const emit = defineEmits<{
+  close: [];
+  cleared: [id: string];
+  options: [id: string];
+  select: [id: string];
+}>();
+const row = computed(() => (setId ? training.rows.get(setId) : undefined));
+async function clear() {
+  if (!row.value) return;
+  const id = row.value.set.id;
+  if (await training.clearSet(id)) emit("cleared", id);
+}
+</script>
+<template>
+  <Sheet
+    :open="!!row"
+    :title="row ? `${row.exercise.name} · Set ${row.index + 1}` : 'Edit set'"
+    description="Edit values without logging, or explicitly log this set. Zero reps records a failed attempt."
+    @close="emit('close')"
+  >
+    <div v-if="row" class="workout-editor">
+      <nav class="workout-set-nav" aria-label="Choose set to edit">
+        <Button
+          v-for="(set, index) in row.exercise.sets"
+          :key="set.id"
+          variant="secondary"
+          :aria-pressed="set.id === row.set.id"
+          @click="emit('select', set.id)"
+          >Set {{ index + 1 }}</Button
+        >
+      </nav>
+      <SetRow
+        :row="row"
+        :busy="busy"
+        :current="true"
+        :dirty="training.dirty(row)"
+        :conflict="training.conflict(row)"
+        @edit="(values) => training.edit(row!.set.id, values)"
+        @commit="training.commit(row!.set.id)"
+        @select="training.selectSet(row!.set.id)"
+        @options="emit('options', row!.set.id)"
+        @discard="training.useSaved(row!.set.id)"
+        @keep="training.keepInput(row!.set.id)"
+        @recover="(draft) => training.chooseDraft(row!.set.id, draft)"
+      />
+      <Button
+        :disabled="busy || !row.touched"
+        @click="training.commit(row.set.id, true)"
+        >Save values without logging</Button
+      >
+      <Button
+        v-if="row.set.completed"
+        variant="secondary"
+        :disabled="busy"
+        @click="clear"
+        >Clear logged set</Button
+      >
+      <Button
+        v-if="row.touched"
+        variant="ghost"
+        :disabled="busy"
+        @click="training.useSaved(row.set.id)"
+        >Discard input changes</Button
+      >
+      <Button variant="ghost" @click="emit('close')">Done</Button>
+    </div>
+  </Sheet>
+</template>

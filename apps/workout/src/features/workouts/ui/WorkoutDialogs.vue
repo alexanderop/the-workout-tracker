@@ -64,7 +64,7 @@ function adjustReps(amount: number) {
   const row = optionRow.value;
   if (!row) return;
   const value = Number(row.reps);
-  if (Number.isInteger(value) && value + amount >= 1 && value + amount <= 1000)
+  if (Number.isInteger(value) && value + amount >= 0 && value + amount <= 1000)
     training.edit(row.set.id, { reps: String(value + amount) });
 }
 
@@ -225,7 +225,7 @@ defineExpose({
         <Button
           unstyled
           class="btn secondary"
-          :disabled="saving || Number(optionRow.reps) <= 1"
+          :disabled="saving || Number(optionRow.reps) <= 0"
           aria-label="Decrease repetitions"
           @click="adjustReps(-1)"
         >

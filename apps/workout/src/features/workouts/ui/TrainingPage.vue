@@ -1,34 +1,16 @@
 <script setup lang="ts">
-import { IconButton, Button, Input } from "@form/ui";
-import { useTemplateRef, computed, nextTick, ref, watch } from "vue";
-import {
-  Clock3,
-  Check,
-  X,
-  Plus,
-  Dumbbell,
-  ArrowRight,
-  ShieldCheck,
-} from "@lucide/vue";
-import SetRow from "./SetRow.vue";
-import ExerciseThumbnail from "./ExerciseThumbnail.vue";
-import { fmt, duration } from "./presentation";
+import { computed, nextTick, ref, useTemplateRef, watch } from "vue";
+import { Button, Input } from "@form/ui";
+import { Plus, Dumbbell, Clock3, ShieldCheck } from "@lucide/vue";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
+import type { SessionExercise } from "../domain";
 import type { Confirmation } from "./dialogTypes";
-const { workspace } = defineProps<{
-  workspace: Pick<
-    WorkoutWorkspace,
-    | "active"
-    | "snapshot"
-    | "saving"
-    | "activeTotals"
-    | "activeSetCount"
-    | "elapsed"
-    | "rest"
-    | "training"
-    | "run"
-  >;
-}>();
+import TrainingExerciseCard from "./TrainingExerciseCard.vue";
+import ExerciseConfiguration from "./ExerciseConfiguration.vue";
+import TrainingSetEditor from "./TrainingSetEditor.vue";
+import { duration, fmt } from "./presentation";
+import "./training.css";
+const { workspace } = defineProps<{ workspace: WorkoutWorkspace }>();
 const {
   active,
   snapshot,
@@ -40,12 +22,6 @@ const {
   training,
   run,
 } = workspace;
-const currentCatalogExercise = computed(() => {
-  const current = training.currentExercise.value;
-  if (!current) return undefined;
-  const definition = snapshot.value?.exercises[current.exerciseId];
-  return definition?.name === current.name ? definition : undefined;
-});
 const emit = defineEmits<{
   finish: [];
   pick: [];
@@ -53,35 +29,20 @@ const emit = defineEmits<{
   confirm: [request: Confirmation];
   navigate: [page: "workouts"];
 }>();
-const navigate = (page: "workouts") => emit("navigate", page);
-const setRows = useTemplateRef<InstanceType<typeof SetRow>[]>("setRows");
-const exerciseTabs = useTemplateRef<HTMLElement>("exerciseTabs");
-watch(
-  () => training.currentExercise.value?.id,
-  async () => {
-    await nextTick();
-    const tabs = exerciseTabs.value;
-    const selected = tabs?.querySelector<HTMLElement>('[aria-pressed="true"]');
-    if (!tabs || !selected) return;
-    const container = tabs.getBoundingClientRect();
-    const item = selected.getBoundingClientRect();
-    if (item.left < container.left) {
-      tabs.scrollLeft += item.left - container.left - 4;
-      return;
-    }
-    if (item.right > container.right)
-      tabs.scrollLeft += item.right - container.right + 4;
-  },
-  { flush: "post" },
+const name = ref(""),
+  nameIssue = ref("");
+const pinned = ref<string | null>(null);
+const editorSet = ref<string | null>(null);
+const configId = ref<string | null>(null);
+const configuration = computed(
+  () =>
+    active.value?.exercises.find(
+      (exercise) => exercise.id === configId.value,
+    ) ?? null,
 );
-async function addSet(exerciseId: string) {
-  await training.addSet(exerciseId);
-  await nextTick();
-  const id = training.current.value?.set.id;
-  setRows.value?.find((row) => row.setId === id)?.scrollIntoView();
-}
-const name = ref("");
-const nameIssue = ref("");
+const cards =
+  useTemplateRef<InstanceType<typeof TrainingExerciseCard>[]>("cards");
+const addButton = useTemplateRef<InstanceType<typeof Button>>("addButton");
 watch(
   () => active.value?.name,
   (value) => {
@@ -89,40 +50,122 @@ watch(
   },
   { immediate: true },
 );
+watch(
+  () => active.value?.id,
+  () => {
+    pinned.value = null;
+    configId.value = null;
+    editorSet.value = null;
+  },
+);
+const isComplete = (exercise: SessionExercise) =>
+  exercise.sets.every((set) => set.completed);
+const unfinished = computed(
+  () =>
+    active.value?.exercises.filter(
+      (exercise) => !isComplete(exercise) || exercise.id === pinned.value,
+    ) ?? [],
+);
+const completed = computed(
+  () =>
+    active.value?.exercises.filter(
+      (exercise) => isComplete(exercise) && exercise.id !== pinned.value,
+    ) ?? [],
+);
+const ordered = computed(() => [...unfinished.value, ...completed.value]);
+const allDone = computed(
+  () =>
+    !!activeSetCount.value &&
+    activeTotals.value.completedSets === activeSetCount.value,
+);
+const nextRow = training.next;
 async function rename() {
   if (!active.value || name.value === active.value.name) return;
   if (!name.value.trim()) {
     nameIssue.value = "Give this workout a name.";
     return;
   }
-  if (
-    await run({ type: "rename", sessionId: active.value.id, name: name.value })
-  ) {
-    nameIssue.value = "";
+  nameIssue.value = (await run({
+    type: "rename",
+    sessionId: active.value.id,
+    name: name.value,
+  }))
+    ? ""
+    : "Name not saved. Try again.";
+}
+function pick() {
+  pinned.value = null;
+  emit("pick");
+}
+function configure(id: string) {
+  if (pinned.value !== id) pinned.value = null;
+  configId.value = id;
+}
+function edit(id: string) {
+  if (training.rows.get(id)?.exercise.id !== pinned.value) pinned.value = null;
+  training.selectSet(id);
+  editorSet.value = id;
+}
+async function tap(id: string) {
+  const row = training.rows.get(id);
+  if (!row) return;
+  pinned.value = row.exercise.id;
+  if (!(await training.tapSet(id))) {
+    if (row.touched || row.issue) edit(id);
     return;
   }
-  nameIssue.value = "Name not saved. Try again.";
+  await nextTick();
+  cards.value
+    ?.find((card) => card.exerciseId === row.exercise.id)
+    ?.focusSet(id);
 }
-const previous = computed(() => {
-  const exercise = training.currentExercise.value;
-  if (!exercise) return null;
-  return Object.values(snapshot.value?.completed ?? {})
-    .sort((a, b) => b.finishedAt - a.finishedAt)
-    .flatMap((session) => session.exercises)
-    .find(
-      (row) =>
-        row.exerciseId === exercise.exerciseId &&
-        row.sets.some((set) => set.completed),
-    );
-});
+async function closeEditor() {
+  const id = editorSet.value;
+  const row = id ? training.rows.get(id) : undefined;
+  if (row) pinned.value = row.exercise.id;
+  editorSet.value = null;
+  await nextTick();
+  if (row && id)
+    cards.value
+      ?.find((card) => card.exerciseId === row.exercise.id)
+      ?.focusSet(id);
+}
+async function release() {
+  pinned.value = null;
+  await nextTick();
+  const element = addButton.value?.$el;
+  if (element instanceof HTMLElement) element.focus({ preventScroll: true });
+}
+function remove(exercise: SessionExercise) {
+  configId.value = null;
+  if (!active.value) return;
+  emit("confirm", {
+    title: "Remove exercise?",
+    description: `Remove ${exercise.name} and its sets from this workout? Completed history stays unchanged.`,
+    command: {
+      type: "remove-exercise",
+      sessionId: active.value.id,
+      exerciseId: exercise.id,
+    },
+  });
+}
+function discard() {
+  if (!active.value) return;
+  emit("confirm", {
+    title: "Discard this workout?",
+    description:
+      "This deletes the active workout and its logged sets. Completed history stays saved.",
+    command: { type: "discard", sessionId: active.value.id },
+  });
+}
 </script>
-
 <template>
-  <template v-if="active"
-    ><a class="training-back text-button" href="#/workouts">Back to workouts</a>
-    <div class="page-heading session-heading">
+  <section v-if="active" class="circle-workout">
+    <a class="training-back text-button" href="#/workouts">Back to workouts</a>
+    <header class="circle-workout-heading">
       <div>
-        <h1 class="workout-name">
+        <p class="eyebrow">ACTIVE WORKOUT · {{ elapsed }}</p>
+        <h1>
           <Input
             v-model="name"
             aria-label="Workout name"
@@ -133,272 +176,145 @@ const previous = computed(() => {
           />
         </h1>
         <p v-if="nameIssue" class="field-error" role="alert">{{ nameIssue }}</p>
-        <p class="muted">
-          <Clock3 :size="14" />{{ elapsed }} elapsed<span class="separator"
-            >·</span
-          >{{ active.exercises.length }} exercises
-        </p>
       </div>
       <Button
-        unstyled
-        class="btn secondary"
+        variant="secondary"
         :disabled="saving || !activeTotals.completedSets"
-        aria-label="Finish workout"
         @click="emit('finish')"
+        >Finish</Button
       >
-        <span class="finish-label">Finish</span><Check :size="17" />
-      </Button>
+    </header>
+    <div class="circle-workout-metrics">
+      <span v-if="!activeTotals.completedSets"
+        >{{ active.exercises.length }}
+        {{ active.exercises.length === 1 ? "exercise" : "exercises" }}</span
+      ><span v-else
+        >{{ activeTotals.completedSets }} / {{ activeSetCount }} sets
+        logged</span
+      ><span v-if="activeTotals.completedSets"
+        >{{ fmt(activeTotals.volumeKg) }} kg lifted</span
+      >
     </div>
-    <div v-if="training.notice.value" class="training-notice">
-      <span role="status">{{ training.notice.value }}</span
-      ><Button
-        unstyled
-        v-if="training.lastLog.value"
-        class="text-button"
-        :disabled="saving"
-        @click="training.undo"
-      >
-        Undo last log
-      </Button>
+    <div class="workout-progress-space">
+      <progress
+        v-if="activeTotals.completedSets"
+        class="circle-workout-progress"
+        :value="activeTotals.completedSets"
+        :max="activeSetCount"
+        aria-label="Logged sets"
+      />
     </div>
-    <nav
-      v-if="active.exercises.length"
-      ref="exerciseTabs"
-      class="exercise-tabs"
-      aria-label="Workout exercises"
-    >
-      <Button
-        unstyled
-        v-for="(exercise, index) in active.exercises"
-        :key="exercise.id"
-        :aria-pressed="training.currentExercise.value?.id === exercise.id"
-        :class="{
-          selected: training.currentExercise.value?.id === exercise.id,
-        }"
-        @click="training.selectExercise(exercise.id)"
-      >
-        <span class="tab-exercise-index">{{
-          String(index + 1).padStart(2, "0")
-        }}</span
-        ><span
-          >{{ exercise.name
-          }}<small
-            >{{ exercise.sets.filter((set) => set.completed).length }}/{{
-              exercise.sets.length
-            }}
-            sets</small
-          ></span
-        ><Check v-if="exercise.sets.every((set) => set.completed)" :size="15" />
-      </Button>
-      <Button
-        unstyled
-        class="exercise-tab-add"
-        aria-label="Add exercises"
-        :disabled="saving || active.exercises.length >= 50"
-        @click="emit('pick')"
-      >
-        <Plus :size="20" />
-      </Button>
-    </nav>
-    <div class="session-layout">
-      <div class="exercise-stack">
-        <article
-          v-for="exercise in training.currentExercise.value
-            ? [training.currentExercise.value]
-            : []"
-          :key="exercise.id"
-          class="exercise-card"
-          :class="{
-            'current-exercise':
-              training.current.value?.exercise.id === exercise.id,
-          }"
-        >
-          <header>
-            <div class="exercise-title">
-              <ExerciseThumbnail :exercise="currentCatalogExercise" />
-              <div>
-                <h2>{{ exercise.name }}</h2>
-                <p class="muted small">
-                  {{ exercise.category }} ·
-                  {{ exercise.sets.filter((set) => set.completed).length }}/{{
-                    exercise.sets.length
-                  }}
-                  sets logged
-                </p>
-              </div>
-            </div>
-            <IconButton
-              :label="`Remove ${exercise.name} from workout`"
-              :disabled="saving"
-              @click="
-                emit('confirm', {
-                  title: 'Remove exercise?',
-                  description: `This removes ${exercise.name} and its logged sets from the active workout.`,
-                  command: {
-                    type: 'remove-exercise',
-                    sessionId: active.id,
-                    exerciseId: exercise.id,
-                  },
-                })
-              "
-            >
-              <X :size="16" />
-            </IconButton>
-          </header>
-          <div v-if="previous" class="previous-performance">
-            <span class="eyebrow">LAST TIME</span>
-            <p>
-              {{
-                previous.sets
-                  .filter((set) => set.completed)
-                  .map((set) => `${fmt(set.weightKg)} kg × ${set.reps}`)
-                  .join(" · ")
-              }}
-            </p>
-          </div>
-          <div class="set-labels">
-            <span>SET</span><span>WEIGHT · KG</span><span>REPS</span
-            ><span>LOG</span><span></span>
-          </div>
-          <SetRow
-            ref="setRows"
-            v-for="set in exercise.sets"
-            :key="set.id"
-            :row="training.rows.get(set.id)!"
-            :busy="saving"
-            :current="training.current.value?.set.id === set.id"
-            :dirty="training.dirty(training.rows.get(set.id)!)"
-            :conflict="training.conflict(training.rows.get(set.id)!)"
-            @edit="(values) => training.edit(set.id, values)"
-            @select="training.selectSet(set.id)"
-            @commit="training.commit(set.id)"
-            @options="emit('options', set.id)"
-            @discard="training.useSaved(set.id)"
-            @keep="training.keepInput(set.id)"
-            @recover="(draft) => training.chooseDraft(set.id, draft)"
-          />
+    <p class="workout-guidance workout-live-guidance" role="status">
+      {{
+        training.notice.value ||
+        "Check your sets, reps and weights. Tap a circle after completing its set."
+      }}
+    </p>
+    <div class="circle-workout-layout">
+      <div class="circle-workout-list">
+        <div v-if="!active.exercises.length" class="workout-empty">
+          <Dumbbell :size="28" />
+          <h2>Make it your workout.</h2>
+          <p>Add an exercise, then choose its sets, reps and weight.</p>
+        </div>
+
+        <div v-for="(exercise, index) in ordered" :key="exercise.id">
           <div
-            v-if="
-              exercise.sets.some((set) => training.rows.get(set.id)?.touched)
-            "
-            class="save-inputs"
+            v-if="index === unfinished.length && completed.length"
+            class="workout-completed-heading"
           >
-            <Button
-              unstyled
-              class="text-button"
-              :disabled="saving"
-              @click="training.saveEdits()"
+            <h2>Completed</h2>
+            <span
+              >{{ completed.length }}
+              {{ completed.length === 1 ? "exercise" : "exercises" }}</span
             >
-              Save input values without logging
-            </Button>
           </div>
-          <Button
-            unstyled
-            class="add-set text-button"
-            :disabled="saving || exercise.sets.length >= 30"
-            @click="addSet(exercise.id)"
+          <TrainingExerciseCard
+            ref="cards"
+            :exercise="exercise"
+            :training="training"
+            :busy="saving"
+            :completed="isComplete(exercise)"
+            :pinned="pinned === exercise.id && isComplete(exercise)"
+            @configure="configure(exercise.id)"
+            @tap="tap"
+            @edit="edit"
+            @release="release"
+          />
+        </div>
+        <div v-if="allDone" class="workout-done">
+          <p class="eyebrow">ALL SETS LOGGED</p>
+          <h2>That’s your last set.</h2>
+          <p>Review your work below, or add another exercise.</p>
+          <Button :disabled="saving" @click="emit('finish')"
+            >Finish workout</Button
           >
-            <Plus :size="15" />Add set
-          </Button>
-        </article>
-        <div v-if="active.exercises.length === 0" class="empty-state">
-          <Dumbbell :size="32" />
-          <h2>What are we training?</h2>
-          <p class="muted">Add your first exercise to start logging sets.</p>
         </div>
         <Button
-          unstyled
-          class="btn secondary full-width"
+          ref="addButton"
+          class="workout-add"
+          variant="secondary"
           :disabled="saving || active.exercises.length >= 50"
-          @click="emit('pick')"
+          @click="pick"
+          ><Plus :size="18" />Add exercises</Button
         >
-          <Plus :size="18" />Add exercises
-        </Button>
+        <p class="workout-guidance">
+          Tap again for fewer reps. Hold a circle or choose Edit sets for
+          corrections.
+        </p>
+        <Button variant="ghost" :disabled="saving" @click="discard"
+          >Discard workout</Button
+        >
       </div>
-      <aside class="session-summary">
-        <section class="panel">
-          <div class="section-heading">
-            <h2>Session</h2>
-            <span class="pill">In progress</span>
-          </div>
-          <div class="summary-progress">
-            <strong
-              >{{ activeTotals.completedSets
-              }}<span> / {{ activeSetCount }}</span></strong
-            ><span class="muted small">sets completed</span>
-          </div>
-          <div class="progress-track">
-            <div
-              :style="{
-                width: `${activeSetCount ? (activeTotals.completedSets / activeSetCount) * 100 : 0}%`,
-              }"
-            ></div>
-          </div>
-          <div class="summary-line">
-            <span class="muted">Volume logged</span
-            ><strong>{{ fmt(activeTotals.volumeKg) }} kg</strong>
-          </div>
-          <div class="summary-line">
-            <span class="muted">Elapsed time</span
-            ><strong>{{ elapsed }}</strong>
-          </div>
-        </section>
-        <section class="rest-card panel">
-          <div class="section-heading">
-            <h2><Clock3 :size="16" />Rest timer</h2>
-            <span class="muted small">{{
-              snapshot?.settings.autoRest ? "Auto" : "Off"
-            }}</span>
-          </div>
-          <strong class="rest-time">{{ duration(rest) }}</strong>
-          <p class="muted small">
-            {{
-              rest > 0
-                ? "Breathe. Your next set can wait."
-                : active.rest
-                  ? "Rest complete. Ready when you are."
-                  : "Starts when you log a set."
-            }}
-          </p>
-          <Button
-            unstyled
-            v-if="rest > 0"
-            class="btn secondary full-width"
-            :disabled="saving"
-            @click="run({ type: 'stop-rest', sessionId: active.id })"
-          >
-            Skip rest<ArrowRight :size="16" />
-          </Button>
-        </section>
-        <Button
-          unstyled
-          class="text-button discard-button"
+      <aside class="workout-rest-panel">
+        <Clock3 :size="20" /><strong>{{
+          active.rest ? duration(rest) : "Ready when you are"
+        }}</strong>
+        <p>
+          {{
+            nextRow
+              ? `Next: ${nextRow.exercise.name} · Set ${nextRow.index + 1} of ${nextRow.exercise.sets.length}`
+              : "All planned work recorded"
+          }}
+        </p>
+        <small>{{
+          snapshot?.settings.autoRest
+            ? "Your configured rest starts after logging."
+            : "Automatic rest is turned off."
+        }}</small
+        ><Button
+          v-if="active.rest"
+          variant="secondary"
           :disabled="saving"
-          @click="
-            emit('confirm', {
-              title: 'Discard this workout?',
-              description:
-                'This deletes the active workout and its logged sets. Your completed history stays saved.',
-              command: { type: 'discard', sessionId: active.id },
-            })
-          "
+          @click="run({ type: 'stop-rest', sessionId: active.id })"
+          >{{ rest ? "Skip rest" : "Dismiss timer" }}</Button
         >
-          Discard workout
-        </Button>
-        <p class="saved-indicator" role="status">
+        <p class="saved-indicator">
           <ShieldCheck :size="14" />{{
-            saving ? "Saving…" : "Logged sets saved on this device"
+            saving ? "Saving…" : "Saved on this device"
           }}
         </p>
       </aside>
     </div>
-  </template>
+    <ExerciseConfiguration
+      :exercise="configuration"
+      :workspace="workspace"
+      @close="configId = null"
+      @remove="remove"
+    />
+    <TrainingSetEditor
+      :set-id="editorSet"
+      :training="training"
+      :busy="saving"
+      @close="closeEditor"
+      @cleared="closeEditor"
+      @select="edit"
+      @options="emit('options', $event)"
+    />
+  </section>
   <div v-else class="empty-state">
     <Dumbbell :size="32" />
     <h1>Ready for your next session?</h1>
-    <p class="muted">Start a workout or choose one of your templates.</p>
-    <Button unstyled class="btn primary" @click="navigate('workouts')">
-      Choose a workout<ArrowRight :size="17" />
-    </Button>
+    <Button @click="emit('navigate', 'workouts')">Choose a workout</Button>
   </div>
 </template>

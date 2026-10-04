@@ -44,10 +44,10 @@ The preview uses the same address. Stop the development server first. Keep the s
 
 - Start a workout from an empty journal and choose exercises from the built-in catalog.
 - Search and filter exercises by muscle group or equipment, select several at once, or create a custom exercise.
-- Switch between exercises while keeping each set's input.
+- See every exercise in the active workout, log with repetition circles, and review completed exercises below unfinished work.
 - Repeat a past workout with its original set values, or save an editable template with targets for each set.
-- During a workout, the mobile training bar shows the selected set, running pause, or completion action. Set options offer repetition adjustments and removal; the last log can be undone.
-- Enter weights in kg and repetitions with the numeric keypad or quick-pick suggestions, then log each set. Confirming a numeric value saves it to the input draft; Cancel leaves it unchanged. Drafts recover after navigation, reload and reopening. Logging a set is a separate action. A storage error leaves the input visible and reports when recovery is unavailable.
+- Configure each exercise's set count, target repetitions and weight during training. Bulk changes preserve logged work and existing mixed targets unless you explicitly replace them. Tap a logged circle to reduce reps, or open Edit sets for correction and explicit clearing. The mobile bar shows rest and the next unfinished exercise.
+- Enter weights in kg and repetitions with the numeric keypad or quick-pick suggestions, then log each set. Zero repetitions records a failed attempt. Confirming a numeric value saves it to the input draft; Cancel leaves it unchanged. Drafts recover after navigation, reload and reopening. Logging a set is a separate action. A storage error leaves the input visible and reports when recovery is unavailable.
 - Resume a workout, use the rest timer, add or remove sets and exercises, finish or explicitly discard the session.
 - Review history, completed-set volume, lifting trends and heaviest sets.
 - Export and import JSON backups from Settings.

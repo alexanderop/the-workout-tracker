@@ -1,110 +1,58 @@
 <script setup lang="ts">
 import { Button } from "@form/ui";
-import { computed } from "vue";
 import { ArrowLeft } from "@lucide/vue";
 import { duration } from "./presentation";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
-const { workspace } = defineProps<{
-  workspace: Pick<
-    WorkoutWorkspace,
-    "active" | "rest" | "saving" | "training" | "activeSetCount" | "run"
-  >;
-}>();
-const { active, rest, saving, training, activeSetCount, run } = workspace;
+const { workspace } = defineProps<{ workspace: WorkoutWorkspace }>();
+const { active, rest, saving, training, run, activeSetCount } = workspace;
 const emit = defineEmits<{ finish: []; pick: [] }>();
-const nextExercise = computed(() =>
-  active.value?.exercises.find((exercise) =>
-    exercise.sets.some((set) => !set.completed),
-  ),
-);
-function advance() {
-  if (nextExercise.value) {
-    training.selectExercise(nextExercise.value.id);
-    return;
-  }
-  emit("finish");
-}
+const next = training.next;
 </script>
-
 <template>
   <section v-if="active" class="training-bar" aria-label="Training controls">
     <a href="#/workouts" class="training-bar-back" aria-label="Back to workouts"
-      ><ArrowLeft :size="20" aria-hidden="true"
+      ><ArrowLeft :size="20"
     /></a>
-    <template v-if="rest > 0 && nextExercise">
-      <div>
-        <strong>{{ duration(rest) }} rest</strong>
-        <small
-          >Next:
-          {{
-            training.current.value?.exercise.name ?? nextExercise.name
-          }}</small
+    <template v-if="active.rest && next"
+      ><div>
+        <strong>{{ rest ? `${duration(rest)} rest` : "Rest complete" }}</strong
+        ><small
+          >Next: {{ next.exercise.name }} · Set {{ next.index + 1 }}</small
         >
       </div>
       <Button
-        unstyled
-        class="btn primary"
+        variant="secondary"
         :disabled="saving"
         @click="run({ type: 'stop-rest', sessionId: active.id })"
-      >
-        End rest
-      </Button>
-    </template>
-    <template v-else-if="training.current.value">
-      <div>
-        <strong>{{ training.current.value.exercise.name }}</strong
-        ><small
-          >Set {{ training.current.value.index + 1 }} of
-          {{ training.current.value.exercise.sets.length }} ·
-          {{ training.current.value.weight || "—" }} kg ×
-          {{ training.current.value.reps || "—" }}</small
-        >
+        >{{ rest ? "Skip" : "Dismiss" }}</Button
+      ></template
+    >
+    <template v-else-if="next"
+      ><div>
+        <strong>{{ next.exercise.name }}</strong
+        ><small>Tap a set circle when done</small>
       </div>
       <Button
-        unstyled
-        class="btn primary"
-        type="submit"
-        :form="`set-form-${training.current.value.set.id}`"
-        :disabled="saving"
-      >
-        {{
-          training.current.value.set.completed
-            ? training.dirty(training.current.value)
-              ? "Update set"
-              : "Undo set"
-            : "Log set"
-        }}
-      </Button>
-    </template>
-    <template v-else-if="activeSetCount">
-      <div>
-        <strong>{{
-          active.exercises.every((exercise) =>
-            exercise.sets.every((set) => set.completed),
-          )
-            ? "All sets logged"
-            : "Exercise complete"
-        }}</strong
-        ><small
-          v-if="
-            active.exercises.some((exercise) =>
-              exercise.sets.some((set) => !set.completed),
-            )
-          "
-          >Next: {{ nextExercise?.name }}</small
-        >
+        variant="secondary"
+        :disabled="saving || active.exercises.length >= 50"
+        @click="emit('pick')"
+        >Add exercise</Button
+      ></template
+    >
+    <template v-else-if="activeSetCount"
+      ><div>
+        <strong>All sets logged</strong
+        ><small>Review or finish your workout</small>
       </div>
-      <Button unstyled class="btn primary" :disabled="saving" @click="advance">
-        {{ nextExercise ? "Next exercise" : "Finish workout" }}
-      </Button>
-    </template>
-    <template v-else>
-      <div>
-        <strong>Choose your first exercise</strong>
-      </div>
-      <Button unstyled class="btn primary" @click="emit('pick')"
-        >Choose exercise</Button
-      >
-    </template>
+      <Button :disabled="saving" @click="emit('finish')"
+        >Finish</Button
+      ></template
+    >
+    <template v-else
+      ><div><strong>Choose your first exercise</strong></div>
+      <Button :disabled="saving" @click="emit('pick')"
+        >Add exercise</Button
+      ></template
+    >
   </section>
 </template>

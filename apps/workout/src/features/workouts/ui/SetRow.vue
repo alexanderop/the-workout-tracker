@@ -77,7 +77,7 @@ defineExpose({
       <NumericInput
         :model-value="row.reps"
         title="Reps"
-        :min="1"
+        :min="0"
         class="set-input"
         :aria-invalid="!!row.issue"
         :aria-describedby="row.issue ? `set-issue-${row.set.id}` : undefined"

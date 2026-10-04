@@ -46,7 +46,7 @@ The workout pages remain inside the workout feature. Workouts, templates, traini
 
 `WorkoutsPage`, `ExercisesPage`, `TrainingPage`, and `ProgressPage` own the main page templates. History is part of the workout overview. `TrainingDock` owns the mobile training controls. `WorkoutDialogs` owns routine editing, exercise selection, set options, confirmations, and completed-session details. `WorkoutSettings` owns preferences and backup controls.
 
-`App.vue` calls `useWorkoutWorkspace` once to create `useWorkouts`, `useTrainingSession`, and the shared clock. Page navigation does not recreate either composable. This preserves the shared saving lock, selected set, live draft baselines, and last-log undo. The training page and mobile controls use that same training instance and the same native set forms.
+`App.vue` calls `useWorkoutWorkspace` once to create `useWorkouts`, `useTrainingSession`, and the shared clock. Page navigation does not recreate either composable. This preserves the shared saving lock, selected set, live draft baselines, and last-log undo. The training page and mobile controls use that same training instance. Circle logging, explicit clearing and atomic exercise configuration reuse its draft and revision guards. Detailed set forms remain in a persistent correction sheet. The dock derives its next set from canonical exercise/set order.
 
 Progress selection and cross-page dialog state also survive page navigation. Routine editing retains the revision captured when the editor opens. Backup import retains the revision captured when the file is read. Completing a workout opens its detail after returning to the workout overview.
 
@@ -123,3 +123,9 @@ The session controller owns input, current-set selection, validation, conflicts 
 Obsolete records are pruned only when their source revision is older than the observed canonical snapshot and their session or set is absent. A stale observer cannot prune a draft from a newer revision.
 
 Draft recovery can fail independently from confirmed IndexedDB storage. The app keeps the entered text visible and reports that closing the page may lose it. Acknowledgement failures remain visible; recovered stale input cannot silently overwrite newer work. Backups contain confirmed workout data, not raw drafts.
+
+## Circle workout integration
+
+`TrainingPage` owns presentation grouping and correction focus. `TrainingExerciseCard` and `TrainingSetCircle` render saved values; they do not write storage. `ExerciseConfiguration` captures its opening revision and applies count changes atomically. Optional target replacements change only unfinished work. `TrainingSetEditor` uses the existing recoverable set rows. Completion grouping never reorders persisted session exercises.
+
+The set schema accepts optional `targetReps` for compatibility with existing version 2 snapshots and backups. Reads preserve absent fields rather than rewriting old records. New set edits capture positive targets; actual logged repetitions may be zero. Old app versions with the previous strict schema may reject new enriched backups. The database name and table version are unchanged.

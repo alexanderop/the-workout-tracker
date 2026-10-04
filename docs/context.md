@@ -14,7 +14,7 @@ A **session exercise**, represented by `SessionExercise`, is one exercise entry 
 
 A **template** is an editable plan for a future workout. Existing code calls it `Routine` and stores templates in `Snapshot.routines`; use “template” in product copy without assuming a code rename is required.
 
-A **target set** contains planned weight in kilograms and repetitions. Templates store targets separately for each set. Starting a template copies those targets into a new workout. It does not change the template or replace its targets with recent performance.
+A **target set** contains planned weight in kilograms and repetitions. Templates store targets separately for each set. Starting a template copies those targets into a new workout. It does not change the template or replace its targets with recent performance. Bulk exercise configuration changes only unlogged sets. Reducing the count removes only unlogged sets and cannot go below the logged count. Changing only the count preserves existing per-set targets.
 
 ## Active workout
 
@@ -24,13 +24,13 @@ An **active workout** (`ActiveSession`) is the session currently being recorded.
 
 ## Completed workout
 
-A **completed workout** (`CompletedSession`) is a finished session in history. Repeating it creates a new active workout with fresh identities, copied set values, and unchecked sets. Saving it as a template creates a separate editable plan. Neither operation mutates the historical record.
+A **completed workout** (`CompletedSession`) is a finished session in history. Repeating it creates a new active workout with fresh identities, copied weights, planned repetition targets, and unchecked sets. Saving it as a template creates a separate editable plan. Neither operation mutates the historical record.
 
 ## Set, logged set, and volume
 
-A **workout set** (`WorkoutSet`) has an identity, weight, repetitions, and a `completed` flag. A **logged set** has that flag enabled. History and progress totals count logged sets only; volume is the sum of weight multiplied by repetitions for those sets.
+A **workout set** (`WorkoutSet`) has an identity, weight, repetitions, a `completed` flag, and an optional positive `targetReps` value. New and edited sets preserve their planned repetitions separately from recorded repetitions. Older sets without that field remain readable; their saved positive repetitions provide the initial target. A logged zero-repetition set records an attempted set and contributes zero volume. Unlogged sets require positive repetitions. A **logged set** has that flag enabled. History and progress totals count logged sets only; volume is the sum of weight multiplied by repetitions for those sets.
 
-Entering a number, confirming a numeric editor, logging a set, and finishing a workout are distinct actions. Confirming the numeric editor updates the containing input draft; it does not mark a set logged. Cancel leaves the prior input unchanged.
+Tapping an unlogged circle logs its saved values. Tapping a logged circle reduces actual repetitions toward zero without clearing it or restarting rest. Clearing is explicit and restores the repetition target. Entering a number, confirming a numeric editor, logging a set, and finishing a workout are distinct actions. Confirming the numeric editor updates the containing input draft; it does not mark a set logged. Cancel leaves the prior input unchanged.
 
 ## Draft
 

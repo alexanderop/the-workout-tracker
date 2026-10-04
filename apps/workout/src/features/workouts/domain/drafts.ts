@@ -16,6 +16,7 @@ export const draftSchema = z
         weightKg: z.number().finite(),
         reps: z.number().int(),
         completed: z.boolean(),
+        targetReps: z.number().int().min(1).max(1000).optional(),
       })
       .strict(),
   })
@@ -27,7 +28,8 @@ export function sameSet(base: SetDraft["base"], set: WorkoutSet) {
   return (
     base.weightKg === set.weightKg &&
     base.reps === set.reps &&
-    base.completed === set.completed
+    base.completed === set.completed &&
+    base.targetReps === set.targetReps
   );
 }
 export function parseSetValues(
@@ -41,7 +43,7 @@ export function parseSetValues(
     weightKg >= 0 &&
     weightKg <= 1000 &&
     Number.isInteger(reps) &&
-    reps >= 1 &&
+    reps >= 0 &&
     reps <= 1000
     ? { weightKg, reps }
     : null;

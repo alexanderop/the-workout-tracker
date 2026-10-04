@@ -61,7 +61,11 @@ Desktop sidebar footer actions use left-aligned labels with a shared icon column
 
 ## Workout-first screens
 
-The main page groups history and templates under Workouts. A fresh journal has one prominent start action. The exercise picker supports search, filters, and multiple selection. The active workout shows named exercise controls above a focused set table. Selected and completed states use the existing purple token, text, and icons. The bottom training control refers to the same exercise as the visible table.
+The main page groups history and templates under Workouts. A fresh journal has one prominent start action. The exercise picker supports search, filters, and multiple selection. The active workout shows an overview of exercise cards with large repetition circles. Before the first logged set, the header shows only the exercise count. Logging reveals set progress and volume. Each exercise exposes its configurable set count, repetition targets and weight; varied targets remain per-set. The picker remains available during training and after all sets are logged.
+
+Completed exercises move below unfinished work and collapse for review. The just-completed exercise stays expanded in place while the user corrects its final circle; Move to completed or interacting with another exercise releases it. Clearing a completed set returns it to unfinished work and restores focus to the same circle. Drafts that need review keep their exercise expanded.
+
+A circle logs saved values on the first tap and reduces logged reps on later taps. A hold, right-click, keyboard E or Edit sets opens the detailed editor. Drafts must be reviewed before circle shortcuts. Changing numeric input remains distinct from logging. The editor retains recovery and conflict choices. Circles are disabled while a save is pending. The mobile dock displays the saved rest deadline and next unfinished exercise, with add or finish actions. Rest uses the user's configured duration; rep corrections do not restart it.
 
 For a fresh journal, the welcome card owns the only start action. Its copy wraps naturally and its height follows its content. Mobile uses a compact mark and a full-width action; the page header omits repeated introductory copy. Returning journals keep the header action. The mobile navigation divides the available width equally among its rendered links, without unused columns.
 
@@ -81,7 +85,7 @@ Literal CSS colors belong in `packages/ui/src/tokens.css`, including generic ove
 
 The **03 Patterns / Exercise imagery** story previews six generated equipment illustrations in a gallery and a searchable picker. The artwork uses transparent backgrounds, charcoal materials and silver edge highlights, with the existing semantic surface behind it. Text labels remain essential because equipment does not uniquely identify a movement; these images do not teach exercise technique. Images are decorative when paired with the exercise name.
 
-The exercise catalog, exercise picker and active exercise header use these illustrations for explicitly matched built-in exercises and compatible equipment variants. Custom exercises, unmatched definitions and failed image loads use a decorative dumbbell fallback. Names and equipment must match as well as the catalog ID; artwork is presentation metadata and is not persisted in workout data or backups.
+The exercise catalog and exercise picker use these illustrations for explicitly matched built-in exercises and compatible equipment variants. Custom exercises, unmatched definitions and failed image loads use a decorative dumbbell fallback. Names and equipment must match as well as the catalog ID; artwork is presentation metadata and is not persisted in workout data or backups.
 
 The workout feature owns its production asset copies and mapping in `ui/assets/exercises` and `ui/exerciseArtwork.ts`. Histoire retains its independent review assets and generation prompts in `src/assets/exercises`, avoiding imports between applications. Imported PNGs are included in the existing offline precache.
 

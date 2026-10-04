@@ -12,6 +12,7 @@ const identifier = z
 const name = z.string().trim().min(1).max(80);
 const weight = z.number().finite().min(0).max(1000);
 const reps = z.number().int().min(1).max(1000);
+const actualReps = z.number().int().min(0).max(1000);
 const timestamp = z.number().int().min(0).max(8640000000000000);
 export const exerciseSchema = z
   .object({
@@ -49,8 +50,18 @@ export const routineSchema = z
   .strict()
   .readonly();
 const setSchema = z
-  .object({ id: identifier, weightKg: weight, reps, completed: z.boolean() })
+  .object({
+    id: identifier,
+    weightKg: weight,
+    reps: actualReps,
+    targetReps: reps.optional(),
+    completed: z.boolean(),
+  })
   .strict()
+  .refine(
+    (set) => set.completed || set.reps > 0,
+    "Unlogged sets need positive repetitions.",
+  )
   .readonly();
 const sessionExerciseSchema = z
   .object({
@@ -197,7 +208,11 @@ export const snapshotSchema = snapshotShape
 export type Snapshot = z.infer<typeof snapshotSchema>;
 
 const sessionId = { sessionId: identifier };
-const values = { weightKg: weight, reps };
+const values = { weightKg: weight, reps: actualReps };
+const plannedValues = { weightKg: weight, reps };
+export function setTargetReps(set: WorkoutSet): number {
+  return set.targetReps ?? Math.max(1, set.reps);
+}
 export const commandSchema = z
   .discriminatedUnion("type", [
     z.object({ type: z.literal("repeat"), completedId: identifier }).strict(),
@@ -248,7 +263,16 @@ export const commandSchema = z
         type: z.literal("add-set"),
         ...sessionId,
         exerciseId: identifier,
-        values: z.object(values).strict().optional(),
+        values: z.object(plannedValues).strict().optional(),
+      })
+      .strict(),
+    z
+      .object({
+        type: z.literal("configure-exercise"),
+        ...sessionId,
+        exerciseId: identifier,
+        setCount: z.number().int().min(1).max(30),
+        values: z.object(plannedValues).strict().optional(),
       })
       .strict(),
     z
@@ -386,6 +410,7 @@ export function reduceWorkout(
     case "add-exercise":
     case "add-exercises":
     case "remove-exercise":
+    case "configure-exercise":
     case "add-set":
     case "remove-set":
     case "set-entry":
@@ -416,6 +441,8 @@ export function reduceWorkout(
             ...set,
             id: inputs.id(),
             completed: false,
+            reps: setTargetReps(set),
+            targetReps: setTargetReps(set),
           })),
         })),
       },
@@ -461,6 +488,7 @@ export function reduceWorkout(
           id: inputs.id(),
           weightKg: set.weightKg,
           reps: set.reps,
+          targetReps: set.reps,
           completed: false,
         })),
       });
@@ -491,6 +519,7 @@ export function reduceWorkout(
       case "add-exercises":
         return addExercises(command);
       case "remove-exercise":
+      case "configure-exercise":
       case "add-set":
       case "remove-set":
       case "set-entry":
@@ -533,7 +562,15 @@ export function reduceWorkout(
           exerciseId: exercise.id,
           name: exercise.name,
           category: exercise.category,
-          sets: [{ id: inputs.id(), weightKg: 0, reps: 8, completed: false }],
+          sets: [
+            {
+              id: inputs.id(),
+              weightKg: 0,
+              reps: 8,
+              targetReps: 8,
+              completed: false,
+            },
+          ],
         });
       }
       return saveActive({
@@ -547,6 +584,7 @@ export function reduceWorkout(
         {
           type:
             | "remove-exercise"
+            | "configure-exercise"
             | "add-set"
             | "remove-set"
             | "set-entry"
@@ -582,12 +620,51 @@ export function reduceWorkout(
             row.id === next.id ? next : row,
           ),
         });
+      if (command.type === "configure-exercise")
+        return configureExercise(command);
       if (command.type === "add-set") return addSet(command);
       return updateSet(command);
+      function configureExercise(
+        command: Extract<Command, { type: "configure-exercise" }>,
+      ): Transition {
+        const logged = exercise.sets.filter((set) => set.completed).length;
+        if (command.setCount < logged)
+          return reject(
+            "The set count cannot remove logged work. Clear a set explicitly first.",
+          );
+        let remaining = command.setCount - logged;
+        const retained = exercise.sets
+          .filter((set) => {
+            if (set.completed) return true;
+            return remaining-- > 0;
+          })
+          .map((set) => {
+            if (set.completed || !command.values) return set;
+            return {
+              ...set,
+              ...command.values,
+              targetReps: command.values.reps,
+            };
+          });
+        const previous = exercise.sets.at(-1)!;
+        const values = command.values ?? {
+          weightKg: previous.weightKg,
+          reps: setTargetReps(previous),
+        };
+        while (retained.length < command.setCount)
+          retained.push({
+            id: inputs.id(),
+            ...values,
+            targetReps: values.reps,
+            completed: false,
+          });
+        return saveExercise({ ...exercise, sets: retained });
+      }
       function addSet(
         command: Extract<Command, { type: "add-set" }>,
       ): Transition {
-        const previous = exercise.sets.at(-1);
+        const previous = exercise.sets.at(-1)!;
+        const reps = command.values?.reps ?? setTargetReps(previous);
         return saveExercise({
           ...exercise,
           sets: [
@@ -595,7 +672,8 @@ export function reduceWorkout(
             {
               id: inputs.id(),
               weightKg: command.values?.weightKg ?? previous?.weightKg ?? 0,
-              reps: command.values?.reps ?? previous?.reps ?? 8,
+              reps: reps,
+              targetReps: reps,
               completed: false,
             },
           ],
@@ -620,17 +698,9 @@ export function reduceWorkout(
             active.rest?.setId === set.id ? null : active.rest,
           );
         }
-        const nextSet =
-          command.type === "set-completed"
-            ? { ...set, completed: command.completed }
-            : {
-                ...set,
-                weightKg: command.weightKg,
-                reps: command.reps,
-                ...(command.type === "set-entry"
-                  ? { completed: command.completed }
-                  : {}),
-              };
+        const nextSet = changedSet(set, command);
+        if (!nextSet.completed && nextSet.reps === 0)
+          return reject("Planned sets need at least one target repetition.");
         const rest = nextRest(set, nextSet);
         return saveExercise(
           {
@@ -664,6 +734,36 @@ export function reduceWorkout(
   }
 }
 
+function changedSet(
+  set: WorkoutSet,
+  command: Extract<
+    Command,
+    { type: "set-entry" | "set-values" | "set-completed" }
+  >,
+): WorkoutSet {
+  const target = setTargetReps(set);
+  if (command.type === "set-completed")
+    return {
+      ...set,
+      completed: command.completed,
+      reps: command.completed ? set.reps : target,
+    };
+  if (command.type === "set-entry")
+    return {
+      ...set,
+      weightKg: command.weightKg,
+      reps: command.completed ? command.reps : target,
+      targetReps: target,
+      completed: command.completed,
+    };
+  return {
+    ...set,
+    weightKg: command.weightKg,
+    reps: command.reps,
+    targetReps: set.completed ? target : Math.max(1, command.reps),
+  };
+}
+
 export function routineFromSession(
   session: CompletedSession,
   id: string,
@@ -676,7 +776,7 @@ export function routineFromSession(
       exerciseId: exercise.exerciseId,
       sets: exercise.sets.map((set) => ({
         weightKg: set.weightKg,
-        reps: set.reps,
+        reps: setTargetReps(set),
       })),
     })),
   };
