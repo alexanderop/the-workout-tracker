@@ -1,47 +1,27 @@
 {
-  "name": "form-workout",
-  "version": "0.1.0",
+  "name": "form-workspace",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.28.2",
   "scripts": {
-    "dev": "vite --host 127.0.0.1 --port 4180",
-    "build": "vue-tsc --noEmit && vite build",
-    "preview": "vite preview --host 127.0.0.1 --port 4180 --strictPort",
-    "typecheck": "vue-tsc --noEmit",
-    "lint": "oxlint src test --deny-warnings",
-    "test:unit": "vitest run --project unit",
-    "test:browser": "vitest run --project browser",
-    "test:e2e": "bddgen && playwright test",
+    "dev": "pnpm --filter @form/workout dev",
+    "build": "pnpm typecheck && pnpm --filter @form/workout build",
+    "preview": "pnpm --filter @form/workout preview",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm check:boundaries && pnpm -r lint",
+    "check:boundaries": "node --test scripts/check-boundaries.test.mjs && node scripts/check-boundaries.mjs",
+    "test:unit": "pnpm --filter @form/workout test:unit",
+    "test:browser": "pnpm -r --workspace-concurrency=1 test:browser",
+    "test:e2e": "pnpm --filter @form/workout test:e2e",
     "verify": "pnpm format:check && pnpm lint && pnpm build && pnpm test:unit && pnpm test:browser && pnpm test:e2e",
-    "format": "prettier --write src test *.ts *.json",
-    "format:check": "prettier --check src test *.ts *.json"
-  },
-  "dependencies": {
-    "@fontsource-variable/inter": "^5.3.0",
-    "@lucide/vue": "^1.51.0",
-    "dexie": "^4.4.6",
-    "reka-ui": "^2.10.5",
-    "vue": "^3.5.43",
-    "workbox-window": "^7.4.1",
-    "zod": "^4.6.5"
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
-    "@playwright/test": "^1.63.0",
-    "@tailwindcss/vite": "^4.3.3",
-    "@types/node": "^26.6.4",
-    "@vitejs/plugin-vue": "^6.0.9",
-    "@vitest/browser-playwright": "^5.0.3",
     "oxlint": "^1.86.0",
-    "playwright-bdd": "^9.2.1",
     "prettier": "^3.9.9",
-    "sharp": "^0.35.5",
-    "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
-    "vite": "^8.3.2",
-    "vite-plugin-pwa": "^2.0.0",
-    "vitest": "^5.0.3",
-    "vitest-browser-vue": "^3.1.0",
-    "vue-tsc": "^3.3.12"
+    "@playwright/test": "^1.63.0",
+    "@vue/compiler-sfc": "^3.5.43"
   }
 }

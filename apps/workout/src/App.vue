@@ -22,7 +22,7 @@ import {
   WifiOff,
   X,
 } from "@lucide/vue";
-import Sheet from "./components/Sheet.vue";
+import { Sheet } from "@form/ui";
 import SetRow from "./components/SetRow.vue";
 import RoutineEditor from "./components/RoutineEditor.vue";
 import { useWorkouts } from "./useWorkouts";

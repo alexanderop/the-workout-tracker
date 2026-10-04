@@ -14,7 +14,7 @@ export default defineConfig({
       },
       {
         plugins: [vue()],
-        optimizeDeps: { include: ["vue", "@lucide/vue", "reka-ui"] },
+        optimizeDeps: { include: ["vue", "@lucide/vue"] },
         test: {
           name: "browser",
           include: ["test/browser/**/*.test.ts"],

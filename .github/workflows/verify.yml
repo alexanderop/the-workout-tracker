@@ -18,5 +18,6 @@ jobs:
         with:
           name: browser-evidence
           path: |
-            test-results/
-            playwright-report/
+            apps/workout/test-results/
+            apps/workout/playwright-report/
+            packages/ui/test-results/

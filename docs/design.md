@@ -2,13 +2,13 @@
 
 Form uses the approved five-color palette. All interface colors map to these tokens in `src/style.css`.
 
-| Token | Color | Role |
-| --- | --- | --- |
-| background | #141414 | Canvas and modal surfaces |
-| surface | #232322 | Controls, borders, selected navigation |
-| text | #EEEEEC | Primary content |
-| muted | #A3A39E | Supporting labels and icons |
-| purple | #A78BFA | Primary actions, logged sets, progress and focus |
+| Token      | Color   | Role                                             |
+| ---------- | ------- | ------------------------------------------------ |
+| background | #141414 | Canvas and modal surfaces                        |
+| surface    | #232322 | Controls, borders, selected navigation           |
+| text       | #EEEEEC | Primary content                                  |
+| muted      | #A3A39E | Supporting labels and icons                      |
+| purple     | #A78BFA | Primary actions, logged sets, progress and focus |
 
 There are no separate success or error colors. Status uses text, icons and shape with purple when emphasis is needed. The modal overlay reuses the background at partial opacity.
 

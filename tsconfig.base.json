@@ -15,8 +15,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "types": ["vite/client", "vite-plugin-pwa/client", "node"]
-  },
-  "include": ["src/**/*.ts", "src/**/*.vue", "test/**/*.ts", "*.config.ts"]
+    "noUncheckedIndexedAccess": true
+  }
 }

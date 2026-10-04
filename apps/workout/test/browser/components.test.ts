@@ -1,21 +1,8 @@
 import { expect, it } from "vitest";
-import { page, userEvent } from "vitest/browser";
+import { page } from "vitest/browser";
 import { render } from "vitest-browser-vue";
 import SetRow from "../../src/components/SetRow.vue";
-import SheetHarness from "../fixtures/SheetHarness.vue";
 import type { WorkoutSet } from "../../src/domain";
-
-it("returns keyboard focus to the opener when a dialog closes", async () => {
-  await render(SheetHarness);
-  const opener = page.getByRole("button", { name: "Open preferences" });
-  await opener.click();
-  await expect
-    .element(page.getByRole("dialog", { name: "Preferences" }))
-    .toBeVisible();
-  await userEvent.keyboard("{Escape}");
-  await expect.element(page.getByRole("dialog")).not.toBeInTheDocument();
-  await expect.element(opener).toHaveFocus();
-});
 
 it("validates number inputs and emits one atomic set entry", async () => {
   const commits: unknown[] = [];

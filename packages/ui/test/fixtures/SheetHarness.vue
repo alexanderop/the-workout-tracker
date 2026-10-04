@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import Sheet from "../../src/components/Sheet.vue";
+import { Sheet } from "@form/ui";
+import "@form/ui/tokens.css";
 const open = ref(false);
 </script>
 <template>

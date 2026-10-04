@@ -1,0 +1,8 @@
+node_modules
+dist
+.test-generated
+playwright-report
+test-results
+.vitest
+.audit
+pnpm-lock.yaml

@@ -10,7 +10,7 @@ Whole-snapshot writes simplify this small local app. A future measured write-lat
 
 ## Implementation contract
 
-`src/domain.ts` exports these readonly shapes and functions.
+`apps/workout/src/domain.ts` exports these readonly shapes and functions.
 
 - Exercise has id, name, category, and custom.
 - Routine has id, name, description, and exercises. Each routine exercise has exerciseId, sets, reps, and weightKg.
@@ -43,8 +43,12 @@ Commands have the following fields.
 - save-exercise has exercise, the full Exercise value.
 - settings has settings, the full Settings value.
 
-`src/workouts.ts` exports openWorkouts({ databaseName, now, id }). It returns execute(command, expectedRevision), subscribe(listener), exportBackup(), importBackup(json, expectedRevision), close(). Results are {kind:'saved',snapshot}, {kind:'conflict',snapshot}, {kind:'invalid',message}, or {kind:'unavailable',message}. LoadState is {kind:'loading'}, {kind:'ready',snapshot}, {kind:'recovery',message,rawExport}, or {kind:'unavailable',message}. Subscribe initializes the database and emits ready or a failure. exportBackup returns a Promise<string>. All writes validate at the boundary. Zod supplies validation. A corrupt read never silently replaces data. Import merges complete records atomically, skips exact duplicates, rejects conflicting IDs, validates all references, and keeps local settings. Import cannot introduce two active workouts. A revision-zero snapshot identical to initialSnapshot is a pristine installation; only that state may restore incoming starter definitions. It still retains local settings and advances the local revision.
+`apps/workout/src/workouts.ts` exports openWorkouts({ databaseName, now, id }). It returns execute(command, expectedRevision), subscribe(listener), exportBackup(), importBackup(json, expectedRevision), close(). Results are {kind:'saved',snapshot}, {kind:'conflict',snapshot}, {kind:'invalid',message}, or {kind:'unavailable',message}. LoadState is {kind:'loading'}, {kind:'ready',snapshot}, {kind:'recovery',message,rawExport}, or {kind:'unavailable',message}. Subscribe initializes the database and emits ready or a failure. exportBackup returns a Promise<string>. All writes validate at the boundary. Zod supplies validation. A corrupt read never silently replaces data. Import merges complete records atomically, skips exact duplicates, rejects conflicting IDs, validates all references, and keeps local settings. Import cannot introduce two active workouts. A revision-zero snapshot identical to initialSnapshot is a pristine installation; only that state may restore incoming starter definitions. It still retains local settings and advances the local revision.
 
-## Ownership
+## Package boundaries
 
-The domain/storage worker owns src/domain.ts, src/workouts.ts, and their unit and database browser tests in an isolated checkout. The root owns UI, styling, integration, PWA configuration, acceptance tests, and documentation. No delegate modifies the shared contract.
+The workout app owns all domain, storage, PWA and training-specific UI code in `apps/workout`. The reusable UI package owns `Sheet`, its responsive component styles, design tokens and dialog browser tests in `packages/ui`. The dependency direction is `@form/workout` → `@form/ui`; the UI package must never import an application.
+
+Public UI entry points are `@form/ui` and `@form/ui/tokens.css`. Each package declares its direct dependencies. Shared strict TypeScript options live at the repository root, while package-specific types and test configuration stay with their package. UI is consumed as Vue/TypeScript source, so no separate library build is required for local development.
+
+The root verification command runs the architecture guard, per-package checks and app acceptance tests. The guard checks declared internal dependencies and static, dynamic, type and re-export imports in TypeScript and Vue scripts, plus CSS imports. Computed dynamic imports are rejected because their package target cannot be determined statically.

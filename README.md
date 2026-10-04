@@ -2,6 +2,21 @@
 
 A quiet, local-first workout journal. Dark mode, five colors, purple as the primary accent. Built with Vue 3, strict TypeScript, Vite, Dexie, Reka UI, Lucide and a service worker.
 
+## Workspace
+
+This pnpm monorepo contains two independently owned packages:
+
+- `apps/workout` (`@form/workout`): the PWA, workout domain, IndexedDB storage, application styles and application tests.
+- `packages/ui` (`@form/ui`): reusable Vue components, design tokens and isolated component browser tests. It has no workout or persistence dependencies.
+
+The app imports `Sheet` from `@form/ui` and the shared colors from `@form/ui/tokens.css`. The dependency uses `workspace:*`. Each workspace declares its own dependencies and uses strict TypeScript settings from `tsconfig.base.json`.
+
+`@form/ui` is a private source package: Vite compiles its Vue source as part of the consuming app. It does not yet produce a standalone npm distribution. Its public API is limited by package exports; import paths into another workspace's source are forbidden.
+
+`pnpm check:boundaries` checks workspace manifests and imports in source, tests and configuration. It rejects cross-workspace relative imports, private deep imports, undeclared dependencies and dependencies on applications. Source cannot rely on development-only dependencies. The check runs during `pnpm lint` and CI verification.
+
+Run an individual package with `pnpm --filter @form/ui test:browser` or `pnpm --filter @form/workout dev`. Root commands coordinate the workspace. Add generic components to the UI package; keep `SetRow` and `RoutineEditor` in the app because they use workout domain types.
+
 ## Run
 
 Requires Node 22.12+ or Node 24 and pnpm 10.
@@ -47,7 +62,7 @@ pnpm exec playwright install chromium
 pnpm verify
 ```
 
-Verification includes formatting, lint, type checking, production build, pure domain tests, real Chromium IndexedDB and component tests, and desktop/mobile browser journeys. Acceptance tests exercise production service-worker offline reload, custom exercise logging, routine editing, real backup downloads and imports, discard and stale-tab conflicts. Screenshots are written to `test-results/`.
+Verification includes formatting, lint, type checking, production build, pure domain tests, real Chromium IndexedDB and component tests, and desktop/mobile browser journeys. Acceptance tests exercise production service-worker offline reload, custom exercise logging, routine editing, real backup downloads and imports, discard and stale-tab conflicts. Screenshots are written to `apps/workout/test-results/`.
 
 The mobile suite uses Chromium device emulation. It does not establish physical iPhone/Safari installation behavior. The manifest and assets are generated; no native OS installation or remote deployment is part of this local build.
 
