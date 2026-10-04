@@ -2,7 +2,7 @@
 <template>
   <Story title="01 Foundations/Corners and borders">
     <Variant title="Surfaces"
-      ><div class="preview stack">
+      ><div class="stack">
         <h1>Subtle outlines.</h1>
         <div class="token-grid">
           <div class="pattern-card">

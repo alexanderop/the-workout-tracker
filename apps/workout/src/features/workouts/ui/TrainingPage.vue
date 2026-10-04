@@ -11,6 +11,7 @@ import {
   ShieldCheck,
 } from "@lucide/vue";
 import SetRow from "./SetRow.vue";
+import ExerciseThumbnail from "./ExerciseThumbnail.vue";
 import { fmt, duration } from "./presentation";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import type { Confirmation } from "./dialogTypes";
@@ -39,6 +40,12 @@ const {
   training,
   run,
 } = workspace;
+const currentCatalogExercise = computed(() => {
+  const current = training.currentExercise.value;
+  if (!current) return undefined;
+  const definition = snapshot.value?.exercises[current.exerciseId];
+  return definition?.name === current.name ? definition : undefined;
+});
 const emit = defineEmits<{
   finish: [];
   pick: [];
@@ -204,12 +211,9 @@ const previous = computed(() => {
         >
           <header>
             <div class="exercise-title">
-              <span class="exercise-index">{{
-                String(
-                  active.exercises.findIndex((row) => row.id === exercise.id) +
-                    1,
-                ).padStart(2, "0")
-              }}</span>
+              <ExerciseThumbnail
+                :exercise="currentCatalogExercise"
+              />
               <div>
                 <h2>{{ exercise.name }}</h2>
                 <p class="muted small">

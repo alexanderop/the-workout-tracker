@@ -1,23 +1,37 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { logEvent } from "histoire/client";
 import { Textarea, Field, FieldLabel, FieldError } from "@form/ui";
 const notes = ref("");
+const label = ref("Workout notes");
+const disabled = ref(false);
 </script>
 <template>
   <Story title="02 Components/Textarea">
     <Variant title="Usage"
-      ><div class="preview stack">
+      ><div class="stack">
         <Field
           ><FieldLabel for="notes">Workout notes</FieldLabel
           ><Textarea
             id="notes"
             v-model="notes"
+            :disabled="disabled"
+            @update:model-value="
+              logEvent('Textarea: update:modelValue', { value: $event })
+            "
             :rows="4"
             placeholder="What would you like to remember?"
-        /></Field></div
+        /></Field>
+      </div>
+      <template #controls
+        ><HstText
+          v-model="label"
+          title="Label (try a long sentence)" /><HstCheckbox
+          v-model="disabled"
+          title="Disabled" /></template
     ></Variant>
     <Variant title="States"
-      ><div class="preview stack">
+      ><div class="stack">
         <Textarea
           aria-label="Filled note"
           :model-value="'Train at a deliberately slower pace today.'"

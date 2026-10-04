@@ -5,7 +5,7 @@ import { Button } from "@form/ui";
 <template>
   <Story title="01 Foundations/Icons">
     <Variant title="Meaning and labels"
-      ><div class="preview stack">
+      ><div class="stack">
         <h1>Icons support an action.</h1>
         <div class="row">
           <Button><Plus :size="18" aria-hidden="true" />Add exercise</Button
@@ -23,7 +23,8 @@ import { Button } from "@form/ui";
           />
         </div>
         <p class="note">
-          Lucide · consistent strokes · usually 16–24 px. Icons beside text are decorative.
+          Lucide · consistent strokes · usually 16–24 px. Icons beside text are
+          decorative.
         </p>
       </div></Variant
     >

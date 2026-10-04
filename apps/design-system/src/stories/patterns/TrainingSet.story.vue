@@ -1,14 +1,22 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { logEvent } from "histoire/client";
 import { NumericInput, Button } from "@form/ui";
 const weight = ref<string | number>(70);
 const reps = ref<string | number>(8);
 const logged = ref("");
+function logSet() {
+  logged.value = `${weight.value} kg × ${reps.value}`;
+  logEvent("Illustrative set: logged", {
+    weight: weight.value,
+    reps: reps.value,
+  });
+}
 </script>
 <template>
   <Story title="03 Patterns/Enter a workout set">
     <Variant title="Edit and log"
-      ><div class="preview stack">
+      ><div class="stack">
         <h1>Bench press</h1>
         <p class="note">
           Interactive design example. It is not connected to your workout data.
@@ -37,9 +45,7 @@ const logged = ref("");
               />
             </div>
           </div>
-          <Button @click="logged = `${weight} kg × ${reps}`"
-            >Log set</Button
-          >
+          <Button @click="logSet">Log set</Button>
           <p role="status">
             {{ logged ? `Last logged: ${logged}` : "Not logged yet" }}
           </p>

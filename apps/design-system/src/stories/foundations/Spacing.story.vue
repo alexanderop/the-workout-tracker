@@ -4,10 +4,11 @@ const spaces = [4, 8, 12, 16, 24, 32];
 <template>
   <Story title="01 Foundations/Spacing and sizes">
     <Variant title="Rhythm"
-      ><div class="preview stack">
+      ><div class="stack">
         <h1>Proximity shows relationships.</h1>
         <p class="note">
-          Reference values for new compositions; no additional global CSS tokens.
+          Reference values for new compositions; no additional global CSS
+          tokens.
         </p>
         <div v-for="space in spaces" :key="space" class="row">
           <code>{{ space }} px</code>
@@ -22,7 +23,8 @@ const spaces = [4, 8, 12, 16, 24, 32];
         <div class="pattern-card">
           <strong>Touch interaction</strong>
           <p>
-            Give primary mobile actions targets of at least 44 × 44 px. Review compact desktop sizes before using them on mobile.
+            Give primary mobile actions targets of at least 44 × 44 px. Review
+            compact desktop sizes before using them on mobile.
           </p>
         </div>
       </div></Variant

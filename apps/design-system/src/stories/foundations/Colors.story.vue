@@ -47,10 +47,11 @@ onMounted(() => {
 <template>
   <Story title="01 Foundations/Colors and meaning">
     <Variant title="Semantic palette"
-      ><div class="preview stack">
+      ><div class="stack">
         <h1>Color has a purpose.</h1>
         <p class="note">
-          Meaning comes first, followed by the technical token. Values come directly from our shared theme.
+          Meaning comes first, followed by the technical token. Values come
+          directly from our shared theme.
         </p>
         <div class="token-grid">
           <figure v-for="color in colors" :key="color.token" class="token">

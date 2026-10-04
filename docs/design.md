@@ -66,3 +66,21 @@ Explain what a component means and when to use it before implementation names or
 ## Enforced color policy
 
 Literal CSS colors belong in `packages/ui/src/tokens.css`, including generic overlay and shadow colors. All other CSS files and Vue style blocks use semantic variables; raw hex values, color functions, and named colors are rejected. Vue class bindings reject literal Tailwind palette classes and raw color values in class/style/fill/stroke/color attributes. Dynamic values assembled outside these expressions still require review; these checks are not a CSS data-flow analyzer. Status colors receive no palette exception. CSS imports also follow the workspace dependency policy.
+
+### Exercise imagery
+
+The **03 Patterns / Exercise imagery** story previews six generated equipment illustrations in a gallery and a searchable picker. The artwork uses transparent backgrounds, charcoal materials and silver edge highlights, with the existing semantic surface behind it. Text labels remain essential because equipment does not uniquely identify a movement; these images do not teach exercise technique. Images are decorative when paired with the exercise name.
+
+The exercise catalog, exercise picker and active exercise header use these illustrations for explicitly matched built-in exercises and compatible equipment variants. Custom exercises, unmatched definitions and failed image loads use a decorative dumbbell fallback. Names and equipment must match as well as the catalog ID; artwork is presentation metadata and is not persisted in workout data or backups.
+
+The workout feature owns its production asset copies and mapping in `ui/assets/exercises` and `ui/exerciseArtwork.ts`. Histoire retains its independent review assets and generation prompts in `src/assets/exercises`, avoiding imports between applications. Imported PNGs are included in the existing offline precache.
+
+### Explorer review environment
+
+The explorer uses an iframe per preview so viewport presets exercise actual media queries and portaled overlays. Presets cover narrow, short and tall phones, desktop, both sides of 640px and 768px, and the Sheet transition at 650/651px. The explorer shell starts dark; shared UI tokens remain the source of component colors.
+
+`apps/design-system/src/StoryPreview.vue` provides common surface, padding and typography through Histoire's setup wrapper. A full-screen story or variant can opt out with `:meta="{ wrapper: false }"` and own its layout. Inner story containers own only their composition. Background presets are intentionally not introduced while the product uses one dark surface.
+
+Use Controls for long labels, disabled fields, wide sheets and long overlay content. Numeric Input includes decimal, empty, invalid and disabled examples. The Events panel records component updates and explicitly illustrative actions; draft typing and cancellation must not look like confirmed values. Copyable Numeric Input, Sheet and Dialog sources include consumer wiring. Pattern examples remain disconnected from workout storage.
+
+For manual overlay review, use Phone · short and Desktop: open, Tab and Shift+Tab, scroll long content, dismiss with Escape, and inspect the returned focus. In Sheet, open the numeric editor and dismiss it before dismissing the sheet. These are interactive review steps, not automated tests.

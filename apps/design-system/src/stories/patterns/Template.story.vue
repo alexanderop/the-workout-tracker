@@ -23,7 +23,7 @@ function save() {
 <template>
   <Story title="03 Patterns/Edit template">
     <Variant title="Form with feedback"
-      ><div class="preview stack">
+      ><div class="stack">
         <h1>Edit template</h1>
         <form class="stack" @submit.prevent="save">
           <Field :data-invalid="error || undefined"
@@ -37,8 +37,7 @@ function save() {
               >Enter a name.</FieldError
             ></Field
           ><Field
-            ><FieldLabel for="template-notes"
-              >Description · optional</FieldLabel
+            ><FieldLabel for="template-notes">Description · optional</FieldLabel
             ><Textarea id="template-notes" v-model="description" /></Field
           ><NumericInput
             v-model="weight"

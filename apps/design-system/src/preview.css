@@ -5,7 +5,7 @@ body {
   background: var(--ui-background);
   color-scheme: dark;
 }
-.preview {
+.story-preview {
   background: var(--ui-background);
   color: var(--ui-foreground);
   box-sizing: border-box;
@@ -56,18 +56,18 @@ body {
 figure {
   margin: 0;
 }
-.preview h1 {
+.story-preview h1 {
   margin: 0;
   font-size: 28px;
   font-weight: 550;
   letter-spacing: -0.8px;
 }
-.preview h2 {
+.story-preview h2 {
   margin: 0;
   font-size: 18px;
   font-weight: 550;
 }
-.preview p {
+.story-preview p {
   margin-block: 0;
   line-height: 1.6;
 }
@@ -100,14 +100,23 @@ figure {
   font-size: 16px;
   color: var(--ui-muted-foreground);
 }
-.preview .token-grid {
+.story-preview .token-grid {
   gap: 16px;
 }
 @media (max-width: 400px) {
-  .preview {
+  .story-preview {
     padding: 20px;
   }
   .pattern-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.story-content {
+  min-width: 0;
+}
+.story-scroll-content {
+  max-height: 50dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }

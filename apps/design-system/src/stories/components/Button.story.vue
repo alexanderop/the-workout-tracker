@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { logEvent } from "histoire/client";
 import { Button, type ButtonVariant, type ButtonSize } from "@form/ui";
 const variants: ButtonVariant[] = [
   "default",
@@ -27,12 +28,13 @@ const label = ref("Start workout");
 <template>
   <Story title="02 Components/Button">
     <Variant title="Usage" auto-props-disabled>
-      <div class="preview">
+      <div class="story-content">
         <Button
           :variant="variant"
           :size="size"
           :disabled="disabled"
           :aria-label="label"
+          @click="logEvent('Button: click', { label })"
           >{{ size.startsWith("icon") ? "+" : label }}</Button
         >
       </div>
@@ -44,7 +46,7 @@ const label = ref("Start workout");
       </template>
     </Variant>
     <Variant title="Variants and states"
-      ><div class="preview stack">
+      ><div class="stack">
         <div class="row">
           <Button v-for="item in variants" :key="item" :variant="item">{{
             item
@@ -62,7 +64,7 @@ const label = ref("Start workout");
       </div></Variant
     >
     <Variant title="Sizes"
-      ><div class="preview row">
+      ><div class="row">
         <Button
           v-for="item in sizes"
           :key="item"

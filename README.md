@@ -101,7 +101,7 @@ The display name and download filenames use The Workout Tracker. The internal In
 
 ## Component explorer
 
-The previous custom gallery is replaced by Histoire. Stories live in `apps/design-system/src/stories/**/*.story.vue` and import only public `@form/ui` exports. Use the Controls panel to edit props, the Docs panel for usage guidance, and the viewport controls for mobile layouts. The explorer is organized into Start here, Foundations, Components and Patterns, with 21 stories and 30 variants. Each story documents Usage, Variants, States, Behavior, and Examples and limitations.
+The previous custom gallery is replaced by Histoire. Stories live in `apps/design-system/src/stories/**/*.story.vue` and import only public `@form/ui` exports. Use the Controls panel to edit props, the Docs panel for usage guidance, and the viewport controls for mobile layouts. The explorer is organized into Start here, Foundations, Components and Patterns, with foundations, component states and interactive patterns. Each story documents Usage, Variants, States, Behavior, and Examples and limitations.
 
 `pnpm dev:ui` starts the explorer; `pnpm build:ui` produces its standalone static site in `apps/design-system/.histoire/dist`. The explorer uses Histoire 1.0 beta with its supported Vite 7 version in its own workspace. The workout app remains on Vite 8. Stories are interactive documentation, with no automated tests or test runner. `pnpm verify` still runs only type checking and linting. The workout Pages deployment remains separate.
 

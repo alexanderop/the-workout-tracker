@@ -26,6 +26,8 @@ Write clear, maintainable production code. Keep changes focused and dependencies
 - Preserve workspace exports, feature boundaries and layer direction.
 - Validate external data at boundaries and handle failures explicitly.
 - Preserve accessible native semantics, keyboard navigation and focus management.
+- For new reusable UI components, follow the [Histoire-first component workflow](docs/workflows.md#add-a-reusable-component-and-story): iterate in the explorer, then inspect the real app flow when integrating.
+- Deliver changes directly on `main` or merge the working branch into `main`; no pull request is required. Follow [Verification and delivery](docs/workflows.md#verification-and-delivery).
 - Clean up subscriptions, event listeners and owned resources.
 - Use `pnpm verify` for type checking and linting only. Do not add tests, formatting checks, standalone architecture checks or production builds to this verification command. Build only when needed to run or deploy the application.
 

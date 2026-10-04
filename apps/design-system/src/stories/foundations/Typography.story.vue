@@ -2,7 +2,7 @@
 <template>
   <Story title="01 Foundations/Typography">
     <Variant title="Hierarchy"
-      ><div class="preview stack">
+      ><div class="stack">
         <p class="eyebrow">WORKOUT JOURNAL</p>
         <h1 class="type-page">One set at a time.</h1>
         <h2 class="type-section">Your next workout</h2>

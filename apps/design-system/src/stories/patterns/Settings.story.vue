@@ -16,7 +16,7 @@ const rest = ref<string | number>(90);
 <template>
   <Story title="03 Patterns/Settings">
     <Variant title="Related settings"
-      ><div class="preview stack">
+      ><div class="stack">
         <h1>Your workout space</h1>
         <FieldSet
           ><FieldLegend>Workout</FieldLegend
@@ -40,9 +40,7 @@ const rest = ref<string | number>(90);
             ></FieldGroup
           ></FieldSet
         >
-        <p class="note">
-          These settings apply only within this example.
-        </p>
+        <p class="note">These settings apply only within this example.</p>
       </div></Variant
     >
   </Story>

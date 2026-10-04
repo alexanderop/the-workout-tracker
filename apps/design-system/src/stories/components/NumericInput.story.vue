@@ -1,45 +1,99 @@
 <script setup lang="ts">
+import source from "../../examples/NumericInput.vue.txt?raw";
 import { ref } from "vue";
+import { logEvent } from "histoire/client";
 import { NumericInput } from "@form/ui";
-const weight = ref<string | number>(70);
+const weight = ref<string | number>(70.25);
 const reps = ref<string | number>(8);
+const empty = ref<string | number>("");
+const invalid = ref<string | number>(0);
 const disabled = ref(false);
+const label = ref("Set 1 weight for Bench press");
 </script>
 <template>
   <Story title="02 Components/Numeric Input">
-    <Variant title="Weight"
-      ><div class="preview stack">
+    <Variant title="Weight" :source="source">
+      <div class="stack">
         <NumericInput
           v-model="weight"
           title="Weight"
-          label="Set 1 weight for Bench press"
+          :label="label"
           unit="kg"
           :decimals="2"
           :preset-step="2.5"
           :disabled="disabled"
+          @open="logEvent('Weight: open', null)"
+          @update:model-value="logEvent('Weight: confirmed', { value: $event })"
         />
         <p class="note">
-          Committed value: {{ weight }} kg. Opening and typing do not change
-          this value until confirmation.
+          Committed value: {{ weight }} kg. Typing changes only the draft;
+          confirmation or a quick pick emits an update.
         </p>
       </div>
       <template #controls
-        ><HstCheckbox v-model="disabled" title="Disabled" /></template
-    ></Variant>
+        ><HstText v-model="label" title="Accessible label" /><HstCheckbox
+          v-model="disabled"
+          title="Disabled"
+      /></template>
+    </Variant>
     <Variant title="Repetitions"
-      ><div class="preview stack">
+      ><div class="stack">
         <NumericInput
           v-model="reps"
           title="Reps"
-          label="Set 1 repetitions for Bench press"
+          label="Set 1 repetitions"
           :min="1"
+          @update:model-value="
+            logEvent('Repetitions: confirmed', { value: $event })
+          "
+        />
+        <p class="note">Committed value: {{ reps }}. Whole numbers only.</p>
+      </div></Variant
+    >
+    <Variant title="Empty"
+      ><div class="stack">
+        <NumericInput
+          v-model="empty"
+          title="Weight"
+          label="Empty weight"
+          unit="kg"
+          :decimals="2"
+          @update:model-value="
+            logEvent('Empty weight: confirmed', { value: $event })
+          "
         />
         <p class="note">
-          Committed value: {{ reps }}. Whole numbers only; zero cannot be
-          confirmed.
+          Open the editor: an empty draft cannot be confirmed. Enter a value or
+          cancel.
         </p>
       </div></Variant
     >
+    <Variant title="Invalid repetitions"
+      ><div class="stack">
+        <NumericInput
+          v-model="invalid"
+          title="Reps"
+          label="Invalid repetitions"
+          :min="1"
+          @update:model-value="
+            logEvent('Invalid repetitions: corrected', { value: $event })
+          "
+        />
+        <p class="note">
+          Starts at 0, below the minimum of 1. Open to inspect the validation
+          message and disabled confirmation.
+        </p>
+      </div></Variant
+    >
+    <Variant title="Disabled"
+      ><NumericInput
+        :model-value="70.25"
+        title="Weight"
+        label="Disabled weight"
+        unit="kg"
+        :decimals="2"
+        disabled
+    /></Variant>
   </Story>
 </template>
 <docs lang="md">
@@ -51,17 +105,17 @@ Quick weight and repetition entry with large touch targets.
 
 ## Variants
 
-Decimal weights with kg; whole-number repetitions.
+Decimal weights, whole-number repetitions, empty, invalid and disabled examples.
 
 ## States
 
-Existing value, local draft, invalid or empty input and disabled. Enter 0 in the repetitions example to see the invalid state.
+Open the empty and invalid examples to inspect actual draft validation. Weight starts with a decimal value. Use the label control for long accessible names.
 
 ## Behavior
 
-The first digit replaces the value. Quick picks apply immediately. Confirming applies the draft; Cancel, Escape and clicking outside discard it. Focus returns to the trigger.
+The first digit replaces the value. Quick picks apply immediately. Confirming applies the draft; Cancel, Escape and outside dismissal discard it. Focus returns to the trigger. The Events panel records opening and confirmed values; cancellation must not emit a model update.
 
 ## Examples and limitations
 
-Applying changes only the field value. Logging a set remains a separate action. Use Input for free-form text.
+Applying changes only the field value; logging a set is separate. Inspect Phone · short and Desktop, including keyboard entry and focus restoration. Source shows the consumer wiring; import the shared styles once in your application entry point.
 </docs>

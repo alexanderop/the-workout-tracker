@@ -19,7 +19,7 @@ const enabled = ref(true);
 <template>
   <Story title="02 Components/Field">
     <Variant title="Labels and errors"
-      ><div class="preview stack">
+      ><div class="stack">
         <Field data-invalid="true"
           ><FieldLabel for="field-name">Template name</FieldLabel
           ><Input
@@ -33,11 +33,10 @@ const enabled = ref(true);
       </div></Variant
     >
     <Variant title="Grouping"
-      ><div class="preview stack">
+      ><div class="stack">
         <FieldSet
           ><FieldLegend>Workout</FieldLegend
-          ><FieldDescription
-            >Group related settings.</FieldDescription
+          ><FieldDescription>Group related settings.</FieldDescription
           ><FieldGroup
             ><Field
               ><FieldLabel for="group-name">Name</FieldLabel

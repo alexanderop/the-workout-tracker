@@ -11,7 +11,7 @@ import {
 <template>
   <Story title="01 Foundations/Motion">
     <Variant title="Feedback and reduced motion"
-      ><div class="preview stack">
+      ><div class="stack">
         <h1>Motion explains change.</h1>
         <Dialog
           ><DialogTrigger as-child
@@ -19,12 +19,14 @@ import {
           ><DialogContent
             ><DialogTitle>One focused task</DialogTitle
             ><DialogDescription
-              >The shared dialog respects prefers-reduced-motion. Press Escape to close.</DialogDescription
+              >The shared dialog respects prefers-reduced-motion. Press Escape
+              to close.</DialogDescription
             ></DialogContent
           ></Dialog
         >
         <p class="note">
-          Short transitions accompany opening, closing and state changes. Avoid decorative loops.
+          Short transitions accompany opening, closing and state changes. Avoid
+          decorative loops.
         </p>
       </div></Variant
     >

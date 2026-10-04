@@ -1,15 +1,22 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { logEvent } from "histoire/client";
 import { NativeSelect, Field, FieldLabel, FieldError } from "@form/ui";
 const rest = ref<string | number>(90);
+const label = ref("Rest between sets");
+const disabled = ref(false);
 </script>
 <template>
   <Story title="02 Components/Select">
     <Variant title="Usage"
-      ><div class="preview stack">
+      ><div class="stack">
         <Field
           ><FieldLabel for="select-rest">Rest between sets</FieldLabel
-          ><NativeSelect id="select-rest" v-model="rest"
+          ><NativeSelect
+            id="select-rest"
+            v-model="rest"
+            :disabled="disabled"
+            @update:model-value="logEvent('Select: update:modelValue', { value: $event })"
             ><option
               v-for="seconds in [30, 60, 90, 120, 180]"
               :key="seconds"
@@ -19,10 +26,16 @@ const rest = ref<string | number>(90);
             </option></NativeSelect
           ></Field
         >
-      </div></Variant
-    >
+      </div>
+      <template #controls
+        ><HstText
+          v-model="label"
+          title="Label (try a long sentence)" /><HstCheckbox
+          v-model="disabled"
+          title="Disabled" /></template
+    ></Variant>
     <Variant title="States"
-      ><div class="preview stack">
+      ><div class="stack">
         <NativeSelect aria-label="Disabled selection" disabled
           ><option>90 seconds</option></NativeSelect
         ><Field data-invalid="true"

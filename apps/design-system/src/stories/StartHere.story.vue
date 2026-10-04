@@ -1,37 +1,56 @@
 <template>
   <Story title="00 Start here/Product brief">
     <Variant title="Audience and principles">
-      <div class="preview stack">
+      <div class="stack">
         <p class="eyebrow">THE WORKOUT TRACKER</p>
         <h1>Log quickly. See where you stand. Notice your progress.</h1>
         <p>
           For a developer who enjoys the gym and wants a minimal workout tracker
-          with fast editing, a clear overview and visible progress that encourages
-          them to return.
+          with fast editing, a clear overview and visible progress that
+          encourages them to return.
         </p>
         <section class="pattern-card stack" aria-labelledby="brief-needs">
           <h2 id="brief-needs">What the user needs</h2>
           <ul>
             <li>Before training: review recent workouts and start quickly.</li>
-            <li>During training: log sets and correct values with little effort.</li>
+            <li>
+              During training: log sets and correct values with little effort.
+            </li>
             <li>After training: understand what was actually completed.</li>
-            <li>Over time: see personal progress and feel motivated to return.</li>
+            <li>
+              Over time: see personal progress and feel motivated to return.
+            </li>
           </ul>
         </section>
         <section class="pattern-card stack" aria-labelledby="brief-principles">
           <h2 id="brief-principles">How we design</h2>
           <ul>
-            <li><strong>Minimal, but understandable.</strong> Keep the next action clear and essential controls discoverable.</li>
-            <li><strong>Fast to edit, safe to correct.</strong> Keep edits close to values and preserve input when saving fails.</li>
-            <li><strong>An overview before detail.</strong> Make summaries scannable and set details easy to reach.</li>
-            <li><strong>Progress grounded in real training.</strong> Explain metrics and comparisons using completed work.</li>
-            <li><strong>Motivation without pressure.</strong> Recognize effort and improvement with calm, specific feedback.</li>
+            <li>
+              <strong>Minimal, but understandable.</strong> Keep the next action
+              clear and essential controls discoverable.
+            </li>
+            <li>
+              <strong>Fast to edit, safe to correct.</strong> Keep edits close
+              to values and preserve input when saving fails.
+            </li>
+            <li>
+              <strong>An overview before detail.</strong> Make summaries
+              scannable and set details easy to reach.
+            </li>
+            <li>
+              <strong>Progress grounded in real training.</strong> Explain
+              metrics and comparisons using completed work.
+            </li>
+            <li>
+              <strong>Motivation without pressure.</strong> Recognize effort and
+              improvement with calm, specific feedback.
+            </li>
           </ul>
         </section>
         <p class="note">
           Product-owner direction, not validated user research. These principles
-          guide design; they do not claim every behavior is implemented.
-          Use the Docs panel for review questions and open decisions.
+          guide design; they do not claim every behavior is implemented. Use the
+          Docs panel for review questions and open decisions.
         </p>
       </div>
     </Variant>

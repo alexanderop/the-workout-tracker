@@ -19,7 +19,7 @@ function toggle(name: string) {
 <template>
   <Story title="03 Patterns/Select exercises">
     <Variant title="Search and select"
-      ><div class="preview stack">
+      ><div class="stack">
         <h1>Add exercises</h1>
         <Input
           v-model="search"

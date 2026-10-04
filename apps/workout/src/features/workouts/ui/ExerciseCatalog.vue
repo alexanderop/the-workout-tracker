@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Input, NativeSelect, Button } from "@form/ui";
 import { useTemplateRef, computed, ref, watch } from "vue";
-import { Check, Dumbbell, Search } from "@lucide/vue";
+import { Check, Search } from "@lucide/vue";
 import type { Exercise } from "../domain";
+import ExerciseThumbnail from "./ExerciseThumbnail.vue";
 const { exercises, selected, busy } = defineProps<{
   exercises: readonly Exercise[];
   selected?: readonly string[];
@@ -79,7 +80,7 @@ watch([search, muscle, equipment], () => {
       :aria-pressed="selected ? selected.includes(exercise.id) : undefined"
       @click="selected && emit('toggle', exercise.id)"
     >
-      <span class="routine-symbol"><Dumbbell :size="18" /></span>
+      <ExerciseThumbnail :exercise="exercise" />
       <span class="catalog-row-name"
         >{{ exercise.name
         }}<small

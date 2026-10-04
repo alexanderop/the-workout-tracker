@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { logEvent } from "histoire/client";
 import {
   Input,
   Field,
@@ -8,25 +9,35 @@ import {
   FieldError,
 } from "@form/ui";
 const value = ref("Morning strength");
+const label = ref("Workout name");
+const disabled = ref(false);
 </script>
 <template>
   <Story title="02 Components/Input">
     <Variant title="Usage"
-      ><div class="preview stack">
+      ><div class="stack">
         <Field
           ><FieldLabel for="input-name">Workout name</FieldLabel
           ><Input
             id="input-name"
             v-model="value"
+            :disabled="disabled"
+            @update:model-value="logEvent('Input: update:modelValue', { value: $event })"
             aria-describedby="input-help"
           /><FieldDescription id="input-help"
             >A name you will recognize later.</FieldDescription
           ></Field
         >
-      </div></Variant
-    >
+      </div>
+      <template #controls
+        ><HstText
+          v-model="label"
+          title="Label (try a long sentence)" /><HstCheckbox
+          v-model="disabled"
+          title="Disabled" /></template
+    ></Variant>
     <Variant title="States"
-      ><div class="preview stack">
+      ><div class="stack">
         <Field
           ><FieldLabel for="input-empty">Empty</FieldLabel
           ><Input id="input-empty" placeholder="e.g. Upper body" /></Field

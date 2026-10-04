@@ -12,11 +12,18 @@ Read [AGENTS.md](../AGENTS.md) first. Use [context](context.md) for behavior, [a
 
 ## Add a reusable component and story
 
-1. Put generic components in `packages/ui/src`; keep workout-specific components in `apps/workout/src/features/workouts/ui`. A generic component cannot depend on workout models or persistence.
-2. Export the component through `packages/ui/src/index.ts`. Consumers use public `@form/ui` exports, never relative imports into another workspace.
-3. Follow the component contracts and attribution in [the UI package guide](../packages/ui/README.md). Preserve native semantics, accessible names, form behavior, keyboard interaction, and focus restoration.
-4. Add a story under `apps/design-system/src/stories/components`, or an illustrative composition under `stories/patterns`. Foundations belong in `stories/foundations`. Cover Usage, Variants, States, Behavior, and Examples and limitations.
-5. Run `pnpm dev:ui` to inspect the component. Pattern stories use isolated demo state and must describe their limitations; sample feedback must not imply a real save. Run `pnpm verify` after code changes.
+For work focused on a new reusable UI component, use Histoire as the first development feedback loop, then check the integrated component in the workout app. This is component-driven development: edit, inspect, interact, and refine in isolation before wiring the component into a real flow.
+
+1. **Define the component contract.** Identify its purpose, props, slots, emitted events, and relevant states. Follow the contracts and attribution in [the UI package guide](../packages/ui/README.md). Preserve native semantics, accessible names, form behavior, keyboard interaction, and focus restoration.
+2. **Create the production component and its story together.** Put the component in `packages/ui/src` and export it through `packages/ui/src/index.ts`. Add a `.story.vue` file under `apps/design-system/src/stories/components` that imports the public `@form/ui` export. The story renders the actual component; do not build a separate implementation to copy into the app later. Document Usage, Variants, States, Behavior, and Examples and limitations.
+3. **Iterate in Histoire.** Run `pnpm dev:ui` and open http://127.0.0.1:4186. Use controls and variants to exercise relevant states, such as empty, filled, disabled, invalid, or loading, and edge cases such as long labels. Use isolated local state to make emitted events and value changes observable. Inspect the rendered result at narrow and wide widths, interact with it using pointer and keyboard, and check focus behavior. Edit the component or story and repeat until the intended appearance and interactions work. Reading source or starting the server alone does not complete this loop.
+4. **Integrate the same component.** When app integration is part of the task, import it from `@form/ui` in the workout feature and connect real props and events through existing controllers. Keep workout rules and persistence in their owning modules. For a component-library-only task, stop after the isolated review and code checks; do not invent an app use case.
+5. **Check the real app flow.** Run `pnpm dev` and open http://127.0.0.1:4180. Exercise the affected user action in its actual page or dialog. Check surrounding layout, mobile sizing, keyboard navigation, focus, and real state updates; inspect saving or reload behavior when the change affects persistence. Histoire cannot establish that app wiring works. If integration exposes a reusable component issue, fix it and repeat the relevant Histoire and app checks.
+6. **Verify and report evidence.** Run `pnpm verify` after code changes for type checking and linting. Report which story states and app interactions were actually inspected, and any checks that could not be completed. These are interactive browser checks; this workflow does not add or run automated tests.
+
+Keep workout-specific components in `apps/workout/src/features/workouts/ui` and inspect them in the app; do not move domain behavior into `@form/ui` to make it available in Histoire. Where useful, extract a genuinely reusable presentation component and apply the loop above to it. Consumers use public exports, never relative imports into another workspace.
+
+Illustrative compositions belong in `stories/patterns`, and foundations in `stories/foundations`. Pattern stories use isolated demo state and must describe their limitations; sample feedback must not imply a real save.
 
 ## Change storage or backups
 
@@ -33,6 +40,8 @@ Palette values and generic tokens live in `packages/ui/src/tokens.css`; the work
 Update foundations stories and [design](design.md) when a design rule changes. Inspect both consumers when changing shared styling. Keep examples of spacing or layout from becoming a second source of token values.
 
 ## Verification and delivery
+
+Changes may be committed directly on `main` or merged from a working branch into `main` after the appropriate checks. A pull request is not required; do not create one unless the user explicitly asks for it.
 
 Husky installs the Git hooks through the root `prepare` script when you run `pnpm install`. Before each commit, `.husky/pre-commit` runs `pnpm verify` across the workspace and blocks the commit if type checking or linting fails. The checks read the current working tree, including unstaged changes. Run `pnpm prepare` to reinstall the hooks in an existing checkout.
 

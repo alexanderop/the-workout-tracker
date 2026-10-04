@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { Button } from "@form/ui";
+import { logEvent } from "histoire/client";
+import { Button, Input, Field, FieldLabel } from "@form/ui";
 const message = ref("");
+const search = ref("Unmatched exercise");
 </script>
 <template>
   <Story title="03 Patterns/Empty states and errors">
     <Variant title="Empty workout history"
-      ><div class="preview stack">
+      ><div class="stack">
         <div class="pattern-card stack">
           <h1>Your first workout starts here.</h1>
           <p class="note">
-            Choose exercises and log your first set. Your workout will then appear here.
+            Choose exercises and log your first set. Your workout will then
+            appear here.
           </p>
           <Button
             @click="message = 'The app would open the exercise picker here.'"
@@ -20,13 +23,37 @@ const message = ref("");
         </div>
       </div></Variant
     >
+    <Variant title="No search results"
+      ><div class="stack">
+        <Field
+          ><FieldLabel for="empty-search">Search exercises</FieldLabel
+          ><Input id="empty-search" v-model="search"
+        /></Field>
+        <p role="status">
+          {{
+            search
+              ? `No exercises match “${search}”.`
+              : "Search cleared. The app would show available exercises here."
+          }}
+        </p>
+        <Button
+          :disabled="!search"
+          @click="
+            search = '';
+            logEvent('Illustrative search: cleared', null);
+          "
+          >Clear search</Button
+        >
+        <p class="note">
+          Illustrative empty-result state; no catalog is queried.
+        </p>
+      </div></Variant
+    >
     <Variant title="Save error"
-      ><div class="preview stack">
+      ><div class="stack">
         <div class="pattern-card stack">
           <h1>Your input could not be saved.</h1>
-          <p>
-            Your input stays visible. Try again before closing this view.
-          </p>
+          <p>Your input stays visible. Try again before closing this view.</p>
           <p role="alert">Saving is currently unavailable.</p>
           <Button @click="message = 'Tried again — simulated feedback.'"
             >Try again</Button
