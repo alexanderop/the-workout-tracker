@@ -26,3 +26,5 @@ export { default as DialogTitle } from "./dialog/DialogTitle.vue";
 export { default as DialogTrigger } from "./dialog/DialogTrigger.vue";
 export { default as DialogClose } from "./dialog/DialogClose.vue";
 export { default as NumericInput } from "./numeric-input/NumericInput.vue";
+export { default as BaseMuscleMap } from "./muscle-map/BaseMuscleMap.vue";
+export type { MuscleRegion, MuscleHighlight, MuscleMapView } from "./muscle-map/regions";

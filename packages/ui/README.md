@@ -167,3 +167,23 @@ The first increment delivers the families above. Remaining pinned registry famil
 The model accepts a string or number and emits a canonical numeric string only on confirmation or a quick-pick selection. Opening preserves the original value; Cancel, Escape and outside dismissal discard the local edit. The first digit replaces the value, while Backspace edits it. Digit keys, period/comma and Backspace work with a physical keyboard too. Enter confirms from the value display and retains normal activation on buttons. Whole-number inputs omit the decimal key. New decimal entry is limited by `decimals`; existing more precise weights remain unchanged unless edited. Out-of-range or empty values cannot be confirmed. `open` lets consumers select the active row without marking the set logged. Attributes such as class, id and aria-describedby attach to the trigger button. Use domain validation when submitting the containing form; this is a button-based editor, not a native number input.
 
 Numeric dialogs have a dedicated overlay layer so they can open inside a template Sheet without losing focus trapping or covering their own controls. `DialogContent` accepts `overlayClass` for this purpose. Portaled dialog root styles are global and namespaced because Vue's parent scope attribute does not propagate through the portal wrapper.
+
+## Muscle map
+
+`BaseMuscleMap` renders original schematic muscle artwork using the shared theme. Import `MuscleRegion`, `MuscleHighlight` and `MuscleMapView` from `@form/ui`. The readonly `highlights` array contains `{ muscle, role }` records. Roles are `primary` or `supporting`; missing muscles are not highlighted. Duplicate highlights are idempotent, and primary wins conflicts regardless of order. Consumers own exercise metadata, calculations and external-data validation.
+
+```vue
+<BaseMuscleMap
+  v-model="selectedMuscle"
+  :highlights="[{ muscle: 'chest', role: 'primary' }]"
+  view="both"
+  interactive
+  aria-label="Choose a muscle"
+/>
+```
+
+`view` accepts `front`, `back` or `both` (default). The text list contains only visible regions, with shared regions listed once. Changing views never clears selection. Standard `v-model` binds `MuscleRegion | null` through `modelValue` and `update:modelValue`. Read-only is the default and may display a parent-supplied selection without emitting changes. `interactive` enables native selection buttons; activating the selected muscle clears it. `disabled` inhibits user selection while still rendering external model updates. Selection outlines a region without changing its involvement color.
+
+The visible text list communicates each region's involvement independently of color and supplies keyboard/touch targets; the SVG is decorative. The single root group forwards native attributes, listeners and classes and exposes `data-slot="muscle-map"`. Supply `aria-label` or `aria-labelledby` for a contextual accessible name. The fallback “Muscle map” applies only when neither naming attribute is supplied. Consumers own headings, descriptions, surrounding cards and width constraints.
+
+See **02 Components / BaseMuscleMap** in Histoire for interactive controls, parent reset, read-only selection, empty highlights and independent front/back instances. These examples use local sample data and are not integrated into the workout app. The component makes no fatigue or recovery claims and has no storage dependencies.

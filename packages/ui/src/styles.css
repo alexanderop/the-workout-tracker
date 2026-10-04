@@ -682,3 +682,142 @@
     transition: none;
   }
 }
+
+.ui-muscle-map {
+  width: 100%;
+  color: var(--ui-foreground);
+}
+.ui-muscle-map-hint {
+  color: var(--ui-muted-foreground);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.ui-muscle-map-figures {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin: 24px 0;
+}
+.ui-muscle-map-view {
+  width: 42%;
+  text-align: center;
+}
+.ui-muscle-map-view svg {
+  display: block;
+  width: 100%;
+  max-height: 320px;
+}
+.ui-muscle-map-view > span {
+  display: block;
+  margin-top: 12px;
+  color: var(--ui-muted-foreground);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+.ui-muscle-map-outline {
+  fill: var(--ui-secondary);
+  stroke: var(--ui-muted-foreground);
+  stroke-opacity: 0.3;
+  stroke-width: 1;
+}
+.ui-muscle-map-region {
+  fill: var(--ui-muted-foreground);
+  fill-opacity: 0.18;
+  stroke: var(--ui-background);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+.ui-muscle-map-region.is-highlighted {
+  fill: var(--ui-primary);
+  fill-opacity: 0.4;
+}
+.ui-muscle-map-region.is-primary {
+  fill-opacity: 1;
+}
+.ui-muscle-map-region.is-selected {
+  stroke: var(--ui-foreground);
+  stroke-width: 3;
+}
+.ui-muscle-map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  font-size: 10px;
+  color: var(--ui-muted-foreground);
+  margin-bottom: 20px;
+}
+.ui-muscle-map-legend span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.ui-muscle-map-legend i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ui-muted-foreground);
+  opacity: 0.3;
+}
+.ui-muscle-map-legend .is-primary {
+  background: var(--ui-primary);
+  opacity: 1;
+}
+.ui-muscle-map-legend .is-supporting {
+  background: var(--ui-primary);
+  opacity: 0.4;
+}
+.ui-muscle-map-hint {
+  margin-bottom: 12px;
+}
+.ui-muscle-map-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 12px;
+}
+.ui-muscle-map-list button,
+.ui-muscle-map-list li > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px;
+  box-sizing: border-box;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  color: inherit;
+  background: var(--ui-secondary);
+  text-align: left;
+  font: inherit;
+  font-size: 12px;
+}
+.ui-muscle-map-list small {
+  color: var(--ui-muted-foreground);
+  font-size: 10px;
+}
+.ui-muscle-map-list button {
+  cursor: pointer;
+}
+.ui-muscle-map-list button[aria-pressed="true"] {
+  border-color: var(--ui-primary);
+}
+.ui-muscle-map-list button:focus-visible {
+  outline: 2px solid var(--ui-ring);
+  outline-offset: 2px;
+}
+.ui-muscle-map-list button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+@media (max-width: 380px) {
+  .ui-muscle-map-figures {
+    gap: 12px;
+  }
+}
