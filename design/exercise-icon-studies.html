@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Form — Exercise Icon Studies</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #141414;
+        --panel: #1c1c1b;
+        --border: #343433;
+        --text: #eeeeec;
+        --muted: #aaa9a3;
+        --accent: #a78bfa;
+        --soft: #30283f;
+        --figure: #eeeeec;
+        --equipment: #a78bfa;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          15px/1.5 system-ui,
+          sans-serif;
+      }
+      main {
+        max-width: 1240px;
+        margin: auto;
+        padding: 48px 32px 80px;
+      }
+      header {
+        max-width: 780px;
+      }
+      .eyebrow {
+        color: var(--accent);
+        font-size: 12px;
+        letter-spacing: 0.19em;
+        text-transform: uppercase;
+        font-weight: 700;
+      }
+      h1 {
+        font-size: clamp(32px, 5vw, 56px);
+        line-height: 1.08;
+        letter-spacing: -0.045em;
+        margin: 18px 0;
+      }
+      p {
+        color: var(--muted);
+      }
+      .intro {
+        font-size: 17px;
+        max-width: 660px;
+      }
+      .controls {
+        display: flex;
+        gap: 30px;
+        flex-wrap: wrap;
+        margin: 34px 0;
+        padding: 22px 0;
+        border-block: 1px solid var(--border);
+      }
+      fieldset {
+        border: 0;
+        padding: 0;
+        margin: 0;
+      }
+      legend {
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+        color: var(--muted);
+      }
+      .options {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      button {
+        font: inherit;
+        color: var(--text);
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        padding: 9px 13px;
+        cursor: pointer;
+      }
+      button[aria-pressed="true"] {
+        border-color: var(--accent);
+        background: var(--soft);
+      }
+      button:focus-visible {
+        outline: 3px solid var(--accent);
+        outline-offset: 4px;
+      }
+      .swatch {
+        display: inline-block;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        margin-right: 8px;
+      }
+      .study {
+        margin: 32px 0 42px;
+      }
+      .heading {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 15px;
+      }
+      h2 {
+        font-size: 20px;
+        letter-spacing: -0.025em;
+        margin: 0;
+      }
+      .tag {
+        font-size: 11px;
+        padding: 4px 8px;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        color: var(--accent);
+        white-space: nowrap;
+      }
+      .heading p {
+        font-size: 13px;
+        margin: 5px 0 0;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .card {
+        min-width: 0;
+        overflow: hidden;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 15px;
+        padding: 26px 12px 16px;
+        text-align: center;
+      }
+      .stage {
+        height: 120px;
+        display: grid;
+        place-items: center;
+      }
+      .icon {
+        width: 96px;
+        height: 96px;
+        overflow: visible;
+      }
+      .person,
+      .gear,
+      .ground,
+      .motion {
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .person {
+        stroke: var(--figure);
+        stroke-width: 4;
+      }
+      .head {
+        fill: var(--figure);
+      }
+      .gear {
+        stroke: var(--equipment);
+        stroke-width: 3;
+      }
+      .ground {
+        stroke: var(--muted);
+        stroke-width: 1.5;
+        opacity: 0.45;
+      }
+      .motion {
+        display: none;
+        stroke: var(--equipment);
+        stroke-width: 1.5;
+        stroke-dasharray: 3 4;
+      }
+      .halo {
+        display: none;
+        fill: var(--soft);
+      }
+      .label {
+        font-size: 13px;
+        font-weight: 600;
+        margin: 12px 0 0;
+      }
+      .sub {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 3px;
+      }
+      .mini {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 16px;
+        border-top: 1px solid var(--border);
+        margin-top: 17px;
+        padding-top: 14px;
+      }
+      .mini .icon:first-child {
+        width: 24px;
+        height: 24px;
+      }
+      .mini .icon:nth-of-type(2) {
+        width: 40px;
+        height: 40px;
+      }
+      .mini-label {
+        white-space: nowrap;
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .mono .gear {
+        stroke: var(--figure);
+      }
+      .sculpt .person {
+        stroke-width: 8;
+      }
+      .sculpt .gear {
+        stroke-width: 4;
+      }
+      .sculpt .head {
+        stroke: var(--figure);
+        stroke-width: 1;
+      }
+      .sculpt .ground {
+        display: none;
+      }
+      .badge .halo {
+        display: block;
+      }
+      .badge .person {
+        stroke-width: 5;
+      }
+      .badge .gear {
+        stroke-width: 3.5;
+      }
+      .technical .person {
+        stroke-width: 2.5;
+      }
+      .technical .head {
+        fill: var(--bg);
+        stroke: var(--figure);
+        stroke-width: 2;
+      }
+      .technical .gear {
+        stroke-width: 2;
+      }
+      .technical .motion {
+        display: block;
+      }
+      .technical .joint {
+        fill: var(--bg);
+        stroke: var(--figure);
+        stroke-width: 1.5;
+      }
+      .joint {
+        display: none;
+      }
+      .technical .joint {
+        display: block;
+      }
+      .notes {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 28px;
+      }
+      .notes h3 {
+        font-size: 14px;
+        margin: 0;
+      }
+      .notes p {
+        font-size: 13px;
+        margin-bottom: 0;
+      }
+      footer {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 24px;
+      }
+      body[data-size="small"] .stage > .icon {
+        width: 48px;
+        height: 48px;
+      }
+      body[data-size="small"] .stage {
+        height: 88px;
+      }
+      @media (max-width: 850px) {
+        .grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 540px) {
+        main {
+          padding: 28px 18px;
+        }
+        .grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .heading {
+          align-items: flex-start;
+          flex-wrap: wrap;
+        }
+        .notes {
+          grid-template-columns: 1fr;
+        }
+        .controls {
+          gap: 20px;
+        }
+        .card {
+          padding-top: 18px;
+        }
+      }
+
+      .archive {
+        margin: 36px 0;
+        border-top: 1px solid var(--border);
+        padding-top: 22px;
+      }
+      .archive summary {
+        cursor: pointer;
+        color: var(--muted);
+        padding: 10px 0;
+      }
+      .motion-study .person {
+        stroke-width: 2.6;
+      }
+      .motion-study .head {
+        fill: var(--panel);
+        stroke: var(--figure);
+        stroke-width: 2.2;
+      }
+      .motion-study .gear {
+        stroke: var(--muted);
+        stroke-width: 2;
+      }
+      .motion-study .joint {
+        display: none;
+      }
+      .motion-study .motion {
+        display: none;
+      }
+      .trace,
+      .angle,
+      .arrow,
+      .ghost-body,
+      .ghost-gear,
+      .ghost-head,
+      .guide {
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .trace,
+      .angle,
+      .arrow {
+        stroke: var(--accent);
+        stroke-width: 2;
+      }
+      .ghost-body,
+      .ghost-head {
+        stroke: var(--accent);
+        stroke-width: 2.6;
+        opacity: 0.38;
+      }
+      .ghost-gear {
+        stroke: var(--accent);
+        stroke-width: 2;
+        opacity: 0.35;
+      }
+      .guide {
+        stroke: var(--accent);
+        stroke-width: 1;
+        opacity: 0.4;
+        stroke-dasharray: 2 3;
+      }
+      .ghost-body,
+      .ghost-head,
+      .ghost-gear,
+      .trace,
+      .angle,
+      .arrow,
+      .guide,
+      .pivot {
+        display: none;
+      }
+      .route .arrow {
+        display: block;
+      }
+      .ghost .ghost-body,
+      .ghost .ghost-head,
+      .ghost .ghost-gear {
+        display: block;
+      }
+      .angular .angle,
+      .angular .guide,
+      .angular .pivot {
+        display: block;
+      }
+      .pivot {
+        fill: var(--accent);
+        stroke: var(--panel);
+        stroke-width: 1.5;
+      }
+      .load .person,
+      .load .head {
+        opacity: 0.48;
+      }
+      .load .trace,
+      .load .ghost-gear {
+        display: block;
+      }
+      .load .gear {
+        stroke: var(--accent);
+        stroke-width: 2.6;
+      }
+      .study-note {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 14px;
+        max-width: 760px;
+      }
+      .motion-study .stage {
+        height: 144px;
+      }
+      .key {
+        display: flex;
+        gap: 22px;
+        flex-wrap: wrap;
+        color: var(--muted);
+        font-size: 12px;
+        margin: 0 0 30px;
+      }
+      .key b {
+        color: var(--text);
+        font-weight: 500;
+      }
+      .key i {
+        display: inline-block;
+        width: 18px;
+        border-top: 2px solid var(--accent);
+        vertical-align: middle;
+        margin-right: 7px;
+      }
+      .key .faint {
+        opacity: 0.38;
+      }
+      .key .white {
+        border-color: var(--text);
+      }
+      .mini {
+        gap: 12px;
+      }
+      .mini .icon {
+        flex-shrink: 0;
+      }
+      @media (max-width: 540px) {
+        .tag {
+          white-space: normal;
+        }
+        .motion-study .stage {
+          height: 120px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="eyebrow">Form / Motion studies 02</div>
+        <h1>Bewegung sichtbar machen.<br />Vier neue Varianten.</h1>
+        <p class="intro">
+          Bahn, Ghost Pose, Gelenkwinkel oder Hantelspur: dieselben fünf
+          Übungen, dieselbe Strichstärke, vier unterschiedliche Arten, Bewegung
+          zu zeigen.
+        </p>
+      </header>
+      <div class="controls">
+        <fieldset>
+          <legend>Farbwelt</legend>
+          <div class="options" id="themes">
+            <button data-theme="violet" aria-pressed="true">
+              <span class="swatch" style="background: #a78bfa"></span>Form
+              Violet</button
+            ><button data-theme="mint" aria-pressed="false">
+              <span class="swatch" style="background: #83d9b3"></span>Quiet Mint</button
+            ><button data-theme="amber" aria-pressed="false">
+              <span class="swatch" style="background: #efbc73"></span>Warm Sand</button
+            ><button data-theme="paper" aria-pressed="false">
+              <span class="swatch" style="background: #7660bc"></span>Light
+              Paper
+            </button>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Hauptvorschau</legend>
+          <div class="options" id="sizes">
+            <button data-size="large" aria-pressed="true">96 px</button
+            ><button data-size="small" aria-pressed="false">48 px</button>
+          </div>
+        </fieldset>
+      </div>
+      <div id="motion-studies"></div>
+      <details class="archive">
+        <summary>Erste Stilrunde zum Vergleich öffnen</summary>
+        <div id="studies"></div>
+      </details>
+      <div class="notes">
+        <div>
+          <h3>Meine Favoriten: A für Listen · B für Karten</h3>
+          <p>
+            A bleibt mit einem klaren Pfeil ruhig. B zeigt zwei Positionen und
+            erklärt dadurch mehr. C wirkt analytischer; D richtet den Blick
+            gezielt auf Hantel und Lastweg.
+          </p>
+        </div>
+        <div>
+          <h3>Worauf wir beim Auswählen achten</h3>
+          <p>
+            Ist die Pose bei 40 px noch erkennbar? Hilft Farbe beim Lesen? Sind
+            Bank, Hantel und Körper gut getrennt? 24 px ist bewusst ein
+            Stresstest. Die Figuren dienen der Wiedererkennung, nicht als
+            vollständige Technikanleitung.
+          </p>
+        </div>
+      </div>
+      <footer>
+        Designstudie · Alle Motive als editierbare SVG-Geometrie · Keine
+        externen Fonts, Bilder oder Bibliotheken · Noch nicht in die App
+        integriert
+      </footer>
+    </main>
+    <script>
+      const exercises = [
+        {
+          label: "Back squat",
+          sub: "Kniebeuge",
+          head: [48, 22],
+          body: "M46 33 L40 47 L59 57 L44 76 L60 76 M44 35 L57 39 L62 29",
+          gear: "M29 29 H73 M30 23 V35 M35 24 V34 M68 24 V34 M73 23 V35",
+          joint: [40, 47],
+          motion: "M23 39 Q15 52 24 66 M19 64 L24 66 L26 61",
+        },
+        {
+          label: "Bench press",
+          sub: "Bankdrücken",
+          head: [23, 51],
+          body: "M33 53 L56 53 L67 63 L70 77 L79 77 M41 52 L46 29",
+          gear: "M15 62 H60 M22 63 V78 M55 63 V78 M29 26 H66 M30 20 V32 M35 21 V31 M60 21 V31 M65 20 V32",
+          joint: [56, 53],
+          motion: "M77 48 V26 M73 30 L77 26 L81 30",
+        },
+        {
+          label: "Deadlift",
+          sub: "Kreuzheben",
+          head: [53, 25],
+          body: "M48 35 L35 49 L46 61 L39 77 L54 77 M48 35 L58 62",
+          gear: "M24 67 H77 M27 59 V75 M33 61 V73 M69 61 V73 M75 59 V75",
+          joint: [35, 49],
+          motion: "M82 59 Q85 43 74 30 M74 35 V30 H79",
+        },
+        {
+          label: "Overhead press",
+          sub: "Schulterdrücken",
+          head: [49, 35],
+          body: "M49 46 V60 L37 79 L28 79 M49 60 L59 79 L68 79 M49 48 L33 34 L33 19 M49 48 L65 34 L65 19",
+          gear: "M21 16 H77 M23 10 V22 M28 11 V21 M70 11 V21 M75 10 V22",
+          joint: [49, 60],
+          motion: "M84 43 V17 M80 21 L84 17 L88 21",
+        },
+        {
+          label: "Push-up",
+          sub: "Liegestütz",
+          head: [24, 45],
+          body: "M34 46 L59 55 L79 64 L85 72 M38 49 L31 61 L43 72 L51 72",
+          gear: "",
+          joint: [31, 61],
+          motion: "M15 64 V43 M11 47 L15 43 L19 47",
+        },
+      ];
+      const styles = [
+        {
+          id: "mono",
+          title: "01 / Clear Line",
+          desc: "Leicht, einfarbig und zurückhaltend. Die Pose steht im Mittelpunkt.",
+          tag: "Empfehlung für Listen",
+        },
+        {
+          id: "sculpt",
+          title: "02 / Bold Form",
+          desc: "Kräftige Körperformen, kontrastierendes Equipment. Sportlicher und markanter.",
+          tag: "Hohe Präsenz",
+        },
+        {
+          id: "badge",
+          title: "03 / Soft Badge",
+          desc: "Runde Farbfläche und weiche Konturen. Eine freundlichere, illustrative Richtung.",
+          tag: "Für Übungskarten",
+        },
+        {
+          id: "technical",
+          title: "04 / Motion Diagram",
+          desc: "Feine Linien, sichtbare Gelenke und Bewegungsimpulse. Präzise und erklärend.",
+          tag: "Für größere Ansichten",
+        },
+      ];
+      function svg(e) {
+        return `<svg class="icon" viewBox="0 0 96 96" aria-hidden="true"><circle class="halo" cx="48" cy="48" r="45"/><path class="ground" d="M12 82 H85"/><path class="person" d="${e.body}"/><circle class="head" cx="${e.head[0]}" cy="${e.head[1]}" r="6"/><path class="gear" d="${e.gear}"/><circle class="joint" cx="${e.joint[0]}" cy="${e.joint[1]}" r="3"/><path class="motion" d="${e.motion}"/></svg>`;
+      }
+      document.querySelector("#studies").innerHTML = styles
+        .map(
+          (s) =>
+            `<section class="study ${s.id}"><div class="heading"><div><h2>${s.title}</h2><p>${s.desc}</p></div><span class="tag">${s.tag}</span></div><div class="grid">${exercises.map((e) => `<article class="card"><div class="stage">${svg(e)}</div><div class="label">${e.label}</div><div class="sub">${e.sub}</div><div class="mini">${svg(e)}${svg(e)}<span class="mini-label">24 / 40</span></div></article>`).join("")}</div></section>`,
+        )
+        .join("");
+
+      const motionData = [
+        {
+          head: [46, 27],
+          body: "M43 36 L36 48 L56 57 L44 77 L59 77 M43 37 L56 41 L61 34",
+          gear: "M24 33 H70 M26 27 V39 M31 28 V38 M64 28 V38 M69 27 V39",
+          gh: [44, 10],
+          gb: "M44 19 L43 45 L44 77 L59 77 M44 22 L56 28 L60 17",
+          gg: "M23 16 H69 M25 10 V22 M30 11 V21 M63 11 V21 M68 10 V22",
+          arrow: "M80 64 V23 M76 28 L80 23 L84 28",
+          angle: "M46 53 Q43 60 50 66",
+          guide: "M56 57 L36 48 M56 57 L44 77",
+          pivot: [56, 57],
+          trace: "M76 34 V16 M72 21 L76 16 L80 21",
+        },
+        {
+          head: [21, 52],
+          body: "M30 53 H54 L66 63 L70 77 H80 M39 53 L44 40 L46 24",
+          gear: "M15 62 H59 M21 62 V79 M55 62 V79 M29 22 H64 M30 16 V28 M35 17 V27 M58 17 V27 M63 16 V28",
+          gh: null,
+          gb: "M39 53 L30 43 L45 44",
+          gg: "M28 44 H63 M29 38 V50 M34 39 V49 M57 39 V49 M62 38 V50",
+          arrow: "M77 49 V22 M73 27 L77 22 L81 27",
+          angle: "M42 46 Q50 47 47 34",
+          guide: "M44 40 L39 53 M44 40 L46 24",
+          pivot: [44, 40],
+          trace: "M75 45 V22 M71 27 L75 22 L79 27",
+        },
+        {
+          head: [54, 29],
+          body: "M48 38 L34 50 L43 62 L40 77 H54 M48 38 L57 66",
+          gear: "M24 68 H78 M26 60 V76 M32 62 V74 M70 62 V74 M76 60 V76",
+          gh: [43, 12],
+          gb: "M43 21 L40 47 L40 77 H54 M43 24 L55 45",
+          gg: "M24 47 H78 M26 39 V55 M32 41 V53 M70 41 V53 M76 39 V55",
+          arrow: "M84 69 V44 M80 49 L84 44 L88 49",
+          angle: "M42 43 Q49 48 40 58",
+          guide: "M34 50 L48 38 M34 50 L43 62",
+          pivot: [34, 50],
+          trace: "M84 68 V47 M80 52 L84 47 L88 52",
+        },
+        {
+          head: [48, 31],
+          body: "M48 41 V60 L36 79 H27 M48 60 L59 79 H68 M48 44 L33 32 V17 M48 44 L64 32 V17",
+          gear: "M21 15 H76 M23 9 V21 M28 10 V20 M69 10 V20 M74 9 V21",
+          gh: null,
+          gb: "M48 44 L31 51 L31 36 M48 44 L66 51 L66 36",
+          gg: "M20 35 H77 M22 29 V41 M27 30 V40 M70 30 V40 M75 29 V41",
+          arrow: "M84 48 V15 M80 20 L84 15 L88 20",
+          angle: "M33 24 Q40 24 40 37",
+          guide: "M33 32 V17 M33 32 L48 44",
+          pivot: [33, 32],
+          trace: "M84 35 V15 M80 20 L84 15 L88 20",
+        },
+        {
+          head: [20, 48],
+          body: "M30 49 L57 59 L80 73 L86 76 M36 51 L29 63 L44 76 H51",
+          gear: "",
+          gh: [20, 30],
+          gb: "M30 32 L56 50 L80 73 L86 76 M36 36 L40 56 L44 76 H51",
+          gg: "",
+          arrow: "M12 64 V33 M8 38 L12 33 L16 38",
+          angle: "M33 56 Q40 61 37 70",
+          guide: "M29 63 L36 51 M29 63 L44 76",
+          pivot: [29, 63],
+          trace: "M58 57 L40 37 M40 43 V37 H46",
+        },
+      ];
+      const variants = [
+        {
+          id: "route",
+          title: "A / Bewegungsbahn",
+          desc: "Eine Pose. Ein durchgezogener Pfeil. Die Richtung ist sofort sichtbar.",
+          tag: "Reduziert",
+          note: "Stärke: wenig visuelle Unruhe. Grenze: Ein Pfeil zeigt eine Richtung, aber keine vollständige Bewegung.",
+        },
+        {
+          id: "ghost",
+          title: "B / Ghost Pose",
+          desc: "Eine helle Hauptpose und eine transparente zweite Position in der Akzentfarbe.",
+          tag: "Anschaulich",
+          note: "Stärke: Start und Ende lassen sich direkt vergleichen. Grenze: Überlagerungen brauchen mehr Platz; besonders für Übungskarten geeignet.",
+        },
+        {
+          id: "angular",
+          title: "C / Gelenkwinkel",
+          desc: "Ein farbiger Gelenkpunkt und ein kleiner Bogen machen die Körpermechanik zum Motiv.",
+          tag: "Analytisch",
+          note: "Stärke: eine eigenständige technische Formensprache. Die Bögen sind schematisch, keine gemessenen oder empfohlenen Winkel.",
+        },
+        {
+          id: "load",
+          title: "D / Hantelspur",
+          desc: "Der Körper tritt zurück. Equipment und Lastweg erhalten den Farbakzent.",
+          tag: "Equipment im Fokus",
+          note: "Stärke: die Hantelbewegung steht im Mittelpunkt. Beim Liegestütz zeigt der Pfeil stattdessen die Bewegung des Oberkörpers; diese Ausnahme gehört zum Vergleich.",
+        },
+      ];
+      function motionSvg(e, d) {
+        return `<svg class="icon" viewBox="0 0 96 96" aria-hidden="true"><path class="ground" d="M12 82 H86"/><path class="ghost-body" d="${d.gb}"/>${d.gh ? `<circle class="ghost-head" cx="${d.gh[0]}" cy="${d.gh[1]}" r="5"/>` : ""}<path class="ghost-gear" d="${d.gg}"/><path class="person" d="${d.body}"/><circle class="head" cx="${d.head[0]}" cy="${d.head[1]}" r="5"/><path class="gear" d="${d.gear}"/><path class="guide" d="${d.guide}"/><path class="angle" d="${d.angle}"/><circle class="pivot" cx="${d.pivot[0]}" cy="${d.pivot[1]}" r="3.2"/><path class="arrow" d="${d.arrow}"/><path class="trace" d="${d.trace}"/></svg>`;
+      }
+      document.querySelector("#motion-studies").innerHTML =
+        `<div class="key"><span><i class="white"></i><b>Hauptpose</b></span><span><i></i>Bewegung / Fokus</span><span><i class="faint"></i>Zweite Position</span></div>` +
+        variants
+          .map(
+            (v) =>
+              `<section class="study motion-study ${v.id}"><div class="heading"><div><h2>${v.title}</h2><p>${v.desc}</p></div><span class="tag">${v.tag}</span></div><div class="grid">${exercises.map((e, i) => `<article class="card"><div class="stage">${motionSvg(e, motionData[i])}</div><div class="label">${e.label}</div><div class="sub">${e.sub}</div><div class="mini">${motionSvg(e, motionData[i])}${motionSvg(e, motionData[i])}<span class="mini-label">24 / 40</span></div></article>`).join("")}</div><p class="study-note">${v.note}</p></section>`,
+          )
+          .join("");
+      const palettes = {
+        violet: [
+          "#141414",
+          "#1c1c1b",
+          "#343433",
+          "#eeeeec",
+          "#aaa9a3",
+          "#a78bfa",
+          "#30283f",
+        ],
+        mint: [
+          "#111917",
+          "#18231f",
+          "#34473e",
+          "#e8f1ea",
+          "#a4b5ac",
+          "#83d9b3",
+          "#233f33",
+        ],
+        amber: [
+          "#1c1814",
+          "#262019",
+          "#4c3e30",
+          "#f6ede0",
+          "#b9aa96",
+          "#efbc73",
+          "#493723",
+        ],
+        paper: [
+          "#f5f3ee",
+          "#fffdf9",
+          "#d9d5cc",
+          "#292832",
+          "#696572",
+          "#7660bc",
+          "#eae3f6",
+        ],
+      };
+      document.querySelector("#themes").addEventListener("click", (event) => {
+        const b = event.target.closest("button");
+        if (!b) return;
+        document
+          .querySelectorAll("#themes button")
+          .forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+        const p = palettes[b.dataset.theme];
+        ["bg", "panel", "border", "text", "muted", "accent", "soft"].forEach(
+          (k, i) => document.documentElement.style.setProperty("--" + k, p[i]),
+        );
+        document.documentElement.style.setProperty("--figure", p[3]);
+        document.documentElement.style.setProperty("--equipment", p[5]);
+        document.documentElement.style.colorScheme =
+          b.dataset.theme === "paper" ? "light" : "dark";
+      });
+      document.querySelector("#sizes").addEventListener("click", (event) => {
+        const b = event.target.closest("button");
+        if (!b) return;
+        document.body.dataset.size = b.dataset.size;
+        document
+          .querySelectorAll("#sizes button")
+          .forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      });
+    </script>
+  </body>
+</html>

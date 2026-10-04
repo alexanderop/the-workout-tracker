@@ -9,7 +9,12 @@ Before({ tags: "@offline-reload" }, async ({ browserName, $testInfo }) => {
   );
 });
 const nav = (page: Page, name: string) =>
-  page.getByRole("link", { name, exact: true }).filter({ visible: true });
+  page
+    .getByRole("link", {
+      name: name === "History" ? /^History(?:\s*\d+)?$/ : name,
+      exact: true,
+    })
+    .filter({ visible: true });
 async function openJournal(page: Page) {
   await page.goto("./");
   await expect(
@@ -167,6 +172,24 @@ Then(
     ).toBe(true);
   },
 );
+Then("my history filter survives switching pages", async ({ page }) => {
+  await nav(page, "History").click();
+  await page
+    .getByRole("textbox", { name: "Search workout history" })
+    .fill("No matching workout");
+  await expect(page.getByText("No workouts match your search.")).toBeVisible();
+  await nav(page, "Progress").click();
+  await expect(page.getByLabel("Exercise progress")).toHaveValue("bench-press");
+  await nav(page, "History").click();
+  await expect(
+    page.getByRole("textbox", { name: "Search workout history" }),
+  ).toHaveValue("No matching workout");
+  await expect(page.getByText("No workouts match your search.")).toBeVisible();
+  await page.getByRole("textbox", { name: "Search workout history" }).fill("");
+  await expect(
+    page.getByRole("button", { name: /Upper body.*870/ }),
+  ).toBeVisible();
+});
 When("I create and edit my own routine", async ({ page }) => {
   await nav(page, "Workouts").click();
   await page
@@ -659,6 +682,26 @@ Then(
     ).toHaveCount(0);
   },
 );
+When("I visit history and return to my active workout", async ({ page }) => {
+  await page
+    .getByRole("link", { name: "Back to workouts", exact: true })
+    .filter({ visible: true })
+    .first()
+    .click();
+  await nav(page, "History").click();
+  await expect(
+    page.getByRole("heading", { name: "Your training history", exact: true }),
+  ).toBeVisible();
+  await nav(page, "Workouts").click();
+  await page
+    .getByRole("button", { name: /Resume/ })
+    .filter({ visible: true })
+    .first()
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Undo last log", exact: true }),
+  ).toBeVisible();
+});
 When(
   "an older draft is reopened after a completion and undo",
   async ({ page, context }) => {

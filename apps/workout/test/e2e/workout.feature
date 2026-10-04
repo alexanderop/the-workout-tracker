@@ -6,6 +6,7 @@ Feature: A private training journal
     Then my logged sets and rest survive a reload
     When I finish the workout offline
     Then history and progress show only my logged work
+    And my history filter survives switching pages
 
   Scenario: Make a routine and move a backup to a fresh browser
     Given a new training journal
@@ -41,6 +42,12 @@ Feature: A private training journal
   Scenario: Complete and undo a set from the mobile training controls
     Given a new training journal
     When I use the compact training controls and set options
+    Then undo and reload keep the set open without resurrecting a draft
+
+  Scenario: Keep the last logged set available to undo after navigation
+    Given a new training journal
+    When I use the compact training controls and set options
+    And I visit history and return to my active workout
     Then undo and reload keep the set open without resurrecting a draft
 
   Scenario: Recovered drafts require review after another tab changes the workout

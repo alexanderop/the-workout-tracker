@@ -27,6 +27,20 @@ flowchart LR
 
 Solid arrows show source dependencies. At runtime the application calls the injected adapter through the port.
 
+## Page ownership and controller lifetime
+
+The workout pages remain inside the workout feature. Today, routines, training, history, and progress are views of the same snapshot, not independent persistence boundaries.
+
+`App.vue` owns the application shell, hash navigation, and PWA integration. Feature pages receive the data they display and emit user actions. Calendar, history filtering, and chart projections belong with their pages. Shared formatting stays in the feature UI.
+
+`TodayPage`, `WorkoutsPage`, `TrainingPage`, `HistoryPage`, and `ProgressPage` own the page templates. `TrainingDock` owns the mobile training controls. `WorkoutDialogs` owns routine editing, exercise selection, set options, confirmations, and completed-session details. `WorkoutSettings` owns preferences and backup controls.
+
+`App.vue` calls `useWorkoutWorkspace` once to create `useWorkouts`, `useTrainingSession`, and the shared clock. Page navigation does not recreate either composable. This preserves the shared saving lock, selected set, live draft baselines, and last-log undo. The training page and mobile controls use that same training instance and the same native set forms.
+
+History search, progress selection, and cross-page dialog state also survive page navigation. Routine editing retains the revision captured when the editor opens. Backup import retains the revision captured when the file is read. Completing a workout can open its detail immediately after navigating to history.
+
+The feature UI receives PWA capabilities from the application shell. It cannot import application wiring or select a storage adapter. The existing architecture checks enforce this boundary.
+
 ## Public entry points
 
 `features/workouts/index.ts` exports the domain and application API. `ui.ts` exports the components and composable. `infrastructure.ts` exports the adapter factory exclusively for the composition root.
