@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button, Input, Textarea, NumericInput } from "@form/ui";
 import { computed, ref } from "vue";
 import { Plus, Trash2 } from "@lucide/vue";
 import type { CompletedSession, Exercise, Routine } from "../domain";
@@ -97,7 +98,7 @@ function save() {
     <fieldset class="editor-fields form-stack" :disabled="busy">
       <label class="field"
         ><span>Template name</span
-        ><input
+        ><Input
           v-model="name"
           class="input"
           name="routine-name"
@@ -107,7 +108,7 @@ function save() {
       /></label>
       <label class="field"
         ><span>Description <span class="muted">(optional)</span></span
-        ><textarea
+        ><Textarea
           v-model="description"
           class="input"
           maxlength="240"
@@ -126,14 +127,14 @@ function save() {
       >
         <div class="exercise-heading">
           <h3>{{ index + 1 }}. {{ names.get(entry.exerciseId) }}</h3>
-          <button
+          <Button
             type="button"
             class="icon-button"
             :aria-label="`Remove ${names.get(entry.exerciseId)}`"
             @click="entries.splice(index, 1)"
           >
             <Trash2 :size="17" />
-          </button>
+          </Button>
         </div>
         <div
           v-for="(set, setIndex) in entry.sets"
@@ -148,31 +149,30 @@ function save() {
           >
           <label class="field"
             ><span>Weight · kg</span
-            ><input
+            ><NumericInput
               v-model="set.weightKg"
               class="input"
-              type="number"
-              inputmode="decimal"
-              min="0"
-              max="1000"
-              step="any"
-              required
-              :aria-label="`${names.get(entry.exerciseId)} set ${setIndex + 1} weight`"
+              title="Weight"
+              unit="kg"
+              :decimals="2"
+              :preset-step="2.5"
+              :disabled="busy"
+              :min="0"
+              :max="1000"
+              :label="`${names.get(entry.exerciseId)} set ${setIndex + 1} weight`"
           /></label>
           <label class="field"
             ><span>Reps</span
-            ><input
+            ><NumericInput
               v-model="set.reps"
               class="input"
-              type="number"
-              inputmode="numeric"
-              min="1"
-              max="1000"
-              step="1"
-              required
-              :aria-label="`${names.get(entry.exerciseId)} set ${setIndex + 1} reps`"
+              title="Reps"
+              :disabled="busy"
+              :min="1"
+              :max="1000"
+              :label="`${names.get(entry.exerciseId)} set ${setIndex + 1} reps`"
           /></label>
-          <button
+          <Button
             type="button"
             class="icon-button"
             :disabled="entry.sets.length <= 1"
@@ -180,18 +180,18 @@ function save() {
             @click="entry.sets.splice(setIndex, 1)"
           >
             <Trash2 :size="16" />
-          </button>
+          </Button>
         </div>
-        <button
+        <Button
           type="button"
           class="text-button add-set"
           :disabled="entry.sets.length >= 30"
           @click="addSet(entry)"
         >
           <Plus :size="15" />Add set
-        </button>
+        </Button>
       </section>
-      <button
+      <Button
         type="button"
         class="btn secondary full-width"
         :disabled="entries.length >= 50"
@@ -200,35 +200,35 @@ function save() {
         <Plus :size="17" />{{
           pickerOpen ? "Close exercise library" : "Add exercises"
         }}
-      </button>
+      </Button>
       <div v-if="pickerOpen" class="template-picker">
         <ExerciseCatalog
           :exercises="exercises"
           :selected="selected"
           :busy="busy"
           @toggle="toggle"
-        /><button
+        /><Button
           type="button"
           class="btn primary full-width"
           :disabled="!selected.length"
           @click="addExercises"
         >
           Add {{ selected.length }} exercises
-        </button>
+        </Button>
       </div>
     </fieldset>
     <p v-if="error" class="field-error" role="alert">{{ error }}</p>
     <div class="form-actions">
-      <button
+      <Button
         type="button"
         class="btn secondary"
         :disabled="busy"
         @click="emit('cancel')"
       >
-        Cancel</button
-      ><button type="submit" class="btn primary" :disabled="busy">
+        Cancel</Button
+      ><Button type="submit" class="btn primary" :disabled="busy">
         {{ busy ? "Saving…" : "Save template" }}
-      </button>
+      </Button>
     </div>
   </form>
 </template>

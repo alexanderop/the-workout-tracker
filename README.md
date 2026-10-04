@@ -12,7 +12,7 @@ This pnpm monorepo contains three independently owned workspaces:
 - `packages/ui` (`@form/ui`): reusable Vue components, design tokens. It has no workout or persistence dependencies.
 - `apps/ui-gallery` (`@form/ui-gallery`): an independent consumer of the public UI exports and styles. Run `pnpm dev:ui` to inspect the components.
 
-The app imports `Sheet` from `@form/ui` and the shared colors from `@form/ui/tokens.css`. The dependency uses `workspace:*`. Each workspace declares its own dependencies and uses strict TypeScript settings from `tsconfig.base.json`.
+The app imports its buttons, form controls, dialogs and mobile numeric editor from `@form/ui`, with shared colors from `@form/ui/tokens.css`. The dependency uses `workspace:*`. Each workspace declares its own dependencies and uses strict TypeScript settings from `tsconfig.base.json`.
 
 `@form/ui` is a private source package: Vite compiles its Vue source as part of the consuming app. It does not yet produce a standalone npm distribution. New component consumers import `@form/ui/styles.css` alongside the tokens. Its public API is limited by package exports; import paths into another workspace's source are forbidden.
 
@@ -47,7 +47,7 @@ The preview uses the same address. Stop the development server first. Keep the s
 - Switch between exercises while keeping each set's input.
 - Repeat a past workout with its original set values, or save an editable template with targets for each set.
 - During a workout, the mobile training bar shows the selected set, running pause, or completion action. Set options offer repetition adjustments and removal; the last log can be undone.
-- Enter weights in kg and repetitions, then log each set. Logged sets save when confirmed. Raw input drafts save as you type and recover after navigation, reload and reopening, including unfinished fields. A storage error leaves the input visible and reports when recovery is unavailable.
+- Enter weights in kg and repetitions with the numeric keypad or quick-pick suggestions, then log each set. Confirming a numeric value saves it to the input draft; Cancel leaves it unchanged. Drafts recover after navigation, reload and reopening. Logging a set is a separate action. A storage error leaves the input visible and reports when recovery is unavailable.
 - Resume a workout, use the rest timer, add or remove sets and exercises, finish or explicitly discard the session.
 - Review history, completed-set volume, lifting trends and heaviest sets.
 - Export and import JSON backups from Settings.

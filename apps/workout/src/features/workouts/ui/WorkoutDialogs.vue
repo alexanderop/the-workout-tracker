@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { Sheet } from "@form/ui";
+import { Sheet, Button, Input, NativeSelect } from "@form/ui";
 import { Plus, Check, Repeat2, BookmarkPlus } from "@lucide/vue";
 import ExerciseCatalog from "./ExerciseCatalog.vue";
 import RoutineEditor from "./RoutineEditor.vue";
@@ -222,30 +222,30 @@ defineExpose({
   >
     <template v-if="optionRow">
       <div class="repetition-adjuster">
-        <button
+        <Button
           class="btn secondary"
           :disabled="saving || Number(optionRow.reps) <= 1"
           aria-label="Decrease repetitions"
           @click="adjustReps(-1)"
         >
-          −</button
+          −</Button
         ><strong>{{ optionRow.reps || "—" }} reps</strong
-        ><button
+        ><Button
           class="btn secondary"
           :disabled="saving || Number(optionRow.reps) >= 1000"
           aria-label="Increase repetitions"
           @click="adjustReps(1)"
         >
           +
-        </button>
+        </Button>
       </div>
-      <button
+      <Button
         class="btn secondary full-width"
         :disabled="saving || optionRow.exercise.sets.length <= 1"
         @click="removeOptionSet"
       >
         Remove set
-      </button>
+      </Button>
     </template>
   </Sheet>
   <Sheet
@@ -281,9 +281,9 @@ defineExpose({
       @toggle="toggleExercise"
     />
     <div class="picker-actions">
-      <button class="text-button" :disabled="saving" @click="createOpen = true">
-        <Plus :size="16" />Create your own</button
-      ><button
+      <Button class="text-button" :disabled="saving" @click="createOpen = true">
+        <Plus :size="16" />Create your own</Button
+      ><Button
         class="btn primary full-width"
         :disabled="saving || !selectedExercises.length"
         @click="addExercises"
@@ -291,7 +291,7 @@ defineExpose({
         Add {{ selectedExercises.length }}
         {{ selectedExercises.length === 1 ? "exercise" : "exercises"
         }}<Check :size="17" />
-      </button>
+      </Button>
     </div>
     <p v-if="error" class="field-error" role="alert">{{ error }}</p>
   </Sheet>
@@ -304,7 +304,7 @@ defineExpose({
     <form class="form-stack" @submit.prevent="createExercise">
       <label class="field"
         ><span>Exercise name</span
-        ><input
+        ><Input
           v-model="customName"
           class="input"
           required
@@ -313,7 +313,7 @@ defineExpose({
       /></label>
       <label class="field"
         ><span>Muscle group</span
-        ><select v-model="customCategory" class="input">
+        ><NativeSelect v-model="customCategory" class="input">
           <option
             v-for="group in [
               'Chest',
@@ -328,11 +328,11 @@ defineExpose({
           >
             {{ group }}
           </option>
-        </select></label
+        </NativeSelect></label
       >
       <label class="field"
         ><span>Equipment</span
-        ><select v-model="customEquipment" class="input">
+        ><NativeSelect v-model="customEquipment" class="input">
           <option
             v-for="item in [
               'Barbell',
@@ -348,15 +348,15 @@ defineExpose({
           >
             {{ item }}
           </option>
-        </select></label
+        </NativeSelect></label
       >
-      <button
+      <Button
         class="btn primary full-width"
         type="submit"
         :disabled="saving || !customName.trim()"
       >
         <Plus :size="17" />Create exercise
-      </button>
+      </Button>
       <p v-if="error" class="field-error" role="alert">{{ error }}</p>
     </form>
   </Sheet>
@@ -384,16 +384,16 @@ defineExpose({
         You have input drafts in {{ training.pending.value.length }} sets. Save
         the values before finishing. This does not log any additional sets.
       </p>
-      <button
+      <Button
         class="btn secondary"
         :disabled="saving"
         @click="training.saveEdits()"
       >
         Save input values
-      </button>
-      <button class="text-button" @click="finishOpen = false">
+      </Button>
+      <Button class="text-button" @click="finishOpen = false">
         Review my sets
-      </button>
+      </Button>
       <p
         v-if="training.pending.value.some((row) => row.issue)"
         class="field-error"
@@ -405,19 +405,19 @@ defineExpose({
     </div>
     <p v-if="error" class="field-error" role="alert">{{ error }}</p>
     <div class="form-actions">
-      <button
+      <Button
         class="btn secondary"
         :disabled="saving"
         @click="finishOpen = false"
       >
-        Keep training</button
-      ><button
+        Keep training</Button
+      ><Button
         class="btn primary"
         :disabled="saving || !!training.pending.value.length"
         @click="finishWorkout"
       >
         Save workout<Check :size="17" />
-      </button></div
+      </Button></div
   ></Sheet>
   <Sheet
     :open="confirmation !== null"
@@ -425,19 +425,19 @@ defineExpose({
     :description="confirmation?.description"
     @close="confirmation = null"
     ><div class="form-actions">
-      <button
+      <Button
         class="btn secondary"
         :disabled="saving"
         @click="confirmation = null"
       >
-        Keep it</button
-      ><button class="btn primary" :disabled="saving" @click="confirmAction">
+        Keep it</Button
+      ><Button class="btn primary" :disabled="saving" @click="confirmAction">
         {{
           confirmation?.command.type === "discard"
             ? "Discard workout"
             : "Remove"
         }}
-      </button>
+      </Button>
     </div></Sheet
   >
   <Sheet
@@ -462,15 +462,15 @@ defineExpose({
         </div>
       </div>
       <div class="detail-actions">
-        <button
+        <Button
           class="btn primary"
           :disabled="saving || !!active"
           @click="repeatWorkout(detail.id)"
         >
-          <Repeat2 :size="17" />Repeat workout</button
-        ><button class="btn secondary" @click="convertWorkout(detail.id)">
+          <Repeat2 :size="17" />Repeat workout</Button
+        ><Button class="btn secondary" @click="convertWorkout(detail.id)">
           <BookmarkPlus :size="17" />Save as template
-        </button>
+        </Button>
       </div>
       <section
         v-for="exercise in detail.exercises"

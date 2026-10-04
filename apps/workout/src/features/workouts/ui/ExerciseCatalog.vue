@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Input, NativeSelect, Button } from "@form/ui";
 import { computed, ref, watch } from "vue";
 import { Check, Dumbbell, Search } from "@lucide/vue";
 import type { Exercise } from "../domain";
@@ -35,7 +36,7 @@ watch([search, muscle, equipment], () => {
 <template>
   <div class="catalog-controls">
     <div class="search-field picker-search">
-      <Search :size="18" /><input
+      <Search :size="18" /><Input
         v-model="search"
         aria-label="Search exercises"
         placeholder="Find an exercise"
@@ -45,19 +46,19 @@ watch([search, muscle, equipment], () => {
     <div class="catalog-filters">
       <label class="field"
         ><span>Muscle group</span
-        ><select v-model="muscle" class="input">
+        ><NativeSelect v-model="muscle" class="input">
           <option value="">{{ selected ? "All" : "All muscles" }}</option>
           <option v-for="group in groups" :key="group">{{ group }}</option>
-        </select></label
+        </NativeSelect></label
       >
       <label class="field"
         ><span>Equipment</span
-        ><select v-model="equipment" class="input">
+        ><NativeSelect v-model="equipment" class="input">
           <option value="">{{ selected ? "All" : "All equipment" }}</option>
           <option v-for="item in equipmentOptions" :key="item">
             {{ item }}
           </option>
-        </select></label
+        </NativeSelect></label
       >
     </div>
   </div>
@@ -68,7 +69,7 @@ watch([search, muscle, equipment], () => {
   </p>
   <div ref="list" class="picker-list catalog-list">
     <component
-      :is="selected ? 'button' : 'div'"
+      :is="selected ? Button : 'div'"
       v-for="exercise in results"
       :key="exercise.id"
       class="catalog-row"

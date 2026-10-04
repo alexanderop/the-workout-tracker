@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button, Input } from "@form/ui";
 import { computed, nextTick, ref, watch } from "vue";
 import {
   Clock3,
@@ -113,7 +114,7 @@ const previous = computed(() => {
     <div class="page-heading session-heading">
       <div>
         <h1 class="workout-name">
-          <input
+          <Input
             v-model="name"
             aria-label="Workout name"
             maxlength="80"
@@ -129,25 +130,25 @@ const previous = computed(() => {
           >{{ active.exercises.length }} exercises
         </p>
       </div>
-      <button
+      <Button
         class="btn secondary"
         :disabled="saving || !activeTotals.completedSets"
         aria-label="Finish workout"
         @click="emit('finish')"
       >
         <span class="finish-label">Finish</span><Check :size="17" />
-      </button>
+      </Button>
     </div>
     <div v-if="training.notice.value" class="training-notice">
       <span role="status">{{ training.notice.value }}</span
-      ><button
+      ><Button
         v-if="training.lastLog.value"
         class="text-button"
         :disabled="saving"
         @click="training.undo"
       >
         Undo last log
-      </button>
+      </Button>
     </div>
     <nav
       v-if="active.exercises.length"
@@ -155,7 +156,7 @@ const previous = computed(() => {
       class="exercise-tabs"
       aria-label="Workout exercises"
     >
-      <button
+      <Button
         v-for="(exercise, index) in active.exercises"
         :key="exercise.id"
         :aria-pressed="training.currentExercise.value?.id === exercise.id"
@@ -176,15 +177,15 @@ const previous = computed(() => {
             sets</small
           ></span
         ><Check v-if="exercise.sets.every((set) => set.completed)" :size="15" />
-      </button>
-      <button
+      </Button>
+      <Button
         class="exercise-tab-add"
         aria-label="Add exercises"
         :disabled="saving || active.exercises.length >= 50"
         @click="emit('pick')"
       >
         <Plus :size="20" />
-      </button>
+      </Button>
     </nav>
     <div class="session-layout">
       <div class="exercise-stack">
@@ -218,7 +219,7 @@ const previous = computed(() => {
                 </p>
               </div>
             </div>
-            <button
+            <Button
               class="icon-button"
               :aria-label="`Remove ${exercise.name} from workout`"
               :disabled="saving"
@@ -235,7 +236,7 @@ const previous = computed(() => {
               "
             >
               <X :size="16" />
-            </button>
+            </Button>
           </header>
           <div v-if="previous" class="previous-performance">
             <span class="eyebrow">LAST TIME</span>
@@ -274,34 +275,34 @@ const previous = computed(() => {
             "
             class="save-inputs"
           >
-            <button
+            <Button
               class="text-button"
               :disabled="saving"
               @click="training.saveEdits()"
             >
               Save input values without logging
-            </button>
+            </Button>
           </div>
-          <button
+          <Button
             class="add-set text-button"
             :disabled="saving || exercise.sets.length >= 30"
             @click="addSet(exercise.id)"
           >
             <Plus :size="15" />Add set
-          </button>
+          </Button>
         </article>
         <div v-if="active.exercises.length === 0" class="empty-state">
           <Dumbbell :size="32" />
           <h2>What are we training?</h2>
           <p class="muted">Add your first exercise to start logging sets.</p>
         </div>
-        <button
+        <Button
           class="btn secondary full-width"
           :disabled="saving || active.exercises.length >= 50"
           @click="emit('pick')"
         >
           <Plus :size="18" />Add exercises
-        </button>
+        </Button>
       </div>
       <aside class="session-summary">
         <section class="panel">
@@ -348,16 +349,16 @@ const previous = computed(() => {
                   : "Starts when you log a set."
             }}
           </p>
-          <button
+          <Button
             v-if="rest > 0"
             class="btn secondary full-width"
             :disabled="saving"
             @click="run({ type: 'stop-rest', sessionId: active.id })"
           >
             Skip rest<ArrowRight :size="16" />
-          </button>
+          </Button>
         </section>
-        <button
+        <Button
           class="text-button discard-button"
           :disabled="saving"
           @click="
@@ -370,7 +371,7 @@ const previous = computed(() => {
           "
         >
           Discard workout
-        </button>
+        </Button>
         <p class="saved-indicator" role="status">
           <ShieldCheck :size="14" />{{
             saving ? "Saving…" : "Logged sets saved on this device"
@@ -383,8 +384,8 @@ const previous = computed(() => {
     <Dumbbell :size="32" />
     <h1>Ready for your next session?</h1>
     <p class="muted">Start a workout or choose one of your templates.</p>
-    <button class="btn primary" @click="navigate('workouts')">
+    <Button class="btn primary" @click="navigate('workouts')">
       Choose a workout<ArrowRight :size="17" />
-    </button>
+    </Button>
   </div>
 </template>

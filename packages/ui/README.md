@@ -43,7 +43,11 @@ Dialog uses Reka's controlled/uncontrolled state, focus handling, Escape handlin
 
 Set `.dark` or `data-ui-theme="dark"` on the document root to theme body portals. For a locally themed subtree, provide `DialogContent :portal-to="elementOrSelector"`. `portal-disabled` renders in place. `DialogPortal` is also exported for callers composing the lower-level overlay parts.
 
-The five legacy tokens and `Sheet` remain unchanged. Existing Sheet consumers need no migration.
+`Sheet` composes the shared Dialog components, retaining its existing open/close API, responsive layout and explicit restoration of focus to its opener.
+
+The workout app consumes these shadcn-vue adaptations through `@form/ui`. Its stylesheet imports the shared styles in the components layer and maps the shared theme tokens to the workout palette. App layout classes override shared defaults.
+
+`NativeSelect` supports string/number models and forwards native attributes and change events. It intentionally keeps the browser arrow and a single select root to retain native mobile pickers and label/layout behavior. `Textarea` supports a string model and native attributes. These two controls use Vue's native model binding (including IME handling); they do not provide the Input component's controlled form-reset synchronization. `Switch` uses Reka's root and thumb with a boolean model, disabled/required/name props and native labeling. The hidden backup file input remains native because its DOM ref is used to open the file picker.
 
 ## Reference contract
 
@@ -109,7 +113,7 @@ The first increment delivers the families above. Remaining pinned registry famil
 - [ ] menubar
 - [ ] message
 - [ ] message-scroller
-- [ ] native-select
+- [x] native-select
 - [ ] navigation-menu
 - [ ] number-field
 - [ ] pagination
@@ -130,11 +134,32 @@ The first increment delivers the families above. Remaining pinned registry famil
 - [ ] sonner
 - [ ] spinner
 - [ ] stepper
-- [ ] switch
+- [x] switch
 - [ ] table
 - [ ] tabs
 - [ ] tags-input
-- [ ] textarea
+- [x] textarea
 - [ ] toggle
 - [ ] toggle-group
 - [ ] tooltip
+
+## Mobile numeric input
+
+`NumericInput` adapts the calculator-style numeric editor from our workoutTracker app. It uses the shared Dialog and Button components with the consumer's `--ui-*` theme. On phones it opens at the bottom of the screen; on larger screens it is a centered dialog. It is used for weight and repetitions in both active sets and routine templates.
+
+```vue
+<NumericInput
+  v-model="weight"
+  title="Weight"
+  label="Set 1 weight for Bench press"
+  unit="kg"
+  :min="0"
+  :max="1000"
+  :decimals="2"
+  :preset-step="2.5"
+/>
+```
+
+The model accepts a string or number and emits a canonical numeric string only on confirmation or a quick-pick selection. Opening preserves the original value; Cancel, Escape and outside dismissal discard the local edit. The first digit replaces the value, while Backspace edits it. Digit keys, period/comma and Backspace work with a physical keyboard too. Enter confirms from the value display and retains normal activation on buttons. Whole-number inputs omit the decimal key. New decimal entry is limited by `decimals`; existing more precise weights remain unchanged unless edited. Out-of-range or empty values cannot be confirmed. `open` lets consumers select the active row without marking the set logged. Attributes such as class, id and aria-describedby attach to the trigger button. Use domain validation when submitting the containing form; this is a button-based editor, not a native number input.
+
+Numeric dialogs have a dedicated overlay layer so they can open inside a template Sheet without losing focus trapping or covering their own controls. `DialogContent` accepts `overlayClass` for this purpose. Portaled dialog root styles are global and namespaced because Vue's parent scope attribute does not propagate through the portal wrapper.
