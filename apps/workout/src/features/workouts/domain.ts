@@ -70,6 +70,7 @@ const sessionExerciseSchema = z
     name,
     category: name,
     sets: z.array(setSchema).min(1).max(30).readonly(),
+    note: z.string().max(2000).optional(),
   })
   .strict()
   .readonly();
@@ -297,6 +298,22 @@ export const commandSchema = z
         exerciseId: identifier,
       })
       .strict(),
+    z
+      .object({
+        type: z.literal("set-exercise-note"),
+        ...sessionId,
+        exerciseId: identifier,
+        note: z.string().max(2000),
+      })
+      .strict(),
+    z
+      .object({
+        type: z.literal("replace-exercise"),
+        ...sessionId,
+        exerciseId: identifier,
+        replacementExerciseId: identifier,
+      })
+      .strict(),
     z.object({ type: z.literal("finish"), ...sessionId }).strict(),
     z.object({ type: z.literal("discard"), ...sessionId }).strict(),
     z.object({ type: z.literal("stop-rest"), ...sessionId }).strict(),
@@ -410,6 +427,8 @@ export function reduceWorkout(
     case "add-exercise":
     case "add-exercises":
     case "remove-exercise":
+    case "set-exercise-note":
+    case "replace-exercise":
     case "configure-exercise":
     case "add-set":
     case "remove-set":
@@ -435,7 +454,9 @@ export function reduceWorkout(
         startedAt: inputs.at,
         rest: null,
         exercises: source.exercises.map((exercise) => ({
-          ...exercise,
+          exerciseId: exercise.exerciseId,
+          name: exercise.name,
+          category: exercise.category,
           id: inputs.id(),
           sets: exercise.sets.map((set) => ({
             ...set,
@@ -519,6 +540,8 @@ export function reduceWorkout(
       case "add-exercises":
         return addExercises(command);
       case "remove-exercise":
+      case "set-exercise-note":
+      case "replace-exercise":
       case "configure-exercise":
       case "add-set":
       case "remove-set":
@@ -585,6 +608,8 @@ export function reduceWorkout(
           type:
             | "remove-exercise"
             | "configure-exercise"
+            | "set-exercise-note"
+            | "replace-exercise"
             | "add-set"
             | "remove-set"
             | "set-entry"
@@ -620,10 +645,57 @@ export function reduceWorkout(
             row.id === next.id ? next : row,
           ),
         });
+      if (command.type === "set-exercise-note")
+        return setExerciseNote(command.note);
+      if (command.type === "replace-exercise")
+        return replaceExercise(command.replacementExerciseId);
       if (command.type === "configure-exercise")
         return configureExercise(command);
       if (command.type === "add-set") return addSet(command);
       return updateSet(command);
+      function setExerciseNote(noteInput: string): Transition {
+        const { note: previousNote, ...withoutNote } = exercise;
+        const note = noteInput.trim();
+        if (note === (previousNote ?? "")) return unchanged();
+        return saveExercise({ ...withoutNote, ...(note ? { note } : {}) });
+      }
+      function replaceExercise(replacementId: string): Transition {
+        const replacement = snapshot.exercises[replacementId];
+        if (!replacement) return reject("Exercise was not found.");
+        if (replacement.id === exercise.exerciseId)
+          return reject("Choose a different exercise.");
+        const remaining = exercise.sets.filter((set) => !set.completed);
+        const logged = exercise.sets.filter((set) => set.completed);
+        if (!remaining.length)
+          return reject("All sets are logged. Add another exercise instead.");
+        if (logged.length && active.exercises.length >= 50)
+          return reject("A workout can contain up to 50 exercises.");
+        const next: SessionExercise = {
+          id: inputs.id(),
+          exerciseId: replacement.id,
+          name: replacement.name,
+          category: replacement.category,
+          sets: remaining.map((set) => ({
+            id: inputs.id(),
+            weightKg: 0,
+            reps: setTargetReps(set),
+            targetReps: setTargetReps(set),
+            completed: false,
+          })),
+        };
+        return saveActive({
+          ...active,
+          exercises: active.exercises.flatMap((row) => {
+            if (row.id !== exercise.id) return [row];
+            return logged.length
+              ? [{ ...exercise, sets: logged }, next]
+              : [next];
+          }),
+          rest: remaining.some((set) => set.id === active.rest?.setId)
+            ? null
+            : active.rest,
+        });
+      }
       function configureExercise(
         command: Extract<Command, { type: "configure-exercise" }>,
       ): Transition {

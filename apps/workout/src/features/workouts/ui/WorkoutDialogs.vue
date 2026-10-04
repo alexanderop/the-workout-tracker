@@ -502,6 +502,9 @@ defineExpose({
         class="detail-exercise"
       >
         <h3>{{ exercise.name }}</h3>
+        <p v-if="exercise.note" class="exercise-history-note muted small">
+          {{ exercise.note }}
+        </p>
         <div
           v-for="(set, index) in exercise.sets"
           :key="set.id"
@@ -519,3 +522,11 @@ defineExpose({
     ></Sheet
   >
 </template>
+
+<style scoped>
+.exercise-history-note {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin-block: 12px;
+}
+</style>

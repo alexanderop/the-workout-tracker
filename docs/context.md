@@ -22,6 +22,16 @@ An **active workout** (`ActiveSession`) is the session currently being recorded.
 
 **Discarding** removes the active workout without adding a history record. **Finishing** creates a completed workout with the same session identity. Finishing requires at least one logged set, and the interface requires unresolved input to be handled first.
 
+## Editing an active exercise
+
+Exercise options provide set count, target reps, weight, detailed set correction, notes, replacement, removal, and adding exercises. Configuration preserves logged sets and mixed targets unless bulk targets are explicitly selected.
+
+Replacement moves only unfinished work to a fresh session exercise and fresh sets. It preserves planned repetitions and resets weight to zero. Logged sets retain their original exercise identity, values, and note. When logged sets remain, the replacement is inserted immediately after them. Otherwise it replaces the original entry in place. A fully logged exercise cannot be replaced. The 50-exercise limit also applies to a replacement that retains an original logged entry. Replacing with the same catalog exercise is rejected; existing duplicate catalog entries remain allowed.
+
+A session exercise can have an optional note of up to 2,000 characters. Saving trims surrounding whitespace and removes empty notes. Notes appear during training and in completed workout details. Repeating a workout or saving it as a template does not copy session notes. Notes do not move to a replacement exercise.
+
+Configuration and replacement require the exercise's numeric drafts to be saved or discarded first. Note saves are independent of numeric drafts. Each editor saves against its opening revision and retains input on failure. Temporary note and configuration input becomes durable only after Save. Explicitly confirmed removal deletes the exercise, its logged sets, and its input drafts.
+
 ## Completed workout
 
 A **completed workout** (`CompletedSession`) is a finished session in history. Repeating it creates a new active workout with fresh identities, copied weights, planned repetition targets, and unchecked sets. Saving it as a template creates a separate editable plan. Neither operation mutates the historical record.
@@ -30,7 +40,7 @@ A **completed workout** (`CompletedSession`) is a finished session in history. R
 
 A **workout set** (`WorkoutSet`) has an identity, weight, repetitions, a `completed` flag, and an optional positive `targetReps` value. New and edited sets preserve their planned repetitions separately from recorded repetitions. Older sets without that field remain readable; their saved positive repetitions provide the initial target. A logged zero-repetition set records an attempted set and contributes zero volume. Unlogged sets require positive repetitions. A **logged set** has that flag enabled. History and progress totals count logged sets only; volume is the sum of weight multiplied by repetitions for those sets.
 
-Tapping an unlogged circle logs its saved values. Tapping a logged circle reduces actual repetitions toward zero without clearing it or restarting rest. Clearing is explicit and restores the repetition target. Entering a number, confirming a numeric editor, logging a set, and finishing a workout are distinct actions. Confirming the numeric editor updates the containing input draft; it does not mark a set logged. Cancel leaves the prior input unchanged.
+The active workout exposes weight and repetitions in each set row. Its check button logs an unfinished set, saves a changed logged set, or undoes an unchanged logged set. Corrections do not restart rest. Clearing is explicit and restores the repetition target. Entering a number, confirming a numeric editor, logging a set, and finishing a workout are distinct actions. Confirming the numeric editor updates the containing input draft; it does not mark a set logged. Cancel leaves the prior input unchanged.
 
 ## Draft
 

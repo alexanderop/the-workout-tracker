@@ -16,11 +16,11 @@ const next = training.next;
     <a :href="workoutsHref" class="training-bar-back" aria-label="Back to workouts"
       ><ArrowLeft :size="20"
     /></a>
-    <template v-if="active.rest && next"
+    <template v-if="active.rest"
       ><div>
         <strong>{{ rest ? `${duration(rest)} rest` : "Rest complete" }}</strong
         ><small
-          >Next: {{ next.exercise.name }} · Set {{ next.index + 1 }}</small
+          >{{ next ? `Next: ${next.exercise.name} · Set ${next.index + 1}` : "All sets logged" }}</small
         >
       </div>
       <Button
@@ -32,15 +32,10 @@ const next = training.next;
     >
     <template v-else-if="next"
       ><div>
-        <strong>{{ next.exercise.name }}</strong
-        ><small>Tap a set circle when done</small>
+        <strong>Next: {{ next.exercise.name }}</strong
+        ><small>Set {{ next.index + 1 }} of {{ next.exercise.sets.length }}</small>
       </div>
-      <Button
-        variant="secondary"
-        :disabled="saving || active.exercises.length >= 50"
-        @click="emit('pick')"
-        >Add exercise</Button
-      ></template
+      </template
     >
     <template v-else-if="activeSetCount"
       ><div>

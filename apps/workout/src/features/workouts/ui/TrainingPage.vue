@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useTemplateRef, watch } from "vue";
-import { Button, Input } from "@form/ui";
-import { Plus, Dumbbell, Clock3, ShieldCheck } from "@lucide/vue";
+import { Button, IconButton, Input } from "@form/ui";
+import { Plus, Dumbbell, Clock3, ShieldCheck, Ellipsis, Check } from "@lucide/vue";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
-import type { SessionExercise } from "../domain";
+import { setTargetReps, type SessionExercise } from "../domain";
 import type { Confirmation } from "./dialogTypes";
-import TrainingExerciseCard from "./TrainingExerciseCard.vue";
+import SetRow from "./SetRow.vue";
+import ExerciseThumbnail from "./ExerciseThumbnail.vue";
+import type { TrainingRow } from "./useTrainingSession";
 import ExerciseConfiguration from "./ExerciseConfiguration.vue";
 import TrainingSetEditor from "./TrainingSetEditor.vue";
 import { duration, fmt } from "./presentation";
@@ -34,7 +36,7 @@ const emit = defineEmits<{
 }>();
 const name = ref(""),
   nameIssue = ref("");
-const pinned = ref<string | null>(null);
+
 const editorSet = ref<string | null>(null);
 const configId = ref<string | null>(null);
 const configuration = computed(
@@ -43,9 +45,24 @@ const configuration = computed(
       (exercise) => exercise.id === configId.value,
     ) ?? null,
 );
-const cards =
-  useTemplateRef<InstanceType<typeof TrainingExerciseCard>[]>("cards");
+const setRows = useTemplateRef<InstanceType<typeof SetRow>[]>("setRows");
+const optionsButton = useTemplateRef<InstanceType<typeof IconButton>>("optionsButton");
 const addButton = useTemplateRef<InstanceType<typeof Button>>("addButton");
+const selectedExercise = training.currentExercise;
+const selectedRows = computed<TrainingRow[]>(() =>
+  (selectedExercise.value?.sets ?? []).flatMap((set) => {
+    const row = training.rows.get(set.id);
+    return row ? [row] : [];
+  }),
+);
+const definition = computed(() => selectedExercise.value
+  ? snapshot.value?.exercises[selectedExercise.value.exerciseId]
+  : undefined);
+const prescription = computed(() => {
+  const sets = selectedExercise.value?.sets ?? [];
+  const targets = new Set(sets.map(setTargetReps));
+  return targets.size === 1 ? `${sets.length} × ${[...targets][0]} reps` : `${sets.length} sets · varied reps`;
+});
 watch(
   () => active.value?.name,
   (value) => {
@@ -56,26 +73,12 @@ watch(
 watch(
   () => active.value?.id,
   () => {
-    pinned.value = null;
     configId.value = null;
     editorSet.value = null;
   },
 );
 const isComplete = (exercise: SessionExercise) =>
   exercise.sets.every((set) => set.completed);
-const unfinished = computed(
-  () =>
-    active.value?.exercises.filter(
-      (exercise) => !isComplete(exercise) || exercise.id === pinned.value,
-    ) ?? [],
-);
-const completed = computed(
-  () =>
-    active.value?.exercises.filter(
-      (exercise) => isComplete(exercise) && exercise.id !== pinned.value,
-    ) ?? [],
-);
-const ordered = computed(() => [...unfinished.value, ...completed.value]);
 const allDone = computed(
   () =>
     !!activeSetCount.value &&
@@ -97,54 +100,53 @@ async function rename() {
     : "Name not saved. Try again.";
 }
 function pick() {
-  pinned.value = null;
   emit("pick");
 }
 function configure(id: string) {
-  if (pinned.value !== id) pinned.value = null;
   configId.value = id;
 }
 function edit(id: string) {
-  if (training.rows.get(id)?.exercise.id !== pinned.value) pinned.value = null;
   training.selectSet(id);
   editorSet.value = id;
 }
-async function tap(id: string) {
-  const row = training.rows.get(id);
-  if (!row) return;
-  pinned.value = row.exercise.id;
-  if (!(await training.tapSet(id))) {
-    if (row.touched || row.issue) edit(id);
-    return;
-  }
-  await nextTick();
-  cards.value
-    ?.find((card) => card.exerciseId === row.exercise.id)
-    ?.focusSet(id);
-}
 async function closeEditor() {
   const id = editorSet.value;
-  const row = id ? training.rows.get(id) : undefined;
-  if (row) pinned.value = row.exercise.id;
   editorSet.value = null;
   await nextTick();
-  if (row && id)
-    cards.value
-      ?.find((card) => card.exerciseId === row.exercise.id)
-      ?.focusSet(id);
+  const row = setRows.value?.find((item) => item.setId === id);
+  if (row) {
+    row.focus();
+    return;
+  }
+  focusExercise();
 }
-async function release() {
-  pinned.value = null;
+async function commit(id: string) {
+  await training.commit(id);
   await nextTick();
-  const element = addButton.value?.$el;
+  setRows.value?.find((row) => row.setId === id)?.focusLog();
+}
+watch(
+  () => editorSet.value ? training.rows.get(editorSet.value) : undefined,
+  (row) => {
+    if (editorSet.value && !row) void closeEditor();
+  },
+);
+function focusExercise() {
+  const element = optionsButton.value?.$el ?? addButton.value?.$el;
   if (element instanceof HTMLElement) element.focus({ preventScroll: true });
 }
+watch(() => selectedExercise.value?.id, async (_value, previous) => {
+  if (previous && !active.value?.exercises.some((exercise) => exercise.id === previous)) {
+    await nextTick();
+    focusExercise();
+  }
+});
 function remove(exercise: SessionExercise) {
   configId.value = null;
   if (!active.value) return;
   emit("confirm", {
     title: "Remove exercise?",
-    description: `Remove ${exercise.name} and its sets from this workout? Completed history stays unchanged.`,
+    description: `Remove ${exercise.name}, including ${exercise.sets.filter((set) => set.completed).length} logged sets and any unsaved input for this exercise? Completed history stays unchanged.`,
     command: {
       type: "remove-exercise",
       sessionId: active.value.id,
@@ -152,6 +154,27 @@ function remove(exercise: SessionExercise) {
     },
   });
 }
+async function editFromOptions(id: string) {
+  configId.value = null;
+  await nextTick();
+  edit(id);
+}
+async function addFromOptions() {
+  configId.value = null;
+  await nextTick();
+  pick();
+}
+async function focusReplacement(id: string) {
+  training.selectExercise(id);
+  await nextTick();
+  focusExercise();
+}
+watch(configuration, (value) => {
+  if (configId.value && !value) {
+    configId.value = null;
+    training.notice.value = "This exercise is no longer in the workout.";
+  }
+});
 function discard() {
   if (!active.value) return;
   emit("confirm", {
@@ -163,9 +186,11 @@ function discard() {
 }
 </script>
 <template>
-  <section v-if="active" class="circle-workout">
-    <a class="training-back text-button" :href="workoutsHref">Back to workouts</a>
-    <header class="circle-workout-heading">
+  <section v-if="active" class="active-workout">
+    <a class="training-back text-button" :href="workoutsHref"
+      >Back to workouts</a
+    >
+    <header class="active-workout-heading">
       <div>
         <p class="eyebrow">ACTIVE WORKOUT · {{ elapsed }}</p>
         <h1>
@@ -187,7 +212,7 @@ function discard() {
         >Finish</Button
       >
     </header>
-    <div class="circle-workout-metrics">
+    <div class="active-workout-metrics">
       <span v-if="!activeTotals.completedSets"
         >{{ active.exercises.length }}
         {{ active.exercises.length === 1 ? "exercise" : "exercises" }}</span
@@ -201,59 +226,60 @@ function discard() {
     <div class="workout-progress-space">
       <progress
         v-if="activeTotals.completedSets"
-        class="circle-workout-progress"
+        class="active-workout-progress"
         :value="activeTotals.completedSets"
         :max="activeSetCount"
         aria-label="Logged sets"
       />
     </div>
-    <p class="workout-guidance workout-live-guidance" role="status">
-      {{
-        training.notice.value ||
-        "Check your sets, reps and weights. Tap a circle after completing its set."
-      }}
-    </p>
-    <div class="circle-workout-layout">
-      <div class="circle-workout-list">
+    <div class="active-workout-layout">
+      <div class="active-workout-content">
+        <nav v-if="active.exercises.length" class="workout-exercise-strip" aria-label="Workout exercises">
+          <Button
+            v-for="exercise in active.exercises" :key="exercise.id" unstyled
+            class="workout-exercise-tab"
+            :aria-pressed="selectedExercise?.id === exercise.id"
+            :aria-label="`${exercise.name}${isComplete(exercise) ? ', all sets logged' : ''}`"
+            @click="training.selectExercise(exercise.id)"
+          >
+            <ExerciseThumbnail :exercise="snapshot?.exercises[exercise.exerciseId]" />
+            <span class="workout-exercise-tab-name">{{ exercise.name }}</span>
+            <Check v-if="isComplete(exercise)" class="workout-exercise-tab-check" :size="15" />
+          </Button>
+          <Button unstyled class="workout-exercise-tab workout-exercise-tab-add" :disabled="saving || active.exercises.length >= 50" aria-label="Add exercises" @click="pick"><span><Plus :size="24" /></span><span class="workout-exercise-tab-name">Add</span></Button>
+        </nav>
         <div v-if="!active.exercises.length" class="workout-empty">
           <Dumbbell :size="28" />
           <h2>Make it your workout.</h2>
           <p>Add an exercise, then choose its sets, reps and weight.</p>
         </div>
-
-        <div v-for="(exercise, index) in ordered" :key="exercise.id">
-          <div
-            v-if="index === unfinished.length && completed.length"
-            class="workout-completed-heading"
-          >
-            <h2>Completed</h2>
-            <span
-              >{{ completed.length }}
-              {{ completed.length === 1 ? "exercise" : "exercises" }}</span
-            >
+        <article v-if="selectedExercise" class="workout-selected-exercise">
+          <header>
+            <h2>{{ selectedExercise.name }}</h2>
+            <IconButton ref="optionsButton" :label="`Options for ${selectedExercise.name}`" :disabled="saving" @click="configure(selectedExercise.id)"><Ellipsis :size="22" /></IconButton>
+          </header>
+          <Button unstyled class="workout-prescription" :disabled="saving" :aria-label="`Edit sets, reps and weight for ${selectedExercise.name}`" @click="configure(selectedExercise.id)">
+            <span v-if="definition">{{ definition.equipment }}<span aria-hidden="true"> · </span></span>{{ prescription }}
+          </Button>
+          <p v-if="selectedExercise.note" class="workout-exercise-note">{{ selectedExercise.note }}</p>
+          <div v-if="!editorSet" class="workout-inline-sets">
+            <div class="set-labels" aria-hidden="true"><span>Set</span><span>kg</span><span>Reps</span><span>Log</span><span></span></div>
+            <SetRow v-for="row in selectedRows" :key="row.set.id" ref="setRows" :row="row" :busy="saving" :current="training.current.value?.set.id === row.set.id" :dirty="training.dirty(row)" :conflict="training.conflict(row)"
+              @edit="training.edit(row.set.id, $event)" @commit="commit(row.set.id)" @select="training.selectSet(row.set.id)" @options="edit(row.set.id)" @discard="training.useSaved(row.set.id)" @keep="training.keepInput(row.set.id)" @recover="training.chooseDraft(row.set.id, $event)" />
           </div>
-          <TrainingExerciseCard
-            ref="cards"
-            :exercise="exercise"
-            :training="training"
-            :busy="saving"
-            :completed="isComplete(exercise)"
-            :pinned="pinned === exercise.id && isComplete(exercise)"
-            @configure="configure(exercise.id)"
-            @tap="tap"
-            @edit="edit"
-            @release="release"
-          />
-        </div>
+          <p v-if="isComplete(selectedExercise)" class="workout-exercise-complete"><Check :size="16" /> All {{ selectedExercise.sets.length }} sets logged</p>
+        </article>
+    <p v-if="training.notice.value" class="workout-guidance" role="status">{{ training.notice.value }}</p>
         <div v-if="allDone" class="workout-done">
           <p class="eyebrow">ALL SETS LOGGED</p>
           <h2>That’s your last set.</h2>
-          <p>Review your work below, or add another exercise.</p>
+          <p>Review your sets, or add another exercise.</p>
           <Button :disabled="saving" @click="emit('finish')"
             >Finish workout</Button
           >
         </div>
         <Button
+          v-if="!active.exercises.length"
           ref="addButton"
           class="workout-add"
           variant="secondary"
@@ -261,10 +287,6 @@ function discard() {
           @click="pick"
           ><Plus :size="18" />Add exercises</Button
         >
-        <p class="workout-guidance">
-          Tap again for fewer reps. Hold a circle or choose Edit sets for
-          corrections.
-        </p>
         <Button variant="ghost" :disabled="saving" @click="discard"
           >Discard workout</Button
         >
@@ -304,6 +326,9 @@ function discard() {
       :workspace="workspace"
       @close="configId = null"
       @remove="remove"
+      @edit="editFromOptions"
+      @add="addFromOptions"
+      @replaced="focusReplacement"
     />
     <TrainingSetEditor
       :set-id="editorSet"
@@ -318,6 +343,8 @@ function discard() {
   <div v-else class="empty-state">
     <Dumbbell :size="32" />
     <h1>Ready for your next session?</h1>
-    <Button @click="emit('navigate', 'workouts')">Choose a workout</Button>
+    <Button @click="emit('navigate', 'workouts')"
+      >Choose a workout</Button
+    >
   </div>
 </template>

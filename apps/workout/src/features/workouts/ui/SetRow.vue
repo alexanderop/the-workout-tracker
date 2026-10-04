@@ -33,6 +33,12 @@ defineExpose({
   get setId() {
     return row.set.id;
   },
+  focus() {
+    form.value?.querySelector<HTMLButtonElement>(".set-options")?.focus({ preventScroll: true });
+  },
+  focusLog() {
+    form.value?.querySelector<HTMLButtonElement>(".set-toggle")?.focus({ preventScroll: true });
+  },
   scrollIntoView() {
     form.value?.scrollIntoView({ block: "nearest", behavior: "instant" });
   },

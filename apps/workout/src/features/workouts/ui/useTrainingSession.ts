@@ -501,12 +501,21 @@ export function useTrainingSession(options: {
     notice.value = `${row.exercise.name} returned to unfinished work.`;
     return true;
   }
-  async function configureExercise(
-    command: Extract<Command, { type: "configure-exercise" }>,
+  async function editExercise(
+    command: Extract<
+      Command,
+      { type: "configure-exercise" | "set-exercise-note" | "replace-exercise" }
+    >,
     revision: number,
   ): Promise<boolean> {
-    if (!recoverUnseenDrafts(command.sessionId)) return false;
+    if (options.saving.value) return false;
     if (
+      command.type !== "set-exercise-note" &&
+      !recoverUnseenDrafts(command.sessionId)
+    )
+      return false;
+    if (
+      command.type !== "set-exercise-note" &&
       [...rows.values()].some(
         (row) => row.exercise.id === command.exerciseId && row.touched,
       )
@@ -517,7 +526,10 @@ export function useTrainingSession(options: {
     }
     const saved = await options.run(command, revision);
     if (saved)
-      notice.value = "Exercise configuration saved. Logged sets are unchanged.";
+      notice.value =
+        command.type === "set-exercise-note"
+          ? "Exercise note saved."
+          : "Exercise updated. Logged sets are unchanged.";
     return !!saved;
   }
   const pending = computed(() =>
@@ -609,7 +621,7 @@ export function useTrainingSession(options: {
     rows,
     tapSet,
     clearSet,
-    configureExercise,
+    editExercise,
     run,
     current,
     next,
