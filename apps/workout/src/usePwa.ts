@@ -58,7 +58,8 @@ export function usePwa() {
         installMessage.value = "Installation requested.";
       installEvent.value = null;
     } catch {
-      installMessage.value = "Use your browser menu to install Form.";
+      installMessage.value =
+        "Use your browser menu to install The Workout Tracker.";
     }
   }
   return {

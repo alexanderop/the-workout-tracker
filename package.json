@@ -1,5 +1,5 @@
 {
-  "name": "form-workspace",
+  "name": "the-workout-tracker",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.28.2",

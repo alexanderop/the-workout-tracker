@@ -152,7 +152,13 @@ svg {
 .sidebar .brand {
   margin: 0 12px 46px;
 }
+.brand-name {
+  font-size: 17px;
+  letter-spacing: -0.4px;
+  line-height: 1.15;
+}
 .brand-mark {
+  flex-shrink: 0;
   display: grid;
   place-items: center;
   background: var(--purple);
@@ -164,7 +170,6 @@ svg {
   font-weight: 750;
   font-style: italic;
   line-height: 1;
-  padding-right: 3px;
 }
 .workspace-label {
   color: var(--muted);

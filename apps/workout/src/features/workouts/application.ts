@@ -178,7 +178,7 @@ export function createWorkouts({ storage, now, id }: WorkoutDependencies) {
       if (!parsed.success)
         return {
           kind: "invalid",
-          message: "This is not a valid Form workout backup.",
+          message: "This is not a valid workout backup.",
         };
       return write(expectedRevision, (snapshot) =>
         mergeSnapshots(snapshot, parsed.data.snapshot),

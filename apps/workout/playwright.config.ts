@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 import { defineBddConfig } from "playwright-bdd";
 
+const baseURL = `http://127.0.0.1:4181${process.env.VITE_BASE_PATH ?? "/"}`;
+
 export default defineConfig({
   testDir: defineBddConfig({
     features: "test/e2e/*.feature",
@@ -11,7 +13,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   use: {
-    baseURL: "http://127.0.0.1:4181",
+    baseURL,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
@@ -24,7 +26,7 @@ export default defineConfig({
   ],
   webServer: {
     command: "pnpm exec vite preview --host 127.0.0.1 --port 4181 --strictPort",
-    url: "http://127.0.0.1:4181",
+    url: baseURL,
     reuseExistingServer: false,
   },
 });

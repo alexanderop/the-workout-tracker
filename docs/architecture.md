@@ -1,6 +1,6 @@
 # Workout feature and dependency boundaries
 
-Form groups training behavior in one workout feature. Sessions, routines, settings, history, and backups share the same snapshot and revision rules. A screen is not an independent storage boundary.
+The Workout Tracker groups training behavior in one workout feature. Sessions, routines, settings, history, and backups share the same snapshot and revision rules. A screen is not an independent storage boundary.
 
 ## Module ownership
 
