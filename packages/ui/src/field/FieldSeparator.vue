@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Separator } from "reka-ui";
+defineSlots<{ default?: () => unknown }>();
 </script>
 <template>
   <div

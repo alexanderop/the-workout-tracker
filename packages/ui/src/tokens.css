@@ -1,4 +1,8 @@
 :root {
+  --ui-destructive-foreground: white;
+  --ui-shadow-soft: rgb(0 0 0 / 0.05);
+  --ui-shadow-dialog: rgb(0 0 0 / 0.1);
+  --ui-overlay: rgb(0 0 0 / 0.8);
   --background: #141414;
   --surface: #232322;
   --text: #eeeeec;

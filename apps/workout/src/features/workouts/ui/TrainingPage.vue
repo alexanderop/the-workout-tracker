@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button, Input } from "@form/ui";
-import { computed, nextTick, ref, watch } from "vue";
+import { useTemplateRef, computed, nextTick, ref, watch } from "vue";
 import {
   Clock3,
   Check,
@@ -14,7 +14,7 @@ import SetRow from "./SetRow.vue";
 import { fmt, duration } from "./presentation";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import type { Confirmation } from "./dialogTypes";
-const props = defineProps<{
+const { workspace } = defineProps<{
   workspace: Pick<
     WorkoutWorkspace,
     | "active"
@@ -38,7 +38,7 @@ const {
   rest,
   training,
   run,
-} = props.workspace;
+} = workspace;
 const emit = defineEmits<{
   finish: [];
   pick: [];
@@ -47,7 +47,8 @@ const emit = defineEmits<{
   navigate: [page: "workouts"];
 }>();
 const navigate = (page: "workouts") => emit("navigate", page);
-const exerciseTabs = ref<HTMLElement | null>(null);
+const setRows = useTemplateRef<InstanceType<typeof SetRow>[]>("setRows");
+const exerciseTabs = useTemplateRef<HTMLElement>("exerciseTabs");
 watch(
   () => training.currentExercise.value?.id,
   async () => {
@@ -57,9 +58,11 @@ watch(
     if (!tabs || !selected) return;
     const container = tabs.getBoundingClientRect();
     const item = selected.getBoundingClientRect();
-    if (item.left < container.left)
+    if (item.left < container.left) {
       tabs.scrollLeft += item.left - container.left - 4;
-    else if (item.right > container.right)
+      return;
+    }
+    if (item.right > container.right)
       tabs.scrollLeft += item.right - container.right + 4;
   },
   { flush: "post" },
@@ -68,10 +71,7 @@ async function addSet(exerciseId: string) {
   await training.addSet(exerciseId);
   await nextTick();
   const id = training.current.value?.set.id;
-  if (id)
-    document
-      .getElementById(`set-form-${id}`)
-      ?.scrollIntoView({ block: "nearest", behavior: "instant" });
+  setRows.value?.find((row) => row.setId === id)?.scrollIntoView();
 }
 const name = ref("");
 const nameIssue = ref("");
@@ -90,9 +90,11 @@ async function rename() {
   }
   if (
     await run({ type: "rename", sessionId: active.value.id, name: name.value })
-  )
+  ) {
     nameIssue.value = "";
-  else nameIssue.value = "Name not saved. Try again.";
+    return;
+  }
+  nameIssue.value = "Name not saved. Try again.";
 }
 const previous = computed(() => {
   const exercise = training.currentExercise.value;
@@ -211,8 +213,8 @@ const previous = computed(() => {
               <div>
                 <h2>{{ exercise.name }}</h2>
                 <p class="muted small">
-                  {{ exercise.category }}<span class="separator">·</span
-                  >{{ exercise.sets.filter((set) => set.completed).length }}/{{
+                  {{ exercise.category }} ·
+                  {{ exercise.sets.filter((set) => set.completed).length }}/{{
                     exercise.sets.length
                   }}
                   sets logged
@@ -254,6 +256,7 @@ const previous = computed(() => {
             ><span>LOG</span><span></span>
           </div>
           <SetRow
+            ref="setRows"
             v-for="set in exercise.sets"
             :key="set.id"
             :row="training.rows.get(set.id)!"

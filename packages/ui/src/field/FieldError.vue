@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { computed } from "vue";
-const props = defineProps<{
+const { errors } = defineProps<{
   errors?: Array<string | { message: string | undefined } | undefined>;
 }>();
 const messages = computed(() => [
   ...new Set(
-    (props.errors ?? [])
+    (errors ?? [])
       .map((error) => (typeof error === "string" ? error : error?.message))
       .filter((message): message is string => Boolean(message)),
   ),
 ]);
+defineSlots<{ default?: () => unknown }>();
 </script>
 <template>
   <div

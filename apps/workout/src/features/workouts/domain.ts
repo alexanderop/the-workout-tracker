@@ -103,7 +103,7 @@ export type ActiveSession = z.infer<typeof activeSchema>;
 export type CompletedSession = z.infer<typeof completedSchema>;
 export type Settings = z.infer<typeof settingsSchema>;
 
-export const snapshotSchema = z
+const snapshotShape = z
   .object({
     revision: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
     exercises: z.record(identifier, exerciseSchema).readonly(),
@@ -112,66 +112,85 @@ export const snapshotSchema = z
     completed: z.record(identifier, completedSchema).readonly(),
     settings: settingsSchema,
   })
-  .strict()
-  .superRefine((snapshot, context) => {
-    const issue = (message: string) =>
-      context.addIssue({ code: "custom", message });
-    for (const records of [
-      snapshot.exercises,
-      snapshot.routines,
-      snapshot.completed,
-    ]) {
-      if (Object.entries(records).some(([key, value]) => key !== value.id))
-        issue("Record keys must match their IDs.");
-    }
+  .strict();
+type SnapshotShape = z.infer<typeof snapshotShape>;
+type ReportIssue = (message: string) => void;
+function validateRecords(snapshot: SnapshotShape, issue: ReportIssue) {
+  for (const records of [
+    snapshot.exercises,
+    snapshot.routines,
+    snapshot.completed,
+  ]) {
+    if (Object.entries(records).some(([key, value]) => key !== value.id))
+      issue("Record keys must match their IDs.");
+  }
+  if (
+    Object.keys(snapshot.exercises).length > 1000 ||
+    Object.keys(snapshot.routines).length > 500 ||
+    Object.keys(snapshot.completed).length > 20000
+  )
+    issue("Backup exceeds the supported record limit.");
+  for (const routine of Object.values(snapshot.routines)) {
     if (
-      Object.keys(snapshot.exercises).length > 1000 ||
-      Object.keys(snapshot.routines).length > 500 ||
-      Object.keys(snapshot.completed).length > 20000
-    )
-      issue("Backup exceeds the supported record limit.");
-    for (const routine of Object.values(snapshot.routines)) {
-      if (
-        routine.exercises.some(
-          (exercise) => !snapshot.exercises[exercise.exerciseId],
-        )
+      routine.exercises.some(
+        (exercise) => !snapshot.exercises[exercise.exerciseId],
       )
-        issue("Routine references an unknown exercise.");
-    }
-    if (snapshot.active && snapshot.completed[snapshot.active.id])
-      issue("A workout cannot be both active and completed.");
+    )
+      issue("Routine references an unknown exercise.");
+  }
+  if (snapshot.active && snapshot.completed[snapshot.active.id])
+    issue("A workout cannot be both active and completed.");
+}
+function validateSession(
+  session: ActiveSession | CompletedSession,
+  snapshot: SnapshotShape,
+  issue: ReportIssue,
+) {
+  const ids = session.exercises.flatMap((exercise) => [
+    exercise.id,
+    ...exercise.sets.map((set) => set.id),
+  ]);
+  if (new Set(ids).size !== ids.length || ids.includes(session.id))
+    issue("Workout row IDs must be unique.");
+  if (
+    session.exercises.some(
+      (exercise) => !snapshot.exercises[exercise.exerciseId],
+    )
+  )
+    issue("Workout references an unknown exercise.");
+  validateSessionStatus(session, issue);
+}
+function validateSessionStatus(
+  session: ActiveSession | CompletedSession,
+  issue: ReportIssue,
+) {
+  if (
+    session.status === "completed" &&
+    (session.finishedAt < session.startedAt ||
+      sessionTotals(session).completedSets === 0)
+  )
+    issue("Completed workout is invalid.");
+  if (
+    session.status === "active" &&
+    session.rest &&
+    !session.exercises.some((exercise) =>
+      exercise.sets.some(
+        (set) => set.id === session.rest?.setId && set.completed,
+      ),
+    )
+  )
+    issue("Rest must belong to a completed set.");
+}
+export const snapshotSchema = snapshotShape
+  .superRefine((snapshot, context) => {
+    const issue: ReportIssue = (message) =>
+      context.addIssue({ code: "custom", message });
+    validateRecords(snapshot, issue);
     for (const session of [
       ...Object.values(snapshot.completed),
       ...(snapshot.active ? [snapshot.active] : []),
     ]) {
-      const ids = session.exercises.flatMap((exercise) => [
-        exercise.id,
-        ...exercise.sets.map((set) => set.id),
-      ]);
-      if (new Set(ids).size !== ids.length || ids.includes(session.id))
-        issue("Workout row IDs must be unique.");
-      if (
-        session.exercises.some(
-          (exercise) => !snapshot.exercises[exercise.exerciseId],
-        )
-      )
-        issue("Workout references an unknown exercise.");
-      if (
-        session.status === "completed" &&
-        (session.finishedAt < session.startedAt ||
-          sessionTotals(session).completedSets === 0)
-      )
-        issue("Completed workout is invalid.");
-      if (
-        session.status === "active" &&
-        session.rest &&
-        !session.exercises.some((exercise) =>
-          exercise.sets.some(
-            (set) => set.id === session.rest?.setId && set.completed,
-          ),
-        )
-      )
-        issue("Rest must belong to a completed set.");
+      validateSession(session, snapshot, issue);
     }
   })
   .readonly();
@@ -337,22 +356,46 @@ export function reduceWorkout(
       ? { kind: "changed", snapshot: validated.data }
       : reject(validated.error.issues[0]?.message ?? "Invalid workout change.");
   };
-  if (command.type === "settings")
-    return changed({ ...snapshot, settings: command.settings });
-  if (command.type === "save-routine")
-    return changed({
-      ...snapshot,
-      routines: { ...snapshot.routines, [command.routine.id]: command.routine },
-    });
-  if (command.type === "save-exercise")
-    return changed({
-      ...snapshot,
-      exercises: {
-        ...snapshot.exercises,
-        [command.exercise.id]: command.exercise,
-      },
-    });
-  if (command.type === "repeat") {
+  switch (command.type) {
+    case "settings":
+      return changed({ ...snapshot, settings: command.settings });
+    case "save-routine":
+      return changed({
+        ...snapshot,
+        routines: {
+          ...snapshot.routines,
+          [command.routine.id]: command.routine,
+        },
+      });
+    case "save-exercise":
+      return changed({
+        ...snapshot,
+        exercises: {
+          ...snapshot.exercises,
+          [command.exercise.id]: command.exercise,
+        },
+      });
+    case "repeat":
+      return repeatWorkout(command);
+    case "start":
+      return startWorkout(command);
+    case "rename":
+    case "discard":
+    case "finish":
+    case "stop-rest":
+    case "add-exercise":
+    case "add-exercises":
+    case "remove-exercise":
+    case "add-set":
+    case "remove-set":
+    case "set-entry":
+    case "set-values":
+    case "set-completed":
+      return reduceActive(command);
+  }
+  function repeatWorkout(
+    command: Extract<Command, { type: "repeat" }>,
+  ): Transition {
     if (snapshot.active) return reject("Finish your current workout first.");
     const source = snapshot.completed[command.completedId];
     if (!source) return reject("Workout was not found.");
@@ -378,29 +421,16 @@ export function reduceWorkout(
       },
     });
   }
-  if (command.type === "start") {
+  function startWorkout(
+    command: Extract<Command, { type: "start" }>,
+  ): Transition {
     if (snapshot.active) return reject("Finish your current workout first.");
     const routine = command.routineId
       ? snapshot.routines[command.routineId]
       : null;
     if (command.routineId && !routine) return reject("Routine was not found.");
-    const sessionExercises: SessionExercise[] = [];
-    for (const row of routine?.exercises ?? []) {
-      const exercise = snapshot.exercises[row.exerciseId];
-      if (!exercise) return reject("Exercise was not found.");
-      sessionExercises.push({
-        id: inputs.id(),
-        exerciseId: exercise.id,
-        name: exercise.name,
-        category: exercise.category,
-        sets: row.sets.map((set) => ({
-          id: inputs.id(),
-          weightKg: set.weightKg,
-          reps: set.reps,
-          completed: false,
-        })),
-      });
-    }
+    const sessionExercises = routineExercises(routine);
+    if (typeof sessionExercises === "string") return reject(sessionExercises);
     const id = inputs.id();
     if (snapshot.completed[id]) return reject("Workout ID already exists.");
     return changed({
@@ -415,140 +445,223 @@ export function reduceWorkout(
       },
     });
   }
-  if (command.type === "finish" && snapshot.completed[command.sessionId])
-    return unchanged();
-  const active = snapshot.active;
-  if (!active || active.id !== command.sessionId)
-    return reject("This workout is no longer active.");
-  const saveActive = (next: ActiveSession): Transition =>
-    changed({ ...snapshot, active: next });
-  if (command.type === "rename")
-    return saveActive({ ...active, name: command.name.trim() });
-  if (command.type === "discard") return changed({ ...snapshot, active: null });
-  if (command.type === "finish") {
-    if (!sessionTotals(active).completedSets)
-      return reject("Complete at least one set before finishing.");
-    const completed: CompletedSession = {
-      id: active.id,
-      status: "completed",
-      name: active.name,
-      startedAt: active.startedAt,
-      finishedAt: Math.max(active.startedAt, inputs.at),
-      exercises: active.exercises,
-    };
-    return changed({
-      ...snapshot,
-      active: null,
-      completed: { ...snapshot.completed, [completed.id]: completed },
-    });
-  }
-  if (command.type === "stop-rest")
-    return saveActive({ ...active, rest: null });
-  if (command.type === "add-exercise" || command.type === "add-exercises") {
-    const ids =
-      command.type === "add-exercise"
-        ? [command.exerciseId]
-        : command.exerciseIds;
-    if (active.exercises.length + ids.length > 50)
-      return reject("A workout can contain up to 50 exercises.");
-    const additions: SessionExercise[] = [];
-    for (const exerciseId of ids) {
-      const exercise = snapshot.exercises[exerciseId];
-      if (!exercise) return reject("Exercise was not found.");
-      additions.push({
+  function routineExercises(
+    routine: Routine | null | undefined,
+  ): SessionExercise[] | string {
+    const sessionExercises: SessionExercise[] = [];
+    for (const row of routine?.exercises ?? []) {
+      const exercise = snapshot.exercises[row.exerciseId];
+      if (!exercise) return "Exercise was not found.";
+      sessionExercises.push({
         id: inputs.id(),
         exerciseId: exercise.id,
         name: exercise.name,
         category: exercise.category,
-        sets: [{ id: inputs.id(), weightKg: 0, reps: 8, completed: false }],
+        sets: row.sets.map((set) => ({
+          id: inputs.id(),
+          weightKg: set.weightKg,
+          reps: set.reps,
+          completed: false,
+        })),
       });
     }
-    return saveActive({
-      ...active,
-      exercises: [...active.exercises, ...additions],
-    });
+    return sessionExercises;
   }
-  const exercise =
-    command.type === "set-completed"
-      ? active.exercises.find((row) =>
-          row.sets.some((set) => set.id === command.setId),
-        )
-      : active.exercises.find((row) => row.id === command.exerciseId);
-  if (!exercise) return reject("Workout exercise was not found.");
-  if (command.type === "remove-exercise")
-    return saveActive({
-      ...active,
-      exercises: active.exercises.filter((row) => row.id !== exercise.id),
-      rest: exercise.sets.some((set) => set.id === active.rest?.setId)
-        ? null
-        : active.rest,
-    });
-  const saveExercise = (
-    next: SessionExercise,
-    rest = active.rest,
-  ): Transition =>
-    saveActive({
-      ...active,
-      rest,
-      exercises: active.exercises.map((row) =>
-        row.id === next.id ? next : row,
-      ),
-    });
-  if (command.type === "add-set") {
-    const previous = exercise.sets.at(-1);
-    return saveExercise({
-      ...exercise,
-      sets: [
-        ...exercise.sets,
-        {
+  function reduceActive(
+    command: Extract<Command, { sessionId: string }>,
+  ): Transition {
+    if (command.type === "finish" && snapshot.completed[command.sessionId])
+      return unchanged();
+    const candidate = snapshot.active;
+    if (!candidate || candidate.id !== command.sessionId)
+      return reject("This workout is no longer active.");
+    const active = candidate;
+    const saveActive = (next: ActiveSession): Transition =>
+      changed({ ...snapshot, active: next });
+    switch (command.type) {
+      case "rename":
+        return saveActive({ ...active, name: command.name.trim() });
+      case "discard":
+        return changed({ ...snapshot, active: null });
+      case "finish":
+        return finishWorkout();
+      case "stop-rest":
+        return saveActive({ ...active, rest: null });
+      case "add-exercise":
+      case "add-exercises":
+        return addExercises(command);
+      case "remove-exercise":
+      case "add-set":
+      case "remove-set":
+      case "set-entry":
+      case "set-values":
+      case "set-completed":
+        return reduceExercise(command);
+    }
+    function finishWorkout(): Transition {
+      if (!sessionTotals(active).completedSets)
+        return reject("Complete at least one set before finishing.");
+      const completed: CompletedSession = {
+        id: active.id,
+        status: "completed",
+        name: active.name,
+        startedAt: active.startedAt,
+        finishedAt: Math.max(active.startedAt, inputs.at),
+        exercises: active.exercises,
+      };
+      return changed({
+        ...snapshot,
+        active: null,
+        completed: { ...snapshot.completed, [completed.id]: completed },
+      });
+    }
+    function addExercises(
+      command: Extract<Command, { type: "add-exercise" | "add-exercises" }>,
+    ): Transition {
+      const ids =
+        command.type === "add-exercise"
+          ? [command.exerciseId]
+          : command.exerciseIds;
+      if (active.exercises.length + ids.length > 50)
+        return reject("A workout can contain up to 50 exercises.");
+      const additions: SessionExercise[] = [];
+      for (const exerciseId of ids) {
+        const exercise = snapshot.exercises[exerciseId];
+        if (!exercise) return reject("Exercise was not found.");
+        additions.push({
           id: inputs.id(),
-          weightKg: command.values?.weightKg ?? previous?.weightKg ?? 0,
-          reps: command.values?.reps ?? previous?.reps ?? 8,
-          completed: false,
-        },
-      ],
-    });
+          exerciseId: exercise.id,
+          name: exercise.name,
+          category: exercise.category,
+          sets: [{ id: inputs.id(), weightKg: 0, reps: 8, completed: false }],
+        });
+      }
+      return saveActive({
+        ...active,
+        exercises: [...active.exercises, ...additions],
+      });
+    }
+    function reduceExercise(
+      command: Extract<
+        Command,
+        {
+          type:
+            | "remove-exercise"
+            | "add-set"
+            | "remove-set"
+            | "set-entry"
+            | "set-values"
+            | "set-completed";
+        }
+      >,
+    ): Transition {
+      const candidateExercise =
+        command.type === "set-completed"
+          ? active.exercises.find((row) =>
+              row.sets.some((set) => set.id === command.setId),
+            )
+          : active.exercises.find((row) => row.id === command.exerciseId);
+      if (!candidateExercise) return reject("Workout exercise was not found.");
+      const exercise = candidateExercise;
+      if (command.type === "remove-exercise")
+        return saveActive({
+          ...active,
+          exercises: active.exercises.filter((row) => row.id !== exercise.id),
+          rest: exercise.sets.some((set) => set.id === active.rest?.setId)
+            ? null
+            : active.rest,
+        });
+      const saveExercise = (
+        next: SessionExercise,
+        rest = active.rest,
+      ): Transition =>
+        saveActive({
+          ...active,
+          rest,
+          exercises: active.exercises.map((row) =>
+            row.id === next.id ? next : row,
+          ),
+        });
+      if (command.type === "add-set") return addSet(command);
+      return updateSet(command);
+      function addSet(
+        command: Extract<Command, { type: "add-set" }>,
+      ): Transition {
+        const previous = exercise.sets.at(-1);
+        return saveExercise({
+          ...exercise,
+          sets: [
+            ...exercise.sets,
+            {
+              id: inputs.id(),
+              weightKg: command.values?.weightKg ?? previous?.weightKg ?? 0,
+              reps: command.values?.reps ?? previous?.reps ?? 8,
+              completed: false,
+            },
+          ],
+        });
+      }
+      function updateSet(
+        command: Extract<
+          Command,
+          { type: "remove-set" | "set-entry" | "set-values" | "set-completed" }
+        >,
+      ): Transition {
+        const set = exercise.sets.find((row) => row.id === command.setId);
+        if (!set) return reject("Set was not found.");
+        if (command.type === "remove-set") {
+          if (exercise.sets.length === 1)
+            return reject("Keep at least one set per exercise.");
+          return saveExercise(
+            {
+              ...exercise,
+              sets: exercise.sets.filter((row) => row.id !== set.id),
+            },
+            active.rest?.setId === set.id ? null : active.rest,
+          );
+        }
+        const nextSet =
+          command.type === "set-completed"
+            ? { ...set, completed: command.completed }
+            : {
+                ...set,
+                weightKg: command.weightKg,
+                reps: command.reps,
+                ...(command.type === "set-entry"
+                  ? { completed: command.completed }
+                  : {}),
+              };
+        const rest = nextRest(set, nextSet);
+        return saveExercise(
+          {
+            ...exercise,
+            sets: exercise.sets.map((row) =>
+              row.id === set.id ? nextSet : row,
+            ),
+          },
+          rest,
+        );
+      }
+      function nextRest(
+        set: WorkoutSet,
+        nextSet: WorkoutSet,
+      ): ActiveSession["rest"] {
+        let rest = active.rest;
+        if (
+          !set.completed &&
+          nextSet.completed &&
+          snapshot.settings.autoRest &&
+          snapshot.settings.restSeconds > 0
+        )
+          rest = {
+            setId: set.id,
+            endsAt: inputs.at + snapshot.settings.restSeconds * 1000,
+          };
+        if (!nextSet.completed && rest?.setId === set.id) rest = null;
+        return rest;
+      }
+    }
   }
-  const set = exercise.sets.find((row) => row.id === command.setId);
-  if (!set) return reject("Set was not found.");
-  if (command.type === "remove-set") {
-    if (exercise.sets.length === 1)
-      return reject("Keep at least one set per exercise.");
-    return saveExercise(
-      { ...exercise, sets: exercise.sets.filter((row) => row.id !== set.id) },
-      active.rest?.setId === set.id ? null : active.rest,
-    );
-  }
-  const nextSet =
-    command.type === "set-completed"
-      ? { ...set, completed: command.completed }
-      : {
-          ...set,
-          weightKg: command.weightKg,
-          reps: command.reps,
-          ...(command.type === "set-entry"
-            ? { completed: command.completed }
-            : {}),
-        };
-  let rest = active.rest;
-  if (
-    !set.completed &&
-    nextSet.completed &&
-    snapshot.settings.autoRest &&
-    snapshot.settings.restSeconds > 0
-  )
-    rest = {
-      setId: set.id,
-      endsAt: inputs.at + snapshot.settings.restSeconds * 1000,
-    };
-  if (!nextSet.completed && rest?.setId === set.id) rest = null;
-  return saveExercise(
-    {
-      ...exercise,
-      sets: exercise.sets.map((row) => (row.id === set.id ? nextSet : row)),
-    },
-    rest,
-  );
 }
 
 export function routineFromSession(

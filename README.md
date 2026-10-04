@@ -67,7 +67,7 @@ An unreadable database offers a raw recovery export rather than silently clearin
 
 Keep code readable, strictly typed and focused. Use explicit dependencies, enforce feature and layer boundaries, validate external data, and handle errors and resource cleanup deliberately. Avoid unnecessary abstractions and dependencies.
 
-This project does not maintain automated tests or a testing strategy. `pnpm verify` runs type checking and linting only:
+This project does not maintain automated tests or a testing strategy. `pnpm verify` runs TypeScript 7 native checks for the typed core/controllers, full Vue type checking through the TypeScript 6 compatibility toolchain, Oxlint, and focused Vue/CSS ESLint checks. See the [lint and TypeScript policy](docs/workflows.md#lint-and-typescript-policy) for ownership and enforced conventions. Verification contains only type checking and linting:
 
 ```sh
 pnpm verify

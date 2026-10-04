@@ -1,4 +1,87 @@
 {
-  "jsPlugins": ["./tooling/architecture/oxlint-plugin.mjs"],
-  "rules": { "architecture/boundaries": "error" }
+  "jsPlugins": [
+    "./tooling/architecture/oxlint-plugin.mjs",
+    "./tooling/architecture/code-policy.mjs"
+  ],
+  "rules": {
+    "architecture/boundaries": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/consistent-type-assertions": [
+      "error",
+      {
+        "assertionStyle": "never"
+      }
+    ],
+    "no-nested-ternary": "error",
+    "no-console": [
+      "error",
+      {
+        "allow": ["warn", "error"]
+      }
+    ],
+    "complexity": [
+      "error",
+      {
+        "max": 10,
+        "variant": "modified"
+      }
+    ],
+    "no-else-return": "error",
+    "vue/component-definition-name-casing": ["error", "PascalCase"],
+    "vue/prop-name-casing": ["error", "camelCase"],
+    "vue/define-props-destructuring": "error",
+    "typescript/switch-exhaustiveness-check": [
+      "error",
+      {
+        "allowDefaultCaseForExhaustiveSwitch": false,
+        "considerDefaultExhaustiveForUnions": false
+      }
+    ],
+    "code-policy/no-enums": "error",
+    "code-policy/early-return": "error",
+    "code-policy/workspace-imports": "error",
+    "code-policy/composable-contract": "error",
+    "typescript/no-floating-promises": "error",
+    "typescript/no-misused-promises": "error"
+  },
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "vue"],
+  "options": {
+    "typeAware": true
+  },
+  "overrides": [
+    {
+      "files": ["**/*.vue"],
+      "rules": {
+        "no-restricted-properties": [
+          "error",
+          {
+            "object": "document",
+            "property": "querySelector",
+            "message": "Use useTemplateRef for component DOM access."
+          },
+          {
+            "object": "document",
+            "property": "querySelectorAll",
+            "message": "Use useTemplateRef for component DOM access."
+          },
+          {
+            "object": "document",
+            "property": "getElementById",
+            "message": "Use useTemplateRef for component DOM access."
+          },
+          {
+            "object": "document",
+            "property": "getElementsByClassName",
+            "message": "Use useTemplateRef for component DOM access."
+          },
+          {
+            "object": "document",
+            "property": "getElementsByTagName",
+            "message": "Use useTemplateRef for component DOM access."
+          }
+        ]
+      }
+    }
+  ]
 }

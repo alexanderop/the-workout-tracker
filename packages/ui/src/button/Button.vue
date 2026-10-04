@@ -4,12 +4,10 @@ export type ButtonVariant =
   "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
 export type ButtonSize =
   "default" | "xs" | "sm" | "lg" | "icon" | "icon-xs" | "icon-sm" | "icon-lg";
-withDefaults(
-  defineProps<
-    PrimitiveProps & { variant?: ButtonVariant; size?: ButtonSize }
-  >(),
-  { as: "button" },
-);
+const { as = "button" } = defineProps<
+  PrimitiveProps & { variant?: ButtonVariant; size?: ButtonSize }
+>();
+defineSlots<{ default?: () => unknown }>();
 </script>
 <template>
   <Primitive

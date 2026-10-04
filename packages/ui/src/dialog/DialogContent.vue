@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from "vue";
 import { X } from "@lucide/vue";
 import {
   DialogContent,
@@ -12,33 +11,23 @@ import {
 } from "reka-ui";
 import DialogOverlay from "./DialogOverlay.vue";
 defineOptions({ inheritAttrs: false });
-const props = withDefaults(
-  defineProps<
-    DialogContentProps & {
-      showCloseButton?: boolean;
-      portalTo?: DialogPortalProps["to"];
-      portalDisabled?: boolean;
-      overlayClass?: string;
-    }
-  >(),
-  { showCloseButton: true },
-);
+const {
+  showCloseButton = true,
+  portalTo,
+  portalDisabled,
+  overlayClass,
+  ...contentProps
+} = defineProps<
+  DialogContentProps & {
+    showCloseButton?: boolean;
+    portalTo?: DialogPortalProps["to"];
+    portalDisabled?: boolean;
+    overlayClass?: string;
+  }
+>();
 const emits = defineEmits<DialogContentEmits>();
-const contentProps = computed(() => {
-  const {
-    showCloseButton,
-    portalTo,
-    portalDisabled,
-    overlayClass,
-    ...content
-  } = props;
-  void showCloseButton;
-  void portalTo;
-  void portalDisabled;
-  void overlayClass;
-  return content;
-});
 const forwarded = useForwardPropsEmits(contentProps, emits);
+defineSlots<{ default?: () => unknown }>();
 </script>
 <template>
   <DialogPortal :to="portalTo" :disabled="portalDisabled"

@@ -16,21 +16,29 @@ export function editNumber(
   key: string,
   limits: NumericLimits,
 ): NumericDraft {
-  if (key === "Backspace" || key === "Delete")
+  if (["Backspace", "Delete"].includes(key))
     return { text: draft.text.slice(0, -1), fresh: false };
-  if (key === "." || key === ",") {
-    if (!limits.decimals) return draft;
-    if (draft.fresh || !draft.text) return { text: "0.", fresh: false };
-    return draft.text.includes(".")
-      ? draft
-      : { text: `${draft.text}.`, fresh: false };
-  }
+  if (key === "." || key === ",") return appendDecimal(draft, limits);
   if (!/^\d$/.test(key)) return draft;
   const text = draft.fresh || draft.text === "0" ? key : draft.text + key;
   if (text.length > 64 || Number(text) > limits.max) return draft;
-  const fraction = text.split(".")[1];
-  if (fraction && fraction.length > limits.decimals) return draft;
+  if (exceedsPrecision(text, limits.decimals)) return draft;
   return { text, fresh: false };
+}
+
+function exceedsPrecision(text: string, decimals: number): boolean {
+  return (text.split(".")[1]?.length ?? 0) > decimals;
+}
+
+function appendDecimal(
+  draft: NumericDraft,
+  limits: NumericLimits,
+): NumericDraft {
+  if (!limits.decimals) return draft;
+  if (draft.fresh || !draft.text) return { text: "0.", fresh: false };
+  return draft.text.includes(".")
+    ? draft
+    : { text: `${draft.text}.`, fresh: false };
 }
 
 export function validNumber(

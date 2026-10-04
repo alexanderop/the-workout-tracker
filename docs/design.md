@@ -62,3 +62,7 @@ Closing an exercise panel preserves its input drafts. Finishing requires pending
 [Histoire stories](../apps/design-system/src/stories) show foundations, components, and illustrative application patterns. Run `pnpm dev:ui` to browse them. Both the explorer and workout app consume public `@form/ui` styles and the shared workout theme.
 
 Explain what a component means and when to use it before implementation names or token values. Document Usage, Variants, States, Behavior, and Examples and limitations. Show real keyboard and focus behavior. Pattern stories use isolated local state and must not imply real persistence. Spacing examples are reference values, not additional global tokens. The [UI package guide](../packages/ui/README.md) owns detailed component API contracts.
+
+## Enforced color policy
+
+Literal CSS colors belong in `packages/ui/src/tokens.css`, including generic overlay and shadow colors. All other CSS files and Vue style blocks use semantic variables; raw hex values, color functions, and named colors are rejected. Vue class bindings reject literal Tailwind palette classes and raw color values in class/style/fill/stroke/color attributes. Dynamic values assembled outside these expressions still require review; these checks are not a CSS data-flow analyzer. Status colors receive no palette exception. CSS imports also follow the workspace dependency policy.

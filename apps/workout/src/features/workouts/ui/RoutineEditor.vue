@@ -5,7 +5,7 @@ import { Plus, Trash2 } from "@lucide/vue";
 import type { CompletedSession, Exercise, Routine } from "../domain";
 import { routineSchema } from "../domain";
 import ExerciseCatalog from "./ExerciseCatalog.vue";
-const props = defineProps<{
+const { routine, source, exercises, busy } = defineProps<{
   routine: Routine | null;
   source?: CompletedSession | null;
   exercises: readonly Exercise[];
@@ -18,17 +18,16 @@ type SetDraft = {
   skipped?: boolean;
 };
 type ExerciseDraft = { key: string; exerciseId: string; sets: SetDraft[] };
-const name = ref(props.routine?.name ?? "");
-const description = ref(props.routine?.description ?? "");
+const name = ref(routine?.name ?? "");
+const description = ref(routine?.description ?? "");
 const entries = ref<ExerciseDraft[]>(
-  props.routine?.exercises.map((entry, exerciseIndex) => ({
+  routine?.exercises.map((entry, exerciseIndex) => ({
     key: crypto.randomUUID(),
     exerciseId: entry.exerciseId,
     sets: entry.sets.map((set, setIndex) => ({
       ...set,
       skipped:
-        props.source?.exercises[exerciseIndex]?.sets[setIndex]?.completed ===
-        false,
+        source?.exercises[exerciseIndex]?.sets[setIndex]?.completed === false,
     })),
   })) ?? [],
 );
@@ -36,8 +35,7 @@ const pickerOpen = ref(false);
 const selected = ref<string[]>([]);
 const error = ref("");
 const names = computed(
-  () =>
-    new Map(props.exercises.map((exercise) => [exercise.id, exercise.name])),
+  () => new Map(exercises.map((exercise) => [exercise.id, exercise.name])),
 );
 function toggle(id: string) {
   selected.value = selected.value.includes(id)
@@ -68,9 +66,9 @@ function addSet(entry: ExerciseDraft) {
     });
 }
 function save() {
-  if (props.busy) return;
+  if (busy) return;
   const result = routineSchema.safeParse({
-    id: props.routine?.id ?? crypto.randomUUID(),
+    id: routine?.id ?? crypto.randomUUID(),
     name: name.value,
     description: description.value.trim(),
     exercises: entries.value.map((entry) => ({

@@ -8,21 +8,32 @@
     "dev": "pnpm --filter @form/workout dev",
     "build": "pnpm typecheck && pnpm --filter @form/workout build",
     "preview": "pnpm --filter @form/workout preview",
-    "typecheck": "pnpm -r typecheck",
-    "lint": "pnpm -r lint",
+    "typecheck": "pnpm typecheck:native && pnpm -r typecheck",
+    "lint": "pnpm lint:oxlint && pnpm lint:vue",
     "check:boundaries": "node scripts/check-boundaries.mjs",
     "verify": "pnpm typecheck && pnpm lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check:architecture": "node scripts/check-architecture.mjs",
     "dev:ui": "pnpm --filter @form/design-system dev",
-    "build:ui": "pnpm --filter @form/design-system build"
+    "build:ui": "pnpm --filter @form/design-system build",
+    "lint:oxlint": "pnpm -r lint",
+    "lint:vue": "eslint \"apps/*/src/**/*.{vue,css}\" \"packages/*/src/**/*.{vue,css}\" --max-warnings 0",
+    "typecheck:native": "node node_modules/@typescript/native/bin/tsc --noEmit -p tsconfig.native.json"
   },
   "devDependencies": {
+    "@eslint/css": "^2.0.0",
+    "@typescript/native": "npm:typescript@7.0.2",
     "@vue/compiler-sfc": "^3.5.43",
+    "eslint": "^10.12.0",
+    "eslint-plugin-oxlint": "^1.86.0",
+    "eslint-plugin-vue": "^10.11.1",
     "husky": "^9.1.7",
     "oxlint": "^1.86.0",
+    "oxlint-tsgolint": "7.0.2003",
     "prettier": "^3.9.9",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.0",
+    "vue-eslint-parser": "^10.4.1"
   }
 }

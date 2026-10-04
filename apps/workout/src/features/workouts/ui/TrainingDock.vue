@@ -4,13 +4,13 @@ import { computed } from "vue";
 import { ArrowLeft } from "@lucide/vue";
 import { duration } from "./presentation";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
-const props = defineProps<{
+const { workspace } = defineProps<{
   workspace: Pick<
     WorkoutWorkspace,
     "active" | "rest" | "saving" | "training" | "activeSetCount" | "run"
   >;
 }>();
-const { active, rest, saving, training, activeSetCount, run } = props.workspace;
+const { active, rest, saving, training, activeSetCount, run } = workspace;
 const emit = defineEmits<{ finish: []; pick: [] }>();
 const nextExercise = computed(() =>
   active.value?.exercises.find((exercise) =>
@@ -18,8 +18,11 @@ const nextExercise = computed(() =>
   ),
 );
 function advance() {
-  if (nextExercise.value) training.selectExercise(nextExercise.value.id);
-  else emit("finish");
+  if (nextExercise.value) {
+    training.selectExercise(nextExercise.value.id);
+    return;
+  }
+  emit("finish");
 }
 </script>
 

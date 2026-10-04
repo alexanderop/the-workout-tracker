@@ -5,7 +5,7 @@ import {
   useTemplateRef,
   type ObjectDirective,
 } from "vue";
-const props = defineProps<{
+const { modelValue, defaultValue } = defineProps<{
   modelValue?: string | number;
   defaultValue?: string | number;
 }>();
@@ -35,9 +35,9 @@ function reset(event: Event) {
       !event.defaultPrevented &&
       input.value &&
       event.target === input.value.form &&
-      props.modelValue !== undefined
+      modelValue !== undefined
     ) {
-      emit("update:modelValue", props.defaultValue ?? "");
+      emit("update:modelValue", defaultValue ?? "");
     }
   });
 }

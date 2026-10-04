@@ -73,65 +73,98 @@ export function useTrainingSession(options: {
       for (const exercise of session?.exercises ?? [])
         for (const [index, set] of exercise.sets.entries()) {
           present.add(set.id);
-          const row = rows.get(set.id);
-          if (row) {
-            if (row.touched && !sameSet(row.base, set))
-              row.recoveredStale = true;
-            row.set = set;
-            row.exercise = exercise;
-            row.index = index;
-            if (!row.touched) {
-              row.weight = String(set.weightKg);
-              row.reps = String(set.reps);
-              row.base = { ...set };
-            }
-          } else {
-            let records: SetDraft[] = [];
-            let storageIssue = "";
-            try {
-              records = [...options.journal.recover(session!.id, set.id)];
-            } catch {
-              storageIssue =
-                "Draft recovery is unavailable. New edits may not survive closing this page.";
-            }
-            const recovered = records[0];
-            const distinct = records.filter(
-              (candidate) =>
-                candidate.weight !== recovered?.weight ||
-                candidate.reps !== recovered?.reps,
-            );
-            rows.set(set.id, {
-              set,
-              exercise,
-              index,
-              weight: recovered?.weight ?? String(set.weightKg),
-              reps: recovered?.reps ?? String(set.reps),
-              base: recovered?.base ?? { ...set },
-              touched: !!recovered,
-              recoveredStale: !!recovered && !sameSet(recovered.base, set),
-              revision: recovered?.revision ?? snapshot.revision,
-              records,
-              alternatives: distinct.length ? records : [],
-              issue: "",
-              storageIssue,
-            });
-          }
+          synchronizeRow(session!.id, snapshot.revision, exercise, index, set);
         }
       for (const [id, row] of rows)
         if (!present.has(id)) {
           consume(row);
           rows.delete(id);
         }
-      if (
-        lastLog.value &&
-        (lastLog.value.sessionId !== session?.id ||
-          !rows.has(lastLog.value.setId) ||
-          !sameSet(lastLog.value.base, rows.get(lastLog.value.setId)!.set))
-      )
-        lastLog.value = null;
+      invalidateLastLog(session?.id);
     },
     { immediate: true },
   );
+  function invalidateLastLog(sessionId: string | undefined) {
+    if (
+      lastLog.value &&
+      (lastLog.value.sessionId !== sessionId ||
+        !rows.has(lastLog.value.setId) ||
+        !sameSet(lastLog.value.base, rows.get(lastLog.value.setId)!.set))
+    )
+      lastLog.value = null;
+  }
+  function recoverRecords(
+    sessionId: string,
+    setId: string,
+  ): Pick<TrainingRow, "records" | "storageIssue"> {
+    try {
+      return {
+        records: [...options.journal.recover(sessionId, setId)],
+        storageIssue: "",
+      };
+    } catch {
+      return {
+        records: [],
+        storageIssue:
+          "Draft recovery is unavailable. New edits may not survive closing this page.",
+      };
+    }
+  }
+  function synchronizeRow(
+    sessionId: string,
+    revision: number,
+    exercise: SessionExercise,
+    index: number,
+    set: WorkoutSet,
+  ) {
+    const row = rows.get(set.id);
+    if (row) {
+      if (row.touched && !sameSet(row.base, set)) row.recoveredStale = true;
+      row.set = set;
+      row.exercise = exercise;
+      row.index = index;
+      if (row.touched) return;
+      row.weight = String(set.weightKg);
+      row.reps = String(set.reps);
+      row.base = { ...set };
+      return;
+    }
+    const recovered = recoverRecords(sessionId, set.id);
+    const fresh: TrainingRow = {
+      set,
+      exercise,
+      index,
+      revision,
+      ...recovered,
+      weight: String(set.weightKg),
+      reps: String(set.reps),
+      base: { ...set },
+      touched: false,
+      recoveredStale: false,
+      alternatives: [],
+      issue: "",
+    };
+    rows.set(set.id, restoreRow(fresh));
+  }
+  function restoreRow(row: TrainingRow): TrainingRow {
+    const recovered = row.records[0];
+    if (!recovered) return row;
+    const distinct = row.records.some(
+      (candidate) =>
+        candidate.weight !== recovered.weight ||
+        candidate.reps !== recovered.reps,
+    );
+    return {
+      ...row,
+      weight: recovered.weight,
+      reps: recovered.reps,
+      base: recovered.base,
+      touched: true,
+      recoveredStale: !sameSet(recovered.base, row.set),
+      revision: recovered.revision,
+      alternatives: distinct ? row.records : [],
+    };
+  }
   const currentExercise = computed(
     () =>
       active.value?.exercises.find(
@@ -185,13 +218,19 @@ export function useTrainingSession(options: {
       });
       const predecessors = row.records;
       row.records = [saved];
-      if (row.alternatives.length) row.records.unshift(...predecessors);
-      else options.journal.consume(predecessors);
+      retainAlternatives(row, predecessors);
       row.storageIssue = "";
     } catch {
       row.storageIssue =
         "Draft not saved on this device. Keep this page open and try again.";
     }
+  }
+  function retainAlternatives(row: TrainingRow, predecessors: SetDraft[]) {
+    if (row.alternatives.length) {
+      row.records.unshift(...predecessors);
+      return;
+    }
+    options.journal.consume(predecessors);
   }
   function edit(setId: string, values: Partial<RawValues>) {
     const row = rows.get(setId);
@@ -248,11 +287,7 @@ export function useTrainingSession(options: {
     row.touched = true;
     persist(row);
   }
-  async function commit(setId: string, valuesOnly = false) {
-    const row = rows.get(setId),
-      snapshot = options.snapshot.value,
-      session = active.value;
-    if (!row || !snapshot || !session || options.saving.value) return;
+  function valuesToCommit(row: TrainingRow) {
     if (conflict(row)) {
       row.issue =
         "This set changed in another tab or has different recovered drafts. Review it before logging.";
@@ -263,11 +298,20 @@ export function useTrainingSession(options: {
       row.issue = "Enter 0–1000 kg and 1–1000 whole repetitions.";
       return;
     }
-    const completed = valuesOnly
-      ? row.set.completed
-      : dirty(row)
-        ? true
-        : !row.set.completed;
+    return values;
+  }
+  function completionAfterCommit(row: TrainingRow, valuesOnly: boolean) {
+    if (valuesOnly) return row.set.completed;
+    return dirty(row) || !row.set.completed;
+  }
+  async function commit(setId: string, valuesOnly = false) {
+    const row = rows.get(setId),
+      snapshot = options.snapshot.value,
+      session = active.value;
+    if (!row || !snapshot || !session || options.saving.value) return;
+    const values = valuesToCommit(row);
+    if (!values) return;
+    const completed = completionAfterCommit(row, valuesOnly);
     try {
       row.records = [
         ...row.records,
@@ -295,29 +339,45 @@ export function useTrainingSession(options: {
     row.base = { ...values, completed };
     row.weight = String(values.weightKg);
     row.reps = String(values.reps);
+    reportCommit(row, session.id, completed, valuesOnly);
+  }
+  function reportCommit(
+    row: TrainingRow,
+    sessionId: string,
+    completed: boolean,
+    valuesOnly: boolean,
+  ) {
     if (valuesOnly) {
       notice.value = "Set values saved. Logging is unchanged.";
       return;
     }
     if (completed) {
       lastLog.value = {
-        sessionId: session.id,
-        setId,
+        sessionId,
+        setId: row.set.id,
         exerciseId: row.exercise.id,
-        base: { id: setId, ...values, completed: true },
+        base: {
+          id: row.set.id,
+          weightKg: Number(row.weight),
+          reps: Number(row.reps),
+          completed: true,
+        },
       };
       notice.value = `${row.exercise.name} · set ${row.index + 1} logged.`;
       selected.value = null;
-    } else {
-      lastLog.value = null;
-      notice.value = "Set marked as not logged.";
+      return;
     }
+    lastLog.value = null;
+    notice.value = "Set marked as not logged.";
+  }
+  function lastExerciseRow(exercise: SessionExercise | undefined) {
+    const last = exercise?.sets.at(-1);
+    return last ? rows.get(last.id) : undefined;
   }
   async function addSet(exerciseId: string) {
     const session = active.value;
     const exercise = session?.exercises.find((item) => item.id === exerciseId);
-    const last = exercise?.sets.at(-1);
-    const row = last ? rows.get(last.id) : undefined;
+    const row = lastExerciseRow(exercise);
     if (!session || !exercise || options.saving.value) return;
     const values = row ? parseSetValues(row) : null;
     if (row && (!values || conflict(row))) {
@@ -332,6 +392,9 @@ export function useTrainingSession(options: {
       exerciseId,
       ...(values ? { values } : {}),
     });
+    selectAddedSet(result, exerciseId);
+  }
+  function selectAddedSet(result: Snapshot | null, exerciseId: string) {
     const added = result?.active?.exercises
       .find((item) => item.id === exerciseId)
       ?.sets.at(-1);

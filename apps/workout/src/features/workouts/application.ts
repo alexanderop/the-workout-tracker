@@ -81,6 +81,19 @@ function mergeSnapshots(
   if (typeof routines === "string") return routines;
   const completed = merge(local.completed, incoming.completed);
   if (typeof completed === "string") return completed;
+  const active = mergeActive(local, incoming, completed);
+  if (typeof active === "string") return active;
+  const next = { ...local, exercises, routines, completed, active };
+  return canonical(next) === canonical(local)
+    ? local
+    : { ...next, revision: local.revision + 1 };
+}
+
+function mergeActive(
+  local: Snapshot,
+  incoming: Snapshot,
+  completed: Snapshot["completed"],
+): Snapshot["active"] | string {
   if (
     local.active &&
     incoming.active &&
@@ -90,10 +103,19 @@ function mergeSnapshots(
   const active = local.active ?? incoming.active;
   if (active && completed[active.id])
     return "Backup conflicts with an active workout. No data was imported.";
-  const next = { ...local, exercises, routines, completed, active };
-  return canonical(next) === canonical(local)
-    ? local
-    : { ...next, revision: local.revision + 1 };
+  return active;
+}
+
+function validateWrite(
+  next: Snapshot,
+): { kind: "valid"; data: Snapshot } | Extract<Result, { kind: "invalid" }> {
+  const validated = snapshotSchema.safeParse(next);
+  if (!validated.success)
+    return {
+      kind: "invalid",
+      message: validated.error.issues[0]?.message ?? "Invalid workout data.",
+    };
+  return { kind: "valid", data: validated.data };
 }
 
 export function createWorkouts({ storage, now, id }: WorkoutDependencies) {
@@ -119,13 +141,8 @@ export function createWorkouts({ storage, now, id }: WorkoutDependencies) {
         return { kind: "conflict", snapshot: current.snapshot };
       const next = transform(current.snapshot);
       if (typeof next === "string") return { kind: "invalid", message: next };
-      const validated = snapshotSchema.safeParse(next);
-      if (!validated.success)
-        return {
-          kind: "invalid",
-          message:
-            validated.error.issues[0]?.message ?? "Invalid workout data.",
-        };
+      const validated = validateWrite(next);
+      if (validated.kind === "invalid") return validated;
       if (closed)
         return { kind: "unavailable", message: "Workout storage is closed." };
       return await storage.compareAndSave(expectedRevision, validated.data);

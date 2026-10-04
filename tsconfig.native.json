@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": { "types": [] },
+  "include": [
+    "apps/workout/src/features/workouts/domain.ts",
+    "apps/workout/src/features/workouts/domain/**/*.ts",
+    "apps/workout/src/features/workouts/application.ts",
+    "apps/workout/src/features/workouts/ports.ts",
+    "apps/workout/src/features/workouts/adapters/**/*.ts",
+    "apps/workout/src/features/workouts/ui/**/*.ts",
+    "packages/ui/src/numeric-input/**/*.ts"
+  ]
+}
