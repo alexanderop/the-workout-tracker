@@ -1,18 +1,40 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, useTemplateRef } from "vue";
+import {
+  onMounted,
+  onBeforeUnmount,
+  useTemplateRef,
+  type ObjectDirective,
+} from "vue";
 const props = defineProps<{
   modelValue?: string | number;
   defaultValue?: string | number;
 }>();
 const emit = defineEmits<{ "update:modelValue": [value: string | number] }>();
 const input = useTemplateRef<HTMLInputElement>("input");
-let form: HTMLFormElement | null = null;
+let resetRoot: Node | undefined;
 let composing = false;
+function syncValue(
+  element: HTMLInputElement,
+  value: string | number | undefined,
+) {
+  if (!composing && value !== undefined && element.value !== String(value)) {
+    element.value = String(value);
+  }
+}
+const vControlledValue: ObjectDirective<
+  HTMLInputElement,
+  string | number | undefined
+> = {
+  mounted: (element, binding) => syncValue(element, binding.value),
+  updated: (element, binding) => syncValue(element, binding.value),
+};
 function reset(event: Event) {
-  queueMicrotask(() => {
+  if (event.target !== input.value?.form) return;
+  setTimeout(() => {
     if (
       !event.defaultPrevented &&
       input.value &&
+      event.target === input.value.form &&
       props.modelValue !== undefined
     ) {
       emit("update:modelValue", props.defaultValue ?? "");
@@ -33,10 +55,10 @@ function update(event: Event) {
   }
 }
 onMounted(() => {
-  form = input.value?.form ?? null;
-  form?.addEventListener("reset", reset);
+  resetRoot = input.value?.getRootNode();
+  resetRoot?.addEventListener("reset", reset, true);
 });
-onBeforeUnmount(() => form?.removeEventListener("reset", reset));
+onBeforeUnmount(() => resetRoot?.removeEventListener("reset", reset, true));
 </script>
 <template>
   <input
@@ -44,7 +66,7 @@ onBeforeUnmount(() => form?.removeEventListener("reset", reset));
     class="ui-input"
     data-slot="input"
     :defaultValue.prop="defaultValue"
-    v-bind="modelValue === undefined ? {} : { value: modelValue }"
+    v-controlled-value="modelValue"
     @compositionstart="composing = true"
     @compositionend="finishComposition"
     @input="update"

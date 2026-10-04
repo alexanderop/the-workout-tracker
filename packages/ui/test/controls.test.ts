@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 import { page, userEvent } from "vitest/browser";
 import { render } from "vitest-browser-vue";
-import axe from "axe-core";
+import { expectAccessible } from "./helpers/accessibility";
 import ControlsHarness from "./fixtures/ControlsHarness.vue";
 
 it("keeps controlled values in sync and submits native successful controls", async () => {
@@ -66,15 +66,7 @@ it("keeps explicit field descriptions and errors associated without duplicate ID
     (element) => element.id,
   );
   expect(new Set(ids).size).toBe(ids.length);
-  const result = await axe.run(document.body, {
-    rules: { region: { enabled: false } },
-  });
-  expect(
-    result.violations.map(({ id, nodes }) => ({
-      id,
-      targets: nodes.map((node) => node.target),
-    })),
-  ).toEqual([]);
+  await expectAccessible("fields with validation errors");
 });
 
 it("shows a visible keyboard focus ring on outline buttons", async () => {
@@ -114,6 +106,9 @@ it("publishes composed text only after composition finishes", async () => {
   await expect
     .element(page.getByLabelText("Current name"))
     .toHaveTextContent("Morning");
+  await page.getByRole("button", { name: "Toggle error" }).click();
+  await expect.element(input).toHaveAttribute("aria-invalid", "true");
+  await expect.element(input).toHaveValue("東京");
   input.dispatchEvent(
     new CompositionEvent("compositionend", { bubbles: true }),
   );

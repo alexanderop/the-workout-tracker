@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 import { page, userEvent } from "vitest/browser";
 import { render } from "vitest-browser-vue";
-import axe from "axe-core";
+import { expectAccessible } from "./helpers/accessibility";
 import DialogHarness from "./fixtures/DialogHarness.vue";
 
 it("opens with a name and description, traps focus, and restores it on Escape", async () => {
@@ -23,21 +23,7 @@ it("opens with a name and description, traps focus, and restores it on Escape", 
         ?.contains(document.activeElement),
     ).toBe(true);
   }
-  await Promise.all(
-    document.getAnimations().map((animation) => animation.finished),
-  );
-  const result = await axe.run(document.body, {
-    rules: { region: { enabled: false } },
-  });
-  expect(
-    result.violations.map(({ id, nodes }) => ({
-      id,
-      nodes: nodes.map(({ target, failureSummary }) => ({
-        target,
-        failureSummary,
-      })),
-    })),
-  ).toEqual([]);
+  await expectAccessible("open dialog after keyboard navigation");
   await userEvent.keyboard("{Escape}");
   await expect.element(dialog).not.toBeInTheDocument();
   await expect.element(trigger).toHaveFocus();

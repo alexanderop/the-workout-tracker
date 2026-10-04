@@ -68,7 +68,11 @@
   color: white;
 }
 .ui-button[data-variant="destructive"]:hover {
-  background: color-mix(in oklab, var(--ui-destructive) 90%, transparent);
+  background: color-mix(
+    in oklab,
+    var(--ui-destructive) calc(90% - var(--ui-dark) * 40%),
+    transparent
+  );
 }
 .ui-button[data-variant="destructive"]:focus-visible {
   box-shadow: 0 0 0 3px

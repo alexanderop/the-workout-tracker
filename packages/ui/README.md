@@ -58,7 +58,7 @@ The fixed reference is [shadcn-vue b251d9f](https://github.com/unovue/shadcn-vue
 
 Button heights are 24/32/36/40px at a 16px root font size. Input is 36px tall. Dialog has 24px padding, 16px gaps, a 512px desktop maximum width and a 16px viewport inset. Responsive Field layout uses a container query. The neutral theme radius is 0.625rem; control radii subtract 2px. Slots, native semantics and Reka behavior follow the reference.
 
-Intentional differences are explicit CSS imports and namespaced `--ui-*` tokens, local control resets instead of Tailwind Preflight, native form reset synchronization, filtering empty errors, an accessible close label directly on the icon button, reduced-motion support, and configurable dialog portal destination. `buttonVariants`, `fieldVariants` and their Tailwind class APIs are not exported. `DialogScrollContent` is deferred. Consumer class names are merged by Vue; there is no Tailwind class conflict resolver. The gallery supplies a bundled Inter font, while the library inherits its consumer's font.
+Intentional differences are explicit CSS imports and namespaced `--ui-*` tokens, local control resets instead of Tailwind Preflight, native form reset synchronization, filtering empty errors, an accessible close label directly on the icon button, reduced-motion support, and configurable dialog portal destination. Dark destructive-button hover uses a darker background blend to preserve the required 4.5:1 text contrast. `buttonVariants`, `fieldVariants` and their Tailwind class APIs are not exported. `DialogScrollContent` is deferred. Consumer class names are merged by Vue; there is no Tailwind class conflict resolver. The gallery supplies a bundled Inter font, while the library inherits its consumer's font.
 
 Screenshots verify our implementation's visual regressions in a canonical Linux environment. They do not establish measured pixel equivalence with upstream. The reference contract records the properties derived from pinned source.
 
@@ -69,7 +69,11 @@ Screenshots verify our implementation's visual regressions in a canonical Linux 
 - Root `pnpm test:visual` compares canonical Linux screenshots. Root `pnpm test:visual:update` updates them in the same environment; review image differences before accepting changes.
 - `pnpm dev:ui` opens the standalone consumer gallery. Its build imports only public library exports and styles.
 
-Automated accessibility scans complement keyboard and focus assertions. They do not replace screenreader testing.
+The accessibility matrix runs automatically with the default browser suite, root `pnpm verify`, and CI. It scans light and dark button variants and sizes, disabled controls, valid/invalid fields, every button variant while hovered and keyboard-focused, open Dialog portals, and the existing Sheet. Behavior tests also scan validation errors and the dialog after keyboard navigation.
+
+Use `expectAccessible("descriptive interaction state")` from `test/helpers/accessibility.ts` after rendering or reaching a meaningful state. The helper waits for fonts and finite animations, then scans the whole body so portals are included. Failures report the state, rule, severity, affected selectors, remediation details, and rule documentation. Only the `region` rule is disabled because isolated component fixtures do not own application landmarks; application-level checks should retain it. New interactive components should add their relevant states to the matrix instead of relying on a scan after test cleanup.
+
+Automated accessibility scans complement keyboard and focus assertions. Axe cannot detect every accessibility problem and does not replace screenreader testing.
 
 ## Catalog roadmap
 
