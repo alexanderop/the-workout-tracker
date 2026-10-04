@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { defaultExercises } from "./domain/catalog";
 
 const identifier = z
   .string()
@@ -13,7 +14,13 @@ const weight = z.number().finite().min(0).max(1000);
 const reps = z.number().int().min(1).max(1000);
 const timestamp = z.number().int().min(0).max(8640000000000000);
 export const exerciseSchema = z
-  .object({ id: identifier, name, category: name, custom: z.boolean() })
+  .object({
+    id: identifier,
+    name,
+    category: name,
+    custom: z.boolean(),
+    equipment: name,
+  })
   .strict()
   .readonly();
 export const routineSchema = z
@@ -26,15 +33,17 @@ export const routineSchema = z
         z
           .object({
             exerciseId: identifier,
-            sets: z.number().int().min(1).max(30),
-            reps,
-            weightKg: weight,
+            sets: z
+              .array(z.object({ reps, weightKg: weight }).strict().readonly())
+              .min(1)
+              .max(30)
+              .readonly(),
           })
           .strict()
           .readonly(),
       )
       .min(1)
-      .max(30)
+      .max(50)
       .readonly(),
   })
   .strict()
@@ -172,6 +181,19 @@ const sessionId = { sessionId: identifier };
 const values = { weightKg: weight, reps };
 export const commandSchema = z
   .discriminatedUnion("type", [
+    z.object({ type: z.literal("repeat"), completedId: identifier }).strict(),
+    z.object({ type: z.literal("rename"), ...sessionId, name }).strict(),
+    z
+      .object({
+        type: z.literal("add-exercises"),
+        ...sessionId,
+        exerciseIds: z
+          .array(identifier)
+          .min(1)
+          .max(50)
+          .refine((ids) => new Set(ids).size === ids.length),
+      })
+      .strict(),
     z
       .object({ type: z.literal("start"), routineId: identifier.nullable() })
       .strict(),
@@ -252,83 +274,12 @@ export type Transition =
 export type Inputs = { readonly at: number; readonly id: () => string };
 
 export function initialSnapshot(): Snapshot {
-  const exercises: readonly Exercise[] = [
-    {
-      id: "bench-press",
-      name: "Bench press",
-      category: "Chest",
-      custom: false,
-    },
-    { id: "squat", name: "Back squat", category: "Legs", custom: false },
-    { id: "deadlift", name: "Deadlift", category: "Back", custom: false },
-    {
-      id: "overhead-press",
-      name: "Overhead press",
-      category: "Shoulders",
-      custom: false,
-    },
-    { id: "row", name: "Dumbbell row", category: "Back", custom: false },
-    {
-      id: "lat-pulldown",
-      name: "Lat pulldown",
-      category: "Back",
-      custom: false,
-    },
-    { id: "leg-press", name: "Leg press", category: "Legs", custom: false },
-    {
-      id: "romanian-deadlift",
-      name: "Romanian deadlift",
-      category: "Legs",
-      custom: false,
-    },
-    { id: "biceps-curl", name: "Biceps curl", category: "Arms", custom: false },
-    {
-      id: "triceps-extension",
-      name: "Triceps extension",
-      category: "Arms",
-      custom: false,
-    },
-    {
-      id: "lateral-raise",
-      name: "Lateral raise",
-      category: "Shoulders",
-      custom: false,
-    },
-    { id: "push-up", name: "Push-up", category: "Chest", custom: false },
-  ];
-  const plan = (exerciseId: string) => ({
-    exerciseId,
-    sets: 3,
-    reps: 8,
-    weightKg: 0,
-  });
   return {
     revision: 0,
     exercises: Object.fromEntries(
-      exercises.map((exercise) => [exercise.id, exercise]),
+      defaultExercises.map((exercise) => [exercise.id, exercise]),
     ),
-    routines: {
-      "upper-body": {
-        id: "upper-body",
-        name: "Upper body",
-        description: "A balanced session for chest, back and shoulders.",
-        exercises: ["bench-press", "row", "overhead-press", "lat-pulldown"].map(
-          plan,
-        ),
-      },
-      "lower-body": {
-        id: "lower-body",
-        name: "Lower body",
-        description: "Build your foundation with focused leg work.",
-        exercises: ["squat", "romanian-deadlift", "leg-press"].map(plan),
-      },
-      "full-body": {
-        id: "full-body",
-        name: "Full body",
-        description: "Cover the essentials in one session.",
-        exercises: ["squat", "bench-press", "row"].map(plan),
-      },
-    },
+    routines: {},
     active: null,
     completed: {},
     settings: { restSeconds: 90, autoRest: true },
@@ -400,6 +351,32 @@ export function reduceWorkout(
         [command.exercise.id]: command.exercise,
       },
     });
+  if (command.type === "repeat") {
+    if (snapshot.active) return reject("Finish your current workout first.");
+    const source = snapshot.completed[command.completedId];
+    if (!source) return reject("Workout was not found.");
+    const id = inputs.id();
+    if (snapshot.completed[id]) return reject("Workout ID already exists.");
+    return changed({
+      ...snapshot,
+      active: {
+        id,
+        status: "active",
+        name: source.name,
+        startedAt: inputs.at,
+        rest: null,
+        exercises: source.exercises.map((exercise) => ({
+          ...exercise,
+          id: inputs.id(),
+          sets: exercise.sets.map((set) => ({
+            ...set,
+            id: inputs.id(),
+            completed: false,
+          })),
+        })),
+      },
+    });
+  }
   if (command.type === "start") {
     if (snapshot.active) return reject("Finish your current workout first.");
     const routine = command.routineId
@@ -410,24 +387,15 @@ export function reduceWorkout(
     for (const row of routine?.exercises ?? []) {
       const exercise = snapshot.exercises[row.exerciseId];
       if (!exercise) return reject("Exercise was not found.");
-      const previous = Object.values(snapshot.completed)
-        .sort((a, b) => b.finishedAt - a.finishedAt)
-        .flatMap((session) => session.exercises)
-        .find(
-          (entry) =>
-            entry.exerciseId === exercise.id &&
-            entry.sets.some((set) => set.completed),
-        )
-        ?.sets.filter((set) => set.completed);
       sessionExercises.push({
         id: inputs.id(),
         exerciseId: exercise.id,
         name: exercise.name,
         category: exercise.category,
-        sets: Array.from({ length: row.sets }, (_, index) => ({
+        sets: row.sets.map((set) => ({
           id: inputs.id(),
-          weightKg: previous?.[index]?.weightKg ?? row.weightKg,
-          reps: previous?.[index]?.reps ?? row.reps,
+          weightKg: set.weightKg,
+          reps: set.reps,
           completed: false,
         })),
       });
@@ -439,7 +407,7 @@ export function reduceWorkout(
       active: {
         id,
         status: "active",
-        name: routine?.name ?? "Free workout",
+        name: routine?.name ?? "New workout",
         startedAt: inputs.at,
         exercises: sessionExercises,
         rest: null,
@@ -453,6 +421,8 @@ export function reduceWorkout(
     return reject("This workout is no longer active.");
   const saveActive = (next: ActiveSession): Transition =>
     changed({ ...snapshot, active: next });
+  if (command.type === "rename")
+    return saveActive({ ...active, name: command.name.trim() });
   if (command.type === "discard") return changed({ ...snapshot, active: null });
   if (command.type === "finish") {
     if (!sessionTotals(active).completedSets)
@@ -473,21 +443,28 @@ export function reduceWorkout(
   }
   if (command.type === "stop-rest")
     return saveActive({ ...active, rest: null });
-  if (command.type === "add-exercise") {
-    const exercise = snapshot.exercises[command.exerciseId];
-    if (!exercise) return reject("Exercise was not found.");
+  if (command.type === "add-exercise" || command.type === "add-exercises") {
+    const ids =
+      command.type === "add-exercise"
+        ? [command.exerciseId]
+        : command.exerciseIds;
+    if (active.exercises.length + ids.length > 50)
+      return reject("A workout can contain up to 50 exercises.");
+    const additions: SessionExercise[] = [];
+    for (const exerciseId of ids) {
+      const exercise = snapshot.exercises[exerciseId];
+      if (!exercise) return reject("Exercise was not found.");
+      additions.push({
+        id: inputs.id(),
+        exerciseId: exercise.id,
+        name: exercise.name,
+        category: exercise.category,
+        sets: [{ id: inputs.id(), weightKg: 0, reps: 8, completed: false }],
+      });
+    }
     return saveActive({
       ...active,
-      exercises: [
-        ...active.exercises,
-        {
-          id: inputs.id(),
-          exerciseId: exercise.id,
-          name: exercise.name,
-          category: exercise.category,
-          sets: [{ id: inputs.id(), weightKg: 0, reps: 8, completed: false }],
-        },
-      ],
+      exercises: [...active.exercises, ...additions],
     });
   }
   const exercise =
@@ -571,4 +548,22 @@ export function reduceWorkout(
     },
     rest,
   );
+}
+
+export function routineFromSession(
+  session: CompletedSession,
+  id: string,
+): Routine {
+  return {
+    id,
+    name: session.name,
+    description: "",
+    exercises: session.exercises.map((exercise) => ({
+      exerciseId: exercise.exerciseId,
+      sets: exercise.sets.map((set) => ({
+        weightKg: set.weightKg,
+        reps: set.reps,
+      })),
+    })),
+  };
 }

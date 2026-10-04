@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { ArrowLeft } from "@lucide/vue";
 import { duration } from "./presentation";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
@@ -10,6 +11,15 @@ const props = defineProps<{
 }>();
 const { active, rest, saving, training, activeSetCount, run } = props.workspace;
 const emit = defineEmits<{ finish: []; pick: [] }>();
+const nextExercise = computed(() =>
+  active.value?.exercises.find((exercise) =>
+    exercise.sets.some((set) => !set.completed),
+  ),
+);
+function advance() {
+  if (nextExercise.value) training.selectExercise(nextExercise.value.id);
+  else emit("finish");
+}
 </script>
 
 <template>
@@ -56,10 +66,24 @@ const emit = defineEmits<{ finish: []; pick: [] }>();
     </template>
     <template v-else-if="activeSetCount">
       <div>
-        <strong>All sets logged</strong>
+        <strong>{{
+          active.exercises.every((exercise) =>
+            exercise.sets.every((set) => set.completed),
+          )
+            ? "All sets logged"
+            : "Exercise complete"
+        }}</strong
+        ><small
+          v-if="
+            active.exercises.some((exercise) =>
+              exercise.sets.some((set) => !set.completed),
+            )
+          "
+          >Choose your next exercise above.</small
+        >
       </div>
-      <button class="btn primary" :disabled="saving" @click="emit('finish')">
-        Finish training
+      <button class="btn primary" :disabled="saving" @click="advance">
+        {{ nextExercise ? "Next exercise" : "Finish training" }}
       </button>
     </template>
     <template v-else>

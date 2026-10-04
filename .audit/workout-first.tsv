@@ -1,0 +1,14 @@
+ts	phase	decision	why	evidence	result
+2026-10-04T10:56:26Z	frame	Rebuild the workout-first flow in one reviewed PR	The session, templates, and history share one domain model	/tmp/form-workout-redesign/plan.txt	open
+2026-10-04T10:56:26Z	baseline	Type checking and lint pass; browser baseline contains one saved 40 kg by 8 bench set	Keep a real old-format session to verify compatibility	apps/workout/src/features/workouts/domain.ts	VERIFIED
+2026-10-04T10:58:45Z	design	Choose canonical per-set templates and boundary conversion	One template shape avoids redundant targets and summaries; independent judge agreed	docs/workout-first.md	VERIFIED
+2026-10-04T10:58:45Z	workflow	Use two same-model designs and native browser verification	Third runner hit host thread limit; Cursor-specific tools unavailable	docs/workout-first.md	Model diversity unavailable; local substitutes recorded
+2026-10-04T11:01:38Z	baseline	Capture old mobile history and export version 1 backup	Verify preservation using a real old-format journal	.audit/workout-first/baseline.jpg	VERIFIED
+2026-10-04T11:04:21Z	core	Implement per-set templates, legacy decoding, exact repeat, and 82-exercise catalog	Keep existing records and preserve individual set targets	apps/workout/src/features/workouts/domain.ts	Independent core review found no defects; full verification waits for UI wiring
+2026-10-04T11:05:13Z	scope	Drop legacy backup and snapshot compatibility	User confirmed there are no existing users and old backups do not matter	docs/workout-first.md	Supersedes compatibility portion of design/core decisions; new flow remains required
+2026-10-04T11:13:41Z	review	Fix peer drafts, undo selection, and Enter in template search	Independent reviewer found three concrete failures	.audit/workout-first/review.txt	Reviewed fixes approved; no comment or suppression findings
+2026-10-04T11:13:41Z	browser	Exercise mobile start, multi-add, log, hidden drafts, finish, repeat, templates and reload	Check the actual workflow and distinct per-set values	.audit/workout-first/training.jpg	VERIFIED
+2026-10-04T11:13:41Z	browser	Verify peer draft blocks finish and undo returns to its exercise	Direct browser checks of the review findings	apps/workout/src/features/workouts/ui/useTrainingSession.ts	VERIFIED
+2026-10-04T11:14:09Z	verification	Run pnpm verify and inspect the final diff	Type checking and linting are the required project checks	package.json	PASS; no automated tests run
+2026-10-04T11:15:04Z	browser	Verify template target 47.5 stays separate from history 45 and later workout 50	Starting a template must use its planned values	.audit/workout-first/history.jpg	VERIFIED
+2026-10-04T11:15:04Z	browser	Create a custom band exercise and combine muscle/equipment filters	The exercise library must support personal additions	apps/workout/src/features/workouts/ui/ExercisesPage.vue	VERIFIED

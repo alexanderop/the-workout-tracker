@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed, ref, watch } from "vue";
 import {
   Clock3,
   Check,
@@ -45,6 +46,39 @@ const emit = defineEmits<{
   navigate: [page: "workouts"];
 }>();
 const navigate = (page: "workouts") => emit("navigate", page);
+const name = ref("");
+const nameIssue = ref("");
+watch(
+  () => active.value?.name,
+  (value) => {
+    name.value = value ?? "";
+  },
+  { immediate: true },
+);
+async function rename() {
+  if (!active.value || name.value === active.value.name) return;
+  if (!name.value.trim()) {
+    nameIssue.value = "Give this workout a name.";
+    return;
+  }
+  if (
+    await run({ type: "rename", sessionId: active.value.id, name: name.value })
+  )
+    nameIssue.value = "";
+  else nameIssue.value = "Name not saved. Try again.";
+}
+const previous = computed(() => {
+  const exercise = training.currentExercise.value;
+  if (!exercise) return null;
+  return Object.values(snapshot.value?.completed ?? {})
+    .sort((a, b) => b.finishedAt - a.finishedAt)
+    .flatMap((session) => session.exercises)
+    .find(
+      (row) =>
+        row.exerciseId === exercise.exerciseId &&
+        row.sets.some((set) => set.completed),
+    );
+});
 </script>
 
 <template>
@@ -52,7 +86,17 @@ const navigate = (page: "workouts") => emit("navigate", page);
     ><a class="training-back text-button" href="#/workouts">Back to workouts</a>
     <div class="page-heading session-heading">
       <div>
-        <h1>{{ active.name }}</h1>
+        <h1 class="workout-name">
+          <input
+            v-model="name"
+            aria-label="Workout name"
+            maxlength="80"
+            :disabled="saving"
+            @blur="rename"
+            @keydown.enter.prevent="rename"
+          />
+        </h1>
+        <p v-if="nameIssue" class="field-error" role="alert">{{ nameIssue }}</p>
         <p class="muted">
           <Clock3 :size="14" />{{ elapsed }} elapsed<span class="separator"
             >·</span
@@ -78,10 +122,48 @@ const navigate = (page: "workouts") => emit("navigate", page);
         Undo last log
       </button>
     </div>
+    <nav
+      v-if="active.exercises.length"
+      class="exercise-tabs"
+      aria-label="Workout exercises"
+    >
+      <button
+        v-for="(exercise, index) in active.exercises"
+        :key="exercise.id"
+        :aria-pressed="training.currentExercise.value?.id === exercise.id"
+        :class="{
+          selected: training.currentExercise.value?.id === exercise.id,
+        }"
+        @click="training.selectExercise(exercise.id)"
+      >
+        <span class="tab-exercise-index">{{
+          String(index + 1).padStart(2, "0")
+        }}</span
+        ><span
+          >{{ exercise.name
+          }}<small
+            >{{ exercise.sets.filter((set) => set.completed).length }}/{{
+              exercise.sets.length
+            }}
+            sets</small
+          ></span
+        ><Check v-if="exercise.sets.every((set) => set.completed)" :size="15" />
+      </button>
+      <button
+        class="exercise-tab-add"
+        aria-label="Add exercises"
+        :disabled="saving || active.exercises.length >= 50"
+        @click="emit('pick')"
+      >
+        <Plus :size="20" />
+      </button>
+    </nav>
     <div class="session-layout">
       <div class="exercise-stack">
         <article
-          v-for="(exercise, exIndex) in active.exercises"
+          v-for="exercise in training.currentExercise.value
+            ? [training.currentExercise.value]
+            : []"
           :key="exercise.id"
           class="exercise-card"
           :class="{
@@ -92,7 +174,10 @@ const navigate = (page: "workouts") => emit("navigate", page);
           <header>
             <div class="exercise-title">
               <span class="exercise-index">{{
-                String(exIndex + 1).padStart(2, "0")
+                String(
+                  active.exercises.findIndex((row) => row.id === exercise.id) +
+                    1,
+                ).padStart(2, "0")
               }}</span>
               <div>
                 <h2>{{ exercise.name }}</h2>
@@ -124,6 +209,17 @@ const navigate = (page: "workouts") => emit("navigate", page);
               <X :size="16" />
             </button>
           </header>
+          <div v-if="previous" class="previous-performance">
+            <span class="eyebrow">LAST TIME</span>
+            <p>
+              {{
+                previous.sets
+                  .filter((set) => set.completed)
+                  .map((set) => `${fmt(set.weightKg)} kg × ${set.reps}`)
+                  .join(" · ")
+              }}
+            </p>
+          </div>
           <div class="set-labels">
             <span>SET</span><span>WEIGHT · KG</span><span>REPS</span
             ><span>LOG</span><span></span>
@@ -137,13 +233,28 @@ const navigate = (page: "workouts") => emit("navigate", page);
             :dirty="training.dirty(training.rows.get(set.id)!)"
             :conflict="training.conflict(training.rows.get(set.id)!)"
             @edit="(values) => training.edit(set.id, values)"
-            @select="training.selected.value = set.id"
+            @select="training.selectSet(set.id)"
             @commit="training.commit(set.id)"
             @options="emit('options', set.id)"
             @discard="training.useSaved(set.id)"
             @keep="training.keepInput(set.id)"
             @recover="(draft) => training.chooseDraft(set.id, draft)"
-          /><button
+          />
+          <div
+            v-if="
+              exercise.sets.some((set) => training.rows.get(set.id)?.touched)
+            "
+            class="save-inputs"
+          >
+            <button
+              class="text-button"
+              :disabled="saving"
+              @click="training.saveEdits()"
+            >
+              Save input values without logging
+            </button>
+          </div>
+          <button
             class="add-set text-button"
             :disabled="saving || exercise.sets.length >= 30"
             @click="
@@ -163,7 +274,7 @@ const navigate = (page: "workouts") => emit("navigate", page);
           <p class="muted">Add your first exercise to start logging sets.</p>
         </div>
         <button class="btn secondary full-width" @click="emit('pick')">
-          <Plus :size="18" />Add exercise
+          <Plus :size="18" />Add exercises
         </button>
       </div>
       <aside class="session-summary">
@@ -245,7 +356,7 @@ const navigate = (page: "workouts") => emit("navigate", page);
   <div v-else class="empty-state">
     <Dumbbell :size="32" />
     <h1>Ready for your next session?</h1>
-    <p class="muted">Choose a routine or start a free workout.</p>
+    <p class="muted">Start a workout or choose one of your templates.</p>
     <button class="btn primary" @click="navigate('workouts')">
       Choose a workout<ArrowRight :size="17" />
     </button>

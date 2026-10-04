@@ -13,7 +13,7 @@ The app lives in `apps/workout`. Its source has these responsibilities:
 - `features/workouts/ui/` owns training-specific components and `useWorkouts`. The composable receives a service and removes its own subscription on disposal.
 - `app/composition.ts` selects Dexie and the real clock and ID generator. `main.ts` creates one service, passes it to the app, and closes it when the app unmounts.
 
-The existing IndexedDB name, schema version, `state` store, `snapshot` key, and backup format remain unchanged. No storage migration is needed.
+The IndexedDB name, table version, `state` store, and `snapshot` key remain unchanged. Templates now contain per-set targets. Backups use version 2. Legacy snapshots and version 1 backups are not migrated.
 
 ```mermaid
 flowchart LR
@@ -29,15 +29,15 @@ Solid arrows show source dependencies. At runtime the application calls the inje
 
 ## Page ownership and controller lifetime
 
-The workout pages remain inside the workout feature. Today, routines, training, history, and progress are views of the same snapshot, not independent persistence boundaries.
+The workout pages remain inside the workout feature. Workouts, templates, training, the exercise catalog, and progress are views of the same snapshot, not independent persistence boundaries.
 
 `App.vue` owns the application shell, hash navigation, and PWA integration. Feature pages receive the data they display and emit user actions. Calendar, history filtering, and chart projections belong with their pages. Shared formatting stays in the feature UI.
 
-`TodayPage`, `WorkoutsPage`, `TrainingPage`, `HistoryPage`, and `ProgressPage` own the page templates. `TrainingDock` owns the mobile training controls. `WorkoutDialogs` owns routine editing, exercise selection, set options, confirmations, and completed-session details. `WorkoutSettings` owns preferences and backup controls.
+`WorkoutsPage`, `ExercisesPage`, `TrainingPage`, and `ProgressPage` own the main page templates. History is part of the workout overview. `TrainingDock` owns the mobile training controls. `WorkoutDialogs` owns routine editing, exercise selection, set options, confirmations, and completed-session details. `WorkoutSettings` owns preferences and backup controls.
 
 `App.vue` calls `useWorkoutWorkspace` once to create `useWorkouts`, `useTrainingSession`, and the shared clock. Page navigation does not recreate either composable. This preserves the shared saving lock, selected set, live draft baselines, and last-log undo. The training page and mobile controls use that same training instance and the same native set forms.
 
-History search, progress selection, and cross-page dialog state also survive page navigation. Routine editing retains the revision captured when the editor opens. Backup import retains the revision captured when the file is read. Completing a workout can open its detail immediately after navigating to history.
+Progress selection and cross-page dialog state also survive page navigation. Routine editing retains the revision captured when the editor opens. Backup import retains the revision captured when the file is read. Completing a workout opens its detail after returning to the workout overview.
 
 The feature UI receives PWA capabilities from the application shell. It cannot import application wiring or select a storage adapter. The existing architecture checks enforce this boundary.
 
@@ -105,7 +105,7 @@ A remote database still needs a suitable data model and server-side authorizatio
 
 ## Training drafts
 
-Unconfirmed weight and repetition strings live in a separate synchronous browser draft journal. Confirmed snapshots, totals and backup v1 remain unchanged. Composition injects the journal; its adapter validates bounded records at the storage boundary. Each edit gets an immutable ID and each writer removes only its own previous edit. Confirming a set acknowledges the exact draft IDs observed before the command, so a later edit from another tab survives.
+Unconfirmed weight and repetition strings live in a separate synchronous browser draft journal. Confirmed snapshots and totals remain separate from raw drafts. Composition injects the journal; its adapter validates bounded records at the storage boundary. Each edit gets an immutable ID and each writer removes only its own previous edit. Confirming a set acknowledges the exact draft IDs observed before the command, so a later edit from another tab survives.
 
 The session controller owns input, current-set selection, validation, conflicts and undo. Both row buttons and the mobile training bar submit the same native form. Drafts recover after navigation, reload and reopening. A changed canonical baseline blocks submission until the user explicitly keeps their input or adopts the saved values. Recovered drafts with a different revision also require explicit resolution, even if the values have returned to their original state. This conservative check avoids replaying stale intent after another tab completes and undoes a set. Live input can still follow unrelated canonical saves when its target baseline is unchanged.
 
