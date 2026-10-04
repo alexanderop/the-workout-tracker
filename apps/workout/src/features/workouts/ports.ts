@@ -23,3 +23,17 @@ export type WorkoutStorage = {
   readonly subscribe: (listener: (state: LoadState) => void) => () => void;
   readonly close: () => void;
 };
+
+export type DraftJournal = {
+  readonly prune: (snapshot: Snapshot) => void;
+  readonly recover: (
+    sessionId: string,
+    setId: string,
+  ) => readonly import("./domain/drafts").SetDraft[];
+  readonly write: (
+    input: import("./domain/drafts").DraftInput,
+  ) => import("./domain/drafts").SetDraft;
+  readonly consume: (
+    drafts: readonly import("./domain/drafts").SetDraft[],
+  ) => void;
+};

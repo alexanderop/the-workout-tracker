@@ -1,0 +1,16 @@
+[
+  {
+    "engine": "chromium",
+    "result": "PASS",
+    "draftReload": true,
+    "blankDraft": true,
+    "tabReopen": true,
+    "confirmedOfflineReload": true,
+    "widths": [
+      320,
+      390,
+      1440
+    ],
+    "reducedHeight": 420
+  }
+]

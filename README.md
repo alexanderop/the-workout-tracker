@@ -44,7 +44,8 @@ The preview uses the same address. Stop the development server first. Keep the s
 
 - Start one of three editable starter routines or a free workout.
 - Create routines and custom exercises.
-- Enter weights in kg and repetitions, then log each set. Logged sets save immediately; unlogged input drafts do not survive navigation or reload.
+- During a workout, the mobile training bar shows the selected set, running pause, or completion action. Set options offer repetition adjustments and removal; the last log can be undone.
+- Enter weights in kg and repetitions, then log each set. Logged sets save when confirmed. Raw input drafts save as you type and recover after navigation, reload and reopening, including unfinished fields. A storage error leaves the input visible and reports when recovery is unavailable.
 - Resume a workout, use the rest timer, add or remove sets and exercises, finish or explicitly discard the session.
 - Review history, completed-set volume, lifting trends and heaviest sets.
 - Export and import JSON backups from Settings.
@@ -58,7 +59,7 @@ IndexedDB holds your journal in this browser profile, on this origin. Clearing s
 
 Imports restore a completely untouched installation, including edited starter routines. Otherwise they add missing records, skip exact duplicates and reject conflicting IDs without partially importing. Local settings stay unchanged. Two different active workouts cannot be merged. A newer backup with edits to records already on another device can therefore require a fresh browser profile for restoration. Import is not multi-device synchronization.
 
-An unreadable database offers a raw recovery export rather than silently clearing your data. Simultaneous edits use revision checks; if another tab changed the set you are editing, The Workout Tracker keeps your draft visible and asks you to reload the saved version.
+An unreadable database offers a raw recovery export rather than silently clearing your data. Simultaneous edits use revision checks; if another tab changed the set you are editing, The Workout Tracker keeps your draft visible and offers an explicit choice to keep your input against the latest saved values or discard the draft. Recovered drafts from an older revision also require review.
 
 ## Verify
 
@@ -69,7 +70,7 @@ pnpm verify
 
 Verification includes formatting, lint, type checking, production build, pure domain tests, real Chromium IndexedDB and component tests, and desktop/mobile browser journeys. Acceptance tests exercise production service-worker offline reload, custom exercise logging, routine editing, real backup downloads and imports, discard and stale-tab conflicts. Screenshots are written to `apps/workout/test-results/`.
 
-The mobile suite uses Chromium device emulation. It does not establish physical iPhone/Safari installation behavior. The manifest and assets are generated; native OS installation still requires a user action.
+The default mobile suite uses Chromium device emulation. CI also runs the mobile application journeys in WebKit; run them locally after building with `WORKOUT_BROWSER=webkit pnpm --filter @form/workout test:e2e --project mobile`. Neither suite establishes physical iPhone keyboard placement, process termination or Safari installation behavior. The manifest and assets are generated; native OS installation still requires a user action.
 
 Architecture decisions are in [docs/architecture.md](docs/architecture.md), test responsibilities in [docs/testing.md](docs/testing.md), the design tokens in [docs/design.md](docs/design.md), and the implementation trail in [.audit/decisions.tsv](.audit/decisions.tsv).
 

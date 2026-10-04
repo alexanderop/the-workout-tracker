@@ -90,3 +90,15 @@ A new storage adapter implements the same contract and runs the shared contract 
 A remote database still needs a suitable data model and server-side authorization. Local-first synchronization needs its own conflict policy and workflow. An AI capability belongs behind a task-specific port with validated results; it does not bypass domain rules.
 
 See [Testing responsibilities](testing.md) for verification of each boundary.
+
+## Training drafts
+
+Unconfirmed weight and repetition strings live in a separate synchronous browser draft journal. Confirmed snapshots, totals and backup v1 remain unchanged. Composition injects the journal; its adapter validates bounded records at the storage boundary. Each edit gets an immutable ID and each writer removes only its own previous edit. Confirming a set acknowledges the exact draft IDs observed before the command, so a later edit from another tab survives.
+
+The session controller owns input, current-set selection, validation, conflicts and undo. Both row buttons and the mobile training bar submit the same native form. Drafts recover after navigation, reload and reopening. A changed canonical baseline blocks submission until the user explicitly keeps their input or adopts the saved values. Recovered drafts with a different revision also require explicit resolution, even if the values have returned to their original state. This conservative check avoids replaying stale intent after another tab completes and undoes a set. Live input can still follow unrelated canonical saves when its target baseline is unchanged.
+
+Obsolete records are pruned only when their source revision is older than the observed canonical snapshot and their session or set is absent. A stale observer cannot prune a draft from a newer revision.
+
+Draft recovery can fail independently from confirmed IndexedDB storage. The app keeps the entered text visible and reports that closing the page may lose it. Acknowledgement failures remain visible; recovered stale input cannot silently overwrite newer work. Backups contain confirmed workout data, not raw drafts.
+
+Run the mobile application suite in WebKit with `WORKOUT_BROWSER=webkit pnpm --filter @form/workout test:e2e --project mobile` after building. CI runs it on Linux alongside the default desktop/mobile Chromium suite. Browser emulation does not verify physical iPhone keyboard placement or operating-system process termination.

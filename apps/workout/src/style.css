@@ -1902,3 +1902,206 @@ textarea::placeholder {
     display: none;
   }
 }
+
+.training-bar {
+  display: none;
+}
+.training-back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+}
+.training-notice {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+  font-size: 13px;
+}
+.training-notice button {
+  min-height: 48px;
+}
+.set-form {
+  border-radius: 8px;
+  padding: 4px;
+  margin: 0 -4px;
+  scroll-margin: 100px 0;
+}
+.set-form.is-current {
+  outline: 1px solid var(--purple);
+  background: color-mix(in srgb, var(--purple) 5%, transparent);
+}
+.set-row,
+.set-labels {
+  grid-template-columns: 48px minmax(40px, 1fr) minmax(40px, 1fr) 48px 48px;
+  gap: 8px;
+}
+.set-number {
+  min-height: 48px;
+  font-size: 13px;
+  border-radius: 5px;
+}
+.set-toggle,
+.set-options,
+.set-input {
+  width: 100%;
+  min-height: 48px;
+  height: 48px;
+}
+.set-labels {
+  font-size: 11px;
+  letter-spacing: 0;
+}
+.draft-note {
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 4px 0 12px 4px;
+}
+.draft-conflict {
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 8px;
+}
+.draft-conflict button {
+  display: block;
+  min-height: 48px;
+  text-align: left;
+}
+.repetition-adjuster {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.repetition-adjuster button {
+  min-width: 48px;
+  min-height: 48px;
+}
+.current-exercise .exercise-index {
+  color: var(--purple);
+}
+@media (max-width: 650px) {
+  .training-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 6px 12px;
+    padding: 8px 16px calc(10px + env(safe-area-inset-bottom));
+    background: var(--background);
+    border-top: 1px solid var(--surface);
+  }
+  .training-bar-back {
+    grid-column: 1 / -1;
+    font-size: 12px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    width: fit-content;
+  }
+  .training-bar strong,
+  .training-bar small {
+    display: block;
+    overflow-wrap: anywhere;
+  }
+  .training-bar strong {
+    font-size: 14px;
+  }
+  .training-bar small {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .training-bar .btn {
+    min-height: 48px;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+  body:has(.training-bar) .main-content {
+    padding-bottom: 170px;
+  }
+  body:has(.training-bar) .main-footer {
+    padding-bottom: 120px;
+  }
+  .set-row,
+  .set-labels {
+    grid-template-columns: 48px minmax(40px, 1fr) minmax(40px, 1fr) 48px 48px;
+    gap: 4px;
+  }
+  .exercise-card {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .set-labels {
+    font-size: 11px;
+  }
+  .draft-note,
+  .exercise-title p {
+    font-size: 12px;
+  }
+  .add-set {
+    min-height: 48px;
+  }
+  .session-summary .rest-card .btn {
+    min-height: 48px;
+  }
+}
+@media (max-width: 650px) {
+  body:has(.training-bar) .main {
+    padding-top: 16px;
+    padding-bottom: calc(170px + env(safe-area-inset-bottom));
+  }
+  .training-back {
+    display: none;
+  }
+  .session-layout {
+    flex-direction: column;
+    gap: 20px;
+  }
+  .session-summary .rest-card {
+    display: none;
+  }
+  .session-summary .discard-button {
+    min-height: 48px;
+    font-size: 12px;
+  }
+  .session-heading {
+    flex-wrap: nowrap;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .session-heading h1 {
+    font-size: 25px;
+  }
+  .session-heading .eyebrow {
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+  .session-heading > .btn {
+    width: auto;
+    max-width: 100px;
+    min-height: 48px;
+    padding: 8px 10px;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  .session-guide {
+    font-size: 12px;
+  }
+  .exercise-stack {
+    gap: 12px;
+    width: 100%;
+  }
+  .exercise-card > header {
+    margin-bottom: 14px;
+  }
+  .training-bar-back {
+    min-height: 48px;
+  }
+}

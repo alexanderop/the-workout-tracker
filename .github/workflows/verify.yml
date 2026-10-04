@@ -77,9 +77,30 @@ jobs:
           name: ui-${{ matrix.browser }}-evidence
           include-hidden-files: true
           path: packages/ui/.vitest/
+  workout-webkit:
+    runs-on: ubuntu-latest
+    env:
+      VITE_BASE_PATH: /${{ github.event.repository.name }}/
+      WORKOUT_BROWSER: webkit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps webkit
+      - run: pnpm --filter @form/workout build
+      - run: pnpm --filter @form/workout test:e2e --project mobile
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: workout-webkit-evidence
+          path: apps/workout/test-results/
   deploy:
     if: github.event_name != 'pull_request' && github.ref_name == (vars.PAGES_BRANCH || 'main')
-    needs: [verify, visual, ui-cross-browser]
+    needs: [verify, visual, ui-cross-browser, workout-webkit]
     runs-on: ubuntu-latest
     permissions:
       pages: write

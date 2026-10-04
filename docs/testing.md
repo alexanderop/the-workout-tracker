@@ -38,9 +38,9 @@ Accessibility tests combine semantic queries, keyboard and focus assertions, and
 
 `pnpm build` followed by `pnpm test:e2e` tests the served production build with Playwright. `playwright-bdd` turns the Gherkin scenarios in `test/e2e/workout.feature` into executable tests. BDD is the scenario format for this suite, not a second copy of the E2E tests.
 
-The scenarios cover reload, offline completion, custom exercises, backup restore, discard, and stale drafts in two tabs. They use the real local storage and production service worker. A fixture must not replace persistence or offline behavior when that mechanism is what the scenario proves.
+The scenarios cover unfinished input recovery across navigation, reload and reopening, offline completion, custom exercises, backup restore, discard, stale drafts in two tabs, set options, undo and the empty/complete mobile training states. They use the real local storage and production service worker. A fixture must not replace persistence or offline behavior when that mechanism is what the scenario proves.
 
-Both desktop and mobile projects use Chromium. Mobile device emulation does not prove physical iPhone or Safari behavior. Failed runs retain Playwright traces and screenshots.
+The default desktop and mobile projects use Chromium. `WORKOUT_BROWSER=webkit pnpm --filter @form/workout test:e2e --project mobile` selects WebKit for the mobile project after a production build; CI runs this separately on Linux. Mobile emulation and WebKit automation do not prove physical iPhone keyboard behavior, operating-system process termination or Safari installation. Failed runs retain Playwright traces and screenshots.
 
 ## Architecture policy
 

@@ -30,3 +30,23 @@ Feature: A private training journal
   Scenario: Install the app from its published project path
     Given a new training journal
     Then the app has its published name and installable assets
+
+  Scenario: Recover unfinished inputs without logging them
+    Given a new training journal
+    When I leave an unfinished draft and return to training
+    Then my draft survives reload and reopening without counting as logged
+
+  Scenario: Complete and undo a set from the mobile training controls
+    Given a new training journal
+    When I use the compact training controls and set options
+    Then undo and reload keep the set open without resurrecting a draft
+
+  Scenario: Recovered drafts require review after another tab changes the workout
+    Given a new training journal
+    When an older draft is reopened after a completion and undo
+    Then I must explicitly discard the stale draft before logging
+
+  Scenario: Training controls distinguish an empty and a completed workout
+    Given a new training journal
+    When I build and complete a one-set free workout
+    Then training controls offer to finish and normal navigation returns

@@ -12,13 +12,13 @@ async function openJournal(page: Page) {
 }
 async function log(page: Page, index: number, weight: string, reps: string) {
   await page
-    .getByRole("spinbutton", {
+    .getByRole("textbox", {
       name: `Set ${index} weight for Bench press`,
       exact: true,
     })
     .fill(weight);
   await page
-    .getByRole("spinbutton", {
+    .getByRole("textbox", {
       name: `Set ${index} repetitions for Bench press`,
       exact: true,
     })
@@ -82,13 +82,13 @@ When(
 Then("my logged sets and rest survive a reload", async ({ page }) => {
   await page.reload();
   await expect(
-    page.getByRole("spinbutton", {
+    page.getByRole("textbox", {
       name: "Set 1 weight for Bench press",
       exact: true,
     }),
   ).toHaveValue("60");
   await expect(
-    page.getByRole("spinbutton", {
+    page.getByRole("textbox", {
       name: "Set 2 repetitions for Bench press",
       exact: true,
     }),
@@ -99,9 +99,13 @@ Then("my logged sets and rest survive a reload", async ({ page }) => {
       exact: true,
     }),
   ).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByRole("button", { name: "Skip rest" })).toBeVisible();
-  await page.getByRole("button", { name: "Skip rest" }).click();
-  await expect(page.getByRole("button", { name: "Skip rest" })).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: /^(Skip|End) rest$/ }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: /^(Skip|End) rest$/ }).click();
+  await expect(
+    page.getByRole("button", { name: /^(Skip|End) rest$/ }),
+  ).toHaveCount(0);
 });
 When("I finish the workout offline", async ({ page, context }) => {
   await page.evaluate(async () => {
@@ -225,13 +229,13 @@ When(
         .getByRole("button", { name: "Start Lunch break", exact: true })
         .click();
       await expect(
-        restored.getByRole("spinbutton", {
+        restored.getByRole("textbox", {
           name: "Set 1 weight for Bench press",
           exact: true,
         }),
       ).toHaveValue("40");
       await expect(
-        restored.getByRole("spinbutton", {
+        restored.getByRole("textbox", {
           name: "Set 1 repetitions for Bench press",
           exact: true,
         }),
@@ -247,13 +251,13 @@ Then("my routine is restored with its edited targets", async ({ page }) => {
     .getByRole("button", { name: "Start Lunch break", exact: true })
     .click();
   await expect(
-    page.getByRole("spinbutton", {
+    page.getByRole("textbox", {
       name: "Set 1 weight for Bench press",
       exact: true,
     }),
   ).toHaveValue("40");
   await expect(
-    page.getByRole("spinbutton", {
+    page.getByRole("textbox", {
       name: "Set 1 repetitions for Bench press",
       exact: true,
     }),
@@ -325,20 +329,26 @@ Then(
   "the stale draft is preserved and the saved set is not overwritten",
   async ({ page }) => {
     await expect(
-      page.getByRole("spinbutton", {
+      page.getByRole("textbox", {
         name: "Set 1 weight for Bench press",
         exact: true,
       }),
     ).toHaveValue("70");
-    await page.getByRole("button", { name: "Reload", exact: true }).click();
+    await page
+      .getByRole("button", {
+        name: "Discard drafts and use saved values",
+        exact: true,
+      })
+      .click();
+    await page.reload();
     await expect(
-      page.getByRole("spinbutton", {
+      page.getByRole("textbox", {
         name: "Set 1 weight for Bench press",
         exact: true,
       }),
     ).toHaveValue("60");
     await expect(
-      page.getByRole("spinbutton", {
+      page.getByRole("textbox", {
         name: "Set 1 repetitions for Bench press",
         exact: true,
       }),
@@ -372,13 +382,13 @@ When("I start and log a custom exercise offline", async ({ page, context }) => {
     .click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await page
-    .getByRole("spinbutton", {
+    .getByRole("textbox", {
       name: "Set 1 weight for Cable fly",
       exact: true,
     })
     .fill("12.5");
   await page
-    .getByRole("spinbutton", {
+    .getByRole("textbox", {
       name: "Set 1 repetitions for Cable fly",
       exact: true,
     })
@@ -391,20 +401,27 @@ When("I start and log a custom exercise offline", async ({ page, context }) => {
   ).toBeVisible();
   await page.getByRole("button", { name: "Add set", exact: true }).click();
   await expect(
-    page.getByRole("spinbutton", {
+    page.getByRole("textbox", {
       name: "Set 2 weight for Cable fly",
       exact: true,
     }),
   ).toHaveValue("12.5");
   await page
-    .getByRole("button", { name: "Remove set 2 of Cable fly", exact: true })
+    .getByRole("button", {
+      name: "Options for set 2 of Cable fly",
+      exact: true,
+    })
+    .click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Remove set", exact: true })
     .click();
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "Remove", exact: true })
     .click();
   await expect(
-    page.getByRole("spinbutton", {
+    page.getByRole("textbox", {
       name: "Set 2 weight for Cable fly",
       exact: true,
     }),
@@ -477,5 +494,272 @@ Then(
       async () => (await navigator.serviceWorker.ready).scope,
     );
     expect(scope).toBe(baseURL);
+  },
+);
+
+When("I leave an unfinished draft and return to training", async ({ page }) => {
+  await page
+    .getByRole("button", { name: "Start workout", exact: true })
+    .click();
+  await page
+    .getByRole("textbox", { name: "Set 1 weight for Bench press", exact: true })
+    .fill("82.5");
+  await page
+    .getByRole("textbox", {
+      name: "Set 1 repetitions for Bench press",
+      exact: true,
+    })
+    .fill("");
+  await page
+    .getByRole("link", { name: "Back to workouts", exact: true })
+    .filter({ visible: true })
+    .first()
+    .click();
+  await page
+    .getByRole("button", { name: /Resume/ })
+    .filter({ visible: true })
+    .first()
+    .click();
+  await expect(
+    page.getByRole("textbox", {
+      name: "Set 1 weight for Bench press",
+      exact: true,
+    }),
+  ).toHaveValue("82.5");
+});
+Then(
+  "my draft survives reload and reopening without counting as logged",
+  async ({ page, context }) => {
+    await page.reload();
+    const weight = (target: Page) =>
+      target.getByRole("textbox", {
+        name: "Set 1 weight for Bench press",
+        exact: true,
+      });
+    await expect(weight(page)).toHaveValue("82.5");
+    await expect(
+      page.getByRole("textbox", {
+        name: "Set 1 repetitions for Bench press",
+        exact: true,
+      }),
+    ).toHaveValue("");
+    await expect(
+      page.getByRole("button", { name: "Finish workout", exact: true }),
+    ).toBeDisabled();
+    await page
+      .getByRole("textbox", {
+        name: "Set 1 repetitions for Bench press",
+        exact: true,
+      })
+      .fill("7");
+    const reopened = await context.newPage();
+    await reopened.goto("./#/session");
+    await expect(weight(reopened)).toHaveValue("82.5");
+    await expect(
+      reopened.getByRole("button", {
+        name: "Log set 1 of Bench press",
+        exact: true,
+      }),
+    ).toHaveAttribute("aria-pressed", "false");
+    await expect(
+      reopened.getByRole("textbox", {
+        name: "Set 1 repetitions for Bench press",
+        exact: true,
+      }),
+    ).toHaveValue("7");
+    await reopened
+      .getByRole("button", { name: "Log set 1 of Bench press", exact: true })
+      .click();
+    await expect(
+      reopened.getByRole("button", {
+        name: "Undo set 1 of Bench press",
+        exact: true,
+      }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await reopened.close();
+  },
+);
+When(
+  "I use the compact training controls and set options",
+  async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 520 });
+    await page
+      .getByRole("button", { name: "Start workout", exact: true })
+      .click();
+    await expect(
+      page.getByRole("navigation", { name: "Mobile navigation" }),
+    ).toHaveCount(0);
+    await page
+      .getByRole("button", {
+        name: "Options for set 1 of Bench press",
+        exact: true,
+      })
+      .click();
+    await page
+      .getByRole("button", { name: "Increase repetitions", exact: true })
+      .click();
+    await expect(page.getByRole("dialog")).toContainText("9 reps");
+    await page
+      .getByRole("button", { name: "Close dialog", exact: true })
+      .click();
+    await page
+      .getByRole("textbox", {
+        name: "Set 1 weight for Bench press",
+        exact: true,
+      })
+      .fill("82.5");
+    await page
+      .getByRole("button", { name: "Complete set", exact: true })
+      .click();
+    await expect(
+      page.getByRole("region", { name: "Training controls" }),
+    ).toContainText("rest");
+    await expect(
+      page.getByRole("button", { name: "Undo last log", exact: true }),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+  },
+);
+Then(
+  "undo and reload keep the set open without resurrecting a draft",
+  async ({ page }) => {
+    await page
+      .getByRole("button", { name: "Undo last log", exact: true })
+      .click();
+    await expect(
+      page.getByRole("button", {
+        name: "Log set 1 of Bench press",
+        exact: true,
+      }),
+    ).toHaveAttribute("aria-pressed", "false");
+    await page.reload();
+    await expect(
+      page.getByRole("textbox", {
+        name: "Set 1 weight for Bench press",
+        exact: true,
+      }),
+    ).toHaveValue("82.5");
+    await expect(
+      page.getByRole("button", {
+        name: "Log set 1 of Bench press",
+        exact: true,
+      }),
+    ).toHaveAttribute("aria-pressed", "false");
+    await expect(page.getByText(/Draft saved on this device/)).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: "End rest", exact: true }),
+    ).toHaveCount(0);
+  },
+);
+When(
+  "an older draft is reopened after a completion and undo",
+  async ({ page, context }) => {
+    await page
+      .getByRole("button", { name: "Start workout", exact: true })
+      .click();
+    await page
+      .getByRole("textbox", {
+        name: "Set 1 weight for Bench press",
+        exact: true,
+      })
+      .fill("70");
+    const other = await context.newPage();
+    await other.goto("./#/session");
+    await other
+      .getByRole("button", {
+        name: "Discard drafts and use saved values",
+        exact: true,
+      })
+      .count();
+    // Keep this tab's unrelated draft while another set is completed and undone.
+    await other
+      .getByRole("button", { name: "Log set 2 of Bench press", exact: true })
+      .click();
+    await other
+      .getByRole("button", { name: "Undo set 2 of Bench press", exact: true })
+      .click();
+    await other.close();
+    await page.reload();
+  },
+);
+Then(
+  "I must explicitly discard the stale draft before logging",
+  async ({ page }) => {
+    await expect(
+      page.getByRole("textbox", {
+        name: "Set 1 weight for Bench press",
+        exact: true,
+      }),
+    ).toHaveValue("70");
+    await page
+      .getByRole("button", { name: "Log set 1 of Bench press", exact: true })
+      .click();
+    await expect(page.getByRole("alert")).toContainText(
+      "changed in another tab",
+    );
+    await page
+      .getByRole("button", {
+        name: "Discard drafts and use saved values",
+        exact: true,
+      })
+      .click();
+    await page.reload();
+    await expect(
+      page.getByRole("textbox", {
+        name: "Set 1 weight for Bench press",
+        exact: true,
+      }),
+    ).toHaveValue("0");
+    await expect(page.getByText(/Draft saved on this device/)).toHaveCount(0);
+  },
+);
+
+When("I build and complete a one-set free workout", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 520 });
+  await page.getByRole("button", { name: "Free workout", exact: true }).click();
+  await page.getByRole("button", { name: "Close dialog", exact: true }).click();
+  const controls = page.getByRole("region", { name: "Training controls" });
+  await expect(controls).toContainText("Choose your first exercise");
+  await expect(
+    page.getByRole("button", { name: "Finish workout", exact: true }),
+  ).toBeDisabled();
+  await controls
+    .getByRole("button", { name: "Choose exercise", exact: true })
+    .click();
+  await page
+    .getByRole("textbox", { name: "Exercise name", exact: true })
+    .fill("Single lift");
+  await page
+    .getByRole("button", { name: "Create and add exercise", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Complete set", exact: true }).click();
+  await page.getByRole("button", { name: "End rest", exact: true }).click();
+  await expect(controls).toContainText("All sets logged");
+  await expect(
+    controls.getByRole("button", { name: "Finish training", exact: true }),
+  ).toBeEnabled();
+});
+Then(
+  "training controls offer to finish and normal navigation returns",
+  async ({ page }) => {
+    await page
+      .getByRole("button", { name: "Finish training", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Save workout", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Close dialog", exact: true })
+      .click();
+    await expect(
+      page.getByRole("navigation", { name: "Mobile navigation" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: "Training controls" }),
+    ).toHaveCount(0);
   },
 );
