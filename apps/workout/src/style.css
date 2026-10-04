@@ -1,6 +1,20 @@
 @import "tailwindcss";
+@import "@form/ui/styles.css" layer(components);
 :root {
   color-scheme: dark;
+  --ui-background: var(--background);
+  --ui-foreground: var(--text);
+  --ui-primary: var(--purple);
+  --ui-primary-foreground: var(--background);
+  --ui-secondary: var(--surface);
+  --ui-secondary-foreground: var(--text);
+  --ui-accent: var(--surface);
+  --ui-accent-foreground: var(--text);
+  --ui-muted-foreground: var(--muted);
+  --ui-input: var(--surface);
+  --ui-border: var(--surface);
+  --ui-ring: var(--purple);
+  --ui-dark: 1;
   font-family: "Inter Variable", sans-serif;
   font-size: 14px;
   color: var(--text);
@@ -55,6 +69,33 @@ button {
 }
 button:disabled svg {
   color: var(--muted);
+}
+/* Shared shadcn controls keep the tracker's compact, context-specific layouts. */
+:where(.ui-button) {
+  display: inline-block;
+  height: auto;
+  padding: 0;
+  border-radius: 0;
+  white-space: normal;
+  font: inherit;
+  flex-shrink: 1;
+}
+:where(.ui-input, .ui-native-select, .ui-textarea) {
+  height: auto;
+  padding: 0;
+  box-shadow: none;
+}
+:where(.ui-button) svg {
+  width: revert-layer;
+  height: revert-layer;
+}
+.ui-switch {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+}
+.ui-switch[data-state="checked"] {
+  background: var(--purple);
+  border-color: var(--purple);
 }
 :focus-visible {
   outline: 2px solid var(--purple);
@@ -1319,35 +1360,6 @@ textarea::placeholder {
   width: 104px;
   flex-shrink: 0;
   font-size: 12px;
-}
-.switch-input {
-  appearance: none;
-  width: 36px;
-  height: 22px;
-  border-radius: 12px;
-  background: var(--surface);
-  border: 1px solid var(--muted);
-  position: relative;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-.switch-input::before {
-  content: "";
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  background: var(--muted);
-}
-.switch-input:checked {
-  background: var(--purple);
-  border-color: var(--purple);
-}
-.switch-input:checked::before {
-  background: var(--background);
-  left: 17px;
 }
 .backup-actions {
   display: flex;

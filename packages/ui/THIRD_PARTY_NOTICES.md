@@ -1,6 +1,6 @@
 # Third-party notices
 
-The Button, Input, Field and Dialog APIs and CSS are adapted from [unovue/shadcn-vue](https://github.com/unovue/shadcn-vue) at commit `b251d9fd92aa496495e127137a7734704fb34a29`, registry `apps/v4/registry/new-york-v4/ui/`, and its neutral theme. No shadcn runtime or CLI is required.
+The Button, Input, Field, Dialog, NativeSelect, Textarea and Switch APIs and CSS are adapted from [unovue/shadcn-vue](https://github.com/unovue/shadcn-vue) at commit `b251d9fd92aa496495e127137a7734704fb34a29`, registry `apps/v4/registry/new-york-v4/ui/`, and its neutral theme. No shadcn runtime or CLI is required.
 
 ```text
 MIT License

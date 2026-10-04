@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from "@form/ui";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import {
   ArrowDownToLine,
@@ -111,18 +112,18 @@ const title = computed(() =>
           ></a
         >
       </nav>
-      <button v-if="active" class="active-sidebar" @click="navigate('session')">
+      <Button v-if="active" class="active-sidebar" @click="navigate('session')">
         <span class="activity-dot"></span
         ><span
           >Workout in progress<small>{{ active.name }}</small></span
         ><ChevronRight :size="16" />
-      </button>
+      </Button>
       <div class="sidebar-bottom">
-        <button class="sidebar-action" @click="settingsOpen = true">
-          <Settings2 :size="17" />Settings</button
-        ><button v-if="!installed" class="sidebar-action" @click="install">
+        <Button class="sidebar-action" @click="settingsOpen = true">
+          <Settings2 :size="17" />Settings</Button
+        ><Button v-if="!installed" class="sidebar-action" @click="install">
           <ArrowDownToLine :size="17" />Install The Workout Tracker
-        </button>
+        </Button>
         <div class="local-note">
           <ShieldCheck :size="15" /><span>Yours. On this device.</span>
         </div>
@@ -148,13 +149,13 @@ const title = computed(() =>
                   ? "Ready offline"
                   : "Local workspace"
             }}</span
-          ><button
+          ><Button
             class="avatar"
             aria-label="Open settings"
             @click="settingsOpen = true"
           >
             <Settings2 :size="15" aria-hidden="true" />
-          </button>
+          </Button>
         </div>
       </header>
       <main id="main" class="main">
@@ -172,43 +173,43 @@ const title = computed(() =>
           <ShieldCheck :size="32" />
           <h1>Your data needs attention</h1>
           <p>{{ state.message }}</p>
-          <button
+          <Button
             v-if="state.kind === 'recovery'"
             class="btn secondary"
             @click="
               download(state.rawExport, 'the-workout-tracker-recovery.json')
             "
           >
-            Export recovery data</button
-          ><button class="btn primary" @click="reload">Try again</button>
+            Export recovery data</Button
+          ><Button class="btn primary" @click="reload">Try again</Button>
         </div>
         <template v-else-if="snapshot">
           <div v-if="error" class="notice" role="alert">
             <CircleHelp :size="18" /><span>{{ error }}</span
-            ><button class="text-button" @click="reload">Reload</button
-            ><button
+            ><Button class="text-button" @click="reload">Reload</Button
+            ><Button
               class="icon-button"
               aria-label="Dismiss error"
               @click="error = ''"
             >
               <X :size="16" />
-            </button>
+            </Button>
           </div>
           <div v-if="needRefresh && !active" class="notice">
             <span>A new version of The Workout Tracker is ready.</span
-            ><button class="text-button" @click="updateServiceWorker(true)">
+            ><Button class="text-button" @click="updateServiceWorker(true)">
               Update app
-            </button>
+            </Button>
           </div>
           <div v-if="installMessage" class="notice" role="status">
             <span>{{ installMessage }}</span
-            ><button
+            ><Button
               class="icon-button"
               aria-label="Dismiss install instructions"
               @click="installMessage = ''"
             >
               <X :size="16" />
-            </button>
+            </Button>
           </div>
 
           <WorkoutsPage
@@ -290,9 +291,9 @@ const title = computed(() =>
           >The Workout Tracker on your home screen<small
             >Open your journal like any other app.</small
           ></span
-        ><button class="btn secondary" :disabled="installed" @click="install">
+        ><Button class="btn secondary" :disabled="installed" @click="install">
           {{ installed ? "Installed" : "Install app" }}
-        </button>
+        </Button>
       </div>
       <p v-if="installMessage" class="small" role="status">
         {{ installMessage }}

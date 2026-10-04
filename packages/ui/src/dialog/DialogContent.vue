@@ -18,23 +18,31 @@ const props = withDefaults(
       showCloseButton?: boolean;
       portalTo?: DialogPortalProps["to"];
       portalDisabled?: boolean;
+      overlayClass?: string;
     }
   >(),
   { showCloseButton: true },
 );
 const emits = defineEmits<DialogContentEmits>();
 const contentProps = computed(() => {
-  const { showCloseButton, portalTo, portalDisabled, ...content } = props;
+  const {
+    showCloseButton,
+    portalTo,
+    portalDisabled,
+    overlayClass,
+    ...content
+  } = props;
   void showCloseButton;
   void portalTo;
   void portalDisabled;
+  void overlayClass;
   return content;
 });
 const forwarded = useForwardPropsEmits(contentProps, emits);
 </script>
 <template>
   <DialogPortal :to="portalTo" :disabled="portalDisabled"
-    ><DialogOverlay /><DialogContent
+    ><DialogOverlay :class="overlayClass" /><DialogContent
       v-bind="{ ...$attrs, ...forwarded }"
       class="ui-dialog-content"
       data-slot="dialog-content"

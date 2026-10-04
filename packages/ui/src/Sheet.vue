@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import {
-  DialogRoot,
-  DialogPortal,
-  DialogOverlay,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-  DialogClose,
-} from "reka-ui";
+import { DialogRoot } from "reka-ui";
+import DialogContent from "./dialog/DialogContent.vue";
+import DialogTitle from "./dialog/DialogTitle.vue";
+import DialogDescription from "./dialog/DialogDescription.vue";
+import DialogClose from "./dialog/DialogClose.vue";
+import Button from "./button/Button.vue";
 import { watch } from "vue";
 import { X } from "@lucide/vue";
 const props = withDefaults(
@@ -43,49 +40,49 @@ function restoreFocus(event: Event) {
       }
     "
   >
-    <DialogPortal>
-      <DialogOverlay class="dialog-overlay" />
-      <DialogContent
-        class="sheet"
-        :class="{ wide }"
-        @close-auto-focus="restoreFocus"
-      >
-        <header class="sheet-header">
-          <div>
-            <DialogTitle class="sheet-title">{{ title }}</DialogTitle
-            ><DialogDescription
-              v-if="description"
-              class="muted sheet-description"
-              >{{ description }}</DialogDescription
-            ><DialogDescription v-else class="sr-only"
-              >{{ title }} options</DialogDescription
-            >
-          </div>
-          <DialogClose class="icon-button" aria-label="Close dialog"
-            ><X :size="20"
-          /></DialogClose>
-        </header>
-        <slot />
-      </DialogContent>
-    </DialogPortal>
+    <DialogContent
+      class="sheet"
+      :show-close-button="false"
+      :class="{ wide }"
+      @close-auto-focus="restoreFocus"
+    >
+      <header class="sheet-header">
+        <div>
+          <DialogTitle class="sheet-title">{{ title }}</DialogTitle
+          ><DialogDescription
+            v-if="description"
+            class="muted sheet-description"
+            >{{ description }}</DialogDescription
+          ><DialogDescription v-else class="sr-only"
+            >{{ title }} options</DialogDescription
+          >
+        </div>
+        <DialogClose as-child
+          ><Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            class="icon-button"
+            aria-label="Close dialog"
+            ><X :size="20" /></Button
+        ></DialogClose>
+      </header>
+      <slot />
+    </DialogContent>
   </DialogRoot>
 </template>
 
 <style scoped>
-.dialog-overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--background);
-  opacity: 0.8;
-  z-index: 50;
-}
-.sheet {
+:global(.sheet) {
+  display: block;
+  animation: none;
   position: fixed;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
   z-index: 51;
   width: min(520px, calc(100% - 40px));
+  max-width: none;
   max-height: calc(100dvh - 64px);
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -94,7 +91,7 @@ function restoreFocus(event: Event) {
   border-radius: 12px;
   padding: 28px;
 }
-.sheet.wide {
+:global(.sheet.wide) {
   width: min(620px, calc(100% - 40px));
 }
 .sheet-header {
@@ -142,7 +139,7 @@ function restoreFocus(event: Event) {
   color: var(--text);
 }
 
-.sheet {
+:global(.sheet) {
   color: var(--text);
   font-family: inherit;
   box-sizing: border-box;
@@ -164,8 +161,8 @@ function restoreFocus(event: Event) {
   outline-offset: 4px;
 }
 @media (max-width: 650px) {
-  .sheet,
-  .sheet.wide {
+  :global(.sheet),
+  :global(.sheet.wide) {
     width: 100%;
     top: auto;
     bottom: 0;

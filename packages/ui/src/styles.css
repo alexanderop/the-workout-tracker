@@ -583,3 +583,72 @@
     margin-top: 1px;
   }
 }
+
+/* shadcn-vue form controls, adapted to the shared namespaced tokens. */
+.ui-textarea,
+.ui-native-select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--ui-input);
+  border-radius: calc(var(--ui-radius) - 2px);
+  background: transparent;
+  color: var(--ui-foreground);
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+}
+.ui-textarea {
+  min-height: 4rem;
+}
+.ui-native-select {
+  height: 2.25rem;
+}
+.ui-textarea:focus-visible,
+.ui-native-select:focus-visible,
+.ui-switch:focus-visible {
+  outline: 2px solid var(--ui-ring);
+  outline-offset: 2px;
+}
+.ui-textarea[aria-invalid="true"],
+.ui-native-select[aria-invalid="true"] {
+  border-color: var(--ui-destructive);
+}
+.ui-textarea:disabled,
+.ui-native-select:disabled,
+.ui-switch:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ui-switch {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 22px;
+  padding: 3px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--ui-input);
+  cursor: pointer;
+}
+.ui-switch[data-state="checked"] {
+  background: var(--ui-primary);
+}
+.ui-switch-thumb {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--ui-muted-foreground);
+  pointer-events: none;
+  transition: transform 0.15s;
+}
+.ui-switch-thumb[data-state="checked"] {
+  transform: translateX(14px);
+  background: var(--ui-primary-foreground);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-switch-thumb {
+    transition: none;
+  }
+}

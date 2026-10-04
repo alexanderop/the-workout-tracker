@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button, NumericInput } from "@form/ui";
 import { ref, watch, nextTick } from "vue";
 import { Check, MoreHorizontal, Save } from "@lucide/vue";
 import type { TrainingRow } from "./useTrainingSession";
@@ -28,14 +29,6 @@ watch(
     form.value?.scrollIntoView({ block: "center", behavior: "instant" });
   },
 );
-function selectInput(event: FocusEvent) {
-  emit("select");
-  if (event.target instanceof HTMLInputElement) event.target.select();
-}
-function input(field: "weight" | "reps", event: Event) {
-  if (event.target instanceof HTMLInputElement)
-    emit("edit", { [field]: event.target.value });
-}
 </script>
 <template>
   <form
@@ -49,7 +42,7 @@ function input(field: "weight" | "reps", event: Event) {
       class="set-row"
       :class="{ completed: row.set.completed, edited: dirty }"
     >
-      <button
+      <Button
         type="button"
         class="set-number"
         :aria-label="`Select set ${row.index + 1} of ${row.exercise.name}`"
@@ -57,34 +50,34 @@ function input(field: "weight" | "reps", event: Event) {
         @click="emit('select')"
       >
         {{ row.index + 1 }}
-      </button>
-      <input
-        :value="row.weight"
+      </Button>
+      <NumericInput
+        :model-value="row.weight"
+        title="Weight"
+        unit="kg"
+        :decimals="2"
+        :preset-step="2.5"
         class="set-input"
-        type="text"
-        inputmode="decimal"
-        maxlength="64"
         :aria-invalid="!!row.issue"
         :aria-describedby="row.issue ? `set-issue-${row.set.id}` : undefined"
-        :aria-label="`Set ${row.index + 1} weight for ${row.exercise.name}`"
+        :label="`Set ${row.index + 1} weight for ${row.exercise.name}`"
         :disabled="busy"
-        @input="input('weight', $event)"
-        @focus="selectInput"
+        @update:model-value="emit('edit', { weight: $event })"
+        @open="emit('select')"
       />
-      <input
-        :value="row.reps"
+      <NumericInput
+        :model-value="row.reps"
+        title="Reps"
+        :min="1"
         class="set-input"
-        type="text"
-        inputmode="numeric"
-        maxlength="64"
         :aria-invalid="!!row.issue"
         :aria-describedby="row.issue ? `set-issue-${row.set.id}` : undefined"
-        :aria-label="`Set ${row.index + 1} repetitions for ${row.exercise.name}`"
+        :label="`Set ${row.index + 1} repetitions for ${row.exercise.name}`"
         :disabled="busy"
-        @input="input('reps', $event)"
-        @focus="selectInput"
+        @update:model-value="emit('edit', { reps: $event })"
+        @open="emit('select')"
       />
-      <button
+      <Button
         type="submit"
         class="set-toggle"
         :class="{ logged: row.set.completed, 'has-draft': dirty }"
@@ -96,8 +89,8 @@ function input(field: "weight" | "reps", event: Event) {
           v-else
           :size="19"
         />
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
         class="icon-button set-options"
         :aria-label="`Options for set ${row.index + 1} of ${row.exercise.name}`"
@@ -105,7 +98,7 @@ function input(field: "weight" | "reps", event: Event) {
         @click="emit('options')"
       >
         <MoreHorizontal :size="20" />
-      </button>
+      </Button>
     </div>
     <p
       v-if="row.issue"
@@ -124,15 +117,15 @@ function input(field: "weight" | "reps", event: Event) {
         Saved: {{ row.set.weightKg }} kg × {{ row.set.reps }} reps ·
         {{ row.set.completed ? "logged" : "not logged" }}.
       </p>
-      <button
+      <Button
         type="button"
         class="text-button"
         :disabled="busy"
         @click="emit('keep')"
       >
         Keep my input
-      </button>
-      <button
+      </Button>
+      <Button
         v-for="draft in row.alternatives"
         :key="draft.id"
         type="button"
@@ -141,10 +134,10 @@ function input(field: "weight" | "reps", event: Event) {
       >
         Review {{ draft.weight || "empty" }} kg ×
         {{ draft.reps || "empty" }} reps
-      </button>
-      <button type="button" class="text-button" @click="emit('discard')">
+      </Button>
+      <Button type="button" class="text-button" @click="emit('discard')">
         Discard drafts and use saved values
-      </button>
+      </Button>
     </div>
     <p v-if="row.storageIssue" class="field-error" role="alert">
       {{ row.storageIssue }}

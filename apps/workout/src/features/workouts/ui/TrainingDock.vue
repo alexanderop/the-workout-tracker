@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from "@form/ui";
 import { computed } from "vue";
 import { ArrowLeft } from "@lucide/vue";
 import { duration } from "./presentation";
@@ -37,13 +38,13 @@ function advance() {
           }}</small
         >
       </div>
-      <button
+      <Button
         class="btn primary"
         :disabled="saving"
         @click="run({ type: 'stop-rest', sessionId: active.id })"
       >
         End rest
-      </button>
+      </Button>
     </template>
     <template v-else-if="training.current.value">
       <div>
@@ -55,7 +56,7 @@ function advance() {
           {{ training.current.value.reps || "—" }}</small
         >
       </div>
-      <button
+      <Button
         class="btn primary"
         type="submit"
         :form="`set-form-${training.current.value.set.id}`"
@@ -68,7 +69,7 @@ function advance() {
               : "Undo set"
             : "Log set"
         }}
-      </button>
+      </Button>
     </template>
     <template v-else-if="activeSetCount">
       <div>
@@ -88,15 +89,15 @@ function advance() {
           >Next: {{ nextExercise?.name }}</small
         >
       </div>
-      <button class="btn primary" :disabled="saving" @click="advance">
+      <Button class="btn primary" :disabled="saving" @click="advance">
         {{ nextExercise ? "Next exercise" : "Finish workout" }}
-      </button>
+      </Button>
     </template>
     <template v-else>
       <div>
         <strong>Choose your first exercise</strong>
       </div>
-      <button class="btn primary" @click="emit('pick')">Choose exercise</button>
+      <Button class="btn primary" @click="emit('pick')">Choose exercise</Button>
     </template>
   </section>
 </template>

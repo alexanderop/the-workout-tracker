@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { Sheet } from "@form/ui";
+import { Sheet, Button, NativeSelect, Switch } from "@form/ui";
 import { ArrowDownToLine, Upload } from "@lucide/vue";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import { download } from "./presentation";
@@ -78,6 +78,13 @@ async function importBackup() {
     backupBusy.value = false;
   }
 }
+function changeAutoRest(autoRest: boolean) {
+  if (!snapshot.value) return;
+  void run({
+    type: "settings",
+    settings: { ...snapshot.value.settings, autoRest },
+  });
+}
 function changeRestDuration(event: Event) {
   if (event.target instanceof HTMLSelectElement && snapshot.value)
     void run({
@@ -104,29 +111,20 @@ function changeRestDuration(event: Event) {
             >Automatic rest timer<small
               >Start counting down after a logged set.</small
             ></span
-          ><input
-            class="switch-input"
-            type="checkbox"
-            :checked="snapshot.settings.autoRest"
+          ><Switch
+            aria-label="Automatic rest timer"
+            :model-value="snapshot.settings.autoRest"
             :disabled="saving"
-            @change="
-              run({
-                type: 'settings',
-                settings: {
-                  ...snapshot.settings,
-                  autoRest: !snapshot.settings.autoRest,
-                },
-              })
-            " /></label
+            @update:model-value="changeAutoRest" /></label
         ><label class="settings-row"
           ><span
             >Rest between sets<small
               >Choose the pace that suits your session.</small
             ></span
-          ><select
+          ><NativeSelect
             class="input rest-select"
             aria-label="Rest duration"
-            :value="snapshot.settings.restSeconds"
+            :model-value="snapshot.settings.restSeconds"
             :disabled="saving"
             @change="changeRestDuration"
           >
@@ -137,7 +135,7 @@ function changeRestDuration(event: Event) {
             >
               {{ seconds }} sec
             </option>
-          </select></label
+          </NativeSelect></label
         >
         <div class="settings-row">
           <span>Weight unit</span><span class="muted">Kilograms · kg</span>
@@ -150,18 +148,18 @@ function changeRestDuration(event: Event) {
           move them to another device.
         </p>
         <div class="backup-actions">
-          <button
+          <Button
             class="btn secondary"
             :disabled="backupBusy || saving"
             @click="exportBackup"
           >
-            <ArrowDownToLine :size="17" />Export backup</button
-          ><button
+            <ArrowDownToLine :size="17" />Export backup</Button
+          ><Button
             class="btn secondary"
             :disabled="backupBusy || saving"
             @click="importInput?.click()"
           >
-            <Upload :size="17" />Import backup</button
+            <Upload :size="17" />Import backup</Button
           ><input
             ref="importInput"
             class="sr-only"
@@ -180,19 +178,19 @@ function changeRestDuration(event: Event) {
             conflicts. Your current settings stay unchanged.
           </p>
           <div class="form-actions">
-            <button
+            <Button
               class="btn ghost"
               :disabled="backupBusy"
               @click="backupFile = null"
             >
-              Cancel import</button
-            ><button
+              Cancel import</Button
+            ><Button
               class="btn primary"
               :disabled="backupBusy || saving"
               @click="importBackup"
             >
               {{ backupBusy ? "Importing…" : "Import this backup" }}
-            </button>
+            </Button>
           </div>
         </div>
         <p v-if="backupMessage" role="status" class="small">
