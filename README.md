@@ -73,6 +73,8 @@ This project does not maintain automated tests or a testing strategy. `pnpm veri
 pnpm verify
 ```
 
+Commits run these checks automatically through Husky. See [Verification and delivery](docs/workflows.md#verification-and-delivery) for hook setup and behavior.
+
 ## Documentation map
 
 | Question | Document |

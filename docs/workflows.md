@@ -34,6 +34,8 @@ Update foundations stories and [design](design.md) when a design rule changes. I
 
 ## Verification and delivery
 
+Husky installs the Git hooks through the root `prepare` script when you run `pnpm install`. Before each commit, `.husky/pre-commit` runs `pnpm verify` across the workspace and blocks the commit if type checking or linting fails. The checks read the current working tree, including unstaged changes. Run `pnpm prepare` to reinstall the hooks in an existing checkout.
+
 `pnpm verify` runs only type checking and linting. Do not add, maintain, or run automated tests, test infrastructure, or testing strategies unless the user explicitly requests them. Standalone architecture and workspace checks are optional and remain outside verification. Build only when needed to run or deploy the application; offline and installation behavior require the production preview described in [README.md](../README.md).
 
 For documentation-only changes, check links, referenced paths, command names, and consistency with the implementation. Report edits, checks, commits, pushes, and deployment separately; completing one does not establish the others.
