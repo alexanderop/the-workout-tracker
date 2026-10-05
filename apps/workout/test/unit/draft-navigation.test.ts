@@ -11,9 +11,9 @@ const scopes: EffectScope[] = [];
 afterEach(() => {
   for (const scope of scopes.splice(0)) scope.stop();
 });
-function setup(initial: Snapshot, drafts: readonly SetDraft[] = []) {
+function setup(initial: Snapshot, drafts: readonly SetDraft[] = [], loaded = true) {
   const factory = createWorkoutFactory("navigation");
-  const snapshot = ref<Snapshot | null>(initial);
+  const snapshot = ref<Snapshot | null>(loaded ? initial : null);
   const journal = createMemoryJournal(factory.id, drafts).journal;
   const storage = createMemoryStorage(initial).storage;
   const service = createWorkouts({ storage, journal, now: () => FIXED_NOW, id: factory.id });
@@ -35,6 +35,17 @@ function setup(initial: Snapshot, drafts: readonly SetDraft[] = []) {
 }
 
 describe("training navigation", () => {
+  it("selects unfinished work when the initial snapshot arrives asynchronously", async () => {
+    const f = createWorkoutFactory();
+    const first = f.sessionExercise({ sets: [f.set({ completed: true })] });
+    const second = f.sessionExercise();
+    const initial = f.snapshot({ active: f.activeSession({ exercises: [first, second] }) });
+    const { training, snapshot } = setup(initial, [], false);
+    snapshot.value = initial;
+    await nextTick();
+    expect(training.currentExercise.value?.id).toBe(second.id);
+  });
+
   it("resumes the first unfinished exercise and keeps it selected after its last set is logged", async () => {
     const f = createWorkoutFactory();
     const finished = f.sessionExercise({ sets: [f.set({ completed: true })] });

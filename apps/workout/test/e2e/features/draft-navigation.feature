@@ -20,7 +20,7 @@ Feature: Keep edits visible when leaving an editor
     Then the template editor is closed
 
   Scenario: Review my sets reveals and focuses a hidden input draft
-    Given my active workout contains Bench press and Back squat
+    Given Bench press is logged and Back squat is unfinished
     When I confirm a Back squat weight of 55 kilograms
     And I switch to Bench press and review my input drafts
     Then the Back squat draft is visible and focused

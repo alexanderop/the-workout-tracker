@@ -48,6 +48,8 @@ async function seedActive(page: Page, completed: boolean) {
   ] });
   await seedWorkoutStorage(page, f.snapshot({ active }));
   await page.getByRole("button", { name: "Continue workout", exact: true }).click();
+  await expect(page).toHaveURL(/#\/session$/);
+  await expect(page.getByRole("navigation", { name: "Workout exercises", exact: true })).toBeVisible();
 }
 Given("my active workout contains Bench press and Back squat", async ({ workout, page }) => {
   await workout.open();
@@ -66,7 +68,7 @@ When("I confirm a Back squat weight of 55 kilograms", async ({ page }) => {
   await editor.getByRole("button", { name: "Use weight", exact: true }).click();
 });
 When("I switch to Bench press and review my input drafts", async ({ page }) => {
-  await page.getByRole("navigation", { name: "Workout exercises", exact: true }).getByRole("button", { name: "Bench press", exact: true }).click();
+  await page.getByRole("navigation", { name: "Workout exercises", exact: true }).getByRole("button", { name: "Bench press, all sets logged", exact: true }).click();
   await page.getByRole("button", { name: "Finish", exact: true }).first().click();
   await page.getByRole("dialog", { name: "Finish this workout?", exact: true }).getByRole("button", { name: "Review my sets", exact: true }).click();
 });
