@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { Sheet, Button } from "@form/ui";
 import SetRow from "./SetRow.vue";
 import type { useTrainingSession } from "./useTrainingSession";
@@ -15,6 +15,17 @@ const emit = defineEmits<{
   select: [id: string];
 }>();
 const row = computed(() => (setId ? training.rows.get(setId) : undefined));
+const confirmation = ref<"clear" | "discard" | null>(null);
+watch(
+  () => setId,
+  () => { confirmation.value = null; },
+);
+async function confirm() {
+  if (confirmation.value === "discard" && row.value)
+    training.useSaved(row.value.set.id);
+  if (confirmation.value === "clear") await clear();
+  confirmation.value = null;
+}
 async function clear() {
   if (!row.value) return;
   const id = row.value.set.id;
@@ -62,17 +73,42 @@ async function clear() {
         v-if="row.set.completed"
         variant="secondary"
         :disabled="busy"
-        @click="clear"
+        @click="confirmation = 'clear'"
         >Clear logged set</Button
       >
       <Button
         v-if="row.touched"
         variant="ghost"
         :disabled="busy"
-        @click="training.useSaved(row.set.id)"
+        @click="confirmation = 'discard'"
         >Discard input changes</Button
       >
       <Button variant="ghost" @click="emit('close')">Done</Button>
+    </div>
+  </Sheet>
+  <Sheet
+    :open="confirmation !== null"
+    :title="
+      confirmation === 'clear' ? 'Clear logged set?' : 'Discard input changes?'
+    "
+    :description="
+      confirmation === 'clear'
+        ? 'This removes the logged result and returns the set to unfinished work.'
+        : 'This deletes the input drafts for this set and restores its saved values.'
+    "
+    @close="confirmation = null"
+  >
+    <div class="form-actions">
+      <Button
+        variant="secondary"
+        :disabled="busy"
+        @click="confirmation = null"
+      >
+        Cancel
+      </Button>
+      <Button :disabled="busy" @click="confirm">
+        {{ confirmation === 'clear' ? 'Clear set' : 'Discard input' }}
+      </Button>
     </div>
   </Sheet>
 </template>

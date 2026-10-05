@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { IconButton, Button, NumericInput } from "@form/ui";
-import { useTemplateRef, watch, nextTick } from "vue";
+import { Sheet, IconButton, Button, NumericInput } from "@form/ui";
+import { useTemplateRef, watch, nextTick, ref } from "vue";
 import { Check, MoreHorizontal, Save } from "@lucide/vue";
 import type { TrainingRow } from "./useTrainingSession";
 import type { RawValues, SetDraft } from "../domain/drafts";
@@ -20,6 +20,7 @@ const emit = defineEmits<{
   keep: [];
   recover: [draft: SetDraft];
 }>();
+const discardOpen = ref(false);
 const form = useTemplateRef<HTMLFormElement>("form");
 watch(
   () => row.issue,
@@ -157,7 +158,7 @@ defineExpose({
         unstyled
         type="button"
         class="text-button"
-        @click="emit('discard')"
+        @click="discardOpen = true"
       >
         Discard drafts and use saved values
       </Button>
@@ -174,4 +175,22 @@ defineExpose({
       }}
     </p>
   </form>
+  <Sheet
+    :open="discardOpen"
+    title="Discard input changes?"
+    description="This deletes the input drafts for this set and restores its saved values."
+    @close="discardOpen = false"
+  >
+    <div class="form-actions">
+      <Button variant="secondary" @click="discardOpen = false">
+        Keep editing
+      </Button>
+      <Button
+        :disabled="busy"
+        @click="emit('discard'); discardOpen = false"
+      >
+        Discard input
+      </Button>
+    </div>
+  </Sheet>
 </template>

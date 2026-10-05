@@ -21,6 +21,7 @@ Developer familiarity should inform our respect for efficiency and precision. It
 | --------- | ------------------ |
 | Minimal, but understandable | Keep the next action prominent. Use clear labels and progressive disclosure rather than hiding essential actions behind unfamiliar icons. |
 | Fast to edit, safe to correct | Keep frequent edits close to their values. Distinguish editing a value from logging a set, preserve input on failure and make recovery clear. |
+| Confirm before deleting | Every delete, removal or discard action opens a confirmation modal before changing data. Name what will be lost, explain permanence, and provide a clear Cancel action. |
 | An overview before detail | Lead with information needed for the current task. Keep workout summaries scannable and exercise and set details easy to reach. |
 | Progress grounded in real training | Explain metrics, units and comparison periods. Distinguish completed work from planned work, and handle limited history honestly. |
 | Motivation without pressure | Make completed work and personal improvements visible. Use calm, specific encouragement; avoid guilt, invented achievements or rewards that distract from training. |
@@ -63,7 +64,13 @@ The desktop sidebar installation action uses a left-aligned label with an icon c
 
 Settings is a full page at `/settings`, reached through the content footer on desktop and mobile. The footer uses a native navigation link with a visible focus outline and a minimum 44px touch target. The current Settings link announces its active page. Settings has no header or sidebar trigger and does not open an overlay. The main workout navigation keeps its three destinations.
 
-The page groups training preferences, backup controls, and installation under the Settings heading. Browser Back returns to the previous page. Leaving Settings clears an unsubmitted backup selection. Saved preferences and workout drafts remain in the shared workspace.
+The page groups training preferences, backup controls, installation, and data deletion under the Settings heading. Delete all data uses a separate neutral section after backups and installation. Its confirmation names history, the active workout, drafts, templates, custom exercises, and preference reset. Downloaded backups remain on the device. Browser Back returns to the previous page. Leaving Settings clears an unsubmitted backup selection. Saved preferences and workout drafts remain in the shared workspace.
+
+## Destructive actions
+
+Deleting data, removing exercises or sets, clearing a logged result, discarding input drafts, and reducing a template or workout set count require an additional confirmation modal. The initiating control never performs the deletion. State the affected data and consequence, label the confirming action explicitly, and make cancellation easy. Escape, the close button and backdrop dismissal cancel. Keep initial focus on a safe control and restore focus on dismissal. Disable repeated submission while saving and report failures without claiming success. A conflict requires another review before deletion.
+
+Use the existing palette and modal surfaces; deletion does not introduce a new warning color. Normal reversible logging toggles remain quick corrections. Cancelling an unconfirmed numeric edit or changing a picker selection does not delete saved data.
 
 ## Workout-first screens
 

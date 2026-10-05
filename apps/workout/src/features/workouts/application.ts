@@ -7,11 +7,12 @@ import {
   type Command,
   type Snapshot,
 } from "./domain";
-import type { WorkoutStorage, Result } from "./ports";
+import type { WorkoutStorage, Result, DraftJournal } from "./ports";
 export type { LoadState, Result } from "./ports";
 
 export type WorkoutDependencies = {
   readonly storage: WorkoutStorage;
+  readonly journal: DraftJournal;
   readonly now: () => number;
   readonly id: () => string;
 };
@@ -47,10 +48,7 @@ function mergeSnapshots(
   local: Snapshot,
   incoming: Snapshot,
 ): Snapshot | string {
-  if (
-    local.revision === 0 &&
-    canonical(local) === canonical(initialSnapshot())
-  ) {
+  if (canonical({ ...local, revision: 0 }) === canonical(initialSnapshot())) {
     const restored = {
       ...incoming,
       revision: local.revision,
@@ -118,7 +116,12 @@ function validateWrite(
   return { kind: "valid", data: validated.data };
 }
 
-export function createWorkouts({ storage, now, id }: WorkoutDependencies) {
+export function createWorkouts({
+  storage,
+  journal,
+  now,
+  id,
+}: WorkoutDependencies) {
   let closed = false;
   const write = async (
     expectedRevision: number,
@@ -151,6 +154,31 @@ export function createWorkouts({ storage, now, id }: WorkoutDependencies) {
     }
   };
   return {
+    async deleteAllData(expectedRevision: number): Promise<
+      | Result
+      | {
+          readonly kind: "cleanup-pending";
+          readonly snapshot: Snapshot;
+          readonly message: string;
+        }
+    > {
+      const result = await write(expectedRevision, (snapshot) => ({
+        ...initialSnapshot(),
+        revision: snapshot.revision + 1,
+      }));
+      if (result.kind !== "saved") return result;
+      try {
+        journal.clearBefore(result.snapshot.revision);
+        return result;
+      } catch {
+        return {
+          kind: "cleanup-pending",
+          snapshot: result.snapshot,
+          message:
+            "Your workouts and preferences were deleted, but input drafts could not be cleared. Retry to finish deleting your data.",
+        };
+      }
+    },
     async execute(command: Command, expectedRevision: number): Promise<Result> {
       const parsed = commandSchema.safeParse(command);
       if (!parsed.success)

@@ -18,7 +18,7 @@ The app lives in `apps/workout`. Its source has these responsibilities:
 
 - `features/workouts/domain.ts` owns readonly models, Zod schemas, starter data, and the pure `reduceWorkout` transition. Time and ID generation are explicit inputs.
 - `features/workouts/ports.ts` declares the storage contract using domain types. It imports no runtime implementation.
-- `features/workouts/application.ts` owns commands, backup merging, revision checks, and the service lifetime. `createWorkouts` receives storage, a clock, and an ID generator.
+- `features/workouts/application.ts` owns commands, backup merging, revision checks, and the service lifetime. `createWorkouts` receives storage, the draft journal, a clock, and an ID generator. Its `deleteAllData` capability owns revision-checked reset and draft erasure, including explicit partial-cleanup results.
 - `features/workouts/domain/drafts.ts` owns draft values and their validation; `features/workouts/adapters/browser-drafts.ts` implements the injected draft journal using browser storage.
 - `features/workouts/adapters/dexie.ts` owns IndexedDB initialization, validation of persisted data, atomic writes, observation, and connection cleanup.
 - `features/workouts/ui/` owns training-specific components and `useWorkouts`. The composable receives a service and removes its own subscription on disposal.
@@ -135,3 +135,7 @@ Draft recovery can fail independently from confirmed IndexedDB storage. The app 
 The set schema accepts optional `targetReps` for compatibility with existing version 2 snapshots and backups. Reads preserve absent fields rather than rewriting old records. New set edits capture positive targets; actual logged repetitions may be zero. Old app versions with the previous strict schema may reject new enriched backups. The database name and table version are unchanged.
 
 Optional session-exercise notes keep existing version 2 snapshots and backups readable without a database migration. New exports include saved notes. Older strict-schema clients can reject note-bearing snapshots or backups.
+
+### Data deletion across stores
+
+`deleteAllData` writes a default snapshot with an increased revision through the existing atomic comparison. Only a successful reset can erase drafts. The browser draft adapter persists immutable revision markers and removes older app-owned draft records, including malformed records. Draft writers check the maximum deletion revision before and after writing, and recovery ignores older records. Unrelated browser keys and newer drafts remain untouched. IndexedDB and localStorage are separate resources; cleanup failure is a visible partial result, not an atomic rollback guarantee.

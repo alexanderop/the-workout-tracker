@@ -50,7 +50,7 @@ The preview uses the same address. Stop the development server first. Keep the s
 - Enter weights in kg and repetitions with the numeric keypad or quick-pick suggestions, then log each set. Zero repetitions records a failed attempt. Confirming a numeric value saves it to the input draft; Cancel leaves it unchanged. Drafts recover after navigation, reload and reopening. Logging a set is a separate action. A storage error leaves the input visible and reports when recovery is unavailable.
 - Resume a workout, use the rest timer, add or remove sets and exercises, finish or explicitly discard the session.
 - Review history, completed-set volume, lifting trends and heaviest sets.
-- Export and import JSON backups from Settings.
+- Export and import JSON backups from Settings, or delete all personal data after confirmation.
 - Use the app offline after its first complete production load. Use your browser's installation option, or Share → Add to Home Screen on iOS.
 
 No accounts, analytics, cloud sync, or demo workout history. New installations contain exercises but no workouts or templates. New exercise weights start at zero. Repeated workouts and templates keep their own set values; previous performance is shown as a reference.
@@ -59,7 +59,7 @@ No accounts, analytics, cloud sync, or demo workout history. New installations c
 
 IndexedDB holds your journal in this browser profile, on this origin. Clearing site data removes it. Export backups regularly; installation is not a backup.
 
-Imports restore a completely untouched installation, including templates. Otherwise they add missing records, skip exact duplicates and reject conflicting IDs without partially importing. Local settings stay unchanged. Two different active workouts cannot be merged. A newer backup with edits to records already on another device can therefore require a fresh browser profile for restoration. Import is not multi-device synchronization.
+Imports restore an empty journal with the default catalog and preferences, including after deleting all data. Otherwise they add missing records, skip exact duplicates and reject conflicting IDs without partially importing. Local settings stay unchanged. Two different active workouts cannot be merged. A newer backup with edits to records already on another device can therefore require a fresh browser profile for restoration. Import is not multi-device synchronization.
 
 An unreadable database offers a raw recovery export rather than silently clearing your data. Simultaneous edits use revision checks; if another tab changed the set you are editing, The Workout Tracker keeps your draft visible and offers an explicit choice to keep your input against the latest saved values or discard the draft. Recovered drafts require review when the saved values of that set changed; unrelated workout edits do not create a conflict.
 

@@ -49,6 +49,7 @@ function removeOptionSet() {
   const row = optionRow.value;
   if (!row || !active.value) return;
   optionSetId.value = null;
+  error.value = "";
   confirmation.value = {
     title: "Remove set?",
     description: "This removes the set and its draft from your active workout.",
@@ -204,6 +205,7 @@ defineExpose({
     optionSetId.value = id;
   },
   confirm: (request: Confirmation) => {
+    error.value = "";
     confirmation.value = request;
   },
 });
@@ -436,26 +438,30 @@ defineExpose({
     :open="confirmation !== null"
     :title="confirmation?.title ?? 'Confirm'"
     :description="confirmation?.description"
-    @close="confirmation = null"
-    ><div class="form-actions">
+    @close="!saving && (confirmation = null)"
+    >
+    <p v-if="error" class="field-error" role="alert">{{ error }}</p>
+    <div class="form-actions">
       <Button
         unstyled
         class="btn secondary"
         :disabled="saving"
         @click="confirmation = null"
       >
-        Keep it</Button
+        Cancel</Button
       ><Button
         unstyled
         class="btn primary"
         :disabled="saving"
         @click="confirmAction"
       >
-        {{
-          confirmation?.command.type === "discard"
-            ? "Discard workout"
-            : "Remove"
-        }}
+        <span v-if="confirmation?.command.type === 'discard'">
+          Discard workout
+        </span>
+        <span v-else-if="confirmation?.command.type === 'remove-set'">
+          Remove set
+        </span>
+        <span v-else>Remove exercise</span>
       </Button>
     </div></Sheet
   >

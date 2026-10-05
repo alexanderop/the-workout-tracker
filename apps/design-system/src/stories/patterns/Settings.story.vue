@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import {
+  Button,
+  Sheet,
   Field,
   FieldLabel,
   FieldDescription,
@@ -10,8 +12,16 @@ import {
   Switch,
   NativeSelect,
 } from "@form/ui";
+const deletionOpen = ref(false);
+const deleted = ref(false);
 const autoRest = ref(true);
 const rest = ref<string | number>(90);
+function confirmDeletion() {
+  deleted.value = true;
+  deletionOpen.value = false;
+  autoRest.value = true;
+  rest.value = 90;
+}
 </script>
 <template>
   <Story title="03 Patterns/Settings">
@@ -40,6 +50,32 @@ const rest = ref<string | number>(90);
             ></FieldGroup
           ></FieldSet
         >
+        <section class="stack">
+          <h2>Delete your data</h2>
+          <p>
+            Remove your workouts, templates, custom exercises and preferences
+            from this browser. Export a backup first if you want to keep a copy.
+          </p>
+          <Button variant="secondary" @click="deletionOpen = true">
+            Delete all data
+          </Button>
+          <p v-if="deleted" role="status">
+            Example data deleted. No workout storage was changed.
+          </p>
+        </section>
+        <Sheet
+          :open="deletionOpen"
+          title="Delete all your data?"
+          description="This permanently deletes your workout history, active workout, input drafts, templates and custom exercises from this browser, and resets your preferences. This cannot be undone. Downloaded backups stay on your device."
+          @close="deletionOpen = false"
+        >
+          <div class="row">
+            <Button variant="secondary" @click="deletionOpen = false">
+              Cancel
+            </Button>
+            <Button @click="confirmDeletion">Delete all data</Button>
+          </div>
+        </Sheet>
         <p class="note">These settings apply only within this example.</p>
       </div></Variant
     >
@@ -54,15 +90,21 @@ Group occasional decisions by purpose.
 
 ## Variants
 
-An immediate toggle and fixed selection values.
+An immediate toggle, fixed selection values and a destructive action with confirmation.
 
 ## States
 
-On, off and selected rest duration.
+On, off, selected rest duration, deletion confirmation and deletion feedback.
 
 ## Behavior
 
 Labels describe the function; help text explains the effect.
+Every delete, removal or discard action opens an additional modal before changing data.
+Name what will be lost and whether it can be undone. Keep Cancel available, trap
+keyboard focus, and return focus to the opener on dismissal. Escape and backdrop
+dismissal cancel. Use existing neutral surfaces and the shared accent rather than
+introducing a warning color. Ordinary reversible log toggles are corrections,
+not deletions.
 
 ## Examples and limitations
 

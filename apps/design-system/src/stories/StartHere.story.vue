@@ -34,6 +34,11 @@
               to values and preserve input when saving fails.
             </li>
             <li>
+              <strong>Confirm before deleting.</strong> Every delete, removal or
+              discard action opens a modal naming what will be lost. Offer a
+              clear way to cancel before making any change.
+            </li>
+            <li>
               <strong>An overview before detail.</strong> Make summaries
               scannable and set details easy to reach.
             </li>
@@ -83,6 +88,7 @@ Review each design against these questions:
 
 - Is the next action apparent at a glance?
 - Can a value be edited and a mistake corrected without losing context?
+- Does every deletion ask for confirmation and explain what will be lost?
 - Are planned, edited and logged values distinguishable?
 - Does the overview explain what was completed?
 - Are progress metrics and comparison periods understandable?

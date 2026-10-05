@@ -31,6 +31,7 @@ const replaceTargets = ref(false),
 const issue = ref(""),
   dismiss = ref(false);
 const savePending = ref(false);
+const removalOpen = ref(false);
 const body = useTemplateRef<HTMLElement>("body");
 let revision = 0;
 let baseline = "";
@@ -89,6 +90,7 @@ function reset() {
   revision = workspace.snapshot.value?.revision ?? 0;
   issue.value = "";
   dismiss.value = false;
+  removalOpen.value = false;
   baseline = formState();
 }
 watch(
@@ -156,7 +158,15 @@ function restoreFocus(event: Event) {
   replacementFocusId = null;
   emit("replaced", id);
 }
+function requestConfiguration() {
+  if (exercise && Number(count.value) < exercise.sets.length) {
+    removalOpen.value = true;
+    return;
+  }
+  saveConfiguration();
+}
 function saveConfiguration() {
+  removalOpen.value = false;
   if (!exercise || !workspace.active.value) return;
   void save({
     type: "configure-exercise",
@@ -195,19 +205,7 @@ function saveReplacement() {
     @close-auto-focus="restoreFocus"
   >
     <div v-if="exercise" ref="body" class="workout-editor">
-      <template v-if="dismiss">
-        <p>Discard unsaved changes?</p>
-        <Button :disabled="workspace.saving.value" @click="dismiss = false"
-          >Keep editing</Button
-        >
-        <Button
-          variant="secondary"
-          :disabled="workspace.saving.value"
-          @click="emit('close')"
-          >Discard changes</Button
-        >
-      </template>
-      <template v-else-if="view === 'actions'">
+      <template v-if="view === 'actions'">
         <div class="exercise-option-targets">
           <Button
             variant="secondary"
@@ -313,7 +311,7 @@ function saveReplacement() {
         </p>
         <Button
           :disabled="workspace.saving.value"
-          @click="saveConfiguration"
+          @click="requestConfiguration"
           >Save exercise settings</Button
         >
       </template>
@@ -397,6 +395,46 @@ function saveReplacement() {
         @click="close"
         >Cancel</Button
       >
+    </div>
+  </Sheet>
+  <Sheet
+    :open="dismiss"
+    title="Discard unsaved changes?"
+    description="This deletes your unsaved note or configuration changes. Saved workout values stay unchanged."
+    @close="dismiss = false"
+  >
+    <div class="form-actions">
+      <Button
+        variant="secondary"
+        :disabled="workspace.saving.value"
+        @click="dismiss = false"
+      >
+        Keep editing
+      </Button>
+      <Button
+        :disabled="workspace.saving.value"
+        @click="dismiss = false; emit('close')"
+      >
+        Discard changes
+      </Button>
+    </div>
+  </Sheet>
+  <Sheet
+    :open="removalOpen"
+    title="Remove unfinished sets?"
+    description="Reducing the set count removes unfinished sets and their target values. Logged sets stay in your workout."
+    @close="removalOpen = false"
+  >
+    <div class="form-actions">
+      <Button variant="secondary" @click="removalOpen = false">
+        Cancel
+      </Button>
+      <Button
+        :disabled="workspace.saving.value"
+        @click="saveConfiguration"
+      >
+        Remove sets
+      </Button>
     </div>
   </Sheet>
 </template>

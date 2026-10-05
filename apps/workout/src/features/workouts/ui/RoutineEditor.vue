@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IconButton, Button, Input, Textarea, NumericInput } from "@form/ui";
+import { Sheet, IconButton, Button, Input, Textarea, NumericInput } from "@form/ui";
 import { computed, ref } from "vue";
 import { Plus, Trash2 } from "@lucide/vue";
 import type { CompletedSession, Exercise, Routine } from "../domain";
@@ -31,6 +31,25 @@ const entries = ref<ExerciseDraft[]>(
     })),
   })) ?? [],
 );
+type Removal =
+  | { kind: "exercise"; entry: ExerciseDraft }
+  | { kind: "set"; entry: ExerciseDraft; set: SetDraft };
+const removal = ref<Removal | null>(null);
+function removeConfirmed() {
+  const request = removal.value;
+  if (!request || busy) return;
+  if (request.kind === "exercise") {
+    entries.value = entries.value.filter(
+      (entry) => entry.key !== request.entry.key,
+    );
+  }
+  if (request.kind === "set") {
+    request.entry.sets = request.entry.sets.filter(
+      (set) => set !== request.set,
+    );
+  }
+  removal.value = null;
+}
 const pickerOpen = ref(false);
 const selected = ref<string[]>([]);
 const error = ref("");
@@ -128,7 +147,7 @@ function save() {
           <IconButton
             type="button"
             :label="`Remove ${names.get(entry.exerciseId)}`"
-            @click="entries.splice(index, 1)"
+            @click="removal = { kind: 'exercise', entry }"
           >
             <Trash2 :size="17" />
           </IconButton>
@@ -173,7 +192,7 @@ function save() {
             type="button"
             :disabled="entry.sets.length <= 1"
             :label="`Remove set ${setIndex + 1} of ${names.get(entry.exerciseId)}`"
-            @click="entry.sets.splice(setIndex, 1)"
+            @click="removal = { kind: 'set', entry, set }"
           >
             <Trash2 :size="16" />
           </IconButton>
@@ -231,6 +250,21 @@ function save() {
       </Button>
     </div>
   </form>
+  <Sheet
+    :open="removal !== null"
+    :title="removal?.kind === 'exercise' ? 'Remove exercise?' : 'Remove set?'"
+    :description="`This removes ${removal?.kind === 'exercise' ? 'the exercise and all its sets' : 'this set'} from your template draft. Save the template to keep this change.`"
+    @close="removal = null"
+  >
+    <div class="form-actions">
+      <Button variant="secondary" @click="removal = null">
+        Cancel
+      </Button>
+      <Button :disabled="busy" @click="removeConfirmed">
+        Remove
+      </Button>
+    </div>
+  </Sheet>
 </template>
 <style scoped>
 .editor-fields {

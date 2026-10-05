@@ -60,6 +60,12 @@ A **revision** identifies the confirmed state used as the basis for a change. A 
 
 ## Backup and recovery export
 
-A **backup** is versioned JSON containing confirmed workout data. The current format is version 2. Raw drafts are excluded. Import restores an untouched installation or merges compatible records atomically; duplicate records are skipped, conflicting identities are rejected, and local settings are preserved during a merge. Import cannot create two active workouts and is not multi-device synchronization.
+A **backup** is versioned JSON containing confirmed workout data. The current format is version 2. Raw drafts are excluded. Import restores an empty journal with the default catalog and preferences or merges compatible records atomically; duplicate records are skipped, conflicting identities are rejected, and local settings are preserved during a merge. Import cannot create two active workouts and is not multi-device synchronization.
 
 A **recovery export** preserves unreadable stored data for recovery. It does not imply that the data is a valid importable backup. The app must not clear unreadable data silently. Legacy snapshots and version 1 backups have no current migration path.
+
+## Delete all data
+
+Settings can delete the journal in this browser after explicit confirmation. It removes completed workouts, the active workout, templates, custom exercises and input drafts, and restores default preferences and the built-in exercise catalog. Downloaded backup files and data on other devices are unaffected. The confirmed snapshot retains an increasing revision so older tabs cannot overwrite the deletion. An empty default journal can restore a backup even after deletion.
+
+Confirmed data and input drafts use separate storage systems. If draft cleanup fails after the journal was deleted, the app reports that partial outcome and offers retry. Retrying still checks the reviewed revision, so another tab's newer changes require a fresh confirmation. Nonpersonal revision markers remain to prevent stale tabs from recreating deleted drafts.

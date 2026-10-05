@@ -6,8 +6,9 @@ import { createWorkoutApp, createWorkoutDrafts } from "./app/composition";
 import "@form/ui/tokens.css";
 import "./style.css";
 
-const workouts = createWorkoutApp();
-const app = createApp(App, { workouts, drafts: createWorkoutDrafts() });
+const drafts = createWorkoutDrafts();
+const workouts = createWorkoutApp(drafts);
+const app = createApp(App, { workouts, drafts });
 app.onUnmount(() => workouts.close());
 app.use(router);
 app.mount("#app");

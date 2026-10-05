@@ -1,11 +1,12 @@
-import { createWorkouts, initialSnapshot } from "../features/workouts";
+import { createWorkouts, initialSnapshot, type DraftJournal } from "../features/workouts";
 import {
   openDexieWorkoutStorage,
   createDraftJournal,
 } from "../features/workouts/infrastructure";
 
-export function createWorkoutApp() {
+export function createWorkoutApp(journal: DraftJournal) {
   return createWorkouts({
+    journal,
     storage: openDexieWorkoutStorage("form-workout-v1", initialSnapshot()),
     now: Date.now,
     id: () => crypto.randomUUID(),

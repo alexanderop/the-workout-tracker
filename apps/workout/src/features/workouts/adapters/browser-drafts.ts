@@ -6,6 +6,7 @@ type KeyValueStorage = Pick<
   Storage,
   "getItem" | "setItem" | "removeItem" | "key" | "length"
 >;
+const deletedBeforePrefix = "form-workout:drafts-deleted-before:";
 const prefix = "form-workout:draft:v1:";
 function obsoleteDraft(
   raw: string,
@@ -35,35 +36,74 @@ export function createDraftJournal(deps: {
   const writer = deps.id();
   const key = (draft: Pick<SetDraft, "id">) => prefix + draft.id;
   const owned = new Map<string, SetDraft>();
+  const minimumRevision = (storage: KeyValueStorage) => {
+    let minimum = 0;
+    for (let i = 0; i < storage.length; i++) {
+      const name = storage.key(i);
+      if (!name?.startsWith(deletedBeforePrefix)) continue;
+      const revision = Number(name.slice(deletedBeforePrefix.length));
+      if (!Number.isSafeInteger(revision) || revision < 0)
+        throw new Error("Invalid draft deletion marker.");
+      minimum = Math.max(minimum, revision);
+    }
+    return minimum;
+  };
+  const parseRecord = (raw: string | null): SetDraft | null => {
+    if (!raw || raw.length > 3000) return null;
+    try {
+      const parsed = draftSchema.safeParse(JSON.parse(raw));
+      return parsed.success ? parsed.data : null;
+    } catch {
+      return null;
+    }
+  };
+  const preferredFirst = (a: SetDraft, b: SetDraft) =>
+    Number(b.writer === deps.preferredWriter) -
+    Number(a.writer === deps.preferredWriter);
   return {
+    clearBefore(revision) {
+      const storage = deps.storage();
+      const minimum = Math.max(revision, minimumRevision(storage));
+      storage.setItem(deletedBeforePrefix + minimum, "");
+      const keys: string[] = [];
+      for (let i = 0; i < storage.length; i++) {
+        const name = storage.key(i);
+        if (name?.startsWith(prefix)) keys.push(name);
+      }
+      for (const name of keys) {
+        const record = parseRecord(storage.getItem(name));
+        if (!record || record.revision < minimum) storage.removeItem(name);
+      }
+      owned.clear();
+    },
     recover(sessionId, setId) {
       const storage = deps.storage();
       const records: SetDraft[] = [];
+      const minimum = minimumRevision(storage);
       for (let i = 0; i < storage.length; i++) {
         const name = storage.key(i);
         if (!name?.startsWith(prefix)) continue;
-        const raw = storage.getItem(name);
-        if (!raw || raw.length > 3000) continue;
-        try {
-          const result = draftSchema.safeParse(JSON.parse(raw));
-          if (
-            result.success &&
-            result.data.sessionId === sessionId &&
-            result.data.setId === setId
-          )
-            records.push(result.data);
-        } catch {}
+        const record = parseRecord(storage.getItem(name));
+        if (
+          record &&
+          record.sessionId === sessionId &&
+          record.setId === setId &&
+          record.revision >= minimum
+        )
+          records.push(record);
       }
-      return records.sort(
-        (a, b) =>
-          Number(b.writer === deps.preferredWriter) -
-          Number(a.writer === deps.preferredWriter),
-      );
+      return records.sort(preferredFirst);
     },
     write(input: DraftInput) {
       const draft = draftSchema.parse({ ...input, writer, id: deps.id() });
       const storage = deps.storage();
+      if (draft.revision < minimumRevision(storage))
+        throw new Error("This workout was deleted. Reload before editing.");
       storage.setItem(key(draft), JSON.stringify(draft));
+      if (draft.revision < minimumRevision(storage)) {
+        storage.removeItem(key(draft));
+        throw new Error("This workout was deleted. Reload before editing.");
+      }
       const identity = JSON.stringify([draft.sessionId, draft.setId]);
       const previous = owned.get(identity);
       owned.set(identity, draft);

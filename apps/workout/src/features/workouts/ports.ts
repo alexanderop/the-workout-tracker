@@ -25,6 +25,7 @@ export type WorkoutStorage = {
 };
 
 export type DraftJournal = {
+  readonly clearBefore: (revision: number) => void;
   readonly prune: (snapshot: Snapshot) => void;
   readonly recover: (
     sessionId: string,
