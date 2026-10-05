@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, useTemplateRef, watch } from "vue";
-import { BaseButton, BaseButtonIcon, BaseInput } from "@form/ui";
+import { computed, nextTick, onBeforeUnmount, ref, useTemplateRef, watch } from "vue";
+import { BaseButton, BaseButtonIcon, BaseInput, BaseSheet } from "@form/ui";
 import { Plus, Dumbbell, Clock3, ShieldCheck, Ellipsis, Check } from "@lucide/vue";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import { setTargetReps, type SessionExercise } from "../domain";
@@ -11,6 +11,7 @@ import type { TrainingRow } from "./useTrainingSession";
 import ExerciseConfiguration from "./ExerciseConfiguration.vue";
 import TrainingSetEditor from "./TrainingSetEditor.vue";
 import { duration, fmt } from "./presentation";
+import { useWorkoutName } from "./useWorkoutName";
 import "./training.css";
 const { workspace, workoutsHref } = defineProps<{
   workspace: WorkoutWorkspace;
@@ -34,8 +35,32 @@ const emit = defineEmits<{
   confirm: [request: Confirmation];
   navigate: [page: "workouts"];
 }>();
-const name = ref(""),
-  nameIssue = ref("");
+const { text: name, issue: nameIssue, dirty: nameDirty, conflict: nameConflict, save: rename, keepMine, useSaved } = useWorkoutName(workspace);
+const nameDismiss = ref(false);
+const configurationEditor = useTemplateRef<InstanceType<typeof ExerciseConfiguration>>("configurationEditor");
+let pendingLeave: { promise: Promise<boolean>; resolve: (leave: boolean) => void } | null = null;
+function settleNameLeave(leave: boolean) {
+  if (leave) useSaved();
+  nameDismiss.value = false;
+  pendingLeave?.resolve(leave);
+  pendingLeave = null;
+}
+async function requestLeave(): Promise<boolean> {
+  if (saving.value) return false;
+  if (!await (configurationEditor.value?.requestLeave() ?? true)) return false;
+  return requestNameDiscard();
+}
+function requestNameDiscard(): Promise<boolean> {
+  if (!nameDirty.value) return Promise.resolve(true);
+  if (pendingLeave) return pendingLeave.promise;
+  let resolve!: (leave: boolean) => void;
+  const promise = new Promise<boolean>((done) => { resolve = done; });
+  pendingLeave = { promise, resolve };
+  nameDismiss.value = true;
+  return promise;
+}
+onBeforeUnmount(() => settleNameLeave(false));
+defineExpose({ requestLeave });
 
 const editorSet = ref<string | null>(null);
 const configId = ref<string | null>(null);
@@ -64,15 +89,9 @@ const prescription = computed(() => {
   return targets.size === 1 ? `${sets.length} × ${[...targets][0]} reps` : `${sets.length} sets · varied reps`;
 });
 watch(
-  () => active.value?.name,
-  (value) => {
-    name.value = value ?? "";
-  },
-  { immediate: true },
-);
-watch(
   () => active.value?.id,
   () => {
+    settleNameLeave(false);
     configId.value = null;
     editorSet.value = null;
   },
@@ -85,20 +104,6 @@ const allDone = computed(
     activeTotals.value.completedSets === activeSetCount.value,
 );
 const nextRow = training.next;
-async function rename() {
-  if (!active.value || name.value === active.value.name) return;
-  if (!name.value.trim()) {
-    nameIssue.value = "Give this workout a name.";
-    return;
-  }
-  nameIssue.value = (await run({
-    type: "rename",
-    sessionId: active.value.id,
-    name: name.value,
-  }))
-    ? ""
-    : "Name not saved. Try again.";
-}
 function pick() {
   emit("pick");
 }
@@ -199,15 +204,26 @@ function discard() {
             aria-label="Workout name"
             maxlength="80"
             :disabled="saving"
-            @blur="rename"
             @keydown.enter.prevent="rename"
           />
         </h1>
+        <div v-if="nameDirty" class="form-actions">
+          <template v-if="nameConflict">
+            <p role="status">The saved workout name changed. Keep your name or use “{{ active.name }}”.</p>
+            <BaseButton :disabled="saving" @click="keepMine">Keep my name</BaseButton>
+            <BaseButton variant="secondary" :disabled="saving" @click="useSaved">Use saved name</BaseButton>
+          </template>
+          <template v-else>
+            <BaseButton :disabled="saving" @click="rename">Save name</BaseButton>
+            <BaseButton variant="ghost" :disabled="saving" @click="requestNameDiscard">Cancel name edit</BaseButton>
+          </template>
+        </div>
+        <p v-if="nameDirty" class="muted small">Save or cancel your name change before finishing.</p>
         <p v-if="nameIssue" class="field-error" role="alert">{{ nameIssue }}</p>
       </div>
       <BaseButton
         variant="secondary"
-        :disabled="saving || !activeTotals.completedSets"
+        :disabled="saving || nameDirty || !activeTotals.completedSets"
         @click="emit('finish')"
         >Finish</BaseButton
       >
@@ -274,7 +290,7 @@ function discard() {
           <p class="eyebrow">ALL SETS LOGGED</p>
           <h2>That’s your last set.</h2>
           <p>Review your sets, or add another exercise.</p>
-          <BaseButton :disabled="saving" @click="emit('finish')"
+          <BaseButton :disabled="saving || nameDirty" @click="emit('finish')"
             >Finish workout</BaseButton
           >
         </div>
@@ -322,6 +338,7 @@ function discard() {
       </aside>
     </div>
     <ExerciseConfiguration
+      ref="configurationEditor"
       :exercise="configuration"
       :workspace="workspace"
       @close="configId = null"
@@ -330,6 +347,12 @@ function discard() {
       @add="addFromOptions"
       @replaced="focusReplacement"
     />
+    <BaseSheet :open="nameDismiss" title="Discard unsaved name?" description="Your saved workout name stays unchanged." @close="settleNameLeave(false)">
+      <div class="form-actions">
+        <BaseButton variant="secondary" @click="settleNameLeave(false)">Keep editing</BaseButton>
+        <BaseButton @click="settleNameLeave(true)">Discard name change</BaseButton>
+      </div>
+    </BaseSheet>
     <TrainingSetEditor
       :set-id="editorSet"
       :training="training"

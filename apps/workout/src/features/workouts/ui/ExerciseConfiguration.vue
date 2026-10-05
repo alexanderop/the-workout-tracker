@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, useTemplateRef, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, ref, useTemplateRef, watch } from "vue";
 import { BaseButton, BaseInputNumber, BaseSheet, BaseTextarea } from "@form/ui";
 import { ArrowLeftRight, List, Plus, StickyNote, Trash2 } from "@lucide/vue";
 import { setTargetReps, type Command, type SessionExercise } from "../domain";
@@ -96,6 +96,7 @@ function reset() {
 watch(
   () => exercise?.id,
   () => {
+    settleExit(false);
     view.value = "actions";
     reset();
   },
@@ -111,17 +112,35 @@ async function show(next: View, field?: "Target reps" | "Working weight") {
     : body.value?.querySelector<HTMLElement>("textarea, button, input");
   target?.focus();
 }
-function close() {
-  if (workspace.saving.value) return;
-  if (
-    (view.value === "note" || view.value === "configure") &&
-    formState() !== baseline
-  ) {
-    dismiss.value = true;
-    return;
+let pendingExit: { promise: Promise<boolean>; resolve: (leave: boolean) => void } | null = null;
+function settleExit(discard: boolean) {
+  const pending = pendingExit;
+  pendingExit = null;
+  dismiss.value = false;
+  if (discard) {
+    baseline = formState();
+    emit("close");
   }
-  emit("close");
+  pending?.resolve(discard);
 }
+function requestExit(kind: "close" | "leave"): Promise<boolean> {
+  if (workspace.saving.value || savePending.value) return Promise.resolve(false);
+  if (pendingExit) return pendingExit.promise;
+  const dirty = exercise && (view.value === "note" || view.value === "configure") && formState() !== baseline;
+  if (!dirty) {
+    if (kind === "close") emit("close");
+    return Promise.resolve(true);
+  }
+  let resolve!: (leave: boolean) => void;
+  const promise = new Promise<boolean>((done) => { resolve = done; });
+  pendingExit = { promise, resolve };
+  dismiss.value = true;
+  return promise;
+}
+function close() { void requestExit("close"); }
+function requestLeave() { return requestExit("leave"); }
+onBeforeUnmount(() => settleExit(false));
+defineExpose({ requestLeave });
 async function save(
   command: Extract<
     Command,
@@ -401,19 +420,19 @@ function saveReplacement() {
     :open="dismiss"
     title="Discard unsaved changes?"
     description="This deletes your unsaved note or configuration changes. Saved workout values stay unchanged."
-    @close="dismiss = false"
+    @close="settleExit(false)"
   >
     <div class="form-actions">
       <BaseButton
         variant="secondary"
         :disabled="workspace.saving.value"
-        @click="dismiss = false"
+        @click="settleExit(false)"
       >
         Keep editing
       </BaseButton>
       <BaseButton
         :disabled="workspace.saving.value"
-        @click="dismiss = false; emit('close')"
+        @click="settleExit(true)"
       >
         Discard changes
       </BaseButton>
