@@ -55,6 +55,12 @@ Write clear, maintainable production code. Keep changes focused and dependencies
 - Clean up subscriptions, event listeners and owned resources.
 - Use `pnpm verify` for type checking and linting only. Do not add tests, formatting checks, standalone architecture checks or production builds to this verification command. Build only when needed to run or deploy the application.
 
+## Enforced correction rules
+
+| Rule | Enforcement |
+| --- | --- |
+| Finish actions preserve unsaved workout names and numeric input, including drafts arriving from another tab. | [Workspace command boundary](apps/workout/src/features/workouts/ui/useWorkoutWorkspace.ts), training journal checks, and [workspace finish regressions](apps/workout/test/unit/workspace-finish.test.ts), run by `pnpm test:unit` locally and in CI. See [ownership](docs/architecture.md#active-workout-integration). |
+
 ## Commands
 
 - `pnpm dev`: run the workout app.

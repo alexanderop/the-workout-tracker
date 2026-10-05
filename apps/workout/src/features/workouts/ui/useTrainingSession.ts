@@ -561,7 +561,7 @@ export function useTrainingSession(options: {
     }
     return true;
   }
-  async function run(command: Command) {
+  async function run(command: Command, revision?: number) {
     const session = active.value;
     if (command.type === "finish" && session) {
       if (!recoverUnseenDrafts(session.id)) return null;
@@ -591,7 +591,7 @@ export function useTrainingSession(options: {
         return row.records;
       }
     });
-    const result = await options.run(command);
+    const result = await options.run(command, revision);
     if (result) {
       try {
         options.journal.consume(observed);

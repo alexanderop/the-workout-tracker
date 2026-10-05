@@ -46,5 +46,10 @@ export function useWorkouts(service: Workouts) {
       saving.value = false;
     }
   }
-  return { service, state, snapshot, saving, message, error, run };
+  const dataManagement = {
+    deleteAllData: (revision: number) => service.deleteAllData(revision),
+    exportBackup: () => service.exportBackup(),
+    importBackup: (json: string, revision: number) => service.importBackup(json, revision),
+  };
+  return { service: dataManagement, state, snapshot, saving, message, error, run };
 }

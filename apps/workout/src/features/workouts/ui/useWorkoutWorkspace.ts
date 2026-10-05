@@ -1,5 +1,5 @@
 import { computed, type Ref } from "vue";
-import type { Workouts, DraftJournal } from "../application";
+import type { Workouts, DraftJournal, ApplicationCommand } from "../application";
 import { sessionTotals, remainingRestSeconds } from "../domain";
 import { useWorkouts } from "./useWorkouts";
 import { useTrainingSession } from "./useTrainingSession";
@@ -13,7 +13,7 @@ export function useWorkoutWorkspace(
   now: Readonly<Ref<number>>,
 ) {
   const workouts = useWorkouts(service);
-  const { snapshot, saving, run } = workouts;
+  const { snapshot, saving } = workouts;
   const routines = computed(() =>
     Object.values(snapshot.value?.routines ?? {}),
   );
@@ -28,13 +28,24 @@ export function useWorkoutWorkspace(
     ),
   );
   const active = computed(() => snapshot.value?.active ?? null);
-  const workoutName = useWorkoutName({ active, snapshot, run, saving });
+  const workoutName = useWorkoutName({ active, snapshot, run: execute, saving });
   const training = useTrainingSession({
     snapshot,
     saving,
     journal,
-    run,
+    run: execute,
   });
+  async function execute(command: ApplicationCommand, revision?: number) {
+    if (command.type === "finish" && workoutName.dirty.value) {
+      workouts.error.value = "Save or cancel your name change before finishing.";
+      return null;
+    }
+    return workouts.run(command, revision);
+  }
+  function run(command: ApplicationCommand, revision?: number) {
+    if (command.type === "finish") return training.run(command, revision);
+    return execute(command, revision);
+  }
   const activeTotals = computed(() =>
     active.value
       ? sessionTotals(active.value)
@@ -52,6 +63,7 @@ export function useWorkoutWorkspace(
   );
   return {
     ...workouts,
+    run,
     now,
     routines,
     catalog,
