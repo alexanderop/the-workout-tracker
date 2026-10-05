@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, useTemplateRef } from "vue";
 import { BaseSheet, BaseButton, BaseInput, BaseSelectNative } from "@form/ui";
 import { Plus, Check, Repeat2, BookmarkPlus } from "@lucide/vue";
 import ExerciseCatalog from "./ExerciseCatalog.vue";
@@ -77,6 +77,7 @@ const detail = computed(() =>
     : undefined,
 );
 const routineOpen = ref(false);
+const routineEditor = useTemplateRef<InstanceType<typeof RoutineEditor>>("routineEditor");
 const editingRoutine = ref<Routine | null>(null);
 const templateSource = ref<CompletedSession | null>(null);
 let routineRevision = 0;
@@ -96,6 +97,21 @@ function openPicker() {
   pickerOpen.value = true;
 }
 const finishOpen = ref(false);
+const reviewSetId = ref<string | null>(null);
+function reviewSets() {
+  const row = training.pending.value[0];
+  if (!row || saving.value) return;
+  training.selectSet(row.set.id);
+  reviewSetId.value = row.set.id;
+  finishOpen.value = false;
+}
+function finishClosed(event: Event) {
+  const id = reviewSetId.value;
+  if (!id) return;
+  event.preventDefault();
+  reviewSetId.value = null;
+  training.requestReviewFocus(id);
+}
 const confirmation = ref<Confirmation | null>(null);
 async function startWorkout(routineId: string | null) {
   if (active.value) {
@@ -264,9 +280,10 @@ defineExpose({
     "
     description="Set up the exercises you want to come back to."
     wide
-    @close="routineOpen = false"
+    @close="routineEditor?.requestClose()"
     ><RoutineEditor
       v-if="routineOpen"
+      ref="routineEditor"
       :key="editingRoutine?.id ?? 'new'"
       :routine="editingRoutine"
       :source="templateSource"
@@ -381,6 +398,7 @@ defineExpose({
     title="Finish this workout?"
     description="Only logged sets count toward your progress. Unlogged sets stay in the session record."
     @close="finishOpen = false"
+    @close-auto-focus="finishClosed"
     ><div class="finish-stats">
       <div>
         <strong>{{ activeTotals.completedSets }}</strong
@@ -408,7 +426,7 @@ defineExpose({
       >
         Save input values
       </BaseButton>
-      <BaseButton unstyled class="text-button" @click="finishOpen = false">
+      <BaseButton unstyled class="text-button" :disabled="saving" @click="reviewSets">
         Review my sets
       </BaseButton>
       <p

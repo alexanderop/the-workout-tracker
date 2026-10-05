@@ -31,6 +31,39 @@ const entries = ref<ExerciseDraft[]>(
     })),
   })) ?? [],
 );
+function semanticDraft() {
+  return JSON.stringify({
+    name: name.value.trim(),
+    description: description.value.trim(),
+    exercises: entries.value.map((entry) => ({
+      exerciseId: entry.exerciseId,
+      sets: entry.sets.map((set) => ({
+        weightKg: normalizedNumber(set.weightKg),
+        reps: normalizedNumber(set.reps),
+      })),
+    })),
+  });
+}
+function normalizedNumber(value: string | number) {
+  const text = String(value).trim();
+  return text && Number.isFinite(Number(text)) ? Number(text) : text;
+}
+const baseline = semanticDraft();
+const discardOpen = ref(false);
+function requestClose() {
+  if (busy) return;
+  if (semanticDraft() !== baseline) {
+    discardOpen.value = true;
+    return;
+  }
+  emit("cancel");
+}
+function discardChanges() {
+  if (busy) return;
+  discardOpen.value = false;
+  emit("cancel");
+}
+defineExpose({ requestClose });
 type Removal =
   | { kind: "exercise"; entry: ExerciseDraft }
   | { kind: "set"; entry: ExerciseDraft; set: SetDraft };
@@ -235,7 +268,7 @@ function save() {
         type="button"
         class="btn secondary"
         :disabled="busy"
-        @click="emit('cancel')"
+        @click="requestClose"
       >
         Cancel</BaseButton
       ><BaseButton unstyled type="submit" class="btn primary" :disabled="busy">
@@ -243,6 +276,21 @@ function save() {
       </BaseButton>
     </div>
   </form>
+  <BaseSheet
+    :open="discardOpen"
+    title="Discard template changes?"
+    description="Your unsaved template changes will be lost."
+    @close="discardOpen = false"
+  >
+    <div class="form-actions">
+      <BaseButton variant="secondary" @click="discardOpen = false">
+        Keep editing
+      </BaseButton>
+      <BaseButton :disabled="busy" @click="discardChanges">
+        Discard changes
+      </BaseButton>
+    </div>
+  </BaseSheet>
   <BaseSheet
     :open="removal !== null"
     :title="removal?.kind === 'exercise' ? 'Remove exercise?' : 'Remove set?'"

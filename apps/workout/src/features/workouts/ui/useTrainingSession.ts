@@ -32,6 +32,7 @@ export function useTrainingSession(options: {
 }) {
   const rows = reactive(new Map<string, TrainingRow>());
   const selected = ref<string | null>(null);
+  const reviewFocus = ref<{ setId: string; sequence: number } | null>(null);
   const selectedExerciseId = ref<string | null>(null);
   const lastLog = ref<{
     sessionId: string;
@@ -48,6 +49,7 @@ export function useTrainingSession(options: {
       selected.value = null;
       selectedExerciseId.value = null;
       lastLog.value = null;
+      reviewFocus.value = null;
     },
   );
   function consume(row: TrainingRow) {
@@ -70,8 +72,9 @@ export function useTrainingSession(options: {
         options.journal.prune(snapshot);
       } catch {}
       const session = snapshot.active;
+      const exercises = session?.exercises ?? [];
       const present = new Set<string>();
-      for (const exercise of session?.exercises ?? [])
+      for (const exercise of exercises)
         for (const [index, set] of exercise.sets.entries()) {
           present.add(set.id);
           synchronizeRow(session!.id, snapshot.revision, exercise, index, set);
@@ -82,9 +85,27 @@ export function useTrainingSession(options: {
           rows.delete(id);
         }
       invalidateLastLog(session?.id);
+      restoreSelection(exercises);
     },
     { immediate: true },
   );
+  function orderedRows() {
+    return (active.value?.exercises ?? []).flatMap((exercise) =>
+      exercise.sets.flatMap((set) => {
+        const row = rows.get(set.id);
+        return row ? [row] : [];
+      }),
+    );
+  }
+  function restoreSelection(exercises: readonly SessionExercise[]) {
+    if (exercises.some((exercise) => exercise.id === selectedExerciseId.value))
+      return;
+    const ordered = orderedRows();
+    const pendingRow = ordered.find((row) => row.touched || hasDraftConflict(row));
+    const first = pendingRow ?? ordered.find((row) => !row.set.completed);
+    selectedExerciseId.value = first?.exercise.id ?? exercises[0]?.id ?? null;
+    selected.value = pendingRow?.set.id ?? null;
+  }
   function invalidateLastLog(sessionId: string | undefined) {
     if (
       !canUndoSet(lastLog.value, sessionId, rows.get(lastLog.value?.setId ?? "")?.set)
@@ -178,6 +199,10 @@ export function useTrainingSession(options: {
     if (!row) return;
     selectedExerciseId.value = row.exercise.id;
     selected.value = id;
+  }
+  function requestReviewFocus(setId: string) {
+    if (!rows.has(setId)) return;
+    reviewFocus.value = { setId, sequence: (reviewFocus.value?.sequence ?? 0) + 1 };
   }
   const conflict = hasDraftConflict;
   const dirty = isDraftDirty;
@@ -493,7 +518,7 @@ export function useTrainingSession(options: {
     return !!saved;
   }
   const pending = computed(() =>
-    [...rows.values()].filter((row) => row.touched || conflict(row)),
+    orderedRows().filter((row) => row.touched || conflict(row)),
   );
   async function saveEdits() {
     for (const row of pending.value) {
@@ -579,6 +604,8 @@ export function useTrainingSession(options: {
   }
   return {
     rows,
+    reviewFocus,
+    requestReviewFocus,
     tapSet,
     clearSet,
     editExercise,
