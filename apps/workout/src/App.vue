@@ -13,6 +13,7 @@ import {
   CircleHelp,
   Dumbbell,
   Library,
+  Settings,
   ShieldCheck,
   TrendingUp,
   WifiOff,
@@ -84,6 +85,10 @@ const navigation = [
   { id: "workouts", label: "Workouts", icon: Dumbbell },
   { id: "exercises", label: "Exercises", icon: Library },
   { id: "progress", label: "Progress", icon: TrendingUp },
+] as const;
+const mobileNavigation = [
+  ...navigation,
+  { id: "settings", label: "Settings", icon: Settings },
 ] as const;
 function reload() {
   window.location.reload();
@@ -256,7 +261,7 @@ const title = computed(() => {
     />
     <nav v-else class="mobile-nav" aria-label="Mobile navigation">
       <RouterLink
-        v-for="item in navigation"
+        v-for="item in mobileNavigation"
         :key="item.id"
         :to="destination(item.id)"
         @click="prepareLinkNavigation($event, item.id)"
@@ -265,7 +270,7 @@ const title = computed(() => {
             page === item.id || (page === 'session' && item.id === 'workouts'),
         }"
         :aria-current="page === item.id ? 'page' : undefined"
-        ><component :is="item.icon" :size="20" /><span>{{
+        ><component :is="item.icon" :size="20" aria-hidden="true" /><span>{{
           item.label
         }}</span></RouterLink
       >

@@ -48,7 +48,7 @@ The Workout Tracker uses the approved five-color palette. Values live in [`packa
 
 There are no separate success or error colors. Status uses text, icons and shape with purple when emphasis is needed. The modal overlay reuses the background at partial opacity.
 
-Inter Variable is bundled locally for offline use. Lucide icons use a consistent light stroke. Content has a restrained type hierarchy, compact desktop navigation and generous space around workout controls. Mobile uses a persistent three-item bottom menu, large number inputs and a compact rest timer. Dialogs use Reka focus trapping and explicitly return focus to their opener.
+Inter Variable is bundled locally for offline use. Lucide icons use a consistent light stroke. Content has a restrained type hierarchy, compact desktop navigation and generous space around workout controls. Mobile uses a persistent four-item bottom menu, large number inputs and a compact rest timer. Dialogs use Reka focus trapping and explicitly return focus to their opener.
 
 The interface uses a quiet visual hierarchy; empty states show actual data rather than fabricated statistics. [Prior art](prior-art.md) records the original reference and adaptations.
 
@@ -70,7 +70,7 @@ The desktop sidebar installation action uses a left-aligned label with an icon c
 
 ## Settings navigation
 
-Settings is a full page at `/settings`, reached through the content footer on desktop and mobile. The footer uses a native navigation link with a visible focus outline and a minimum 44px touch target. The current Settings link announces its active page. Settings has no header or sidebar trigger and does not open an overlay. The main workout navigation keeps its three destinations.
+Settings is a full page at `/settings`, reached through the content footer on desktop and mobile and through a gear icon with a Settings label in the mobile bottom navigation. The bottom navigation has four equally sized destinations: Workouts, Exercises, Progress, and Settings. Its Settings link uses the same selected styling and active-page announcement as the other destinations. During an active workout, the training dock replaces the mobile bottom navigation. The content footer uses a native navigation link with a visible focus outline and a minimum 44px touch target. The current Settings link announces its active page. Settings has no header or sidebar trigger and does not open an overlay. Desktop navigation keeps its three destinations.
 
 The page groups training preferences, backup controls, installation, and data deletion under the Settings heading. Delete all data uses a separate neutral section after backups and installation. Its confirmation names history, the active workout, drafts, templates, custom exercises, and preference reset. Downloaded backups remain on the device. Browser Back returns to the previous page. Leaving Settings clears an unsubmitted backup selection. Saved preferences and workout drafts remain in the shared workspace.
 
