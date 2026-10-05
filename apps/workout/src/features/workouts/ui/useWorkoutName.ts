@@ -1,5 +1,6 @@
-import { computed, ref, watch } from "vue";
-import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
+import { computed, ref, watch, type Ref } from "vue";
+import type { ActiveSession } from "../domain";
+import type { useWorkouts } from "./useWorkouts";
 
 type NameDraft = {
   sessionId: string;
@@ -9,7 +10,12 @@ type NameDraft = {
 };
 
 export function useWorkoutName(
-  workspace: Pick<WorkoutWorkspace, "active" | "snapshot" | "run" | "saving">,
+  workspace: Pick<
+    ReturnType<typeof useWorkouts>,
+    "snapshot" | "run" | "saving"
+  > & {
+    active: Readonly<Ref<ActiveSession | null>>;
+  },
 ) {
   const draft = ref<NameDraft | null>(null);
   const issue = ref("");
