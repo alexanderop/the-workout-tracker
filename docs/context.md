@@ -38,6 +38,8 @@ Configuration and replacement require the exercise's numeric drafts to be saved 
 
 A **completed workout** (`CompletedSession`) is a finished session in history. Repeating it creates a new active workout with fresh identities, copied weights, planned repetition targets, and unchecked sets. Saving it as a template creates a separate editable plan. Neither operation mutates the historical record.
 
+The dashboard training rhythm groups completed workouts by the local calendar date of `finishedAt`. It counts workouts, so two sessions on one date contribute two to the fourteen-day total and one occupied date. The window includes today and the preceding thirteen civil dates. Timestamps later than the injected current time are excluded until that time arrives, including later timestamps on today’s date. The active workout does not contribute. Calendar selection is temporary view state and does not filter or change the journal.
+
 ## Set, logged set, and volume
 
 A **workout set** (`WorkoutSet`) has an identity, weight, repetitions, a `completed` flag, and an optional positive `targetReps` value. New and edited sets preserve their planned repetitions separately from recorded repetitions. Older sets without that field remain readable; their saved positive repetitions provide the initial target. A logged zero-repetition set records an attempted set and contributes zero volume. Unlogged sets require positive repetitions. A **logged set** has that flag enabled. History and progress totals count logged sets only; volume is the sum of weight multiplied by repetitions for those sets.

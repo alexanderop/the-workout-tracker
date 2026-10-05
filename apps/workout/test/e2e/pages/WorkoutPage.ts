@@ -57,7 +57,7 @@ export class WorkoutPage {
   }
 
   async expectHistory(volume: number) {
-    const record = this.page.getByRole("article").filter({ has: this.page.getByRole("button", { name: "Repeat workout", exact: true }) });
+    const record = this.page.getByRole("article");
     await expect(record).toHaveCount(1);
     await expect(record).toContainText("Bench press");
     await expect(record).toContainText("1 sets");
@@ -65,6 +65,7 @@ export class WorkoutPage {
   }
 
   async repeatHistory() {
+    await this.page.getByRole("article").getByRole("button").click();
     await this.page.getByRole("button", { name: "Repeat workout", exact: true }).click();
     await expect(this.weight()).toBeVisible();
   }

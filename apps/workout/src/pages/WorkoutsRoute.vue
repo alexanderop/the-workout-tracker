@@ -16,7 +16,7 @@ definePage({
 const route = useRoute("workouts");
 const { workspace, dialogs, navigate, selectWorkoutView } =
   useWorkoutRouteContext();
-const { snapshot, routines, history, active, saving } = workspace;
+const { snapshot, routines, history, active, saving, now } = workspace;
 </script>
 
 <template>
@@ -28,12 +28,11 @@ const { snapshot, routines, history, active, saving } = workspace;
     :active="active"
     :exercises="snapshot.exercises"
     :saving="saving"
+    :now="now"
     @update:view="selectWorkoutView"
     @start="dialogs?.startWorkout($event)"
     @edit="dialogs?.editRoutine($event)"
     @detail="dialogs?.showDetail($event)"
-    @repeat="dialogs?.repeatWorkout($event)"
-    @convert="dialogs?.convertWorkout($event)"
     @navigate="navigate"
   />
 </template>

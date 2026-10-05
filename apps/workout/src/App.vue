@@ -167,7 +167,7 @@ const title = computed(() => {
     </aside>
 
     <div class="workspace">
-      <header class="topbar">
+      <header v-if="page !== 'workouts' || !snapshot || !online" class="topbar">
         <div>
           <span class="muted">Your workspace</span><span class="slash">/</span
           ><span>{{ title }}</span>

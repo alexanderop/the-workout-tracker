@@ -90,11 +90,19 @@ The selected exercise shows its name, equipment, repetition prescription and opt
 
 The exercise ellipsis opens grouped options for targets, set editing, notes, replacement and removal. Draft recovery and conflict choices remain visible with the affected row. Saved rest deadlines drive the compact mobile dock, with skip or dismiss controls. Rest uses the user's configured duration; corrections do not restart it. Controls retain at least 44px touch targets at narrow widths. The existing purple semantic accent applies to selection and logged work; there are no unsupported metrics or invented history.
 
-For a fresh journal, the welcome card owns the only start action. Its copy wraps naturally and its height follows its content. Mobile uses a compact mark and a full-width action; the page header omits repeated introductory copy. Returning journals keep the header action. The mobile navigation divides the available width equally among its rendered links, without unused columns.
+For a fresh journal, the welcome card owns the only start action. Its copy wraps naturally and its height follows its content. Mobile uses a compact mark and a full-width action; the page header omits repeated introductory copy. Returning journals without an active workout show one start action below their training rhythm. An active workout instead has one outlined card with its name, exercise and logged-set counts, and a single Continue workout action. The mobile navigation divides the available width equally among its rendered links, without unused columns.
 
 Closing an exercise panel preserves its numeric input drafts. Changed notes, configuration and workout names ask before route navigation discards input, including browser Back. Changed templates ask before Cancel, Escape, close-button or backdrop dismissal; unchanged editors close directly. Numeric editors accept a complete pasted value, normalize a decimal comma and reject invalid or overly precise input without replacing the current draft. Pasting does not confirm or log the value. Weight displays preserve up to two decimal places.
 
 Opening a workout selects pending input after recovery, or unfinished work when no input is pending. Review my sets selects, scrolls to and focuses the first pending row, even in another exercise. Finishing requires pending edits to be resolved. Converting a workout to a template opens an editor so the user can remove skipped sets and adjust targets before saving. Domain meanings belong in [context](context.md).
+
+### Training rhythm dashboard
+
+Workouts opens with a compact title and the past fourteen local dates ending today. A large total counts completed workouts in that window. Circular purple marks identify dates with completed workouts; the outline identifies today. The two rows are a rolling sequence rather than weekday-aligned calendar weeks. History search does not change the calendar. Empty journals show zero workouts without invented sessions.
+
+The calendar button opens a monthly sheet; tapping a rhythm date opens its month with that date selected and focused. The month starts Monday. Future dates and next-month navigation beyond the current month are disabled. A selected date lists every completed workout from that date. Selecting a workout closes the calendar before opening its existing review, which offers Repeat workout and Save as template. Closing the review returns focus to the calendar action. Date controls have native button semantics, full date and workout-count labels, and at least 44px targets. Narrow grids scroll within their own container.
+
+History and Templates use neutral segmented controls. History uses compact review rows with date, exercise summary and logged metrics; the review owns repeat and save-template actions. The overview omits repeated introductory copy and the shell title while retaining offline status.
 
 ## Component explorer
 
