@@ -21,6 +21,7 @@ const { workspace } = defineProps<{
     | "training"
     | "active"
     | "catalog"
+    | "workoutName"
     | "activeTotals"
     | "elapsed"
   >;
@@ -190,7 +191,7 @@ async function createExercise() {
 }
 async function finishWorkout() {
   const id = active.value?.id;
-  if (!id) return;
+  if (!id || workspace.workoutName.dirty.value) return;
   if (await training.run({ type: "finish", sessionId: id })) {
     finishOpen.value = false;
     navigate("workouts");
@@ -219,6 +220,7 @@ defineExpose({
     createOpen.value = true;
   },
   openFinish: () => {
+    if (workspace.workoutName.dirty.value) return;
     finishOpen.value = true;
   },
   showOptions: (id: string) => {

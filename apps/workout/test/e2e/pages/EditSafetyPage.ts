@@ -15,6 +15,8 @@ export class EditSafetyPage {
     await this.page
       .getByRole("button", { name: "Save name", exact: true })
       .click();
+    await expect(this.page.getByRole("button", { name: "Save name", exact: true })).toHaveCount(0);
+    await expect(this.name()).toBeEnabled();
   }
   async logSet() {
     await this.page

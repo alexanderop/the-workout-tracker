@@ -40,3 +40,11 @@ Feature: Preserve local workout edits
     When I follow the workout back link
     And I discard the unsaved workout name
     Then I have left the workout editor
+
+  Scenario: Mobile Finish protects an unsaved workout name
+    Given all workout sets are logged without an active rest
+    When I type the workout name "Name before finishing"
+    Then mobile Finish is disabled while the name is unsaved
+    When I save the workout name
+    Then mobile Finish is enabled
+    And the narrow workout actions have full touch targets

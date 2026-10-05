@@ -42,7 +42,7 @@ const next = training.next;
         <strong>All sets logged</strong
         ><small>Review or finish your workout</small>
       </div>
-      <BaseButton :disabled="saving" @click="emit('finish')"
+      <BaseButton :disabled="saving || workspace.workoutName.dirty.value" @click="emit('finish')"
         >Finish</BaseButton
       ></template
     >

@@ -3,6 +3,7 @@ import type { Workouts, DraftJournal } from "../application";
 import { sessionTotals, remainingRestSeconds } from "../domain";
 import { useWorkouts } from "./useWorkouts";
 import { useTrainingSession } from "./useTrainingSession";
+import { useWorkoutName } from "./useWorkoutName";
 import { duration } from "./presentation";
 export type WorkoutPage =
   "today" | "workouts" | "history" | "exercises" | "progress" | "session" | "settings";
@@ -27,6 +28,7 @@ export function useWorkoutWorkspace(
     ),
   );
   const active = computed(() => snapshot.value?.active ?? null);
+  const workoutName = useWorkoutName({ active, snapshot, run, saving });
   const training = useTrainingSession({
     snapshot,
     saving,
@@ -55,6 +57,7 @@ export function useWorkoutWorkspace(
     catalog,
     history,
     active,
+    workoutName,
     training,
     activeTotals,
     activeSetCount,

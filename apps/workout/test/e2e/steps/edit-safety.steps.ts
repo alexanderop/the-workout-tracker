@@ -2,7 +2,9 @@ import { expect } from "@playwright/test";
 import { createBdd } from "playwright-bdd";
 import { test } from "../fixtures";
 import { EditSafetyPage } from "../pages/EditSafetyPage";
-const { When, Then } = createBdd(test);
+import { createWorkoutFactory } from "../../support/factories";
+import { seedWorkoutStorage } from "../seed";
+const { Given, When, Then } = createBdd(test);
 When("I type the workout name {string}", async ({ page }, name: string) => {
   await new EditSafetyPage(page).editName(name);
 });
@@ -33,8 +35,9 @@ Then("I can choose which workout name to keep", async ({ page }) => {
 When("I keep my workout name", async ({ page }) => {
   await page.getByRole("button", { name: "Keep my name", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "Keep my name", exact: true }),
+    page.getByRole("button", { name: "Save name", exact: true }),
   ).toHaveCount(0);
+  await expect(new EditSafetyPage(page).name()).toBeEnabled();
 });
 When("I use the saved workout name", async ({ page }) => {
   await page
@@ -70,4 +73,25 @@ Then("I have left the workout editor", async ({ page }) => {
   await expect(
     page.getByRole("textbox", { name: "Workout name", exact: true }),
   ).toHaveCount(0);
+});
+
+Given("all workout sets are logged without an active rest", async ({ page }) => {
+  const f = createWorkoutFactory("name-finish");
+  const active = f.activeSession({ exercises: [f.sessionExercise({ sets: [f.set({ completed: true })] })] });
+  await seedWorkoutStorage(page, f.snapshot({ active }));
+  await expect(page.getByRole("textbox", { name: "Workout name", exact: true })).toBeVisible();
+});
+Then("mobile Finish is disabled while the name is unsaved", async ({ page }) => {
+  await expect(page.getByRole("region", { name: "Training controls" }).getByRole("button", { name: "Finish", exact: true })).toBeDisabled();
+});
+Then("mobile Finish is enabled", async ({ page }) => {
+  await expect(page.getByRole("region", { name: "Training controls" }).getByRole("button", { name: "Finish", exact: true })).toBeEnabled();
+});
+
+Then("the narrow workout actions have full touch targets", async ({ page }) => {
+  for (const button of [page.getByRole("button", { name: "Finish", exact: true }).first(), page.getByRole("button", { name: "Discard workout", exact: true })]) {
+    const box = await button.boundingBox();
+    expect(box?.height).toBeGreaterThanOrEqual(44);
+    expect(box?.width).toBeGreaterThanOrEqual(44);
+  }
 });

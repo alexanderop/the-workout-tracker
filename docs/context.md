@@ -30,6 +30,8 @@ Replacement moves only unfinished work to a fresh session exercise and fresh set
 
 A session exercise can have an optional note of up to 2,000 characters. Saving trims surrounding whitespace and removes empty notes. Notes appear during training and in completed workout details. Repeating a workout or saving it as a template does not copy session notes. Notes do not move to a replacement exercise.
 
+Workout names save explicitly. Local name edits retain the saved name and revision they started from. A name changed in another tab requires an explicit choice to keep local input or use the saved name. Unsubmitted name edits, note edits, configuration changes and template changes require confirmation before leaving or dismissing their editor.
+
 Configuration and replacement require the exercise's numeric drafts to be saved or discarded first. Note saves are independent of numeric drafts. Each editor saves against its opening revision and retains input on failure. Temporary note and configuration input becomes durable only after Save. Explicitly confirmed removal deletes the exercise, its logged sets, and its input drafts.
 
 ## Completed workout
@@ -40,11 +42,15 @@ A **completed workout** (`CompletedSession`) is a finished session in history. R
 
 A **workout set** (`WorkoutSet`) has an identity, weight, repetitions, a `completed` flag, and an optional positive `targetReps` value. New and edited sets preserve their planned repetitions separately from recorded repetitions. Older sets without that field remain readable; their saved positive repetitions provide the initial target. A logged zero-repetition set records an attempted set and contributes zero volume. Unlogged sets require positive repetitions. A **logged set** has that flag enabled. History and progress totals count logged sets only; volume is the sum of weight multiplied by repetitions for those sets.
 
+Personal bests and weight trends include only logged sets with positive repetitions. Zero-repetition attempts remain in history and logged-set totals, but cannot establish a record or a trend point. Zero-weight sets with positive repetitions remain valid successful work.
+
 The active workout exposes weight and repetitions in each set row. Its check button logs an unfinished set, saves a changed logged set, or undoes an unchanged logged set. Corrections do not restart rest. Clearing is explicit and restores the repetition target. Entering a number, confirming a numeric editor, logging a set, and finishing a workout are distinct actions. Confirming the numeric editor updates the containing input draft; it does not mark a set logged. Cancel leaves the prior input unchanged.
 
 ## Draft
 
 A **draft** is recoverable raw weight or repetition input, separate from the confirmed workout snapshot. Drafts survive page navigation and can recover after reload. They may be incomplete or invalid and do not contribute to totals or backups.
+
+After draft recovery on opening a workout, selection starts at a pending draft, then the first unfinished exercise, then the first exercise. An explicit selection is retained while that workout remains open; logging does not move it automatically. Reviewing pending sets before finishing selects and focuses the first pending set in workout order.
 
 A draft retains the saved values it was based on. If those values change, the interface asks the user to keep their input against the latest state or adopt the saved values. Recovery failures leave the input visible and report that it may be lost when the page closes. See [training drafts](architecture.md#training-drafts) for revision and acknowledgement rules.
 

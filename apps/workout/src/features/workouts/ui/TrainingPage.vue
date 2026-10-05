@@ -11,7 +11,6 @@ import type { TrainingRow } from "./useTrainingSession";
 import ExerciseConfiguration from "./ExerciseConfiguration.vue";
 import TrainingSetEditor from "./TrainingSetEditor.vue";
 import { duration, fmt } from "./presentation";
-import { useWorkoutName } from "./useWorkoutName";
 import "./training.css";
 const { workspace, workoutsHref } = defineProps<{
   workspace: WorkoutWorkspace;
@@ -35,7 +34,7 @@ const emit = defineEmits<{
   confirm: [request: Confirmation];
   navigate: [page: "workouts"];
 }>();
-const { text: name, issue: nameIssue, dirty: nameDirty, conflict: nameConflict, save: rename, keepMine, useSaved } = useWorkoutName(workspace);
+const { text: name, issue: nameIssue, dirty: nameDirty, conflict: nameConflict, save: rename, keepMine, useSaved } = workspace.workoutName;
 const nameDismiss = ref(false);
 const configurationEditor = useTemplateRef<InstanceType<typeof ExerciseConfiguration>>("configurationEditor");
 let pendingLeave: { promise: Promise<boolean>; resolve: (leave: boolean) => void } | null = null;
@@ -125,6 +124,13 @@ async function closeEditor() {
   }
   focusExercise();
 }
+watch(training.reviewFocus, async (request) => {
+  if (!request) return;
+  await nextTick();
+  const row = setRows.value?.find((item) => item.setId === request.setId);
+  row?.scrollIntoView();
+  row?.focus();
+});
 async function commit(id: string) {
   await training.commit(id);
   await nextTick();
