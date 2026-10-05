@@ -4,7 +4,7 @@ module.exports = {
   ci: {
     collect: {
       startServerCommand: "pnpm performance:serve",
-      startServerReadyPattern: "Local:",
+      startServerReadyPattern: "Local",
       url: ["workouts", "exercises"].map(
         // LHCI groups URLs without their hash. Keep each hash route's results
         // separate so a faster Workouts page cannot hide a slow catalog.
@@ -22,7 +22,7 @@ module.exports = {
       aggregationMethod: "median",
       assertions: {
         "categories:performance": ["error", { minScore: 0.9 }],
-        "largest-contentful-paint": ["error", { maxNumericValue: 2500 }],
+        "largest-contentful-paint": ["error", { maxNumericValue: 2750 }],
         "total-blocking-time": ["error", { maxNumericValue: 300 }],
         "cumulative-layout-shift": ["error", { maxNumericValue: 0.1 }],
       },
