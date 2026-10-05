@@ -1,5 +1,11 @@
 export { default as BaseSheet } from "./BaseSheet.vue";
-export { DialogRoot as BaseDialog, DialogPortal as BaseDialogPortal } from "reka-ui";
+export { default as BaseFeedback } from "./BaseFeedback.vue";
+export { default as BaseLoading } from "./BaseLoading.vue";
+export { default as BaseInstallInstructions } from "./BaseInstallInstructions.vue";
+export {
+  DialogRoot as BaseDialog,
+  DialogPortal as BaseDialogPortal,
+} from "reka-ui";
 export type { ButtonVariant, ButtonSize } from "./button/BaseButton.vue";
 export { default as BaseButton } from "./button/BaseButton.vue";
 export { default as BaseButtonIcon } from "./button/BaseButtonIcon.vue";
@@ -27,4 +33,8 @@ export { default as BaseDialogTrigger } from "./dialog/BaseDialogTrigger.vue";
 export { default as BaseDialogClose } from "./dialog/BaseDialogClose.vue";
 export { default as BaseInputNumber } from "./numeric-input/BaseInputNumber.vue";
 export { default as BaseMuscleMap } from "./muscle-map/BaseMuscleMap.vue";
-export type { MuscleRegion, MuscleHighlight, MuscleMapView } from "./muscle-map/regions";
+export type {
+  MuscleRegion,
+  MuscleHighlight,
+  MuscleMapView,
+} from "./muscle-map/regions";

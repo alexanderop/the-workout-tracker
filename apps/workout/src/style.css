@@ -2552,3 +2552,20 @@ textarea::placeholder {
     padding-inline: 8px;
   }
 }
+
+.journal-ready {
+  animation: journal-enter var(--ui-motion-enter) ease-out;
+}
+@keyframes journal-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .journal-ready {
+    animation: none;
+  }
+}

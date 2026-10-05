@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { BaseButtonIcon, BaseButton } from "@form/ui";
+import {
+  BaseButtonIcon,
+  BaseButton,
+  BaseLoading,
+  BaseSheet,
+  BaseInstallInstructions,
+} from "@form/ui";
 import { computed, ref, useTemplateRef, watch } from "vue";
 import {
   ArrowDownToLine,
@@ -31,8 +37,7 @@ const { workouts, drafts } = defineProps<{
 const clock = useWorkoutClock();
 const workspace = useWorkoutWorkspace(workouts, drafts, clock.now);
 watch(() => workspace.active.value?.rest?.endsAt, clock.refresh);
-const { state, snapshot, saving, message, error, history, active } =
-  workspace;
+const { state, snapshot, saving, message, error, history, active } = workspace;
 const dialogs = useTemplateRef<InstanceType<typeof WorkoutDialogs>>("dialogs");
 const main = useTemplateRef<HTMLElement>("main");
 function focusMain() {
@@ -48,6 +53,11 @@ const {
 } = useWorkoutNavigation(message, error, focusMain);
 const progressExercise = ref("");
 const {
+  installOpen,
+  installing,
+  canInstall,
+  platform,
+  requestInstall,
   online,
   installed,
   offlineReady,
@@ -86,7 +96,9 @@ const title = computed(() => {
 </script>
 
 <template>
-  <a class="skip-link" href="#main" @click.prevent="focusMain">Skip to content</a>
+  <a class="skip-link" href="#main" @click.prevent="focusMain"
+    >Skip to content</a
+  >
   <div class="app-layout">
     <aside class="sidebar">
       <RouterLink
@@ -171,14 +183,14 @@ const title = computed(() => {
           >
         </div>
       </header>
-      <main id="main" ref="main" class="main" tabindex="-1">
-        <div v-if="state.kind === 'loading'" class="empty-state loading-state">
-          <div class="brand-mark">
-            <Dumbbell :size="20" aria-hidden="true" />
-          </div>
-          <h1>Opening your training journal</h1>
-          <p class="muted">Loading your saved workouts.</p>
-        </div>
+      <main
+        id="main"
+        ref="main"
+        class="main"
+        :class="{ 'journal-ready': snapshot }"
+        tabindex="-1"
+      >
+        <BaseLoading v-if="state.kind === 'loading'" />
         <div
           v-else-if="state.kind === 'unavailable' || state.kind === 'recovery'"
           class="empty-state"
@@ -202,7 +214,8 @@ const title = computed(() => {
         <template v-else-if="snapshot">
           <div v-if="error" class="notice" role="alert">
             <CircleHelp :size="18" /><span>{{ error }}</span
-            ><BaseButton unstyled class="text-button" @click="reload">Reload</BaseButton
+            ><BaseButton unstyled class="text-button" @click="reload"
+              >Reload</BaseButton
             ><BaseButtonIcon label="Dismiss error" @click="error = ''">
               <X :size="16" />
             </BaseButtonIcon>
@@ -217,16 +230,6 @@ const title = computed(() => {
               Update app
             </BaseButton>
           </div>
-          <div v-if="installMessage" class="notice" role="status">
-            <span>{{ installMessage }}</span
-            ><BaseButtonIcon
-              label="Dismiss install instructions"
-              @click="installMessage = ''"
-            >
-              <X :size="16" />
-            </BaseButtonIcon>
-          </div>
-
           <RouterView />
           <footer class="main-footer">
             <nav aria-label="Footer navigation">
@@ -256,7 +259,7 @@ const title = computed(() => {
         v-for="item in navigation"
         :key="item.id"
         :to="destination(item.id)"
-          @click="prepareLinkNavigation($event, item.id)"
+        @click="prepareLinkNavigation($event, item.id)"
         :class="{
           selected:
             page === item.id || (page === 'session' && item.id === 'workouts'),
@@ -269,6 +272,20 @@ const title = computed(() => {
     </nav>
   </div>
 
+  <BaseSheet
+    :open="installOpen"
+    title="Install The Workout Tracker"
+    @close="installOpen = false"
+  >
+    <BaseInstallInstructions
+      :platform="platform"
+      :can-install="canInstall"
+      :busy="installing"
+      :installed="installed"
+      :message="installMessage"
+      @install="requestInstall"
+    />
+  </BaseSheet>
   <WorkoutDialogs
     ref="dialogs"
     :workspace="workspace"

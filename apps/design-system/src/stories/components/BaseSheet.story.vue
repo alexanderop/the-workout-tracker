@@ -65,7 +65,7 @@ Several related settings or inputs in the context of the current page.
 
 ## Variants
 
-Centered on large screens and aligned to the bottom on small screens.
+Centered with a subtle scale/fade on large screens; slides from the bottom on small screens. Entrance is 240ms and exit is 180ms. Reduced motion removes both. No swipe-dismiss gesture is provided.
 
 ## States
 

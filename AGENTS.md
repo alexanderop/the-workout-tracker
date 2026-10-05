@@ -6,14 +6,17 @@ Start with [README.md](README.md) for the product overview and run commands. Rea
 
 | Question | Read |
 | --- | --- |
-| What do workout terms and state transitions mean? | [Domain context](docs/context.md) |
+| Which words do we use for workout concepts? | [Glossary](docs/glossary.md) |
+| What are the workout rules and state transitions? | [Domain context](docs/context.md) |
 | Which module owns this behavior or dependency? | [Architecture](docs/architecture.md) |
 | How should the interface look and behave? | [Design](docs/design.md) |
 | How do I add a command, component, or storage change? | [Development workflows](docs/workflows.md) |
 | Which references informed our choices? | [Prior art](docs/prior-art.md) |
 | Why did an earlier implementation take this approach? | [History](docs/history/README.md) |
 
-Current contracts live in context, architecture, and design. Historical plans and findings are evidence, not current instructions. Use the domain terms consistently; the glossary records where existing code names differ from product language.
+Current contracts live in the glossary, context, architecture, and design. Historical plans and findings are evidence, not current instructions. Use the [glossary](docs/glossary.md) terms consistently; it records where existing code names differ from product language.
+
+When the user says we are not speaking the same language, or terminology causes confusion while working, consult the glossary and suggest a concrete new entry or clearer definition with an example of the intended meaning. Keep suggestions focused on the misunderstanding. Agree on the meaning with the user before updating the glossary; do not silently redefine a term.
 
 When changing terminology, behavior, ownership, or a workflow, update its authoritative document in the same change. Link to that document instead of duplicating its detail here. If documentation and code disagree, inspect the implementation and resolve the discrepancy explicitly; do not silently treat a past plan as implemented behavior.
 

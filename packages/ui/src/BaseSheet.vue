@@ -83,7 +83,6 @@ defineSlots<{ default?: () => unknown }>();
 <style scoped>
 :global(.sheet) {
   display: block;
-  animation: none;
   position: fixed;
   left: 50%;
   top: 50%;

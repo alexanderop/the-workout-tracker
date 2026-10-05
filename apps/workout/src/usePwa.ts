@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRegisterSW } from "virtual:pwa-register/vue";
 
 type InstallEvent = Event & {
@@ -15,9 +15,18 @@ function isInstallEvent(event: Event): event is InstallEvent {
 export function usePwa() {
   const online = ref(navigator.onLine);
   const installEvent = ref<InstallEvent | null>(null);
-  const installed = ref(
-    window.matchMedia("(display-mode: standalone)").matches,
-  );
+  const displayMode = window.matchMedia("(display-mode: standalone)");
+  const isStandalone = () =>
+    displayMode.matches ||
+    ("standalone" in navigator && navigator.standalone === true);
+  const installed = ref(isStandalone());
+  const installOpen = ref(false);
+  const installing = ref(false);
+  const canInstall = computed(() => installEvent.value !== null);
+  const platform = detectInstallPlatform();
+  const updateDisplayMode = () => {
+    installed.value = isStandalone();
+  };
   const installMessage = ref("");
   const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW();
   const updateNetwork = () => {
@@ -34,35 +43,49 @@ export function usePwa() {
     installEvent.value = null;
   };
   onMounted(() => {
+    displayMode.addEventListener("change", updateDisplayMode);
     window.addEventListener("online", updateNetwork);
     window.addEventListener("offline", updateNetwork);
     window.addEventListener("beforeinstallprompt", captureInstall);
     window.addEventListener("appinstalled", markInstalled);
   });
   onUnmounted(() => {
+    displayMode.removeEventListener("change", updateDisplayMode);
     window.removeEventListener("online", updateNetwork);
     window.removeEventListener("offline", updateNetwork);
     window.removeEventListener("beforeinstallprompt", captureInstall);
     window.removeEventListener("appinstalled", markInstalled);
   });
   async function install() {
-    if (!installEvent.value) {
-      installMessage.value =
-        "On iPhone or iPad, open Share and choose Add to Home Screen. On desktop, use the install option in your browser menu.";
-      return;
-    }
+    installMessage.value = "";
+    installOpen.value = true;
+  }
+  async function requestInstall() {
+    const event = installEvent.value;
+    if (!event || installing.value) return;
+    installing.value = true;
+    installMessage.value = "";
     try {
-      await installEvent.value.prompt();
-      const choice = await installEvent.value.userChoice;
-      if (choice.outcome === "accepted")
-        installMessage.value = "Installation requested.";
-      installEvent.value = null;
+      await event.prompt();
+      const choice = await event.userChoice;
+      installMessage.value =
+        choice.outcome === "accepted"
+          ? "Installation requested. Follow your browser to finish."
+          : "Installation cancelled. You can keep using the app here.";
     } catch {
       installMessage.value =
-        "Use your browser menu to install The Workout Tracker.";
+        "The installer could not open. Use the browser instructions below.";
+    } finally {
+      installEvent.value = null;
+      installing.value = false;
     }
   }
   return {
+    installOpen,
+    installing,
+    canInstall,
+    platform,
+    requestInstall,
     online,
     installed,
     offlineReady,
@@ -71,4 +94,12 @@ export function usePwa() {
     install,
     updateServiceWorker,
   };
+}
+
+function detectInstallPlatform(): "ios" | "android" | "browser" {
+  if (/iPad|iPhone|iPod/.test(navigator.userAgent)) return "ios";
+  if (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+    return "ios";
+  if (/Android/.test(navigator.userAgent)) return "android";
+  return "browser";
 }

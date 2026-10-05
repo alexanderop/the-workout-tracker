@@ -47,7 +47,7 @@ BaseDialog uses Reka's controlled/uncontrolled state, focus handling, Escape han
 
 Set `.dark` or `data-ui-theme="dark"` on the document root to theme body portals. For a locally themed subtree, provide `BaseDialogContent :portal-to="elementOrSelector"`. `portal-disabled` renders in place. `BaseDialogPortal` is also exported for callers composing the lower-level overlay parts.
 
-`BaseSheet` composes the shared BaseDialog components, retaining its existing open/close API, responsive layout and explicit restoration of focus to its opener. Its optional `close-auto-focus` event passes a cancellable `Event` before restoration; consumers can call `event.preventDefault()` and focus the destination required by their action.
+`BaseSheet` composes the shared BaseDialog components, retaining its existing open/close API, responsive layout and explicit restoration of focus to its opener. On phones up to 650px it slides up in 240ms and exits in 180ms; larger screens retain centered scale/fade motion. Reduced motion removes movement with state-specific selectors. It does not support swipe dismissal. Its optional `close-auto-focus` event passes a cancellable `Event` before restoration; consumers can call `event.preventDefault()` and focus the destination required by their action.
 
 The workout app consumes these shadcn-vue adaptations through `@form/ui`. Its stylesheet imports the shared styles in the components layer and maps the shared theme tokens to the workout palette. App layout classes override shared defaults.
 
@@ -189,3 +189,11 @@ Numeric dialogs have a dedicated overlay layer so they can open inside a templat
 The visible text list communicates each region's involvement independently of color and supplies keyboard/touch targets; the SVG is decorative. The single root group forwards native attributes, listeners and classes and exposes `data-slot="muscle-map"`. Supply `aria-label` or `aria-labelledby` for a contextual accessible name. The fallback “Muscle map” applies only when neither naming attribute is supplied. Consumers own headings, descriptions, surrounding cards and width constraints.
 
 See **02 Components / BaseMuscleMap** in Histoire for interactive controls, parent reset, read-only selection, empty highlights and independent front/back instances. These examples use local sample data and are not integrated into the workout app. The component makes no fatigue or recovery claims and has no storage dependencies.
+
+## Mobile feedback components
+
+- `BaseFeedback :active="confirmed"` wraps a status icon. It pulses only on a false-to-true change after mounting, without timers. Consumers retain the accessible label, canonical success state and error handling; never bind it to a draft or pending request. Initially confirmed values and undo do not animate.
+- `BaseLoading` presents a static branded status with an optional `label`. Consumers own loading, errors and ready state; it imposes no delay.
+- `BaseInstallInstructions` receives `platform` (`ios`, `android`, `browser`), `canInstall`, `busy`, `installed`, and `message`. It emits `install` and never calls browser APIs. Place it inside a user-invoked BaseSheet.
+
+Motion durations and easing come from `tokens.css`. Buttons use an independent scale on press so consumer positioning is preserved. Coarse-pointer standard buttons have a minimum 44px touch target. Reduced motion disables press scaling and confirmation motion. Each component has an interactive Histoire story.

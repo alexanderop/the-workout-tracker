@@ -416,16 +416,16 @@
     0 4px 6px -4px var(--ui-shadow-dialog);
 }
 .ui-dialog-overlay[data-state="open"] {
-  animation: ui-fade-in 0.15s;
+  animation: ui-fade-in var(--ui-motion-enter) ease-out;
 }
 .ui-dialog-overlay[data-state="closed"] {
-  animation: ui-fade-out 0.15s;
+  animation: ui-fade-out var(--ui-motion-exit) ease-in;
 }
 .ui-dialog-content[data-state="open"] {
-  animation: ui-dialog-in 0.2s;
+  animation: ui-dialog-in var(--ui-motion-enter) var(--ui-motion-ease);
 }
 .ui-dialog-content[data-state="closed"] {
-  animation: ui-dialog-out 0.2s;
+  animation: ui-dialog-out var(--ui-motion-exit) ease-in;
 }
 .ui-dialog-header {
   display: flex;
@@ -543,8 +543,8 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ui-dialog-overlay,
-  .ui-dialog-content {
+  .ui-dialog-overlay[data-state],
+  .ui-dialog-content[data-state] {
     animation: none;
   }
   .ui-button,
@@ -819,5 +819,61 @@
 @media (max-width: 380px) {
   .ui-muscle-map-figures {
     gap: 12px;
+  }
+}
+
+/* Scale is independent from consumer positioning transforms. */
+.ui-button {
+  transition:
+    scale var(--ui-motion-press) ease-out,
+    background-color var(--ui-motion-press),
+    color var(--ui-motion-press);
+}
+.ui-button:not(:disabled):not([aria-disabled="true"]):active {
+  scale: 0.97;
+}
+@media (pointer: coarse) {
+  .ui-button:not([data-unstyled]) {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-button:not(:disabled):not([aria-disabled="true"]):active {
+    scale: none;
+  }
+  .ui-button {
+    transition: none;
+  }
+}
+
+/* Both sheet families share mobile motion, independent of centered transforms. */
+@media (max-width: 650px) {
+  .ui-dialog-content:is(.sheet, .ui-numeric-dialog)[data-state="open"] {
+    animation: ui-sheet-enter var(--ui-motion-enter) var(--ui-motion-ease);
+  }
+  .ui-dialog-content:is(.sheet, .ui-numeric-dialog)[data-state="closed"] {
+    animation: ui-sheet-exit var(--ui-motion-exit) ease-in;
+  }
+}
+@keyframes ui-sheet-enter {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes ui-sheet-exit {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-dialog-content:is(.sheet, .ui-numeric-dialog)[data-state] {
+    animation: none;
   }
 }

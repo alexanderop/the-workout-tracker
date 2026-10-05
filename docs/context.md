@@ -2,13 +2,13 @@
 
 The Workout Tracker is a local-first journal. A fresh installation contains an exercise catalog, with no workouts or templates. Confirmed data belongs to one browser profile and origin. There are no accounts or cloud synchronization.
 
-This document owns domain terminology and product invariants. [Architecture](architecture.md) describes their implementation; [design](design.md) describes their presentation.
+The [glossary](glossary.md) owns our shared core vocabulary. This document owns detailed domain rules, supporting technical terms, and product invariants. [Architecture](architecture.md) describes their implementation; [design](design.md) describes their presentation.
 
 ## Exercise and session exercise
 
 An **exercise** is a catalog definition, represented by `Exercise`: identity, name, category (shown as muscle group), equipment, and whether it is custom.
 
-A **session exercise**, represented by `SessionExercise`, is one exercise entry inside a workout. It has its own identity and sets, and captures the exercise name and category so later catalog edits do not rewrite the session's recorded details.
+A **workout exercise**, represented by `SessionExercise` and also called a session exercise in technical descriptions, is one exercise entry inside a workout. It has its own identity and sets, and captures the exercise name and category so later catalog edits do not rewrite the session's recorded details.
 
 ## Template and target set
 

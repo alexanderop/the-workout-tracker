@@ -54,7 +54,7 @@ Navigation errors appear through the workspace error notice. Shell links and fea
 
 Progress selection and cross-page dialog state also survive page navigation. Routine editing retains the revision captured when the editor opens. Backup import retains the revision captured when the file is read. Its pending file selection is local to the Settings page and is cleared when the page unmounts. Completing a workout opens its detail after returning to the workout overview.
 
-`App.vue` creates `usePwa` once. The Settings route receives readonly installation state and an install action through `app/workoutRouteContext.ts`. The route owns the installation presentation, so the workout feature does not depend on PWA infrastructure. It cannot import application wiring or select a storage adapter. The existing architecture checks enforce this boundary.
+`App.vue` creates `usePwa` once. The Settings route receives readonly installation state and an install action through `app/workoutRouteContext.ts`. The route owns the installation entry point. The shell opens a shared installation sheet; `usePwa` owns native prompt availability, platform detection, standalone-mode listeners and installer result state. `BaseInstallInstructions` receives presentation props and emits intent without browser access, so the workout feature does not depend on PWA infrastructure. It cannot import application wiring or select a storage adapter. The existing architecture checks enforce this boundary.
 
 ## Public entry points
 

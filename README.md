@@ -82,14 +82,15 @@ Commits run only `pnpm verify` automatically through Husky. See [Verification an
 | Question | Document |
 | --- | --- |
 | How should an agent work here? | [AGENTS.md](AGENTS.md) |
-| What do templates, workouts, sets, drafts, and revisions mean? | [Domain context](docs/context.md) |
+| Which words do we use for workout concepts? | [Glossary](docs/glossary.md) |
+| What are the workout rules, state transitions, and revisions? | [Domain context](docs/context.md) |
 | Which workspace or module owns a behavior? | [Architecture](docs/architecture.md) |
 | What are the visual and interaction rules? | [Design](docs/design.md) |
 | How do I add a command, component, or persistence change? | [Development workflows](docs/workflows.md) |
 | Which references informed our choices? | [Prior art](docs/prior-art.md) |
 | What did earlier work decide or report? | [Implementation history](docs/history/README.md) |
 
-Context, architecture, and design describe current contracts. History preserves earlier plans and evidence, not current instructions. Update the authoritative document when its contract changes and link to it from other guides.
+The glossary, context, architecture, and design describe current contracts. History preserves earlier plans and evidence, not current instructions. Update the authoritative document when its contract changes and link to it from other guides.
 
 ## GitHub Pages
 

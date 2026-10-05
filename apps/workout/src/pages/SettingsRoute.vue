@@ -5,7 +5,7 @@ import { useWorkoutRouteContext } from "../app/workoutRouteContext";
 
 definePage({ name: "settings", path: "/settings" });
 const { workspace, installation } = useWorkoutRouteContext();
-const { installed, offlineReady, message, install } = installation;
+const { installed, offlineReady, install } = installation;
 </script>
 
 <template>
@@ -26,7 +26,6 @@ const { installed, offlineReady, message, install } = installation;
           {{ installed ? "Installed" : "Install app" }}
         </BaseButton>
       </div>
-      <p v-if="message" class="small" role="status">{{ message }}</p>
       <p class="muted small">
         {{
           offlineReady

@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { BaseSheet, BaseButtonIcon, BaseButton, BaseInputNumber } from "@form/ui";
+import {
+  BaseFeedback,
+  BaseSheet,
+  BaseButtonIcon,
+  BaseButton,
+  BaseInputNumber,
+} from "@form/ui";
 import { useTemplateRef, watch, nextTick, ref } from "vue";
 import { Check, MoreHorizontal, Save } from "@lucide/vue";
 import type { TrainingRow } from "./useTrainingSession";
@@ -35,10 +41,14 @@ defineExpose({
     return row.set.id;
   },
   focus() {
-    form.value?.querySelector<HTMLButtonElement>(".set-options")?.focus({ preventScroll: true });
+    form.value
+      ?.querySelector<HTMLButtonElement>(".set-options")
+      ?.focus({ preventScroll: true });
   },
   focusLog() {
-    form.value?.querySelector<HTMLButtonElement>(".set-toggle")?.focus({ preventScroll: true });
+    form.value
+      ?.querySelector<HTMLButtonElement>(".set-toggle")
+      ?.focus({ preventScroll: true });
   },
   scrollIntoView() {
     form.value?.scrollIntoView({ block: "nearest", behavior: "instant" });
@@ -102,10 +112,12 @@ defineExpose({
         :aria-pressed="row.set.completed"
         :disabled="busy"
       >
-        <Save v-if="dirty && row.set.completed" :size="18" /><Check
-          v-else
-          :size="19"
-        />
+        <BaseFeedback :active="row.set.completed">
+          <Save v-if="dirty && row.set.completed" :size="18" /><Check
+            v-else
+            :size="19"
+          />
+        </BaseFeedback>
       </BaseButton>
       <BaseButtonIcon
         type="button"
@@ -187,7 +199,10 @@ defineExpose({
       </BaseButton>
       <BaseButton
         :disabled="busy"
-        @click="emit('discard'); discardOpen = false"
+        @click="
+          emit('discard');
+          discardOpen = false;
+        "
       >
         Discard input
       </BaseButton>

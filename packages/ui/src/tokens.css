@@ -1,4 +1,9 @@
 :root {
+  --ui-motion-press: 120ms;
+  --ui-motion-exit: 180ms;
+  --ui-motion-enter: 240ms;
+  --ui-motion-feedback: 320ms;
+  --ui-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --ui-destructive-foreground: white;
   --ui-shadow-soft: rgb(0 0 0 / 0.05);
   --ui-shadow-dialog: rgb(0 0 0 / 0.1);

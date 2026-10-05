@@ -126,7 +126,9 @@ function focusDisplay(event: Event) {
     >
       <header class="ui-numeric-header">
         <div>
-          <BaseDialogTitle class="ui-numeric-title">{{ title }}</BaseDialogTitle>
+          <BaseDialogTitle class="ui-numeric-title">{{
+            title
+          }}</BaseDialogTitle>
           <BaseDialogDescription class="ui-numeric-description">{{
             label
           }}</BaseDialogDescription>
@@ -355,10 +357,6 @@ function focusDisplay(event: Event) {
     var(--ui-foreground)
   );
 }
-.ui-numeric-key:active,
-.ui-numeric-preset:active {
-  transform: scale(0.97);
-}
 .ui-numeric-confirm {
   display: flex;
   align-items: center;
@@ -385,7 +383,6 @@ function focusDisplay(event: Event) {
     max-height: 100dvh;
     border-radius: 18px 18px 0 0;
     padding: 22px 20px calc(20px + env(safe-area-inset-bottom));
-    animation: none;
   }
 }
 @media (max-height: 700px) {

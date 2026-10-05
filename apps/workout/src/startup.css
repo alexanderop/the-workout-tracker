@@ -1,0 +1,25 @@
+@import "@form/ui/tokens.css";
+html {
+  background: var(--background);
+  color: var(--text);
+}
+body {
+  margin: 0;
+}
+.startup-shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  box-sizing: border-box;
+  font:
+    16px system-ui,
+    sans-serif;
+  text-align: center;
+}
+.startup-shell p {
+  margin: 0;
+}

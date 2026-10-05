@@ -52,6 +52,14 @@ Inter Variable is bundled locally for offline use. Lucide icons use a consistent
 
 The interface uses a quiet visual hierarchy; empty states show actual data rather than fabricated statistics. [Prior art](prior-art.md) records the original reference and adaptations.
 
+## Mobile motion and feedback
+
+Motion explains a change without delaying the next action. Shared motion tokens define a 120ms press response, 180ms exit, 240ms entrance and 320ms completion response. Mobile sheets and numeric editors slide from the bottom; desktop dialogs use a small scale and fade. Close, Escape and backdrop dismissal retain the existing confirmation and focus contracts. Sheets do not advertise swipe dismissal until that interaction is implemented.
+
+Buttons compress subtly on press without changing layout. Completion feedback runs only when a mounted control changes from incomplete to confirmed complete, never for an initial saved value or numeric draft confirmation. Reduced motion removes movement, including sheet and dialog state animations; the final state remains visible.
+
+Startup shows a lightweight branded loading surface with no minimum wait. Installation is a user-invoked sheet with platform-specific instructions and native installation when available. There is no onboarding or guided tour. Develop shared components and review their Histoire examples before integrating application behavior.
+
 ## Button ownership
 
 Icon-only actions use the shared `BaseButtonIcon`: a required accessible label, decorative icon, centered content and a minimum 44px square touch target at every viewport size. Circle and square surfaces share this geometry. Application classes position these controls without resetting their internals.
