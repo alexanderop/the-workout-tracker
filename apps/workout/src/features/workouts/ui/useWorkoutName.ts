@@ -15,7 +15,7 @@ export function useWorkoutName(
   const issue = ref("");
   const submitting = ref(false);
   const dirty = computed(
-    () => !!draft.value && draft.value.text !== draft.value.baseName,
+    () => !!draft.value && draft.value.text !== workspace.active.value?.name,
   );
   const conflict = computed(
     () => dirty.value && workspace.active.value?.name !== draft.value?.baseName,
@@ -26,6 +26,7 @@ export function useWorkoutName(
   const text = computed({
     get: () => draft.value?.text ?? "",
     set: (value: string) => {
+      if (!dirty.value && !submitting.value) useSaved();
       if (draft.value) draft.value.text = value;
     },
   });
@@ -43,11 +44,16 @@ export function useWorkoutName(
         : null;
     issue.value = "";
   }
+  function canAdoptSaved(previousName: string | undefined) {
+    return (
+      !submitting.value && (!dirty.value || draft.value?.text === previousName)
+    );
+  }
   watch(
     () => workspace.snapshot.value,
-    () => {
+    (_snapshot, previous) => {
       if (
-        (!dirty.value && !submitting.value) ||
+        canAdoptSaved(previous?.active?.name) ||
         draft.value?.sessionId !== workspace.active.value?.id
       ) {
         useSaved();

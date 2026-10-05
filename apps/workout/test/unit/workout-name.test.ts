@@ -50,6 +50,61 @@ describe("workout name editing", () => {
       scope.stop();
     }
   });
+  it("keeps a reverted local name dirty when the saved name changed", async () => {
+    const { editor, app, memory, active, scope } = setup();
+    try {
+      editor.text.value = "Local name";
+      await app.execute(
+        { type: "rename", sessionId: active.id, name: "Remote name" },
+        0,
+      );
+      editor.text.value = "Morning workout";
+      expect(editor.dirty.value).toBe(true);
+      expect(editor.conflict.value).toBe(true);
+      await app.execute(
+        { type: "settings", settings: { restSeconds: 30, autoRest: false } },
+        1,
+      );
+      expect(editor.text.value).toBe("Morning workout");
+      expect(editor.conflict.value).toBe(true);
+      await editor.keepMine();
+      expect(memory.current().active?.name).toBe("Morning workout");
+      expect(editor.dirty.value).toBe(false);
+    } finally {
+      scope.stop();
+    }
+  });
+  it("adopts remote names when there is no local edit", async () => {
+    const { editor, app, active, scope } = setup();
+    try {
+      await app.execute(
+        { type: "rename", sessionId: active.id, name: "Remote name" },
+        0,
+      );
+      expect(editor.text.value).toBe("Remote name");
+      expect(editor.dirty.value).toBe(false);
+    } finally {
+      scope.stop();
+    }
+  });
+  it("starts a new baseline after typing the current saved name", async () => {
+    const { editor, app, memory, active, scope } = setup();
+    try {
+      editor.text.value = "Local name";
+      await app.execute(
+        { type: "rename", sessionId: active.id, name: "Remote name" },
+        0,
+      );
+      editor.text.value = "Remote name";
+      expect(editor.dirty.value).toBe(false);
+      editor.text.value = "Next local name";
+      expect(editor.conflict.value).toBe(false);
+      await editor.save();
+      expect(memory.current().active?.name).toBe("Next local name");
+    } finally {
+      scope.stop();
+    }
+  });
   it("saves after an unrelated revision without inventing a name conflict", async () => {
     const { editor, app, memory, scope } = setup();
     try {
