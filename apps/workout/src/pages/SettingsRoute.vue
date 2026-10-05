@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button } from "@form/ui";
+import { BaseButton } from "@form/ui";
 import { WorkoutSettings } from "../features/workouts/ui";
 import { useWorkoutRouteContext } from "../app/workoutRouteContext";
 
@@ -17,14 +17,14 @@ const { installed, offlineReady, message, install } = installation;
           >The Workout Tracker on your home screen<small
             >Open your journal like any other app.</small
           ></span
-        ><Button
+        ><BaseButton
           unstyled
           class="btn secondary"
           :disabled="installed"
           @click="install"
         >
           {{ installed ? "Installed" : "Install app" }}
-        </Button>
+        </BaseButton>
       </div>
       <p v-if="message" class="small" role="status">{{ message }}</p>
       <p class="muted small">

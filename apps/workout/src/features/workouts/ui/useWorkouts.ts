@@ -1,6 +1,6 @@
 import { computed, onScopeDispose, ref, shallowRef } from "vue";
-import type { Workouts, LoadState } from "../application";
-import type { Command, Snapshot } from "../domain";
+import type { Workouts, LoadState, ApplicationCommand } from "../application";
+import type { Snapshot } from "../domain";
 
 export function useWorkouts(service: Workouts) {
   const state = shallowRef<LoadState>({ kind: "loading" });
@@ -17,7 +17,7 @@ export function useWorkouts(service: Workouts) {
     stop();
   });
   async function run(
-    command: Command,
+    command: ApplicationCommand,
     expectedRevision = snapshot.value?.revision,
   ): Promise<Snapshot | null> {
     if (saving.value || expectedRevision === undefined) return null;

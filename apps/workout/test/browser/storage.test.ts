@@ -1,0 +1,77 @@
+import Dexie from "dexie";
+import { afterEach, describe, expect, it } from "vitest";
+import { openDexieWorkoutStorage } from "../../src/features/workouts/adapters/dexie";
+import type { LoadState, WorkoutStorage } from "../../src/features/workouts/ports";
+import { createWorkoutFactory } from "../support/factories";
+
+const resources: { name: string; adapters: WorkoutStorage[] }[] = [];
+function isolatedStorage() {
+  const factory = createWorkoutFactory("browser");
+  const initial = factory.snapshot();
+  const name = `workout-test-${crypto.randomUUID()}`;
+  const adapters = [openDexieWorkoutStorage(name, initial), openDexieWorkoutStorage(name, initial)];
+  resources.push({ name, adapters });
+  const [first, second] = adapters;
+  if (!first || !second) throw new Error("Two storage connections are required.");
+  return { first, second, initial, name, adapters };
+}
+afterEach(async () => {
+  for (const { name, adapters } of resources.splice(0)) {
+    for (const adapter of adapters) adapter.close();
+    await Dexie.delete(name);
+  }
+});
+
+describe("real IndexedDB workout storage", () => {
+  it("allows only one concurrent writer to advance a revision", async () => {
+    const { first, second, initial } = isolatedStorage();
+    const next = { ...initial, revision: 1, settings: { autoRest: false, restSeconds: 30 } };
+    const other = { ...next, settings: { autoRest: true, restSeconds: 90 } };
+    const results = await Promise.all([first.compareAndSave(0, next), second.compareAndSave(0, other)]);
+    expect(results.map((result) => result.kind).sort()).toEqual(["conflict", "saved"]);
+    const saved = results.find((result) => result.kind === "saved");
+    const conflict = results.find((result) => result.kind === "conflict");
+    expect(saved?.snapshot.revision).toBe(1);
+    expect([next.settings, other.settings]).toContainEqual(saved?.snapshot.settings);
+    expect(conflict?.snapshot).toEqual(saved?.snapshot);
+    expect(await first.read()).toEqual({ kind: "ready", snapshot: saved?.snapshot });
+    expect(await second.read()).toEqual(await first.read());
+  });
+
+  it("rejects stale no-op writes without overwriting the current revision", async () => {
+    const { first, second, initial } = isolatedStorage();
+    const next = { ...initial, revision: 1, settings: { autoRest: false, restSeconds: 30 } };
+    expect((await first.compareAndSave(0, next)).kind).toBe("saved");
+    expect(await second.compareAndSave(0, initial)).toEqual({ kind: "conflict", snapshot: next });
+    expect(await first.read()).toEqual({ kind: "ready", snapshot: next });
+  });
+
+  it("keeps committed data after closing and reopening a connection", async () => {
+    const { first, second, initial, name, adapters } = isolatedStorage();
+    const next = { ...initial, revision: 1 };
+    await first.compareAndSave(0, next);
+    first.close();
+    expect((await first.read()).kind).toBe("unavailable");
+    expect((await first.compareAndSave(1, next)).kind).toBe("unavailable");
+    expect(await second.read()).toEqual({ kind: "ready", snapshot: next });
+    second.close();
+    const reopened = openDexieWorkoutStorage(name, initial);
+    adapters.push(reopened);
+    expect(await reopened.read()).toEqual({ kind: "ready", snapshot: next });
+  });
+
+  it("stops notifying an unsubscribed listener while active observers receive changes", async () => {
+    const { first, second, initial } = isolatedStorage();
+    const removed: LoadState[] = [];
+    const active: LoadState[] = [];
+    const unsubscribe = first.subscribe((state) => removed.push(state));
+    const stop = second.subscribe((state) => active.push(state));
+    await expect.poll(() => removed.some((state) => state.kind === "ready")).toBe(true);
+    unsubscribe();
+    const count = removed.length;
+    await second.compareAndSave(0, { ...initial, revision: 1 });
+    await expect.poll(() => active.some((state) => state.kind === "ready" && state.snapshot.revision === 1)).toBe(true);
+    expect(removed).toHaveLength(count);
+    stop();
+  });
+});

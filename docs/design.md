@@ -54,9 +54,9 @@ The interface uses a quiet visual hierarchy; empty states show actual data rathe
 
 ## Button ownership
 
-Icon-only actions use the shared `IconButton`: a required accessible label, decorative icon, centered content and a minimum 44px square touch target at every viewport size. Circle and square surfaces share this geometry. Application classes position these controls without resetting their internals.
+Icon-only actions use the shared `BaseButtonIcon`: a required accessible label, decorative icon, centered content and a minimum 44px square touch target at every viewport size. Circle and square surfaces share this geometry. Application classes position these controls without resetting their internals.
 
-Standard buttons retain the UI package's variant and size styling. Existing custom cards, rows and text actions explicitly use `Button unstyled` with an app-owned layout class. Global resets must exclude shared buttons; removing their flex layout is what previously displaced the settings icon. Histoire's Icon Button story owns the isolated interaction examples.
+Standard buttons retain the UI package's variant and size styling. Existing custom cards, rows and text actions explicitly use `BaseButton unstyled` with an app-owned layout class. Global resets must exclude shared buttons; removing their flex layout is what previously displaced the settings icon. Histoire's BaseButtonIcon story owns the isolated interaction examples.
 
 The desktop sidebar installation action uses a left-aligned label with an icon column. Wrapped labels stay aligned with their first line; the local-storage note uses the same icon and label offsets.
 
@@ -90,17 +90,30 @@ Closing an exercise panel preserves its input drafts. Finishing requires pending
 
 Explain what a component means and when to use it before implementation names or token values. Document Usage, Variants, States, Behavior, and Examples and limitations. Show real keyboard and focus behavior. Pattern stories use isolated local state and must not imply real persistence. Spacing examples are reference values, not additional global tokens. The [UI package guide](../packages/ui/README.md) owns detailed component API contracts.
 
-## Enforced color policy
+Component names follow the [naming contract](workflows.md#component-names), also available in **00 Start here / Component naming**. Shared component story titles and filenames match their `Base`-prefixed public exports.
+
+## Enforced token policy
 
 Literal CSS colors belong in `packages/ui/src/tokens.css`, including generic overlay and shadow colors. All other CSS files and Vue style blocks use semantic variables; raw hex values, color functions, and named colors are rejected. Vue class bindings reject literal Tailwind palette classes and raw color values in class/style/fill/stroke/color attributes. Dynamic values assembled outside these expressions still require review; these checks are not a CSS data-flow analyzer. Status colors receive no palette exception. CSS imports also follow the workspace dependency policy.
 
+`pnpm lint:vue` (also included in `pnpm verify` and the pre-commit hook) enforces the policy across both applications and the UI package:
+
+- `@shadcn/lint` rejects raw Tailwind colors and arbitrary Tailwind values in supported Vue class expressions and TypeScript class helpers. Use named utilities or existing CSS variables, such as `bg-(--ui-primary)`, instead of `bg-red-500` or `rounded-[13px]`.
+- `design/token-references` rejects unknown static `var(--name)` references and Tailwind variable shorthand in CSS declarations, Vue attributes and script strings, and TypeScript strings. Shared names come directly from the UI package's token and component stylesheets; stylesheet-local declarations are also accepted. For example, `var(--ui-primray)` fails instead of silently losing its color.
+- The existing CSS rules continue to reject literal colors outside the token source, including Vue style blocks. A CSS variable does not exempt its raw color definition from that rule.
+
+The root `components.json` points the Tailwind linter at the workout stylesheet and UI source directory. It is lint discovery configuration, not a second palette. Histoire continues to consume the same shared CSS tokens.
+
+The article's `no-restyle` and `no-unknown-classes` rules are not enabled: the current component contract permits app-owned CSS through `BaseButton unstyled`, and the explorer has separately loaded CSS classes. These need component-specific contracts and stylesheet discovery before those rules can be applied without false positives. Named CSS classes and inline dimensions are not restricted by the Tailwind arbitrary-value rule. Spacing and typography in foundations remain guidance, not a finite enforced token scale. Static reference checks do not resolve dynamic variable names, CSS scope or runtime values; new tokens and local aliases still need design review.
+
+
 ### Exercise imagery
 
-The **03 Patterns / Exercise imagery** story previews six generated equipment illustrations in a gallery and a searchable picker. The artwork uses transparent backgrounds, charcoal materials and silver edge highlights, with the existing semantic surface behind it. Text labels remain essential because equipment does not uniquely identify a movement; these images do not teach exercise technique. Images are decorative when paired with the exercise name.
+The **03 Patterns / Exercise imagery** story previews 46 generated equipment illustrations in a gallery and a searchable picker. The artwork uses transparent backgrounds, charcoal materials and silver edge highlights, with the existing semantic surface behind it. Text labels remain essential because equipment does not uniquely identify a movement; these images do not teach exercise technique. Images are decorative when paired with the exercise name.
 
-The exercise catalog and exercise picker use these illustrations for explicitly matched built-in exercises and compatible equipment variants. Custom exercises, unmatched definitions and failed image loads use a decorative dumbbell fallback. Names and equipment must match as well as the catalog ID; artwork is presentation metadata and is not persisted in workout data or backups.
+The exercise catalog and exercise picker use these illustrations for explicitly matched built-in exercises and compatible equipment variants (51 built-in exercises in total). Custom exercises, unmatched definitions and failed image loads use a decorative dumbbell fallback. Names and equipment must match as well as the catalog ID; artwork is presentation metadata and is not persisted in workout data or backups.
 
-The workout feature owns its production asset copies and mapping in `ui/assets/exercises` and `ui/exerciseArtwork.ts`. Histoire retains its independent review assets and generation prompts in `src/assets/exercises`, avoiding imports between applications. Production thumbnails use WebP and are included in the offline precache. The production mapping covers 51 built-in exercises; Histoire artwork remains an independent review collection.
+The workout feature owns its production asset copies and mapping in `ui/assets/exercises` and `ui/exerciseArtwork.ts`. Histoire retains its independent review assets and generation prompts in `src/assets/exercises`, avoiding imports between applications. Production imports use transparent WebP thumbnails sized for the 64px image slots at up to 3× pixel density. All thumbnails are precached for offline use. PNG originals remain available for regeneration but are not imported into the production app. See the [exercise image workflow](exercise-images.md) for conversion and delivery rules.
 
 ### Explorer review environment
 
@@ -115,7 +128,6 @@ For manual overlay review, use Phone · short and Desktop: open, Tab and Shift+T
 ### Muscle map component preview
 
 **02 Components / BaseMuscleMap** previews a reusable `@form/ui` component with original schematic front/back artwork, purple primary/supporting highlights and a visible muscle list. Consumers provide semantic muscle roles and own surrounding cards, headings and layout. Selection uses native text buttons with keyboard focus and changes only the outline; anatomy shapes are decorative rather than small touch targets. Both views appear by default, with front-only and back-only options whose text lists follow the visible regions. The [UI package guide](../packages/ui/README.md#muscle-map) owns the data, naming and selection API. Examples use local sample data only; production exercise mapping, workout coverage and recovery calculations are not integrated.
-
 ## Active exercise options
 
 Every workout exercise, including completed entries, exposes an options button. Its sheet shows set count, target reps, and weight, with “Mixed” for varied targets. Options include Edit sets, Add or Edit note, Replace exercise, Remove exercise, and Add exercises. Focused editors use the same sheet. Changed note and configuration forms ask before discarding input.

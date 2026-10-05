@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { Input, Button } from "@form/ui";
+import { BaseInput, BaseButton } from "@form/ui";
 const search = ref("");
 const selected = ref<string[]>([]);
 const result = ref("");
@@ -21,28 +21,28 @@ function toggle(name: string) {
     <Variant title="Search and select"
       ><div class="stack">
         <h1>Add exercises</h1>
-        <Input
+        <BaseInput
           v-model="search"
           aria-label="Search exercises"
           placeholder="Search exercises"
         />
         <div class="stack">
-          <Button
+          <BaseButton
             v-for="name in matches"
             :key="name"
             variant="outline"
             :aria-pressed="selected.includes(name)"
             @click="toggle(name)"
-            >{{ selected.includes(name) ? "✓ " : "" }}{{ name }}</Button
+            >{{ selected.includes(name) ? "✓ " : "" }}{{ name }}</BaseButton
           >
         </div>
         <p v-if="!matches.length" role="status">
           No results. Try another search term.
         </p>
-        <Button
+        <BaseButton
           :disabled="!selected.length"
           @click="result = selected.join(', ')"
-          >Apply selection ({{ selected.length }})</Button
+          >Apply selection ({{ selected.length }})</BaseButton
         >
         <p role="status">{{ result }}</p>
       </div></Variant

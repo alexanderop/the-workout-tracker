@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { Sheet, Button } from "@form/ui";
+import { BaseSheet, BaseButton } from "@form/ui";
 import SetRow from "./SetRow.vue";
 import type { useTrainingSession } from "./useTrainingSession";
 const { setId, training, busy } = defineProps<{
@@ -33,7 +33,7 @@ async function clear() {
 }
 </script>
 <template>
-  <Sheet
+  <BaseSheet
     :open="!!row"
     :title="row ? `${row.exercise.name} · Set ${row.index + 1}` : 'Edit set'"
     description="Edit values without logging, or explicitly log this set. Zero reps records a failed attempt."
@@ -41,13 +41,13 @@ async function clear() {
   >
     <div v-if="row" class="workout-editor">
       <nav class="workout-set-nav" aria-label="Choose set to edit">
-        <Button
+        <BaseButton
           v-for="(set, index) in row.exercise.sets"
           :key="set.id"
           variant="secondary"
           :aria-pressed="set.id === row.set.id"
           @click="emit('select', set.id)"
-          >Set {{ index + 1 }}</Button
+          >Set {{ index + 1 }}</BaseButton
         >
       </nav>
       <SetRow
@@ -64,29 +64,29 @@ async function clear() {
         @keep="training.keepInput(row!.set.id)"
         @recover="(draft) => training.chooseDraft(row!.set.id, draft)"
       />
-      <Button
+      <BaseButton
         :disabled="busy || !row.touched"
         @click="training.commit(row.set.id, true)"
-        >Save values without logging</Button
+        >Save values without logging</BaseButton
       >
-      <Button
+      <BaseButton
         v-if="row.set.completed"
         variant="secondary"
         :disabled="busy"
         @click="confirmation = 'clear'"
-        >Clear logged set</Button
+        >Clear logged set</BaseButton
       >
-      <Button
+      <BaseButton
         v-if="row.touched"
         variant="ghost"
         :disabled="busy"
         @click="confirmation = 'discard'"
-        >Discard input changes</Button
+        >Discard input changes</BaseButton
       >
-      <Button variant="ghost" @click="emit('close')">Done</Button>
+      <BaseButton variant="ghost" @click="emit('close')">Done</BaseButton>
     </div>
-  </Sheet>
-  <Sheet
+  </BaseSheet>
+  <BaseSheet
     :open="confirmation !== null"
     :title="
       confirmation === 'clear' ? 'Clear logged set?' : 'Discard input changes?'
@@ -99,16 +99,16 @@ async function clear() {
     @close="confirmation = null"
   >
     <div class="form-actions">
-      <Button
+      <BaseButton
         variant="secondary"
         :disabled="busy"
         @click="confirmation = null"
       >
         Cancel
-      </Button>
-      <Button :disabled="busy" @click="confirm">
+      </BaseButton>
+      <BaseButton :disabled="busy" @click="confirm">
         {{ confirmation === 'clear' ? 'Clear set' : 'Discard input' }}
-      </Button>
+      </BaseButton>
     </div>
-  </Sheet>
+  </BaseSheet>
 </template>

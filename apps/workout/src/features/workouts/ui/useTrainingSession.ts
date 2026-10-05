@@ -9,18 +9,18 @@ import {
   type SetDraft,
 } from "../domain/drafts";
 
-export type TrainingRow = {
-  set: WorkoutSet;
+import {
+  restoreTrainingDraft,
+  hasDraftConflict,
+  isDraftDirty,
+  decideSetCommit,
+  canUndoSet,
+  type TrainingDraftState,
+} from "../domain/trainingDrafts";
+
+export type TrainingRow = TrainingDraftState & {
   exercise: SessionExercise;
   index: number;
-  weight: string;
-  reps: string;
-  base: SetDraft["base"];
-  touched: boolean;
-  recoveredStale: boolean;
-  revision: number;
-  records: SetDraft[];
-  alternatives: SetDraft[];
   issue: string;
   storageIssue: string;
 };
@@ -87,13 +87,11 @@ export function useTrainingSession(options: {
   );
   function invalidateLastLog(sessionId: string | undefined) {
     if (
-      lastLog.value &&
-      (lastLog.value.sessionId !== sessionId ||
-        !rows.has(lastLog.value.setId) ||
-        !sameSet(lastLog.value.base, rows.get(lastLog.value.setId)!.set))
+      !canUndoSet(lastLog.value, sessionId, rows.get(lastLog.value?.setId ?? "")?.set)
     )
       lastLog.value = null;
   }
+
   function recoverRecords(
     sessionId: string,
     setId: string,
@@ -145,26 +143,7 @@ export function useTrainingSession(options: {
       alternatives: [],
       issue: "",
     };
-    rows.set(set.id, restoreRow(fresh));
-  }
-  function restoreRow(row: TrainingRow): TrainingRow {
-    const recovered = row.records[0];
-    if (!recovered) return row;
-    const distinct = row.records.some(
-      (candidate) =>
-        candidate.weight !== recovered.weight ||
-        candidate.reps !== recovered.reps,
-    );
-    return {
-      ...row,
-      weight: recovered.weight,
-      reps: recovered.reps,
-      base: recovered.base,
-      touched: true,
-      recoveredStale: !sameSet(recovered.base, row.set),
-      revision: recovered.revision,
-      alternatives: distinct ? row.records : [],
-    };
+    rows.set(set.id, restoreTrainingDraft(fresh));
   }
   const next = computed(() => {
     const set = active.value?.exercises
@@ -200,14 +179,8 @@ export function useTrainingSession(options: {
     selectedExerciseId.value = row.exercise.id;
     selected.value = id;
   }
-  const conflict = (row: TrainingRow) =>
-    row.touched &&
-    (row.recoveredStale ||
-      !sameSet(row.base, row.set) ||
-      row.alternatives.length > 0);
-  const dirty = (row: TrainingRow) =>
-    row.weight !== String(row.set.weightKg) ||
-    row.reps !== String(row.set.reps);
+  const conflict = hasDraftConflict;
+  const dirty = isDraftDirty;
   function persist(row: TrainingRow) {
     if (!active.value || !options.snapshot.value) return;
     try {
@@ -290,37 +263,24 @@ export function useTrainingSession(options: {
     row.reps = draft.reps;
     row.base = draft.base;
     row.revision = draft.revision;
-    row.recoveredStale = !sameSet(draft.base, row.set);
+    row.recoveredStale =
+      draft.revision !== options.snapshot.value?.revision ||
+      !sameSet(draft.base, row.set);
     row.alternatives = [];
     row.touched = true;
     persist(row);
-  }
-  function valuesToCommit(row: TrainingRow) {
-    if (conflict(row)) {
-      row.issue =
-        "This set changed in another tab or has different recovered drafts. Review it before logging.";
-      return;
-    }
-    const values = parseSetValues(row);
-    if (!values) {
-      row.issue =
-        "Enter 0–1000 kg and 0–1000 whole repetitions. Planned sets need at least one rep.";
-      return;
-    }
-    return values;
-  }
-  function completionAfterCommit(row: TrainingRow, valuesOnly: boolean) {
-    if (valuesOnly) return row.set.completed;
-    return dirty(row) || !row.set.completed;
   }
   async function commit(setId: string, valuesOnly = false) {
     const row = rows.get(setId),
       snapshot = options.snapshot.value,
       session = active.value;
     if (!row || !snapshot || !session || options.saving.value) return;
-    const values = valuesToCommit(row);
-    if (!values) return;
-    const completed = completionAfterCommit(row, valuesOnly);
+    const decision = decideSetCommit(row, valuesOnly);
+    if (decision.kind === "blocked") {
+      row.issue = decision.issue;
+      return;
+    }
+    const { values, completed } = decision;
     try {
       row.records = [
         ...row.records,
@@ -431,7 +391,7 @@ export function useTrainingSession(options: {
       snapshot = options.snapshot.value;
     if (!last || !snapshot) return;
     const row = rows.get(last.setId);
-    if (!row || !sameSet(last.base, row.set)) {
+    if (!row || !canUndoSet(last, snapshot.active?.id, row.set)) {
       lastLog.value = null;
       return;
     }

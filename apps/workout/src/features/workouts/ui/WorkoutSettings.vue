@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useTemplateRef, ref } from "vue";
-import { Button, NativeSelect, Switch, Sheet } from "@form/ui";
+import { BaseButton, BaseSelectNative, BaseSwitch, BaseSheet } from "@form/ui";
 import { ArrowDownToLine, Upload, Trash2 } from "@lucide/vue";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import { download } from "./presentation";
@@ -161,7 +161,7 @@ defineSlots<{ default?: () => unknown }>();
             >Automatic rest timer<small
               >Start counting down after a logged set.</small
             ></span
-          ><Switch
+          ><BaseSwitch
             aria-label="Automatic rest timer"
             :model-value="snapshot.settings.autoRest"
             :disabled="saving"
@@ -171,7 +171,7 @@ defineSlots<{ default?: () => unknown }>();
             >Rest between sets<small
               >Choose the pace that suits your session.</small
             ></span
-          ><NativeSelect
+          ><BaseSelectNative
             class="input rest-select"
             aria-label="Rest duration"
             :model-value="snapshot.settings.restSeconds"
@@ -185,7 +185,7 @@ defineSlots<{ default?: () => unknown }>();
             >
               {{ seconds }} sec
             </option>
-          </NativeSelect></label
+          </BaseSelectNative></label
         >
         <div class="settings-row">
           <span>Weight unit</span><span class="muted">Kilograms · kg</span>
@@ -198,20 +198,20 @@ defineSlots<{ default?: () => unknown }>();
           move them to another device.
         </p>
         <div class="backup-actions">
-          <Button
+          <BaseButton
             unstyled
             class="btn secondary"
             :disabled="backupBusy || saving"
             @click="exportBackup"
           >
-            <ArrowDownToLine :size="17" />Export backup</Button
-          ><Button
+            <ArrowDownToLine :size="17" />Export backup</BaseButton
+          ><BaseButton
             unstyled
             class="btn secondary"
             :disabled="backupBusy || saving"
             @click="importInput?.click()"
           >
-            <Upload :size="17" />Import backup</Button
+            <Upload :size="17" />Import backup</BaseButton
           ><input
             ref="importInput"
             class="sr-only"
@@ -230,21 +230,21 @@ defineSlots<{ default?: () => unknown }>();
             conflicts. Your current settings stay unchanged.
           </p>
           <div class="form-actions">
-            <Button
+            <BaseButton
               unstyled
               class="btn ghost"
               :disabled="backupBusy"
               @click="backupFile = null"
             >
-              Cancel import</Button
-            ><Button
+              Cancel import</BaseButton
+            ><BaseButton
               unstyled
               class="btn primary"
               :disabled="backupBusy || saving"
               @click="importBackup"
             >
               {{ backupBusy ? "Importing…" : "Import this backup" }}
-            </Button>
+            </BaseButton>
           </div>
         </div>
         <p v-if="backupMessage" role="status" class="small">
@@ -259,13 +259,13 @@ defineSlots<{ default?: () => unknown }>();
           preferences from this browser. Export a backup first if you want to
           keep a copy.
         </p>
-        <Button
+        <BaseButton
           variant="secondary"
           :disabled="saving || backupBusy"
           @click="requestDeletion"
         >
           <Trash2 :size="17" />Delete all data
-        </Button>
+        </BaseButton>
         <p v-if="deletionMessage" role="status" class="small">
           {{ deletionMessage }}
         </p>
@@ -276,7 +276,7 @@ defineSlots<{ default?: () => unknown }>();
       </p>
     </template>
   </section>
-  <Sheet
+  <BaseSheet
     :open="deletion !== null"
     title="Delete all your data?"
     description="This permanently deletes your workout history, active workout, input drafts, templates and custom exercises from this browser, and resets your preferences. This cannot be undone. Downloaded backups stay on your device."
@@ -286,19 +286,19 @@ defineSlots<{ default?: () => unknown }>();
       {{ deletion.issue }}
     </p>
     <div class="form-actions">
-      <Button
+      <BaseButton
         variant="secondary"
         :disabled="saving"
         @click="deletion = null"
       >
         Cancel
-      </Button>
-      <Button
+      </BaseButton>
+      <BaseButton
         :disabled="saving || deletion?.conflict"
         @click="deleteAllData"
       >
         {{ saving ? "Deleting…" : "Delete all data" }}
-      </Button>
+      </BaseButton>
     </div>
-  </Sheet>
+  </BaseSheet>
 </template>

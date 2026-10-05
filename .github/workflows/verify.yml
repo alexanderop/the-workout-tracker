@@ -16,6 +16,18 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify
+      - run: pnpm test:unit
+      - run: pnpm --filter @form/workout exec playwright install --with-deps chrome
+      - run: pnpm test:browser
+      - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: workout-test-results
+          path: |
+            apps/workout/test-results
+            apps/workout/playwright-report
+          if-no-files-found: ignore
       - run: pnpm --filter @form/workout build
         if: github.event_name != 'pull_request' && github.ref_name == (vars.PAGES_BRANCH || 'main')
       - uses: actions/upload-pages-artifact@v3

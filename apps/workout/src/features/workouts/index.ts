@@ -1,6 +1,7 @@
 export { createWorkouts } from "./application";
 export type {
   Workouts,
+  ApplicationCommand,
   WorkoutDependencies,
   LoadState,
   Result,

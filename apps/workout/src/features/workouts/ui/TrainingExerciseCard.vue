@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, useTemplateRef } from "vue";
-import { Button, IconButton } from "@form/ui";
-import { ChevronRight, Check, Settings2 } from "@lucide/vue";
+import { BaseButton, BaseButtonIcon } from "@form/ui";
+import { ChevronRight, Check, Ellipsis } from "@lucide/vue";
 import { setTargetReps, type SessionExercise } from "../domain";
 import type { useTrainingSession } from "./useTrainingSession";
 import TrainingSetCircle from "./TrainingSetCircle.vue";
@@ -20,6 +20,8 @@ const emit = defineEmits<{
   release: [];
 }>();
 const open = ref(false);
+const optionsButton =
+  useTemplateRef<InstanceType<typeof BaseButtonIcon>>("optionsButton");
 const circles =
   useTemplateRef<InstanceType<typeof TrainingSetCircle>[]>("circles");
 const review = computed(() =>
@@ -44,6 +46,10 @@ const prescription = computed(() => {
 });
 defineExpose({
   exerciseId: exercise.id,
+  focusOptions: () => {
+    const element = optionsButton.value?.$el;
+    if (element instanceof HTMLElement) element.focus({ preventScroll: true });
+  },
   focusSet: (id: string) => {
     circles.value?.find((circle) => circle.setId === id)?.focus();
   },
@@ -58,34 +64,38 @@ defineExpose({
       <div>
         <h2><Check v-if="completed" :size="16" />{{ exercise.name }}</h2>
         <p v-if="completed && !pinned" class="muted">
-          {{ exercise.sets.length }} sets logged
+          {{ exercise.sets.length }}
+          {{ exercise.sets.length === 1 ? "set" : "sets" }} logged
         </p>
       </div>
-      <Button
+      <BaseButton
         v-if="completed && !pinned"
         variant="ghost"
         :aria-expanded="expanded"
         :aria-label="`Review ${exercise.name}`"
         @click="open = !open"
-        >{{ expanded ? "Close" : "Review" }}</Button
+        >{{ expanded ? "Close" : "Review" }}</BaseButton
       >
-      <IconButton
-        v-else
-        :label="`Configure ${exercise.name}`"
+      <BaseButtonIcon
+        ref="optionsButton"
+        :label="`Options for ${exercise.name}`"
         :disabled="busy"
         @click="emit('configure')"
-        ><Settings2 :size="18"
-      /></IconButton>
+        ><Ellipsis :size="18"
+      /></BaseButtonIcon>
     </header>
+    <p v-if="exercise.note" class="workout-exercise-note muted small">
+      {{ exercise.note }}
+    </p>
     <div v-if="expanded" class="workout-exercise-content">
-      <Button
+      <BaseButton
         unstyled
         class="workout-prescription"
         :disabled="busy"
         :aria-label="`Edit sets, reps and weight for ${exercise.name}`"
         @click="emit('configure')"
         >{{ prescription }} <ChevronRight :size="14"
-      /></Button>
+      /></BaseButton>
       <div class="workout-circles">
         <TrainingSetCircle
           v-for="set in exercise.sets"
@@ -99,17 +109,17 @@ defineExpose({
         />
       </div>
       <div class="workout-exercise-actions">
-        <Button
+        <BaseButton
           variant="ghost"
           :disabled="busy"
           @click="emit('edit', exercise.sets[0]!.id)"
-          >Edit sets</Button
-        ><Button
+          >Edit sets</BaseButton
+        ><BaseButton
           v-if="pinned"
           variant="secondary"
           :disabled="busy"
           @click="emit('release')"
-          >Move to completed</Button
+          >Move to completed</BaseButton
         >
       </div>
       <p v-if="pinned" class="muted small">
@@ -121,3 +131,11 @@ defineExpose({
     </div>
   </article>
 </template>
+
+<style scoped>
+.workout-exercise-note {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin-block: 12px;
+}
+</style>

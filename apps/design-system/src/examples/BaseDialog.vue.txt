@@ -1,0 +1,40 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import {
+  BaseButton,
+  BaseInput,
+  BaseField,
+  BaseFieldLabel,
+  BaseDialog,
+  BaseDialogTrigger,
+  BaseDialogContent,
+  BaseDialogHeader,
+  BaseDialogTitle,
+  BaseDialogDescription,
+  BaseDialogFooter,
+  BaseDialogClose,
+} from "@form/ui";
+const name = ref("Morning strength");
+</script>
+<template>
+  <BaseDialog>
+    <BaseDialogTrigger as-child><BaseButton>Edit workout name</BaseButton></BaseDialogTrigger>
+    <BaseDialogContent>
+      <BaseDialogHeader>
+        <BaseDialogTitle>Workout name</BaseDialogTitle>
+        <BaseDialogDescription
+          >Change the name for your next session.</BaseDialogDescription
+        >
+      </BaseDialogHeader>
+      <BaseField
+        ><BaseFieldLabel for="workout-name">Name</BaseFieldLabel
+        ><BaseInput id="workout-name" v-model="name"
+      /></BaseField>
+      <BaseDialogFooter
+        ><BaseDialogClose as-child
+          ><BaseButton type="button">Close</BaseButton></BaseDialogClose
+        ></BaseDialogFooter
+      >
+    </BaseDialogContent>
+  </BaseDialog>
+</template>

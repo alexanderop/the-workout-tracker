@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import {
-  Field,
-  FieldLabel,
-  FieldError,
-  Input,
-  Textarea,
-  NumericInput,
-  Button,
+  BaseField,
+  BaseFieldLabel,
+  BaseFieldError,
+  BaseInput,
+  BaseTextarea,
+  BaseInputNumber,
+  BaseButton,
 } from "@form/ui";
 const name = ref("");
 const description = ref("");
@@ -26,27 +26,27 @@ function save() {
       ><div class="stack">
         <h1>Edit template</h1>
         <form class="stack" @submit.prevent="save">
-          <Field :data-invalid="error || undefined"
-            ><FieldLabel for="template-name">Template name</FieldLabel
-            ><Input
+          <BaseField :data-invalid="error || undefined"
+            ><BaseFieldLabel for="template-name">Template name</BaseFieldLabel
+            ><BaseInput
               id="template-name"
               v-model="name"
               :aria-invalid="error"
               :aria-describedby="error ? 'template-error' : undefined"
-            /><FieldError v-if="error" id="template-error"
-              >Enter a name.</FieldError
-            ></Field
-          ><Field
-            ><FieldLabel for="template-notes">Description · optional</FieldLabel
-            ><Textarea id="template-notes" v-model="description" /></Field
-          ><NumericInput
+            /><BaseFieldError v-if="error" id="template-error"
+              >Enter a name.</BaseFieldError
+            ></BaseField
+          ><BaseField
+            ><BaseFieldLabel for="template-notes">Description · optional</BaseFieldLabel
+            ><BaseTextarea id="template-notes" v-model="description" /></BaseField
+          ><BaseInputNumber
             v-model="weight"
             title="Weight"
             label="Template weight"
             unit="kg"
             :decimals="2"
             :preset-step="2.5"
-          /><Button type="submit">Apply template</Button>
+          /><BaseButton type="submit">Apply template</BaseButton>
           <p role="status">{{ saved }}</p>
         </form>
       </div></Variant

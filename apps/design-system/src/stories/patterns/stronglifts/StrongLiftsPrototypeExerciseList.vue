@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, useTemplateRef } from "vue";
-import { Button } from "@form/ui";
+import { BaseButton } from "@form/ui";
 import StrongLiftsPrototypeExerciseListCircles from "./StrongLiftsPrototypeExerciseListCircles.vue";
 import type { CircleExercise, CircleSet } from "./useCircleWorkout";
 const { active, completed, editing } = defineProps<{ active: CircleExercise[]; completed: CircleExercise[]; editing: boolean }>();
@@ -18,9 +18,9 @@ async function log(set: CircleSet, exercise: CircleExercise) {
   <div class="sl-worklist">
     <div class="sl-stage"><h3 ref="heading" tabindex="-1">{{ active.length || !completed.length ? 'To do' : 'All sets logged' }}</h3><span>{{ active.length }} remaining</span></div>
     <div v-if="!active.length && !completed.length" class="sl-start"><h3>Make it your workout.</h3><p>Add your first exercise. Your session builds from here.</p></div>
-    <div v-if="!active.length && completed.length" class="sl-start"><h3>That’s your last set.</h3><p>Review your work below, or add another exercise.</p><Button @click="emit('finish')">Finish workout</Button></div>
+    <div v-if="!active.length && completed.length" class="sl-start"><h3>That’s your last set.</h3><p>Review your work below, or add another exercise.</p><BaseButton @click="emit('finish')">Finish workout</BaseButton></div>
     <StrongLiftsPrototypeExerciseListCircles v-for="exercise in active" :key="exercise.name" :exercise="exercise" :editing="editing" @weight="emit('weight', exercise)" @tap="set => log(set, exercise)" @edit="(set, index) => emit('edit', set, index, exercise)" />
-    <Button class="sl-add" variant="secondary" @click="emit('add')">+ Add exercise</Button>
+    <BaseButton class="sl-add" variant="secondary" @click="emit('add')">+ Add exercise</BaseButton>
     <section v-if="completed.length" class="sl-completed" aria-label="Completed exercises">
       <header><h3>Completed</h3><span>{{ completed.length }} {{ completed.length === 1 ? 'exercise' : 'exercises' }}</span></header>
       <details v-for="exercise in completed" :key="exercise.name">

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Plus, Check, Dumbbell, Settings, Trash2 } from "@lucide/vue";
-import { Button } from "@form/ui";
+import { BaseButton } from "@form/ui";
 </script>
 <template>
   <Story title="01 Foundations/Icons">
@@ -8,12 +8,12 @@ import { Button } from "@form/ui";
       ><div class="stack">
         <h1>Icons support an action.</h1>
         <div class="row">
-          <Button><Plus :size="18" aria-hidden="true" />Add exercise</Button
-          ><Button variant="secondary"
-            ><Check :size="18" aria-hidden="true" />Log set</Button
-          ><Button variant="ghost" size="icon" aria-label="Settings"
+          <BaseButton><Plus :size="18" aria-hidden="true" />Add exercise</BaseButton
+          ><BaseButton variant="secondary"
+            ><Check :size="18" aria-hidden="true" />Log set</BaseButton
+          ><BaseButton variant="ghost" size="icon" aria-label="Settings"
             ><Settings :size="20"
-          /></Button>
+          /></BaseButton>
         </div>
         <div class="row">
           <Dumbbell :size="24" aria-label="Workout" role="img" /><Trash2

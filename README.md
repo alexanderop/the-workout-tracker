@@ -61,19 +61,21 @@ IndexedDB holds your journal in this browser profile, on this origin. Clearing s
 
 Imports restore an empty journal with the default catalog and preferences, including after deleting all data. Otherwise they add missing records, skip exact duplicates and reject conflicting IDs without partially importing. Local settings stay unchanged. Two different active workouts cannot be merged. A newer backup with edits to records already on another device can therefore require a fresh browser profile for restoration. Import is not multi-device synchronization.
 
-An unreadable database offers a raw recovery export rather than silently clearing your data. Simultaneous edits use revision checks; if another tab changed the set you are editing, The Workout Tracker keeps your draft visible and offers an explicit choice to keep your input against the latest saved values or discard the draft. Recovered drafts require review when the saved values of that set changed; unrelated workout edits do not create a conflict.
+An unreadable database offers a raw recovery export rather than silently clearing your data. Simultaneous edits use revision checks; if another tab changed the set you are editing, The Workout Tracker keeps your draft visible and offers an explicit choice to keep your input against the latest saved values or discard the draft. Recovered drafts require review when the saved values or source revision changed. Live drafts can follow unrelated saves while their set values remain unchanged.
 
 ## Code quality
 
 Keep code readable, strictly typed and focused. Use explicit dependencies, enforce feature and layer boundaries, validate external data, and handle errors and resource cleanup deliberately. Avoid unnecessary abstractions and dependencies.
 
-This project does not maintain automated tests or a testing strategy. `pnpm verify` runs TypeScript 7 native checks for the typed core/controllers, full Vue type checking through the TypeScript 6 compatibility toolchain, Oxlint, and focused Vue/CSS ESLint checks. See the [lint and TypeScript policy](docs/workflows.md#lint-and-typescript-policy) for ownership and enforced conventions. Verification contains only type checking and linting:
+`pnpm verify` runs TypeScript 7 native checks for the typed core/controllers, full Vue type checking through the TypeScript 6 compatibility toolchain, Oxlint, and focused Vue/CSS ESLint checks. See the [lint and TypeScript policy](docs/workflows.md#lint-and-typescript-policy) for ownership and enforced conventions. Verification contains only type checking and linting:
 
 ```sh
 pnpm verify
 ```
 
-Commits run these checks automatically through Husky. See [Verification and delivery](docs/workflows.md#verification-and-delivery) for hook setup and behavior.
+Run `pnpm test` for the unit, browser, and application suites. Install Chrome for browser execution with `pnpm --filter @form/workout exec playwright install chrome`. See [Testing](docs/workflows.md#testing) for individual commands and data setup.
+
+Commits run only `pnpm verify` automatically through Husky. See [Verification and delivery](docs/workflows.md#verification-and-delivery) for hook setup and behavior.
 
 ## Documentation map
 
@@ -103,13 +105,13 @@ The display name and download filenames use The Workout Tracker. The internal In
 
 The previous custom gallery is replaced by Histoire. Stories live in `apps/design-system/src/stories/**/*.story.vue` and import only public `@form/ui` exports. Use the Controls panel to edit props, the Docs panel for usage guidance, and the viewport controls for mobile layouts. The explorer is organized into Start here, Foundations, Components and Patterns, with foundations, component states and interactive patterns. Each story documents Usage, Variants, States, Behavior, and Examples and limitations.
 
-`pnpm dev:ui` starts the explorer; `pnpm build:ui` produces its standalone static site in `apps/design-system/.histoire/dist`. The explorer uses Histoire 1.0 beta with its supported Vite 7 version in its own workspace. The workout app remains on Vite 8. Stories are interactive documentation, with no automated tests or test runner. `pnpm verify` still runs only type checking and linting. The workout Pages deployment remains separate.
+`pnpm dev:ui` starts the explorer; `pnpm build:ui` produces its standalone static site in `apps/design-system/.histoire/dist`. The explorer uses Histoire 1.0 beta with its supported Vite 7 version in its own workspace. The workout app remains on Vite 8. Stories are interactive documentation. Automated behavior tests live in `apps/workout/test` and run separately from Histoire. `pnpm verify` still runs only type checking and linting. The workout Pages deployment remains separate.
 
 ### Design-system organization
 
 - `stories/StartHere.story.vue`: product audience, core needs, design principles and review questions.
 - `stories/foundations/`: semantic color roles, typography, spacing and touch sizes, corners and borders, icons, motion.
-- `stories/components/`: Button, Input, Textarea, Select, Switch, Field, Dialog, Sheet and Numeric Input. Form controls each have their own page instead of one combined Forms page.
+- `stories/components/`: BaseButton, BaseButtonIcon, BaseInput, BaseInputNumber, BaseTextarea, BaseSelectNative, BaseSwitch, BaseField, BaseDialog, BaseSheet and BaseMuscleMap. Form controls each have their own page instead of one combined Forms page.
 - `stories/patterns/`: training-set entry, exercise selection, template editing, settings, empty states and errors. These are interactive design examples with isolated local state, not copies of workout persistence or domain logic.
 
 Start documentation with what a component means and when to use it. Put implementation names and token values second. Document real keyboard/focus behavior rather than displaying a fake focus state. Explain which parts of a pattern are illustrative; never present sample feedback as a real save. Spacing examples are design reference values, not a second source of global tokens.

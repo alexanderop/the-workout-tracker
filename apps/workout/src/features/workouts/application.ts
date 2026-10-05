@@ -1,6 +1,8 @@
 import { z } from "zod";
 import {
   commandSchema,
+  exerciseSchema,
+  type Exercise,
   initialSnapshot,
   reduceWorkout,
   snapshotSchema,
@@ -8,7 +10,37 @@ import {
   type Snapshot,
 } from "./domain";
 import type { WorkoutStorage, Result, DraftJournal } from "./ports";
+import { routineValuesSchema, type RoutineValues } from "./domain/routineDrafts";
 export type { LoadState, Result } from "./ports";
+
+export type ApplicationCommand =
+  | Command
+  | { type: "create-routine"; routine: RoutineValues }
+  | { type: "create-exercise"; exercise: Omit<Exercise, "id" | "custom"> };
+const createRoutineSchema = z.object({
+  type: z.literal("create-routine"),
+  routine: routineValuesSchema,
+}).strict();
+const createExerciseSchema = z.object({
+  type: z.literal("create-exercise"),
+  exercise: exerciseSchema.unwrap().omit({ id: true, custom: true }),
+}).strict();
+const applicationCommandSchema = z.union([
+  commandSchema,
+  createRoutineSchema,
+  createExerciseSchema,
+]);
+
+function resolveCommand(request: ApplicationCommand, id: () => string): Command {
+  if (request.type === "create-routine")
+    return { type: "save-routine", routine: { ...request.routine, id: id() } };
+  if (request.type === "create-exercise")
+    return {
+      type: "save-exercise",
+      exercise: { ...request.exercise, id: id(), custom: true },
+    };
+  return request;
+}
 
 export type WorkoutDependencies = {
   readonly storage: WorkoutStorage;
@@ -179,8 +211,11 @@ export function createWorkouts({
         };
       }
     },
-    async execute(command: Command, expectedRevision: number): Promise<Result> {
-      const parsed = commandSchema.safeParse(command);
+    async execute(
+      command: ApplicationCommand,
+      expectedRevision: number,
+    ): Promise<Result> {
+      const parsed = applicationCommandSchema.safeParse(command);
       if (!parsed.success)
         return {
           kind: "invalid",
@@ -188,7 +223,11 @@ export function createWorkouts({
             parsed.error.issues[0]?.message ?? "Invalid workout command.",
         };
       return write(expectedRevision, (snapshot) => {
-        const result = reduceWorkout(snapshot, parsed.data, { at: now(), id });
+        const resolved = resolveCommand(parsed.data, id);
+        const validated = commandSchema.safeParse(resolved);
+        if (!validated.success)
+          return validated.error.issues[0]?.message ?? "Invalid workout command.";
+        const result = reduceWorkout(snapshot, validated.data, { at: now(), id });
         return result.kind === "rejected" ? result.message : result.snapshot;
       });
     },

@@ -1,0 +1,4 @@
+{
+  "tailwind": { "css": "apps/workout/src/style.css" },
+  "aliases": { "ui": "./packages/ui/src" }
+}

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NumericInput, IconButton } from "@form/ui";
+import { BaseInputNumber, BaseButtonIcon } from "@form/ui";
 import { Check, Undo2 } from "@lucide/vue";
 export type DemoSet = { id: number; weight: string | number; reps: string | number; logged: boolean };
 const { sets, name, previousWeight, prescription = false } = defineProps<{ sets: DemoSet[]; name: string; previousWeight: number; prescription?: boolean }>();
@@ -11,9 +11,9 @@ const emit = defineEmits<{ edit: [id: number, field: "weight" | "reps", value: s
     <thead><tr><th scope="col">Set</th><th scope="col">{{ prescription ? 'Target' : 'Previous' }}</th><th scope="col">kg</th><th scope="col">Reps</th><th scope="col">Log</th></tr></thead>
     <tbody><tr v-for="(set, index) in sets" :key="set.id" :class="{ 'is-logged': set.logged }">
       <th scope="row">{{ index + 1 }}</th><td class="reference-value">{{ prescription ? '8 reps' : `${previousWeight} × 8` }}</td>
-      <td><NumericInput :model-value="set.weight" :label="`${name} set ${index + 1} weight`" title="Weight" unit="kg" :decimals="2" :disabled="set.logged" @update:model-value="emit('edit', set.id, 'weight', $event)" /></td>
-      <td><NumericInput :model-value="set.reps" :label="`${name} set ${index + 1} repetitions`" title="Repetitions" :min="1" :disabled="set.logged" @update:model-value="emit('edit', set.id, 'reps', $event)" /></td>
-      <td><IconButton :label="`${set.logged ? 'Undo' : 'Log'} ${name} set ${index + 1}`" @click="emit('toggle', set.id)"><Undo2 v-if="set.logged" :size="16" /><Check v-else :size="16" /></IconButton></td>
+      <td><BaseInputNumber :model-value="set.weight" :label="`${name} set ${index + 1} weight`" title="Weight" unit="kg" :decimals="2" :disabled="set.logged" @update:model-value="emit('edit', set.id, 'weight', $event)" /></td>
+      <td><BaseInputNumber :model-value="set.reps" :label="`${name} set ${index + 1} repetitions`" title="Repetitions" :min="1" :disabled="set.logged" @update:model-value="emit('edit', set.id, 'reps', $event)" /></td>
+      <td><BaseButtonIcon :label="`${set.logged ? 'Undo' : 'Log'} ${name} set ${index + 1}`" @click="emit('toggle', set.id)"><Undo2 v-if="set.logged" :size="16" /><Check v-else :size="16" /></BaseButtonIcon></td>
     </tr></tbody>
   </table>
 </template>

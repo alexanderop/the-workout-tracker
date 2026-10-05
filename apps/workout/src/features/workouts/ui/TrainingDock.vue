@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button } from "@form/ui";
+import { BaseButton } from "@form/ui";
 import { ArrowLeft } from "@lucide/vue";
 import { duration } from "./presentation";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
@@ -23,11 +23,11 @@ const next = training.next;
           >{{ next ? `Next: ${next.exercise.name} · Set ${next.index + 1}` : "All sets logged" }}</small
         >
       </div>
-      <Button
+      <BaseButton
         variant="secondary"
         :disabled="saving"
         @click="run({ type: 'stop-rest', sessionId: active.id })"
-        >{{ rest ? "Skip" : "Dismiss" }}</Button
+        >{{ rest ? "Skip" : "Dismiss" }}</BaseButton
       ></template
     >
     <template v-else-if="next"
@@ -42,14 +42,14 @@ const next = training.next;
         <strong>All sets logged</strong
         ><small>Review or finish your workout</small>
       </div>
-      <Button :disabled="saving" @click="emit('finish')"
-        >Finish</Button
+      <BaseButton :disabled="saving" @click="emit('finish')"
+        >Finish</BaseButton
       ></template
     >
     <template v-else
       ><div><strong>Choose your first exercise</strong></div>
-      <Button :disabled="saving" @click="emit('pick')"
-        >Add exercise</Button
+      <BaseButton :disabled="saving" @click="emit('pick')"
+        >Add exercise</BaseButton
       ></template
     >
   </section>

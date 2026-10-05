@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { Button, NumericInput } from "@form/ui";
+import { BaseButton, BaseInputNumber } from "@form/ui";
 import { ArrowRight, Check, Clock3 } from "@lucide/vue";
 
 const { mode } = defineProps<{ mode: "focus" | "overview" | "rhythm" }>();
@@ -77,7 +77,7 @@ function nextExercise() {
         <p class="eyebrow">TAKE A BREATH</p><strong>01:30</strong>
         <p>Rest preview · timer paused</p>
         <p>Next: {{ exercises[selected] }}<br />{{ current ? `Set ${setNumber} of 3` : 'Choose your next exercise' }}</p>
-        <Button @click="resting = false">Ready for next set <ArrowRight :size="16" /></Button>
+        <BaseButton @click="resting = false">Ready for next set <ArrowRight :size="16" /></BaseButton>
       </section>
 
       <section v-else class="entry-stage" aria-label="Current exercise">
@@ -91,21 +91,21 @@ function nextExercise() {
         </div>
         <template v-if="current">
           <div class="entry-values">
-            <label>Weight · kg<NumericInput v-model="current.weight" title="Weight" label="Current set weight" unit="kg" :decimals="2" :preset-step="2.5" /></label>
-            <label>Repetitions<NumericInput v-model="current.reps" title="Repetitions" label="Current set repetitions" :min="1" /></label>
+            <label>Weight · kg<BaseInputNumber v-model="current.weight" title="Weight" label="Current set weight" unit="kg" :decimals="2" :preset-step="2.5" /></label>
+            <label>Repetitions<BaseInputNumber v-model="current.reps" title="Repetitions" label="Current set repetitions" :min="1" /></label>
           </div>
           <p class="draft-note">Confirming a number edits this draft. Log when the set is done.</p>
-          <Button class="log-action" :disabled="!valid" @click="log">Log set {{ setNumber }} <Check :size="18" aria-hidden="true" /></Button>
+          <BaseButton class="log-action" :disabled="!valid" @click="log">Log set {{ setNumber }} <Check :size="18" aria-hidden="true" /></BaseButton>
         </template>
-        <Button v-else-if="total < 9" class="log-action" @click="nextExercise">Next exercise <ArrowRight :size="18" aria-hidden="true" /></Button>
+        <BaseButton v-else-if="total < 9" class="log-action" @click="nextExercise">Next exercise <ArrowRight :size="18" aria-hidden="true" /></BaseButton>
         <p v-else class="complete-message">All 9 sets logged. Ready to review your workout.</p>
       </section>
 
       <aside v-if="resting && mode !== 'rhythm'" class="rest-strip">
         <span><Clock3 :size="18" aria-hidden="true" /><strong>01:30</strong> Rest preview · paused</span>
-        <Button variant="secondary" @click="resting = false">End rest</Button>
+        <BaseButton variant="secondary" @click="resting = false">End rest</BaseButton>
       </aside>
-      <footer class="preview-footer"><span role="status">{{ notice || 'Sample session — explore freely.' }}</span><Button v-if="last" variant="ghost" @click="undo">Undo last log</Button><Button variant="ghost" @click="reset">Reset</Button></footer>
+      <footer class="preview-footer"><span role="status">{{ notice || 'Sample session — explore freely.' }}</span><BaseButton v-if="last" variant="ghost" @click="undo">Undo last log</BaseButton><BaseButton variant="ghost" @click="reset">Reset</BaseButton></footer>
     </main>
   </div>
 </template>

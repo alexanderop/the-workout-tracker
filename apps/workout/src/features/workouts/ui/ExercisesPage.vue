@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button } from "@form/ui";
+import { BaseButton } from "@form/ui";
 import { Plus } from "@lucide/vue";
 import type { Exercise } from "../domain";
 import ExerciseCatalog from "./ExerciseCatalog.vue";
@@ -13,9 +13,9 @@ const emit = defineEmits<{ create: [] }>();
       <h1>Exercises</h1>
       <p class="muted">Find your next movement. Make it your own.</p>
     </div>
-    <Button unstyled class="btn secondary" @click="emit('create')">
+    <BaseButton unstyled class="btn secondary" @click="emit('create')">
       <Plus :size="17" />Create exercise
-    </Button>
+    </BaseButton>
   </div>
   <section class="panel catalog-panel">
     <ExerciseCatalog :exercises="exercises" />

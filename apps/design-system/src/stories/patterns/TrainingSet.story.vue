@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { logEvent } from "histoire/client";
-import { NumericInput, Button } from "@form/ui";
+import { BaseInputNumber, BaseButton } from "@form/ui";
 const weight = ref<string | number>(70);
 const reps = ref<string | number>(8);
 const logged = ref("");
@@ -26,7 +26,7 @@ function logSet() {
           <div class="pattern-grid">
             <div>
               <p>Weight · kg</p>
-              <NumericInput
+              <BaseInputNumber
                 v-model="weight"
                 title="Weight"
                 label="Set 1 weight"
@@ -37,7 +37,7 @@ function logSet() {
             </div>
             <div>
               <p>Repetitions</p>
-              <NumericInput
+              <BaseInputNumber
                 v-model="reps"
                 title="Reps"
                 label="Set 1 repetitions"
@@ -45,7 +45,7 @@ function logSet() {
               />
             </div>
           </div>
-          <Button @click="logSet">Log set</Button>
+          <BaseButton @click="logSet">Log set</BaseButton>
           <p role="status">
             {{ logged ? `Last logged: ${logged}` : "Not logged yet" }}
           </p>

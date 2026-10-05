@@ -16,7 +16,10 @@
     "no-console": [
       "error",
       {
-        "allow": ["warn", "error"]
+        "allow": [
+          "warn",
+          "error"
+        ]
       }
     ],
     "complexity": [
@@ -27,8 +30,14 @@
       }
     ],
     "no-else-return": "error",
-    "vue/component-definition-name-casing": ["error", "PascalCase"],
-    "vue/prop-name-casing": ["error", "camelCase"],
+    "vue/component-definition-name-casing": [
+      "error",
+      "PascalCase"
+    ],
+    "vue/prop-name-casing": [
+      "error",
+      "camelCase"
+    ],
     "vue/define-props-destructuring": "error",
     "typescript/switch-exhaustiveness-check": [
       "error",
@@ -45,13 +54,20 @@
     "typescript/no-misused-promises": "error"
   },
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "unicorn", "oxc", "vue"],
+  "plugins": [
+    "typescript",
+    "unicorn",
+    "oxc",
+    "vue"
+  ],
   "options": {
     "typeAware": true
   },
   "overrides": [
     {
-      "files": ["**/*.vue"],
+      "files": [
+        "**/*.vue"
+      ],
       "rules": {
         "no-restricted-properties": [
           "error",
@@ -79,6 +95,28 @@
             "object": "document",
             "property": "getElementsByTagName",
             "message": "Use useTemplateRef for component DOM access."
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "**/test/**/*.ts"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "vitest",
+                "importNames": [
+                  "vi",
+                  "vitest"
+                ],
+                "message": "Pass explicit inputs or injected capabilities. Do not mock modules, spy on calls, or replace globals."
+              }
+            ]
           }
         ]
       }

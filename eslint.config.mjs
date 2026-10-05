@@ -1,3 +1,4 @@
+import { plugin as shadcn } from "@shadcn/lint";
 import css from "@eslint/css";
 import design from "./tooling/lint/design-policy.mjs";
 import vue from "eslint-plugin-vue";
@@ -13,7 +14,7 @@ export default [
   })),
   {
     files: ["**/*.vue"],
-    plugins: { design },
+    plugins: { design, shadcn },
     processor: "design/styles",
     languageOptions: {
       parser: vueParser,
@@ -21,18 +22,13 @@ export default [
     },
     rules: {
       "design/template-colors": "error",
+      "shadcn/no-raw-colors": "error",
+      "shadcn/no-arbitrary-values": "error",
+      "design/token-references": "error",
       "vue/multi-word-component-names": [
         "error",
         {
-          ignores: [
-            "App",
-            "Button",
-            "Input",
-            "Textarea",
-            "Switch",
-            "Sheet",
-            "Field",
-          ],
+          ignores: ["App"],
         },
       ],
       "vue/component-name-in-template-casing": [
@@ -65,6 +61,16 @@ export default [
     files: ["**/*.story.vue"],
     rules: { "vue/multi-word-component-names": "off" },
   },
+  {
+    files: ["**/*.ts"],
+    languageOptions: { parser: tseslint.parser },
+    plugins: { shadcn, design },
+    rules: {
+      "shadcn/no-raw-colors": "error",
+      "shadcn/no-arbitrary-values": "error",
+      "design/token-references": "error",
+    },
+  },
   ...oxlint.buildFromOxlintConfigFile("./.oxlintrc.json"),
   {
     files: ["**/*.vue"],
@@ -91,6 +97,10 @@ export default [
     files: ["**/*.css"],
     plugins: { css, design },
     language: "css/css",
-    rules: { "design/css-colors": "error", "design/css-imports": "error" },
+    rules: {
+      "design/css-colors": "error",
+      "design/css-imports": "error",
+      "design/token-references": "error",
+    },
   },
 ];

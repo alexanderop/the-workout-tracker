@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useTemplateRef, watch } from "vue";
-import { Button, IconButton, Input } from "@form/ui";
+import { BaseButton, BaseButtonIcon, BaseInput } from "@form/ui";
 import { Plus, Dumbbell, Clock3, ShieldCheck, Ellipsis, Check } from "@lucide/vue";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import { setTargetReps, type SessionExercise } from "../domain";
@@ -46,8 +46,8 @@ const configuration = computed(
     ) ?? null,
 );
 const setRows = useTemplateRef<InstanceType<typeof SetRow>[]>("setRows");
-const optionsButton = useTemplateRef<InstanceType<typeof IconButton>>("optionsButton");
-const addButton = useTemplateRef<InstanceType<typeof Button>>("addButton");
+const optionsButton = useTemplateRef<InstanceType<typeof BaseButtonIcon>>("optionsButton");
+const addButton = useTemplateRef<InstanceType<typeof BaseButton>>("addButton");
 const selectedExercise = training.currentExercise;
 const selectedRows = computed<TrainingRow[]>(() =>
   (selectedExercise.value?.sets ?? []).flatMap((set) => {
@@ -194,7 +194,7 @@ function discard() {
       <div>
         <p class="eyebrow">ACTIVE WORKOUT · {{ elapsed }}</p>
         <h1>
-          <Input
+          <BaseInput
             v-model="name"
             aria-label="Workout name"
             maxlength="80"
@@ -205,11 +205,11 @@ function discard() {
         </h1>
         <p v-if="nameIssue" class="field-error" role="alert">{{ nameIssue }}</p>
       </div>
-      <Button
+      <BaseButton
         variant="secondary"
         :disabled="saving || !activeTotals.completedSets"
         @click="emit('finish')"
-        >Finish</Button
+        >Finish</BaseButton
       >
     </header>
     <div class="active-workout-metrics">
@@ -235,7 +235,7 @@ function discard() {
     <div class="active-workout-layout">
       <div class="active-workout-content">
         <nav v-if="active.exercises.length" class="workout-exercise-strip" aria-label="Workout exercises">
-          <Button
+          <BaseButton
             v-for="exercise in active.exercises" :key="exercise.id" unstyled
             class="workout-exercise-tab"
             :aria-pressed="selectedExercise?.id === exercise.id"
@@ -245,8 +245,8 @@ function discard() {
             <ExerciseThumbnail :exercise="snapshot?.exercises[exercise.exerciseId]" />
             <span class="workout-exercise-tab-name">{{ exercise.name }}</span>
             <Check v-if="isComplete(exercise)" class="workout-exercise-tab-check" :size="15" />
-          </Button>
-          <Button unstyled class="workout-exercise-tab workout-exercise-tab-add" :disabled="saving || active.exercises.length >= 50" aria-label="Add exercises" @click="pick"><span><Plus :size="24" /></span><span class="workout-exercise-tab-name">Add</span></Button>
+          </BaseButton>
+          <BaseButton unstyled class="workout-exercise-tab workout-exercise-tab-add" :disabled="saving || active.exercises.length >= 50" aria-label="Add exercises" @click="pick"><span><Plus :size="24" /></span><span class="workout-exercise-tab-name">Add</span></BaseButton>
         </nav>
         <div v-if="!active.exercises.length" class="workout-empty">
           <Dumbbell :size="28" />
@@ -256,11 +256,11 @@ function discard() {
         <article v-if="selectedExercise" class="workout-selected-exercise">
           <header>
             <h2>{{ selectedExercise.name }}</h2>
-            <IconButton ref="optionsButton" :label="`Options for ${selectedExercise.name}`" :disabled="saving" @click="configure(selectedExercise.id)"><Ellipsis :size="22" /></IconButton>
+            <BaseButtonIcon ref="optionsButton" :label="`Options for ${selectedExercise.name}`" :disabled="saving" @click="configure(selectedExercise.id)"><Ellipsis :size="22" /></BaseButtonIcon>
           </header>
-          <Button unstyled class="workout-prescription" :disabled="saving" :aria-label="`Edit sets, reps and weight for ${selectedExercise.name}`" @click="configure(selectedExercise.id)">
+          <BaseButton unstyled class="workout-prescription" :disabled="saving" :aria-label="`Edit sets, reps and weight for ${selectedExercise.name}`" @click="configure(selectedExercise.id)">
             <span v-if="definition">{{ definition.equipment }}<span aria-hidden="true"> · </span></span>{{ prescription }}
-          </Button>
+          </BaseButton>
           <p v-if="selectedExercise.note" class="workout-exercise-note">{{ selectedExercise.note }}</p>
           <div v-if="!editorSet" class="workout-inline-sets">
             <div class="set-labels" aria-hidden="true"><span>Set</span><span>kg</span><span>Reps</span><span>Log</span><span></span></div>
@@ -274,21 +274,21 @@ function discard() {
           <p class="eyebrow">ALL SETS LOGGED</p>
           <h2>That’s your last set.</h2>
           <p>Review your sets, or add another exercise.</p>
-          <Button :disabled="saving" @click="emit('finish')"
-            >Finish workout</Button
+          <BaseButton :disabled="saving" @click="emit('finish')"
+            >Finish workout</BaseButton
           >
         </div>
-        <Button
+        <BaseButton
           v-if="!active.exercises.length"
           ref="addButton"
           class="workout-add"
           variant="secondary"
           :disabled="saving || active.exercises.length >= 50"
           @click="pick"
-          ><Plus :size="18" />Add exercises</Button
+          ><Plus :size="18" />Add exercises</BaseButton
         >
-        <Button variant="ghost" :disabled="saving" @click="discard"
-          >Discard workout</Button
+        <BaseButton variant="ghost" :disabled="saving" @click="discard"
+          >Discard workout</BaseButton
         >
       </div>
       <aside class="workout-rest-panel">
@@ -307,12 +307,12 @@ function discard() {
             ? "Your configured rest starts after logging."
             : "Automatic rest is turned off."
         }}</small
-        ><Button
+        ><BaseButton
           v-if="active.rest"
           variant="secondary"
           :disabled="saving"
           @click="run({ type: 'stop-rest', sessionId: active.id })"
-          >{{ rest ? "Skip rest" : "Dismiss timer" }}</Button
+          >{{ rest ? "Skip rest" : "Dismiss timer" }}</BaseButton
         >
         <p class="saved-indicator">
           <ShieldCheck :size="14" />{{
@@ -343,8 +343,8 @@ function discard() {
   <div v-else class="empty-state">
     <Dumbbell :size="32" />
     <h1>Ready for your next session?</h1>
-    <Button @click="emit('navigate', 'workouts')"
-      >Choose a workout</Button
+    <BaseButton @click="emit('navigate', 'workouts')"
+      >Choose a workout</BaseButton
     >
   </div>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IconButton, Button, Input } from "@form/ui";
+import { BaseButtonIcon, BaseButton, BaseInput } from "@form/ui";
 import { computed, ref } from "vue";
 import {
   Plus,
@@ -60,7 +60,7 @@ const history = computed(() =>
         A little stronger, one session at a time.
       </p>
     </div>
-    <Button
+    <BaseButton
       v-if="!isFreshJournal"
       unstyled
       class="btn primary"
@@ -68,9 +68,9 @@ const history = computed(() =>
       @click="emit('start', null)"
     >
       <Plus :size="18" />{{ active ? "Continue workout" : "Start workout" }}
-    </Button>
+    </BaseButton>
   </div>
-  <Button
+  <BaseButton
     unstyled
     v-if="active"
     class="resume-banner"
@@ -84,50 +84,50 @@ const history = computed(() =>
         logged</small
       ></span
     ><span class="text-link">Continue<ArrowRight :size="17" /></span>
-  </Button>
+  </BaseButton>
   <section v-if="isFreshJournal" class="workout-welcome panel">
     <span class="welcome-mark" aria-hidden="true"><Dumbbell :size="26" /></span>
     <h2>Your first workout starts here.</h2>
     <p class="muted">Choose an exercise and log your first set.</p>
-    <Button
+    <BaseButton
       unstyled
       class="btn primary"
       :disabled="saving"
       @click="emit('start', null)"
     >
       <Plus :size="18" aria-hidden="true" /><span>Start your first workout</span>
-    </Button>
+    </BaseButton>
   </section>
   <div class="overview-toolbar">
     <div class="overview-tabs" aria-label="Workout views">
-      <Button
+      <BaseButton
         unstyled
         :aria-pressed="tab === 'history'"
         :class="{ selected: tab === 'history' }"
         @click="tab = 'history'"
       >
-        History <span>{{ allHistory.length }}</span></Button
-      ><Button
+        History <span>{{ allHistory.length }}</span></BaseButton
+      ><BaseButton
         unstyled
         :aria-pressed="tab === 'templates'"
         :class="{ selected: tab === 'templates' }"
         @click="tab = 'templates'"
       >
         Templates <span>{{ routines.length }}</span>
-      </Button>
+      </BaseButton>
     </div>
-    <Button
+    <BaseButton
       unstyled
       v-if="tab === 'templates'"
       class="text-button"
       @click="emit('edit', null)"
     >
       <Plus :size="16" />New template
-    </Button>
+    </BaseButton>
   </div>
   <template v-if="tab === 'history'">
     <div v-if="allHistory.length" class="search-field history-search">
-      <Search :size="17" /><Input
+      <Search :size="17" /><BaseInput
         v-model="search"
         aria-label="Search workout history"
         placeholder="Find a past workout"
@@ -144,7 +144,7 @@ const history = computed(() =>
         :key="session.id"
         class="panel workout-history-card"
       >
-        <Button
+        <BaseButton
           unstyled
           class="history-card-title"
           @click="emit('detail', session.id)"
@@ -153,7 +153,7 @@ const history = computed(() =>
             ><small class="muted">{{ longDate(session.finishedAt) }}</small
             ><strong>{{ session.name }}</strong></span
           ><ChevronRight :size="18" />
-        </Button>
+        </BaseButton>
         <p class="muted small">
           {{ session.exercises.map((exercise) => exercise.name).join(" · ") }}
         </p>
@@ -167,19 +167,19 @@ const history = computed(() =>
           >
         </div>
         <footer>
-          <Button
+          <BaseButton
             unstyled
             class="btn secondary"
             :disabled="saving || !!active"
             @click="emit('repeat', session.id)"
           >
-            <Repeat2 :size="16" />Repeat workout</Button
-          ><IconButton
+            <Repeat2 :size="16" />Repeat workout</BaseButton
+          ><BaseButtonIcon
             :label="`Save ${session.name} as template`"
             @click="emit('convert', session.id)"
           >
             <BookmarkPlus :size="19" />
-          </IconButton>
+          </BaseButtonIcon>
         </footer>
       </article>
       <p v-if="!allHistory.length" class="muted">
@@ -195,9 +195,9 @@ const history = computed(() =>
         Save a past workout as a template, or create one with your favorite
         exercises.
       </p>
-      <Button unstyled class="btn secondary" @click="emit('edit', null)">
+      <BaseButton unstyled class="btn secondary" @click="emit('edit', null)">
         <Plus :size="17" />Create template
-      </Button>
+      </BaseButton>
     </div>
     <div v-else class="routine-grid">
       <article
@@ -207,14 +207,14 @@ const history = computed(() =>
       >
         <header>
           <span class="routine-symbol"><Dumbbell :size="20" /></span
-          ><Button
+          ><BaseButton
             unstyled
             class="text-button"
             :aria-label="`Edit ${routine.name}`"
             @click="emit('edit', routine)"
           >
             Edit
-          </Button>
+          </BaseButton>
         </header>
         <h2>{{ routine.name }}</h2>
         <p class="muted small routine-description">
@@ -238,7 +238,7 @@ const history = computed(() =>
         <footer>
           <span class="muted small"
             >{{ routine.exercises.length }} exercises</span
-          ><Button
+          ><BaseButton
             unstyled
             class="btn secondary"
             :disabled="saving || !!active"
@@ -246,7 +246,7 @@ const history = computed(() =>
             @click="emit('start', routine.id)"
           >
             Start<ArrowRight :size="16" />
-          </Button>
+          </BaseButton>
         </footer>
       </article>
     </div>

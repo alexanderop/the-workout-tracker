@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import { BaseButton, BaseSheet, BaseInputNumber } from "@form/ui";
+const open = ref(false);
+const weight = ref<string | number>(70);
+</script>
+<template>
+  <BaseButton @click="open = true">Template settings</BaseButton>
+  <BaseSheet :open="open" title="Template settings" description="Edit the first set." @close="open = false">
+    <BaseInputNumber v-model="weight" title="Weight" label="First set weight" unit="kg" :decimals="2" />
+    <BaseButton @click="open = false">Close</BaseButton>
+  </BaseSheet>
+</template>

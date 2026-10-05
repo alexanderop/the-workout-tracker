@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { Sheet, Button, Input, NativeSelect } from "@form/ui";
+import { BaseSheet, BaseButton, BaseInput, BaseSelectNative } from "@form/ui";
 import { Plus, Check, Repeat2, BookmarkPlus } from "@lucide/vue";
 import ExerciseCatalog from "./ExerciseCatalog.vue";
 import RoutineEditor from "./RoutineEditor.vue";
 import type { CompletedSession, Routine } from "../domain";
+import type { RoutineValues } from "../domain/routineDrafts";
 import { sessionTotals, routineFromSession } from "../domain";
 import type { WorkoutWorkspace, WorkoutPage } from "./useWorkoutWorkspace";
 import type { Confirmation } from "./dialogTypes";
@@ -113,8 +114,12 @@ function editRoutine(routine: Routine | null) {
   routineRevision = snapshot.value?.revision ?? 0;
   routineOpen.value = true;
 }
-async function saveRoutine(routine: Routine) {
-  if (await run({ type: "save-routine", routine }, routineRevision)) {
+async function saveRoutine(routine: RoutineValues) {
+  const existing = templateSource.value ? null : editingRoutine.value;
+  const command = existing
+    ? { type: "save-routine" as const, routine: { ...routine, id: existing.id } }
+    : { type: "create-routine" as const, routine };
+  if (await run(command, routineRevision)) {
     routineOpen.value = false;
     message.value = "Template saved";
     emit("template-saved");
@@ -145,27 +150,26 @@ function convertWorkout(id: string) {
   const session = snapshot.value?.completed[id];
   if (!session) return;
   selectedSession.value = null;
-  editRoutine(routineFromSession(session, crypto.randomUUID()));
+  editRoutine(routineFromSession(session, session.id));
   templateSource.value = session;
 }
 async function createExercise() {
   if (!customName.value.trim() || saving.value) return;
-  const id = crypto.randomUUID();
+  const previousIds = new Set(Object.keys(snapshot.value?.exercises ?? {}));
   const saved = await run({
-    type: "save-exercise",
+    type: "create-exercise",
     exercise: {
-      id,
       name: customName.value.trim(),
       category: customCategory.value,
-      custom: true,
       equipment: customEquipment.value,
     },
   });
   if (saved) {
     customName.value = "";
     createOpen.value = false;
-    if (pickerOpen.value)
-      selectedExercises.value = [...selectedExercises.value, id];
+    const created = Object.values(saved.exercises).find((exercise) => !previousIds.has(exercise.id));
+    if (pickerOpen.value && created)
+      selectedExercises.value = [...selectedExercises.value, created.id];
   }
 }
 async function finishWorkout() {
@@ -212,7 +216,7 @@ defineExpose({
 </script>
 
 <template>
-  <Sheet
+  <BaseSheet
     :open="!!optionRow"
     :title="
       optionRow
@@ -224,16 +228,16 @@ defineExpose({
   >
     <template v-if="optionRow">
       <div class="repetition-adjuster">
-        <Button
+        <BaseButton
           unstyled
           class="btn secondary"
           :disabled="saving || Number(optionRow.reps) <= 0"
           aria-label="Decrease repetitions"
           @click="adjustReps(-1)"
         >
-          −</Button
+          −</BaseButton
         ><strong>{{ optionRow.reps || "—" }} reps</strong
-        ><Button
+        ><BaseButton
           unstyled
           class="btn secondary"
           :disabled="saving || Number(optionRow.reps) >= 1000"
@@ -241,19 +245,19 @@ defineExpose({
           @click="adjustReps(1)"
         >
           +
-        </Button>
+        </BaseButton>
       </div>
-      <Button
+      <BaseButton
         unstyled
         class="btn secondary full-width"
         :disabled="saving || optionRow.exercise.sets.length <= 1"
         @click="removeOptionSet"
       >
         Remove set
-      </Button>
+      </BaseButton>
     </template>
-  </Sheet>
-  <Sheet
+  </BaseSheet>
+  <BaseSheet
     :open="routineOpen"
     :title="
       editingRoutine && !templateSource ? 'Edit template' : 'Create template'
@@ -271,9 +275,9 @@ defineExpose({
       @save="saveRoutine"
       @cancel="routineOpen = false"
     />
-    <p v-if="error" class="field-error" role="alert">{{ error }}</p></Sheet
+    <p v-if="error" class="field-error" role="alert">{{ error }}</p></BaseSheet
   >
-  <Sheet
+  <BaseSheet
     :open="pickerOpen"
     title="Add exercises"
     description="Choose the movements for this workout."
@@ -286,14 +290,14 @@ defineExpose({
       @toggle="toggleExercise"
     />
     <div class="picker-actions">
-      <Button
+      <BaseButton
         unstyled
         class="text-button"
         :disabled="saving"
         @click="createOpen = true"
       >
-        <Plus :size="16" />Create your own</Button
-      ><Button
+        <Plus :size="16" />Create your own</BaseButton
+      ><BaseButton
         unstyled
         class="btn primary full-width"
         :disabled="saving || !selectedExercises.length"
@@ -302,11 +306,11 @@ defineExpose({
         Add {{ selectedExercises.length }}
         {{ selectedExercises.length === 1 ? "exercise" : "exercises"
         }}<Check :size="17" />
-      </Button>
+      </BaseButton>
     </div>
     <p v-if="error" class="field-error" role="alert">{{ error }}</p>
-  </Sheet>
-  <Sheet
+  </BaseSheet>
+  <BaseSheet
     :open="createOpen"
     title="Create exercise"
     description="Add a movement to your personal library."
@@ -315,7 +319,7 @@ defineExpose({
     <form class="form-stack" @submit.prevent="createExercise">
       <label class="field"
         ><span>Exercise name</span
-        ><Input
+        ><BaseInput
           v-model="customName"
           class="input"
           required
@@ -324,7 +328,7 @@ defineExpose({
       /></label>
       <label class="field"
         ><span>Muscle group</span
-        ><NativeSelect v-model="customCategory" class="input">
+        ><BaseSelectNative v-model="customCategory" class="input">
           <option
             v-for="group in [
               'Chest',
@@ -339,11 +343,11 @@ defineExpose({
           >
             {{ group }}
           </option>
-        </NativeSelect></label
+        </BaseSelectNative></label
       >
       <label class="field"
         ><span>Equipment</span
-        ><NativeSelect v-model="customEquipment" class="input">
+        ><BaseSelectNative v-model="customEquipment" class="input">
           <option
             v-for="item in [
               'Barbell',
@@ -359,20 +363,20 @@ defineExpose({
           >
             {{ item }}
           </option>
-        </NativeSelect></label
+        </BaseSelectNative></label
       >
-      <Button
+      <BaseButton
         unstyled
         class="btn primary full-width"
         type="submit"
         :disabled="saving || !customName.trim()"
       >
         <Plus :size="17" />Create exercise
-      </Button>
+      </BaseButton>
       <p v-if="error" class="field-error" role="alert">{{ error }}</p>
     </form>
-  </Sheet>
-  <Sheet
+  </BaseSheet>
+  <BaseSheet
     :open="finishOpen"
     title="Finish this workout?"
     description="Only logged sets count toward your progress. Unlogged sets stay in the session record."
@@ -396,17 +400,17 @@ defineExpose({
         You have input drafts in {{ training.pending.value.length }} sets. Save
         the values before finishing. This does not log any additional sets.
       </p>
-      <Button
+      <BaseButton
         unstyled
         class="btn secondary"
         :disabled="saving"
         @click="training.saveEdits()"
       >
         Save input values
-      </Button>
-      <Button unstyled class="text-button" @click="finishOpen = false">
+      </BaseButton>
+      <BaseButton unstyled class="text-button" @click="finishOpen = false">
         Review my sets
-      </Button>
+      </BaseButton>
       <p
         v-if="training.pending.value.some((row) => row.issue)"
         class="field-error"
@@ -418,23 +422,23 @@ defineExpose({
     </div>
     <p v-if="error" class="field-error" role="alert">{{ error }}</p>
     <div class="form-actions">
-      <Button
+      <BaseButton
         unstyled
         class="btn secondary"
         :disabled="saving"
         @click="finishOpen = false"
       >
-        Keep training</Button
-      ><Button
+        Keep training</BaseButton
+      ><BaseButton
         unstyled
         class="btn primary"
         :disabled="saving || !!training.pending.value.length"
         @click="finishWorkout"
       >
         Save workout<Check :size="17" />
-      </Button></div
-  ></Sheet>
-  <Sheet
+      </BaseButton></div
+  ></BaseSheet>
+  <BaseSheet
     :open="confirmation !== null"
     :title="confirmation?.title ?? 'Confirm'"
     :description="confirmation?.description"
@@ -442,14 +446,14 @@ defineExpose({
     >
     <p v-if="error" class="field-error" role="alert">{{ error }}</p>
     <div class="form-actions">
-      <Button
+      <BaseButton
         unstyled
         class="btn secondary"
         :disabled="saving"
         @click="confirmation = null"
       >
-        Cancel</Button
-      ><Button
+        Cancel</BaseButton
+      ><BaseButton
         unstyled
         class="btn primary"
         :disabled="saving"
@@ -462,10 +466,10 @@ defineExpose({
           Remove set
         </span>
         <span v-else>Remove exercise</span>
-      </Button>
-    </div></Sheet
+      </BaseButton>
+    </div></BaseSheet
   >
-  <Sheet
+  <BaseSheet
     :open="!!detail"
     :title="detail?.name ?? 'Workout'"
     :description="detail ? longDate(detail.finishedAt) : ''"
@@ -487,20 +491,20 @@ defineExpose({
         </div>
       </div>
       <div class="detail-actions">
-        <Button
+        <BaseButton
           unstyled
           class="btn primary"
           :disabled="saving || !!active"
           @click="repeatWorkout(detail.id)"
         >
-          <Repeat2 :size="17" />Repeat workout</Button
-        ><Button
+          <Repeat2 :size="17" />Repeat workout</BaseButton
+        ><BaseButton
           unstyled
           class="btn secondary"
           @click="convertWorkout(detail.id)"
         >
           <BookmarkPlus :size="17" />Save as template
-        </Button>
+        </BaseButton>
       </div>
       <section
         v-for="exercise in detail.exercises"
@@ -525,7 +529,7 @@ defineExpose({
           >
         </div>
       </section></template
-    ></Sheet
+    ></BaseSheet
   >
 </template>
 

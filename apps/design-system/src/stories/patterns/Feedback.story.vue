@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { logEvent } from "histoire/client";
-import { Button, Input, Field, FieldLabel } from "@form/ui";
+import { BaseButton, BaseInput, BaseField, BaseFieldLabel } from "@form/ui";
 const message = ref("");
 const search = ref("Unmatched exercise");
 </script>
@@ -15,9 +15,9 @@ const search = ref("Unmatched exercise");
             Choose exercises and log your first set. Your workout will then
             appear here.
           </p>
-          <Button
+          <BaseButton
             @click="message = 'The app would open the exercise picker here.'"
-            >Start workout</Button
+            >Start workout</BaseButton
           >
           <p role="status">{{ message }}</p>
         </div>
@@ -25,10 +25,10 @@ const search = ref("Unmatched exercise");
     >
     <Variant title="No search results"
       ><div class="stack">
-        <Field
-          ><FieldLabel for="empty-search">Search exercises</FieldLabel
-          ><Input id="empty-search" v-model="search"
-        /></Field>
+        <BaseField
+          ><BaseFieldLabel for="empty-search">Search exercises</BaseFieldLabel
+          ><BaseInput id="empty-search" v-model="search"
+        /></BaseField>
         <p role="status">
           {{
             search
@@ -36,13 +36,13 @@ const search = ref("Unmatched exercise");
               : "Search cleared. The app would show available exercises here."
           }}
         </p>
-        <Button
+        <BaseButton
           :disabled="!search"
           @click="
             search = '';
             logEvent('Illustrative search: cleared', null);
           "
-          >Clear search</Button
+          >Clear search</BaseButton
         >
         <p class="note">
           Illustrative empty-result state; no catalog is queried.
@@ -55,8 +55,8 @@ const search = ref("Unmatched exercise");
           <h1>Your input could not be saved.</h1>
           <p>Your input stays visible. Try again before closing this view.</p>
           <p role="alert">Saving is currently unavailable.</p>
-          <Button @click="message = 'Tried again — simulated feedback.'"
-            >Try again</Button
+          <BaseButton @click="message = 'Tried again — simulated feedback.'"
+            >Try again</BaseButton
           >
           <p role="status">{{ message }}</p>
         </div>

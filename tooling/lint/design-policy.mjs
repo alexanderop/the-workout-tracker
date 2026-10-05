@@ -1,3 +1,4 @@
+import tokenReferences from "./token-references.mjs";
 import vue from "eslint-plugin-vue";
 import { parse } from "@vue/compiler-sfc";
 import {
@@ -60,6 +61,7 @@ export default {
     },
   },
   rules: {
+    "token-references": tokenReferences,
     "template-colors": {
       meta,
       create(context) {

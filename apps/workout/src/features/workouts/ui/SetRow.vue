@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Sheet, IconButton, Button, NumericInput } from "@form/ui";
+import { BaseSheet, BaseButtonIcon, BaseButton, BaseInputNumber } from "@form/ui";
 import { useTemplateRef, watch, nextTick, ref } from "vue";
 import { Check, MoreHorizontal, Save } from "@lucide/vue";
 import type { TrainingRow } from "./useTrainingSession";
@@ -57,7 +57,7 @@ defineExpose({
       class="set-row"
       :class="{ completed: row.set.completed, edited: dirty }"
     >
-      <Button
+      <BaseButton
         unstyled
         type="button"
         class="set-number"
@@ -66,8 +66,8 @@ defineExpose({
         @click="emit('select')"
       >
         {{ row.index + 1 }}
-      </Button>
-      <NumericInput
+      </BaseButton>
+      <BaseInputNumber
         :model-value="row.weight"
         title="Weight"
         unit="kg"
@@ -81,7 +81,7 @@ defineExpose({
         @update:model-value="emit('edit', { weight: $event })"
         @open="emit('select')"
       />
-      <NumericInput
+      <BaseInputNumber
         :model-value="row.reps"
         title="Reps"
         :min="0"
@@ -93,7 +93,7 @@ defineExpose({
         @update:model-value="emit('edit', { reps: $event })"
         @open="emit('select')"
       />
-      <Button
+      <BaseButton
         unstyled
         type="submit"
         class="set-toggle"
@@ -106,8 +106,8 @@ defineExpose({
           v-else
           :size="19"
         />
-      </Button>
-      <IconButton
+      </BaseButton>
+      <BaseButtonIcon
         type="button"
         class="set-options"
         :label="`Options for set ${row.index + 1} of ${row.exercise.name}`"
@@ -115,7 +115,7 @@ defineExpose({
         @click="emit('options')"
       >
         <MoreHorizontal :size="20" />
-      </IconButton>
+      </BaseButtonIcon>
     </div>
     <p
       v-if="row.issue"
@@ -134,7 +134,7 @@ defineExpose({
         Saved: {{ row.set.weightKg }} kg × {{ row.set.reps }} reps ·
         {{ row.set.completed ? "logged" : "not logged" }}.
       </p>
-      <Button
+      <BaseButton
         unstyled
         type="button"
         class="text-button"
@@ -142,8 +142,8 @@ defineExpose({
         @click="emit('keep')"
       >
         Keep my input
-      </Button>
-      <Button
+      </BaseButton>
+      <BaseButton
         unstyled
         v-for="draft in row.alternatives"
         :key="draft.id"
@@ -153,15 +153,15 @@ defineExpose({
       >
         Review {{ draft.weight || "empty" }} kg ×
         {{ draft.reps || "empty" }} reps
-      </Button>
-      <Button
+      </BaseButton>
+      <BaseButton
         unstyled
         type="button"
         class="text-button"
         @click="discardOpen = true"
       >
         Discard drafts and use saved values
-      </Button>
+      </BaseButton>
     </div>
     <p v-if="row.storageIssue" class="field-error" role="alert">
       {{ row.storageIssue }}
@@ -175,22 +175,22 @@ defineExpose({
       }}
     </p>
   </form>
-  <Sheet
+  <BaseSheet
     :open="discardOpen"
     title="Discard input changes?"
     description="This deletes the input drafts for this set and restores its saved values."
     @close="discardOpen = false"
   >
     <div class="form-actions">
-      <Button variant="secondary" @click="discardOpen = false">
+      <BaseButton variant="secondary" @click="discardOpen = false">
         Keep editing
-      </Button>
-      <Button
+      </BaseButton>
+      <BaseButton
         :disabled="busy"
         @click="emit('discard'); discardOpen = false"
       >
         Discard input
-      </Button>
+      </BaseButton>
     </div>
-  </Sheet>
+  </BaseSheet>
 </template>

@@ -1,4 +1,4 @@
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, type Ref } from "vue";
 import type { Workouts, DraftJournal } from "../application";
 import { sessionTotals, remainingRestSeconds } from "../domain";
 import { useWorkouts } from "./useWorkouts";
@@ -6,20 +6,13 @@ import { useTrainingSession } from "./useTrainingSession";
 import { duration } from "./presentation";
 export type WorkoutPage =
   "today" | "workouts" | "history" | "exercises" | "progress" | "session" | "settings";
-export function useWorkoutWorkspace(service: Workouts, journal: DraftJournal) {
+export function useWorkoutWorkspace(
+  service: Workouts,
+  journal: DraftJournal,
+  now: Readonly<Ref<number>>,
+) {
   const workouts = useWorkouts(service);
   const { snapshot, saving, run } = workouts;
-  const now = ref(Date.now());
-  let tick: ReturnType<typeof setInterval> | undefined;
-  onMounted(() => {
-    tick = setInterval(() => {
-      now.value = Date.now();
-    }, 1000);
-  });
-  onUnmounted(() => {
-    if (tick) clearInterval(tick);
-  });
-
   const routines = computed(() =>
     Object.values(snapshot.value?.routines ?? {}),
   );
@@ -34,12 +27,6 @@ export function useWorkoutWorkspace(service: Workouts, journal: DraftJournal) {
     ),
   );
   const active = computed(() => snapshot.value?.active ?? null);
-  watch(
-    () => active.value?.rest?.endsAt,
-    () => {
-      now.value = Date.now();
-    },
-  );
   const training = useTrainingSession({
     snapshot,
     saving,

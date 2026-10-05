@@ -18,11 +18,16 @@
     "dev:ui": "pnpm --filter @form/design-system dev",
     "build:ui": "pnpm --filter @form/design-system build",
     "lint:oxlint": "pnpm -r lint",
-    "lint:vue": "eslint \"apps/*/src/**/*.{vue,css}\" \"packages/*/src/**/*.{vue,css}\" --max-warnings 0",
-    "typecheck:native": "node node_modules/@typescript/native/bin/tsc --noEmit -p tsconfig.native.json"
+    "lint:vue": "eslint \"apps/*/src/**/*.{vue,ts,css}\" \"packages/*/src/**/*.{vue,ts,css}\" --max-warnings 0",
+    "typecheck:native": "node node_modules/@typescript/native/bin/tsc --noEmit -p tsconfig.native.json",
+    "test:unit": "pnpm --filter @form/workout test:unit",
+    "test:browser": "pnpm --filter @form/workout test:browser",
+    "test:e2e": "pnpm --filter @form/workout test:e2e",
+    "test": "pnpm test:unit && pnpm test:browser && pnpm test:e2e"
   },
   "devDependencies": {
     "@eslint/css": "^2.0.0",
+    "@shadcn/lint": "^0.2.0",
     "@typescript/native": "npm:typescript@7.0.2",
     "@vue/compiler-sfc": "^3.5.43",
     "eslint": "^10.12.0",

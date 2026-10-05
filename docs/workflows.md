@@ -35,6 +35,21 @@ Keep workout-specific components in `apps/workout/src/features/workouts/ui` and 
 
 Illustrative compositions belong in `stories/patterns`, and foundations in `stories/foundations`. Pattern stories use isolated demo state and must describe their limitations; sample feedback must not imply a real save.
 
+## Component names
+
+Apply the naming rules from the [Vue Style Guide (Priority B)](https://vuejs.org/style-guide/rules-strongly-recommended.html) to our components:
+
+- Give each component its own PascalCase `.vue` file. Use the same PascalCase name in imports, exports and Vue templates.
+- Prefix shared, styled `@form/ui` components with `Base`: `BaseButton`, `BaseField`, `BaseDialogContent`. Keep their existing feature folders; the prefix expresses their reusable role.
+- Put the general family before its modifier: `BaseButtonIcon`, `BaseInputNumber`, `BaseSelectNative`.
+- Prefix a tightly coupled child with its parent's full name, for example `StrongLiftsPrototypeExerciseList` and `StrongLiftsPrototypeExerciseListCircles`. Independently reusable components keep their own names.
+- Prefer full words over abbreviations. `BaseTextarea` follows the native HTML element name; third-party components retain their upstream names.
+- Match component story filenames and catalog titles to their public export: `BaseButton.story.vue` and `02 Components/BaseButton`. Pattern and foundation stories describe their subject and retain the `.story.vue` suffix.
+
+Histoire's **00 Start here / Component naming** page illustrates this contract. When renaming, update the source file, public export, imports, template tags, story filename/title, copyable examples and current documentation together. Preserve behavior, styles, props and events. The private source package uses the new names directly, without legacy aliases.
+
+PascalCase template references, matching explicitly declared component/file names and multi-word names are linted. Prefix choice, parent relationships, word order and full-word clarity require review; lint does not infer component ownership.
+
 ## Change storage or backups
 
 1. Inspect `domain.ts`, `ports.ts`, `application.ts`, and the relevant adapter together. Validate external values at the boundary before they become domain state.
@@ -47,7 +62,7 @@ Illustrative compositions belong in `stories/patterns`, and foundations in `stor
 
 Palette values and generic tokens live in `packages/ui/src/tokens.css`; the workout mapping lives in `packages/ui/src/workout-theme.css`. Generic component CSS lives in `packages/ui/src/styles.css`. App layout belongs in `apps/workout/src/style.css`, and explorer presentation belongs in `apps/design-system/src/preview.css`.
 
-Update foundations stories and [design](design.md) when a design rule changes. Inspect both consumers when changing shared styling. Keep examples of spacing or layout from becoming a second source of token values.
+Update foundations stories and [design](design.md) when a design rule changes. Inspect both consumers when changing shared styling. Keep examples of spacing or layout from becoming a second source of token values. Run `pnpm lint:vue` for the [enforced token policy](design.md#enforced-token-policy): it checks CSS and Vue styles, supported Tailwind expressions, TypeScript class helpers, and static CSS variable references. Fix findings using the shared token source; do not add one-off tokens merely to silence lint.
 
 ## Verification and delivery
 
@@ -55,15 +70,43 @@ Changes may be committed directly on `main` or merged from a working branch into
 
 Husky installs the Git hooks through the root `prepare` script when you run `pnpm install`. Before each commit, `.husky/pre-commit` runs `pnpm verify` across the workspace and blocks the commit if type checking or linting fails. The checks read the current working tree, including unstaged changes. Run `pnpm prepare` to reinstall the hooks in an existing checkout.
 
-`pnpm verify` runs only type checking and linting. Do not add, maintain, or run automated tests, test infrastructure, or testing strategies unless the user explicitly requests them. Standalone architecture and workspace checks are optional and remain outside verification. Build only when needed to run or deploy the application; offline and installation behavior require the production preview described in [README.md](../README.md).
+`pnpm verify` runs only type checking and linting. Automated tests run through separate commands described in [Testing](#testing). Standalone architecture and workspace checks are optional and remain outside verification. Build only when needed to run or deploy the application; offline and installation behavior require the production preview described in [README.md](../README.md).
 
 For documentation-only changes, check links, referenced paths, command names, and consistency with the implementation. Report edits, checks, commits, pushes, and deployment separately; completing one does not establish the others.
+
+## Testing
+
+Choose a test by the failure it must expose. Keep `pnpm verify` as type checking and linting. Run `pnpm test` to execute all behavior suites, or choose the affected layer:
+
+| Command | Proof |
+| --- | --- |
+| `pnpm test:unit` | Pure rules and application orchestration in Node |
+| `pnpm test:browser` | Real browser storage adapters in Chrome |
+| `pnpm test:e2e` | Executable Gherkin journeys against the production app build in Chrome |
+
+Install Chrome with `pnpm --filter @form/workout exec playwright install chrome`. CI installs it before browser execution. The E2E command generates Playwright specs, builds the app with the root base path, and serves it on port 4197. Keep that port free. Generated specs, reports, and traces are ignored by Git. Failed journeys retain traces and screenshots.
+
+### Write unit tests without mocks
+
+Call real domain functions with explicit values. Pass time and IDs through parameters or the existing application dependencies. Do not use module mocks, spies, patched globals, or fake timers. Extract a pure decision when a rule is trapped inside a Vue component or composable. Leave browser interaction and lifecycle checks at the browser layer.
+
+Application tests can inject small in-memory implementations of the declared ports. These are test doubles and prove orchestration only. They do not prove IndexedDB transactions or browser storage. Test the production adapters separately with real storage.
+
+Use typed factories under `apps/workout/test/support` to create fresh valid records. Give each scenario its own state and deterministic identities. Override only the fields relevant to the behavior. Expected results must come from the contract, not from the function under test.
+
+### Write application journeys
+
+Put product-language scenarios under `apps/workout/test/e2e`. Keep semantic locators and user actions in page objects. Step definitions connect product intent to those page objects. Avoid arbitrary sleeps and assertions about internal call sequences.
+
+Use the test fixtures to seed prerequisites into an isolated browser context. Seeding is test-only and uses actual browser storage. Never seed the outcome of the action being tested. A fresh-user journey must create its workout through the UI. A reload journey must read the data the application saved. Do not add production seed endpoints or replace persistence with fixtures.
+
+Browser adapter tests use unique database names and close handles before cleanup. Each application scenario gets an isolated browser context. Chrome is the default browser. Functional tests do not establish visual parity, full accessibility, offline availability, or cross-browser compatibility.
 
 ## Lint and TypeScript policy
 
 `pnpm verify` runs type checking and linting only. `typecheck:native` uses the stable Go-based TypeScript 7.0.2 compiler (`@typescript/native`, an npm alias) on the domain, application, adapters, typed UI controllers, and numeric editing modules listed in `tsconfig.native.json`. Each workspace also runs `vue-tsc` over its complete application and Vue templates. TypeScript 6 remains a compatibility dependency for `vue-tsc`, the ESLint parser, and the architecture policy's compiler API; replacing that API with TypeScript 7 is not supported by these tools. TypeScript 8 is not published; the registry's development line was 7.1 when this setup was adopted.
 
-Oxlint owns JavaScript/TypeScript rules, supported Vue script rules, and custom architectural rules. Type-aware Oxlint uses `oxlint-tsgolint` for unhandled/misused promises and exhaustive switches in TypeScript; do not assume this provides type-aware checking of Vue templates. ESLint owns the remaining Vue template rules and CSS policy, and applies the same promise/exhaustive-switch checks to typed Vue script blocks using its project service. `eslint-plugin-oxlint` disables rules already handled by Oxlint; only the three type-aware checks are explicitly restored for Vue files.
+Oxlint owns JavaScript/TypeScript rules, supported Vue script rules, and custom architectural rules. Type-aware Oxlint uses `oxlint-tsgolint` for unhandled/misused promises and exhaustive switches in TypeScript; do not assume this provides type-aware checking of Vue templates. ESLint owns the remaining Vue template rules, CSS/token policy, and Tailwind class-helper checks in TypeScript, and applies the same promise/exhaustive-switch checks to typed Vue script blocks using its project service. `eslint-plugin-oxlint` disables rules already handled by Oxlint; only the three type-aware checks are explicitly restored for Vue files.
 
 - Use literal unions instead of enums, avoid explicit `any`, and avoid type assertions other than `as const`.
 - Use early returns or loop continuation instead of JavaScript `else`/`else if`; Vue `v-else` remains valid template structure. Avoid nested ternaries.
@@ -71,7 +114,7 @@ Oxlint owns JavaScript/TypeScript rules, supported Vue script rules, and custom 
 - Keep modified cyclomatic complexity at most 10. This counts a switch as one branch so explicit exhaustive dispatch does not punish adding named domain commands; nested conditions and logical operators still count.
 - Destructure `defineProps` using Vue 3.5 reactive destructuring and inline defaults. Wrap reactive reads in getters when passing them to watchers. Reka wrappers may forward the reactive rest-props object.
 - Use `useTemplateRef` for template references. Document-level element queries are forbidden in components; a query scoped to an owned template reference is permitted.
-- Declare slots explicitly, remove unused props/refs/emits, use PascalCase component references and kebab-case custom events/attributes. Vue's `update:*` model events retain their framework spelling. Existing generic UI primitives may have single-word names; Histoire story filenames are exempt from the multi-word naming rule.
+- Declare slots explicitly, remove unused props/refs/emits, use PascalCase component references and kebab-case custom events/attributes. Vue's `update:*` model events retain their framework spelling. Use the [component naming contract](#component-names). Only the application root `App` and Histoire story filenames are exempt from the multi-word naming rule.
 - Keep template nesting at most eight levels. A `use*.ts` module must call an imported Vue/VueUse API or another imported composable. This is a structural check, not a proof of lifecycle correctness.
 - Product logging permits `console.warn` and `console.error`, not debug logging.
 

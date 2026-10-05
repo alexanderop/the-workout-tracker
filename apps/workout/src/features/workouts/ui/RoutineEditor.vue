@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Sheet, IconButton, Button, Input, Textarea, NumericInput } from "@form/ui";
+import { BaseSheet, BaseButtonIcon, BaseButton, BaseInput, BaseTextarea, BaseInputNumber } from "@form/ui";
 import { computed, ref } from "vue";
 import { Plus, Trash2 } from "@lucide/vue";
 import type { CompletedSession, Exercise, Routine } from "../domain";
-import { routineSchema } from "../domain";
+import { parseRoutineDraft, type RoutineValues } from "../domain/routineDrafts";
 import ExerciseCatalog from "./ExerciseCatalog.vue";
 const { routine, source, exercises, busy } = defineProps<{
   routine: Routine | null;
@@ -11,7 +11,7 @@ const { routine, source, exercises, busy } = defineProps<{
   exercises: readonly Exercise[];
   busy: boolean;
 }>();
-const emit = defineEmits<{ save: [routine: Routine]; cancel: [] }>();
+const emit = defineEmits<{ save: [routine: RoutineValues]; cancel: [] }>();
 type SetDraft = {
   weightKg: string | number;
   reps: string | number;
@@ -86,24 +86,17 @@ function addSet(entry: ExerciseDraft) {
 }
 function save() {
   if (busy) return;
-  const result = routineSchema.safeParse({
-    id: routine?.id ?? crypto.randomUUID(),
+  const result = parseRoutineDraft({
     name: name.value,
-    description: description.value.trim(),
-    exercises: entries.value.map((entry) => ({
-      exerciseId: entry.exerciseId,
-      sets: entry.sets.map((set) => ({
-        weightKg: String(set.weightKg).trim() ? Number(set.weightKg) : NaN,
-        reps: String(set.reps).trim() ? Number(set.reps) : NaN,
-      })),
-    })),
+    description: description.value,
+    exercises: entries.value,
   });
-  if (!result.success) {
+  if (!result) {
     error.value =
       "Add a name and at least one exercise. Use 0–1,000 kg and 1–1,000 whole reps for every set.";
     return;
   }
-  emit("save", result.data);
+  emit("save", result);
 }
 </script>
 <template>
@@ -115,7 +108,7 @@ function save() {
     <fieldset class="editor-fields form-stack" :disabled="busy">
       <label class="field"
         ><span>Template name</span
-        ><Input
+        ><BaseInput
           v-model="name"
           class="input"
           name="routine-name"
@@ -125,7 +118,7 @@ function save() {
       /></label>
       <label class="field"
         ><span>Description <span class="muted">(optional)</span></span
-        ><Textarea
+        ><BaseTextarea
           v-model="description"
           class="input"
           maxlength="240"
@@ -144,13 +137,13 @@ function save() {
       >
         <div class="exercise-heading">
           <h3>{{ index + 1 }}. {{ names.get(entry.exerciseId) }}</h3>
-          <IconButton
+          <BaseButtonIcon
             type="button"
             :label="`Remove ${names.get(entry.exerciseId)}`"
             @click="removal = { kind: 'exercise', entry }"
           >
             <Trash2 :size="17" />
-          </IconButton>
+          </BaseButtonIcon>
         </div>
         <div
           v-for="(set, setIndex) in entry.sets"
@@ -165,7 +158,7 @@ function save() {
           >
           <label class="field"
             ><span>Weight · kg</span
-            ><NumericInput
+            ><BaseInputNumber
               v-model="set.weightKg"
               class="input"
               title="Weight"
@@ -179,7 +172,7 @@ function save() {
           /></label>
           <label class="field"
             ><span>Reps</span
-            ><NumericInput
+            ><BaseInputNumber
               v-model="set.reps"
               class="input"
               title="Reps"
@@ -188,16 +181,16 @@ function save() {
               :max="1000"
               :label="`${names.get(entry.exerciseId)} set ${setIndex + 1} reps`"
           /></label>
-          <IconButton
+          <BaseButtonIcon
             type="button"
             :disabled="entry.sets.length <= 1"
             :label="`Remove set ${setIndex + 1} of ${names.get(entry.exerciseId)}`"
             @click="removal = { kind: 'set', entry, set }"
           >
             <Trash2 :size="16" />
-          </IconButton>
+          </BaseButtonIcon>
         </div>
-        <Button
+        <BaseButton
           unstyled
           type="button"
           class="text-button add-set"
@@ -205,9 +198,9 @@ function save() {
           @click="addSet(entry)"
         >
           <Plus :size="15" />Add set
-        </Button>
+        </BaseButton>
       </section>
-      <Button
+      <BaseButton
         unstyled
         type="button"
         class="btn secondary full-width"
@@ -217,14 +210,14 @@ function save() {
         <Plus :size="17" />{{
           pickerOpen ? "Close exercise library" : "Add exercises"
         }}
-      </Button>
+      </BaseButton>
       <div v-if="pickerOpen" class="template-picker">
         <ExerciseCatalog
           :exercises="exercises"
           :selected="selected"
           :busy="busy"
           @toggle="toggle"
-        /><Button
+        /><BaseButton
           unstyled
           type="button"
           class="btn primary full-width"
@@ -232,39 +225,39 @@ function save() {
           @click="addExercises"
         >
           Add {{ selected.length }} exercises
-        </Button>
+        </BaseButton>
       </div>
     </fieldset>
     <p v-if="error" class="field-error" role="alert">{{ error }}</p>
     <div class="form-actions">
-      <Button
+      <BaseButton
         unstyled
         type="button"
         class="btn secondary"
         :disabled="busy"
         @click="emit('cancel')"
       >
-        Cancel</Button
-      ><Button unstyled type="submit" class="btn primary" :disabled="busy">
+        Cancel</BaseButton
+      ><BaseButton unstyled type="submit" class="btn primary" :disabled="busy">
         {{ busy ? "Saving…" : "Save template" }}
-      </Button>
+      </BaseButton>
     </div>
   </form>
-  <Sheet
+  <BaseSheet
     :open="removal !== null"
     :title="removal?.kind === 'exercise' ? 'Remove exercise?' : 'Remove set?'"
     :description="`This removes ${removal?.kind === 'exercise' ? 'the exercise and all its sets' : 'this set'} from your template draft. Save the template to keep this change.`"
     @close="removal = null"
   >
     <div class="form-actions">
-      <Button variant="secondary" @click="removal = null">
+      <BaseButton variant="secondary" @click="removal = null">
         Cancel
-      </Button>
-      <Button :disabled="busy" @click="removeConfirmed">
+      </BaseButton>
+      <BaseButton :disabled="busy" @click="removeConfirmed">
         Remove
-      </Button>
+      </BaseButton>
     </div>
-  </Sheet>
+  </BaseSheet>
 </template>
 <style scoped>
 .editor-fields {

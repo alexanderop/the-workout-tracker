@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import {
-  Button,
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
+  BaseButton,
+  BaseDialog,
+  BaseDialogTrigger,
+  BaseDialogContent,
+  BaseDialogTitle,
+  BaseDialogDescription,
 } from "@form/ui";
 </script>
 <template>
@@ -13,16 +13,16 @@ import {
     <Variant title="Feedback and reduced motion"
       ><div class="stack">
         <h1>Motion explains change.</h1>
-        <Dialog
-          ><DialogTrigger as-child
-            ><Button>View dialog transition</Button></DialogTrigger
-          ><DialogContent
-            ><DialogTitle>One focused task</DialogTitle
-            ><DialogDescription
+        <BaseDialog
+          ><BaseDialogTrigger as-child
+            ><BaseButton>View dialog transition</BaseButton></BaseDialogTrigger
+          ><BaseDialogContent
+            ><BaseDialogTitle>One focused task</BaseDialogTitle
+            ><BaseDialogDescription
               >The shared dialog respects prefers-reduced-motion. Press Escape
-              to close.</DialogDescription
-            ></DialogContent
-          ></Dialog
+              to close.</BaseDialogDescription
+            ></BaseDialogContent
+          ></BaseDialog
         >
         <p class="note">
           Short transitions accompany opening, closing and state changes. Avoid

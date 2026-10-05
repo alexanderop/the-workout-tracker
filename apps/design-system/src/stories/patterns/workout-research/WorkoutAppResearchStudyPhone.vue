@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { Button, NumericInput, NativeSelect } from "@form/ui";
+import { BaseButton, BaseInputNumber, BaseSelectNative } from "@form/ui";
 import { ArrowRight, Check, Clock3, ChevronLeft, Dumbbell } from "@lucide/vue";
 import WorkoutAppResearchStudyPhoneSetTable from "./WorkoutAppResearchStudyPhoneSetTable.vue";
 import type { Reference } from "./references";
@@ -25,9 +25,9 @@ function applySuggestion() {
 
 <template>
       <main class="study-phone" :class="`study-${reference.id}`" :aria-label="`${reference.name} inspired workout`">
-        <header class="study-toolbar"><span><Dumbbell :size="17" aria-hidden="true" /> Upper body</span><Button variant="ghost" :disabled="logged.length === 0" @click="review = !review">{{ review ? 'Back' : 'Review' }}</Button></header>
+        <header class="study-toolbar"><span><Dumbbell :size="17" aria-hidden="true" /> Upper body</span><BaseButton variant="ghost" :disabled="logged.length === 0" @click="review = !review">{{ review ? 'Back' : 'Review' }}</BaseButton></header>
         <template v-if="review">
-          <section class="study-review"><Check :size="32" aria-hidden="true" /><h2>Your session so far</h2><strong>{{ logged.length }} / 9</strong><p>sets logged · {{ volume }} kg volume</p><p>This is a preview. No workout has been finished or saved.</p><Button @click="review = false">Back to workout</Button></section>
+          <section class="study-review"><Check :size="32" aria-hidden="true" /><h2>Your session so far</h2><strong>{{ logged.length }} / 9</strong><p>sets logged · {{ volume }} kg volume</p><p>This is a preview. No workout has been finished or saved.</p><BaseButton @click="review = false">Back to workout</BaseButton></section>
         </template>
         <template v-else>
           <div v-if="reference.id === 'hevy'" class="study-metrics"><div><small>Duration</small><strong>18:42</strong></div><div><small>Volume</small><strong>{{ volume }} kg</strong></div><div><small>Sets</small><strong>{{ logged.length }}</strong></div></div>
@@ -62,25 +62,25 @@ function applySuggestion() {
               <div v-if="reference.id === 'fitbod' || guided || (reference.id === 'jefit' && media)" class="study-media"><img :src="exercise.image" alt="" /><span>Equipment illustration · demo video omitted</span></div>
               <button v-if="reference.id === 'jefit'" class="study-link" @click="media = !media">{{ media ? 'Hide illustration' : 'Show illustration' }}</button>
               <p class="research-kicker">{{ current ? `SET ${setNumber} OF 3` : 'EXERCISE COMPLETE' }}</p><h2>{{ exercise.name }}</h2>
-              <div v-if="reference.id === 'alpha'" class="study-recommendation"><span class="research-kicker">SAMPLE SUGGESTION · NOT PERSONALIZED</span><strong>{{ exercise.weight + 2.5 }} kg × 8</strong><p>Previous: {{ exercise.weight }} kg × 8 · Target: 2 reps in reserve</p><Button variant="secondary" :disabled="!current" @click="applySuggestion">Use suggestion in draft</Button></div>
+              <div v-if="reference.id === 'alpha'" class="study-recommendation"><span class="research-kicker">SAMPLE SUGGESTION · NOT PERSONALIZED</span><strong>{{ exercise.weight + 2.5 }} kg × 8</strong><p>Previous: {{ exercise.weight }} kg × 8 · Target: 2 reps in reserve</p><BaseButton variant="secondary" :disabled="!current" @click="applySuggestion">Use suggestion in draft</BaseButton></div>
               <template v-if="consoleLayout">
                 <WorkoutAppResearchStudyPhoneSetTable :sets="exercise.sets" :name="exercise.name" :previous-weight="exercise.weight" :prescription="reference.id === 'boostcamp'" @edit="edit" @toggle="toggle" />
               </template>
               <template v-else-if="current">
                 <div v-if="reference.id === 'freeletics'" class="study-big-target"><strong>{{ current.reps }}</strong><span>repetitions</span></div>
                 <p v-if="reference.id === 'fitbod'" class="study-small">3 sets · Rest 1:30 · Sample previous: {{ exercise.weight }} kg × 8</p>
-                <div class="study-inputs"><label>Weight · kg<NumericInput v-model="current.weight" title="Weight" label="Current set weight" unit="kg" :decimals="2" /></label><label>Repetitions<NumericInput v-model="current.reps" title="Repetitions" label="Current set repetitions" :min="1" /></label></div>
+                <div class="study-inputs"><label>Weight · kg<BaseInputNumber v-model="current.weight" title="Weight" label="Current set weight" unit="kg" :decimals="2" /></label><label>Repetitions<BaseInputNumber v-model="current.reps" title="Repetitions" label="Current set repetitions" :min="1" /></label></div>
               </template>
-              <label v-if="reference.id === 'alpha' || reference.id === 'fitbod' || reference.id === 'boostcamp'" class="study-effort">{{ reference.id === 'boostcamp' ? 'Effort · RPE (optional)' : 'Reps in reserve (optional)' }}<NativeSelect v-model="effort" aria-label="Sample effort rating"><option value="">Not recorded</option><option v-for="value in (reference.id === 'boostcamp' ? ['6', '7', '8', '9', '10'] : ['0', '1', '2', '3', '4+'])" :key="value" :value="value">{{ value }}</option></NativeSelect></label>
+              <label v-if="reference.id === 'alpha' || reference.id === 'fitbod' || reference.id === 'boostcamp'" class="study-effort">{{ reference.id === 'boostcamp' ? 'Effort · RPE (optional)' : 'Reps in reserve (optional)' }}<BaseSelectNative v-model="effort" aria-label="Sample effort rating"><option value="">Not recorded</option><option v-for="value in (reference.id === 'boostcamp' ? ['6', '7', '8', '9', '10'] : ['0', '1', '2', '3', '4+'])" :key="value" :value="value">{{ value }}</option></BaseSelectNative></label>
               <p v-if="reference.id === 'sweat'" class="study-up-next"><span>UP NEXT</span><strong>{{ nextName }}</strong><small>8 repetitions</small></p>
-              <div v-if="resting && (guided || reference.id === 'jefit')" class="study-rest-hero"><small>REST · PAUSED PREVIEW</small><strong>01:30</strong><Button @click="next(circuit)">Continue <ArrowRight :size="16" /></Button></div>
-              <Button v-else-if="current" class="study-log" @click="logCurrent">{{ guided ? 'Complete set' : 'Log set' }} {{ setNumber }} <Check :size="16" /></Button>
-              <Button v-else-if="logged.length < 9" class="study-log" @click="next(circuit)">Next exercise <ArrowRight :size="16" /></Button>
+              <div v-if="resting && (guided || reference.id === 'jefit')" class="study-rest-hero"><small>REST · PAUSED PREVIEW</small><strong>01:30</strong><BaseButton @click="next(circuit)">Continue <ArrowRight :size="16" /></BaseButton></div>
+              <BaseButton v-else-if="current" class="study-log" @click="logCurrent">{{ guided ? 'Complete set' : 'Log set' }} {{ setNumber }} <Check :size="16" /></BaseButton>
+              <BaseButton v-else-if="logged.length < 9" class="study-log" @click="next(circuit)">Next exercise <ArrowRight :size="16" /></BaseButton>
               <p v-else class="study-complete">All sets logged. Ready to review.</p>
             </section>
           </template>
-          <aside v-if="resting && !guided && reference.id !== 'jefit'" class="study-rest-strip"><span><Clock3 :size="16" /><strong>01:30</strong><small>Rest · paused preview</small></span><Button variant="secondary" @click="next(circuit)">End rest</Button></aside>
+          <aside v-if="resting && !guided && reference.id !== 'jefit'" class="study-rest-strip"><span><Clock3 :size="16" /><strong>01:30</strong><small>Rest · paused preview</small></span><BaseButton variant="secondary" @click="next(circuit)">End rest</BaseButton></aside>
         </template>
-        <footer class="study-phone-footer"><p role="status">{{ notice }}</p><Button v-if="lastId !== undefined" variant="ghost" @click="undo">Undo last log</Button><Button variant="ghost" @click="reset">Reset sample</Button></footer>
+        <footer class="study-phone-footer"><p role="status">{{ notice }}</p><BaseButton v-if="lastId !== undefined" variant="ghost" @click="undo">Undo last log</BaseButton><BaseButton variant="ghost" @click="reset">Reset sample</BaseButton></footer>
       </main>
 </template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { Button, Sheet } from "@form/ui";
+import { BaseButton, BaseSheet } from "@form/ui";
 import { ArrowUpRight, RotateCcw, Timer } from "@lucide/vue";
 import StrongLiftsPrototypeExerciseList from "./StrongLiftsPrototypeExerciseList.vue";
 import StrongLiftsPrototypeExercisePicker from "./StrongLiftsPrototypeExercisePicker.vue";
@@ -51,7 +51,7 @@ function restart() { adding.value = false; reset(); finished.value = false; edit
       <section class="sl-phone" aria-label="Interactive workout prototype">
         <header class="sl-top"><span class="sl-brand">FORM <small>WORKOUT A</small></span><button class="sl-text-action" @click="requestFinish">Finish</button></header>
         <div v-if="finished" class="sl-summary">
-          <p class="sl-eyebrow">SESSION COMPLETE</p><h2>You showed up.</h2><strong>{{ logged }} / {{ total }} sets</strong><p>{{ volume.toLocaleString() }} kg lifted · {{ total - logged }} sets skipped</p><p>Demo summary only. Nothing is saved.</p><Button @click="finished = false">Back to workout</Button><Button variant="ghost" @click="restart">Start again</Button>
+          <p class="sl-eyebrow">SESSION COMPLETE</p><h2>You showed up.</h2><strong>{{ logged }} / {{ total }} sets</strong><p>{{ volume.toLocaleString() }} kg lifted · {{ total - logged }} sets skipped</p><p>Demo summary only. Nothing is saved.</p><BaseButton @click="finished = false">Back to workout</BaseButton><BaseButton variant="ghost" @click="restart">Start again</BaseButton>
         </div>
         <template v-else>
           <div class="sl-session"><div><p class="sl-eyebrow">SUNDAY, 4 OCTOBER</p><h2>Workout A</h2></div><span v-if="logged">{{ logged }}<small> / {{ total }} sets</small></span><span v-else>{{ exercises.length }}<small> {{ exercises.length === 1 ? 'exercise' : 'exercises' }}</small></span></div>
@@ -70,13 +70,13 @@ function restart() { adding.value = false; reset(); finished.value = false; edit
       <aside class="sl-notes">
         <p class="sl-eyebrow">TRY THE INTERACTION</p><h2>One tap.<br />The whole workout.</h2>
         <ol><li>Tap an exercise’s prescription to configure sets, reps and weight. Tap a circle to log its target.</li><li>Tap it again. It becomes four reps and the rest target extends.</li><li>Hold a circle, right-click it, or use Edit sets to correct weight or reps.</li><li>Complete every planned circle: that exercise moves to Completed below. Add another exercise at any time.</li></ol>
-        <div class="sl-demo-controls"><label><input v-model="fast" type="checkbox" /> Fast timer preview (6 / 10 seconds)</label><p>Applies to the next logged or corrected set. Normal mode uses 3 / 5 minutes.</p><Button variant="secondary" @click="restart"><RotateCcw :size="15" /> Reset sample</Button></div>
+        <div class="sl-demo-controls"><label><input v-model="fast" type="checkbox" /> Fast timer preview (6 / 10 seconds)</label><p>Applies to the next logged or corrected set. Normal mode uses 3 / 5 minutes.</p><BaseButton variant="secondary" @click="restart"><RotateCcw :size="15" /> Reset sample</BaseButton></div>
         <details class="sl-evidence"><summary>What matches StrongLifts?</summary><p>Official screenshots show compact exercise rows, five circles and a bottom timer. First tap logs the target; more taps reduce reps. A hold opens individual-set editing. Zero is an attempted set; blank means skipped.</p><p>Our choices: adding exercises during a session, moving fully logged exercises into a reviewable Completed section, purple palette, target/reps labels, visible editing, explicit clear at zero, countdown display and a manual finish. Weight changes apply only to unlogged sets. These details are interpretations, not verified app behavior.</p><p>No persistence, notifications, warm-ups, progression rules, idle pause or automatic finish-on-navigation. This is an interactive study, not an installed-app replica.</p><a href="https://support.stronglifts.com/article/63-log-workouts" target="_blank" rel="noreferrer">Logging guide <ArrowUpRight :size="14" /></a><a href="https://support.stronglifts.com/article/39-timer" target="_blank" rel="noreferrer">Timer guide <ArrowUpRight :size="14" /></a><a href="https://support.stronglifts.com/article/8-change-weight" target="_blank" rel="noreferrer">Weight editing <ArrowUpRight :size="14" /></a><a href="https://stronglifts.com/app/" target="_blank" rel="noreferrer">Official interface screenshots <ArrowUpRight :size="14" /></a></details>
       </aside>
     </div>
     <StrongLiftsPrototypeExercisePicker v-if="adding" :existing="exercises.map(exercise => exercise.name)" @close="adding = false" @add="addExercise" />
     <StrongLiftsPrototypeSetEditor v-if="selected" :key="selected.set.id" :set="selected.set" :title="selected.title" @close="selected = null" @save="saveSet" @clear="clearSet" />
     <StrongLiftsPrototypeWeightEditor v-if="weightExercise" :key="weightExercise.name" :exercise="weightExercise" @close="weightExercise = null" @save="saveWeight" />
-    <Sheet :open="finishing" title="Finish this workout?" :description="`${logged} ${logged === 1 ? 'set' : 'sets'} logged. ${total - logged} unlogged sets will be skipped.`" @close="finishing = false"><div class="sl-editor"><Button @click="finish">Finish with {{ logged }} {{ logged === 1 ? 'set' : 'sets' }}</Button><Button variant="secondary" @click="finishing = false">Keep training</Button></div></Sheet>
+    <BaseSheet :open="finishing" title="Finish this workout?" :description="`${logged} ${logged === 1 ? 'set' : 'sets'} logged. ${total - logged} unlogged sets will be skipped.`" @close="finishing = false"><div class="sl-editor"><BaseButton @click="finish">Finish with {{ logged }} {{ logged === 1 ? 'set' : 'sets' }}</BaseButton><BaseButton variant="secondary" @click="finishing = false">Keep training</BaseButton></div></BaseSheet>
   </main>
 </template>

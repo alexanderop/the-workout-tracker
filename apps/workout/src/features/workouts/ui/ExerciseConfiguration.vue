@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useTemplateRef, watch } from "vue";
-import { Button, NumericInput, Sheet, Textarea } from "@form/ui";
+import { BaseButton, BaseInputNumber, BaseSheet, BaseTextarea } from "@form/ui";
 import { ArrowLeftRight, List, Plus, StickyNote, Trash2 } from "@lucide/vue";
 import { setTargetReps, type Command, type SessionExercise } from "../domain";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
@@ -198,7 +198,7 @@ function saveReplacement() {
 }
 </script>
 <template>
-  <Sheet
+  <BaseSheet
     :open="!!exercise || savePending"
     :title="title"
     @close="close"
@@ -207,68 +207,68 @@ function saveReplacement() {
     <div v-if="exercise" ref="body" class="workout-editor">
       <template v-if="view === 'actions'">
         <div class="exercise-option-targets">
-          <Button
+          <BaseButton
             variant="secondary"
             :disabled="workspace.saving.value"
             @click="show('configure')"
             >{{ exercise.sets.length }}
-            {{ exercise.sets.length === 1 ? "set" : "sets" }}</Button
+            {{ exercise.sets.length === 1 ? "set" : "sets" }}</BaseButton
           >
-          <Button
+          <BaseButton
             variant="secondary"
             :disabled="workspace.saving.value"
             @click="show('configure', 'Target reps')"
-            >{{ repsSummary }}</Button
+            >{{ repsSummary }}</BaseButton
           >
-          <Button
+          <BaseButton
             variant="secondary"
             :disabled="workspace.saving.value"
             @click="show('configure', 'Working weight')"
-            >{{ weightSummary }}</Button
+            >{{ weightSummary }}</BaseButton
           >
         </div>
         <div class="exercise-option-group">
-        <Button
+        <BaseButton
           variant="secondary"
           :disabled="workspace.saving.value"
           @click="emit('edit', exercise.sets[0]!.id)"
-          ><List :size="18" />Edit sets</Button
+          ><List :size="18" />Edit sets</BaseButton
         >
-        <Button
+        <BaseButton
           variant="secondary"
           :disabled="workspace.saving.value"
           @click="show('note')"
           ><StickyNote :size="18" />{{
             exercise.note ? "Edit note" : "Add note"
-          }}</Button
+          }}</BaseButton
         >
         </div>
         <div class="exercise-option-group">
-        <Button
+        <BaseButton
           variant="secondary"
           :disabled="workspace.saving.value"
           @click="show('replace')"
-          ><ArrowLeftRight :size="18" />Replace exercise</Button
+          ><ArrowLeftRight :size="18" />Replace exercise</BaseButton
         >
-        <Button
+        <BaseButton
           variant="secondary"
           :disabled="workspace.saving.value"
           @click="emit('remove', exercise)"
-          ><Trash2 :size="18" />Remove exercise</Button
+          ><Trash2 :size="18" />Remove exercise</BaseButton
         >
         </div>
-        <Button
+        <BaseButton
           variant="ghost"
           :disabled="
             workspace.saving.value ||
             (workspace.active.value?.exercises.length ?? 0) >= 50
           "
           @click="emit('add')"
-          ><Plus :size="18" />Add exercises</Button
+          ><Plus :size="18" />Add exercises</BaseButton
         >
       </template>
       <template v-else-if="view === 'configure'">
-        <NumericInput
+        <BaseInputNumber
           v-model="count"
           label="Number of sets"
           title="Number of sets"
@@ -284,7 +284,7 @@ function saveReplacement() {
           />Set weight and reps for all remaining sets</label
         >
         <template v-if="replaceTargets">
-          <NumericInput
+          <BaseInputNumber
             v-model="reps"
             label="Target reps"
             title="Target reps"
@@ -292,7 +292,7 @@ function saveReplacement() {
             :max="1000"
             :disabled="workspace.saving.value"
           />
-          <NumericInput
+          <BaseInputNumber
             v-model="weight"
             label="Working weight"
             title="Working weight"
@@ -309,16 +309,16 @@ function saveReplacement() {
           different targets. Added sets copy the last set’s planned reps and
           weight. Weight includes the bar.
         </p>
-        <Button
+        <BaseButton
           :disabled="workspace.saving.value"
           @click="requestConfiguration"
-          >Save exercise settings</Button
+          >Save exercise settings</BaseButton
         >
       </template>
       <template v-else-if="view === 'note'">
         <label class="field"
           ><span>Workout note</span
-          ><Textarea
+          ><BaseTextarea
             v-model="note"
             :maxlength="2000"
             :rows="5"
@@ -327,20 +327,20 @@ function saveReplacement() {
         <p class="muted small">
           {{ note.length }} / 2000 · Saved with this workout only.
         </p>
-        <Button :disabled="workspace.saving.value" @click="saveNote"
-          >Save note</Button
+        <BaseButton :disabled="workspace.saving.value" @click="saveNote"
+          >Save note</BaseButton
         >
       </template>
       <template v-else>
         <template v-if="!remaining.length">
           <p>All sets are logged. Add another exercise to keep training.</p>
-          <Button
+          <BaseButton
             :disabled="
               workspace.saving.value ||
               (workspace.active.value?.exercises.length ?? 0) >= 50
             "
             @click="emit('add')"
-            >Add exercises</Button
+            >Add exercises</BaseButton
           >
         </template>
         <p
@@ -373,70 +373,70 @@ function saveReplacement() {
               The note is not copied to the replacement.
             </p>
           </template>
-          <Button
+          <BaseButton
             :disabled="!replacement || workspace.saving.value"
             @click="saveReplacement"
-            >Replace remaining sets</Button
+            >Replace remaining sets</BaseButton
           >
         </template>
       </template>
       <p v-if="issue" class="field-error" role="alert">{{ issue }}</p>
-      <Button
+      <BaseButton
         v-if="issue"
         variant="secondary"
         :disabled="workspace.saving.value"
         @click="reset"
-        >Reload saved values</Button
+        >Reload saved values</BaseButton
       >
-      <Button
+      <BaseButton
         v-if="view !== 'actions' && !dismiss"
         variant="ghost"
         :disabled="workspace.saving.value"
         @click="close"
-        >Cancel</Button
+        >Cancel</BaseButton
       >
     </div>
-  </Sheet>
-  <Sheet
+  </BaseSheet>
+  <BaseSheet
     :open="dismiss"
     title="Discard unsaved changes?"
     description="This deletes your unsaved note or configuration changes. Saved workout values stay unchanged."
     @close="dismiss = false"
   >
     <div class="form-actions">
-      <Button
+      <BaseButton
         variant="secondary"
         :disabled="workspace.saving.value"
         @click="dismiss = false"
       >
         Keep editing
-      </Button>
-      <Button
+      </BaseButton>
+      <BaseButton
         :disabled="workspace.saving.value"
         @click="dismiss = false; emit('close')"
       >
         Discard changes
-      </Button>
+      </BaseButton>
     </div>
-  </Sheet>
-  <Sheet
+  </BaseSheet>
+  <BaseSheet
     :open="removalOpen"
     title="Remove unfinished sets?"
     description="Reducing the set count removes unfinished sets and their target values. Logged sets stay in your workout."
     @close="removalOpen = false"
   >
     <div class="form-actions">
-      <Button variant="secondary" @click="removalOpen = false">
+      <BaseButton variant="secondary" @click="removalOpen = false">
         Cancel
-      </Button>
-      <Button
+      </BaseButton>
+      <BaseButton
         :disabled="workspace.saving.value"
         @click="saveConfiguration"
       >
         Remove sets
-      </Button>
+      </BaseButton>
     </div>
-  </Sheet>
+  </BaseSheet>
 </template>
 <style scoped>
 .exercise-option-targets {

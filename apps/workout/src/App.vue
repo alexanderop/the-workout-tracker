@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { IconButton, Button } from "@form/ui";
-import { computed, ref, useTemplateRef } from "vue";
+import { BaseButtonIcon, BaseButton } from "@form/ui";
+import { computed, ref, useTemplateRef, watch } from "vue";
 import {
   ArrowDownToLine,
   ChevronRight,
@@ -22,12 +22,15 @@ import { RouterLink, RouterView } from "vue-router";
 import { useWorkoutNavigation } from "./app/useWorkoutNavigation";
 import { provideWorkoutRouteContext } from "./app/workoutRouteContext";
 import type { Workouts, DraftJournal } from "./features/workouts";
+import { useWorkoutClock } from "./app/useWorkoutClock";
 import { usePwa } from "./usePwa";
 const { workouts, drafts } = defineProps<{
   workouts: Workouts;
   drafts: DraftJournal;
 }>();
-const workspace = useWorkoutWorkspace(workouts, drafts);
+const clock = useWorkoutClock();
+const workspace = useWorkoutWorkspace(workouts, drafts, clock.now);
+watch(() => workspace.active.value?.rest?.endsAt, clock.refresh);
 const { state, snapshot, saving, message, error, history, active } =
   workspace;
 const dialogs = useTemplateRef<InstanceType<typeof WorkoutDialogs>>("dialogs");
@@ -116,7 +119,7 @@ const title = computed(() => {
           ></RouterLink
         >
       </nav>
-      <Button
+      <BaseButton
         unstyled
         v-if="active"
         class="active-sidebar"
@@ -126,9 +129,9 @@ const title = computed(() => {
         ><span
           >Workout in progress<small>{{ active.name }}</small></span
         ><ChevronRight :size="16" />
-      </Button>
+      </BaseButton>
       <div class="sidebar-bottom">
-        <Button
+        <BaseButton
           unstyled
           v-if="!installed"
           class="sidebar-action"
@@ -137,7 +140,7 @@ const title = computed(() => {
           <ArrowDownToLine :size="17" aria-hidden="true" /><span
             >Install The Workout Tracker</span
           >
-        </Button>
+        </BaseButton>
         <div class="local-note">
           <ShieldCheck :size="17" aria-hidden="true" /><span
             >Yours. On this device.</span
@@ -183,7 +186,7 @@ const title = computed(() => {
           <ShieldCheck :size="32" />
           <h1>Your data needs attention</h1>
           <p>{{ state.message }}</p>
-          <Button
+          <BaseButton
             unstyled
             v-if="state.kind === 'recovery'"
             class="btn secondary"
@@ -191,37 +194,37 @@ const title = computed(() => {
               download(state.rawExport, 'the-workout-tracker-recovery.json')
             "
           >
-            Export recovery data</Button
-          ><Button unstyled class="btn primary" @click="reload"
-            >Try again</Button
+            Export recovery data</BaseButton
+          ><BaseButton unstyled class="btn primary" @click="reload"
+            >Try again</BaseButton
           >
         </div>
         <template v-else-if="snapshot">
           <div v-if="error" class="notice" role="alert">
             <CircleHelp :size="18" /><span>{{ error }}</span
-            ><Button unstyled class="text-button" @click="reload">Reload</Button
-            ><IconButton label="Dismiss error" @click="error = ''">
+            ><BaseButton unstyled class="text-button" @click="reload">Reload</BaseButton
+            ><BaseButtonIcon label="Dismiss error" @click="error = ''">
               <X :size="16" />
-            </IconButton>
+            </BaseButtonIcon>
           </div>
           <div v-if="needRefresh && !active" class="notice">
             <span>A new version of The Workout Tracker is ready.</span
-            ><Button
+            ><BaseButton
               unstyled
               class="text-button"
               @click="updateServiceWorker(true)"
             >
               Update app
-            </Button>
+            </BaseButton>
           </div>
           <div v-if="installMessage" class="notice" role="status">
             <span>{{ installMessage }}</span
-            ><IconButton
+            ><BaseButtonIcon
               label="Dismiss install instructions"
               @click="installMessage = ''"
             >
               <X :size="16" />
-            </IconButton>
+            </BaseButtonIcon>
           </div>
 
           <RouterView />

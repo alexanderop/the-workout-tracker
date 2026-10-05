@@ -2,7 +2,7 @@
 import { ref, useId } from "vue";
 import { logEvent } from "histoire/client";
 import {
-  Button as BaseButton,
+  BaseButton,
   BaseMuscleMap,
   type MuscleRegion,
   type MuscleHighlight,

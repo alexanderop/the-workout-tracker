@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button, NativeSelect } from "@form/ui";
+import { BaseButton, BaseSelectNative } from "@form/ui";
 import { computed, watch } from "vue";
 import { TrendingUp, ArrowRight } from "@lucide/vue";
 import type { CompletedSession } from "../domain";
@@ -97,9 +97,9 @@ const records = computed(() =>
     <TrendingUp :size="34" />
     <h2>No progress yet</h2>
     <p class="muted">Complete a workout to track your progress.</p>
-    <Button unstyled class="btn primary" @click="navigate('workouts')">
+    <BaseButton unstyled class="btn primary" @click="navigate('workouts')">
       Start training<ArrowRight :size="17" />
-    </Button>
+    </BaseButton>
   </div>
   <template v-else
     ><section class="chart-panel panel">
@@ -109,7 +109,7 @@ const records = computed(() =>
           <p class="muted small">Heaviest logged set per session · kg</p>
         </div>
         <label class="sr-only" for="progress-exercise">Exercise progress</label
-        ><NativeSelect
+        ><BaseSelectNative
           id="progress-exercise"
           v-model="progressExercise"
           class="input compact-select"
@@ -121,7 +121,7 @@ const records = computed(() =>
           >
             {{ exercise.name }}
           </option>
-        </NativeSelect>
+        </BaseSelectNative>
       </div>
       <div v-if="trend.length === 1" class="first-progress-point">
         <strong>{{ fmt(trend[0]!.weight) }} <span>kg</span></strong>

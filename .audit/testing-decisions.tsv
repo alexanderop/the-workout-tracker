@@ -1,0 +1,9 @@
+ts	phase	decision	why	evidence	result
+2026-10-05T03:57:59Z	frame	Keep existing ports and extract pure decisions	Small explicit dependencies avoid mocks without adding a DI container	apps/workout/src/features/workouts/application.ts	open
+2026-10-05T04:00:38Z	rules	Require review of recovered drafts from older revisions	Architecture contract protects against replaying stale intent even when values return to the baseline; live drafts remain distinct	docs/architecture.md	open
+2026-10-05T04:00:38Z	unit	Run first nine domain and application tests	Verify existing core contracts before new extractions	apps/workout/test/unit	VERIFIED: nine tests passed
+2026-10-05T04:05:24Z	review	Correct test journal pruning and cover real draft concurrency	Independent review found a simplified fake could conceal revision errors	apps/workout/test/browser/drafts.test.ts	VERIFIED: seven browser tests passed
+2026-10-05T04:05:24Z	infrastructure	Use dedicated E2E port 4197	Port 4182 was occupied by an unrelated process and was preserved	apps/workout/playwright.config.ts	open
+2026-10-05T04:06:23Z	verification	Run all test layers against the finished implementation	Prove rules, storage behavior and real application wiring separately	.audit/testing-test.log	VERIFIED: 21 unit, 7 browser, 3 E2E tests passed
+2026-10-05T04:06:23Z	verification	Run workspace type checking and linting	Keep verify limited to code checks while including test TypeScript	.audit/testing-verify.log	VERIFIED: pnpm verify passed
+2026-10-05T04:06:23Z	review	Resolve independent review findings and retain explicit limits	Separate verified behavior from accessibility and hosted CI gaps	.audit/testing-review.md	VERIFIED locally; hosted CI and cross-family review not run

@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import { BaseInputNumber } from "@form/ui";
+const weight = ref<string | number>(70.25);
+</script>
+<template>
+  <BaseInputNumber v-model="weight" title="Weight" label="Set 1 weight for Bench press"
+    unit="kg" :min="0" :max="1000" :decimals="2" :preset-step="2.5" />
+</template>

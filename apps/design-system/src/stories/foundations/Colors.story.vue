@@ -89,6 +89,8 @@ Never communicate errors through color alone; include a clear message.
 
 All examples read the shared CSS variables. This story does not store a separate copy of the palette.
 
+`pnpm verify` enforces raw-color restrictions and checks static CSS variable references against the shared stylesheets. Tailwind classes must use named utilities or existing variables, such as `bg-(--ui-primary)`. Arbitrary values such as `rounded-[13px]` are rejected. Dynamic token names still require review.
+
 ## Examples and limitations
 
 Use purple for focus or the primary action, not arbitrary decoration. Sources: @form/ui/tokens.css and workout-theme.css.
