@@ -150,6 +150,11 @@
   .workout-rest-panel { position: static; }
 }
 @media (max-width: 650px) {
+  .active-workout-heading > .ui-button,
+  .active-workout-content > .ui-button {
+    min-height: 44px;
+    min-width: 44px;
+  }
   .workout-rest-panel { display: none; }
   .active-workout-heading { gap: 8px; }
   .active-workout-heading h1 input { font-size: 22px; }

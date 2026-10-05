@@ -11,7 +11,8 @@
   },
   "scripts": {
     "typecheck": "vue-tsc --noEmit",
-    "lint": "oxlint src --deny-warnings"
+    "lint": "oxlint src test --deny-warnings",
+    "test:unit": "vitest run test"
   },
   "peerDependencies": {
     "vue": "^3.5.0"
@@ -27,7 +28,8 @@
     "typescript": "^6.0.3",
     "vite": "^8.3.2",
     "vue": "^3.5.43",
-    "vue-tsc": "^3.3.12"
+    "vue-tsc": "^3.3.12",
+    "vitest": "^5.0.3"
   },
   "sideEffects": [
     "**/*.css"

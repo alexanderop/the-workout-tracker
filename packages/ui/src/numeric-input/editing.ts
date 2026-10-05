@@ -49,7 +49,7 @@ export function validNumber(
   const value = Number(text);
   if (!Number.isFinite(value) || value < limits.min || value > limits.max)
     return null;
-  if (!limits.decimals && !Number.isInteger(value)) return null;
+  if (exceedsPrecision(text, limits.decimals)) return null;
   return value;
 }
 
@@ -64,4 +64,14 @@ export function numericPresets(
   return Array.from({ length: 8 }, (_, index) =>
     Number(((first + index) * limits.presetStep).toFixed(limits.decimals)),
   ).filter((preset) => preset >= limits.min && preset <= limits.max);
+}
+
+export function replaceNumber(
+  text: string,
+  limits: NumericLimits,
+): NumericDraft | null {
+  const normalized = text.trim().replace(",", ".");
+  if (normalized.length > 64 || validNumber(normalized, limits) === null)
+    return null;
+  return { text: normalized, fresh: false };
 }

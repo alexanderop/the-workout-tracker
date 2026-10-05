@@ -12,6 +12,7 @@ import {
   beginEditing,
   editNumber,
   numericPresets,
+  replaceNumber,
   validNumber,
 } from "./editing";
 
@@ -43,6 +44,7 @@ const emit = defineEmits<{
 }>();
 const open = ref(false);
 const draft = ref(beginEditing(modelValue));
+const pasteIssue = ref("");
 const display = useTemplateRef<HTMLElement>("display");
 const hintId = useId();
 const limits = computed(() => ({
@@ -59,6 +61,7 @@ watch(
   (isOpen) => {
     if (!isOpen) return;
     draft.value = beginEditing(modelValue);
+    pasteIssue.value = "";
     presets.value = numericPresets(modelValue, limits.value);
     emit("open");
   },
@@ -71,7 +74,21 @@ watch(
   },
 );
 function press(key: string) {
+  pasteIssue.value = "";
   draft.value = editNumber(draft.value, key, limits.value);
+}
+function paste(event: ClipboardEvent) {
+  event.preventDefault();
+  const next = replaceNumber(
+    event.clipboardData?.getData("text/plain") ?? "",
+    limits.value,
+  );
+  if (!next) {
+    pasteIssue.value = `Paste ${decimals ? `a number with up to ${decimals} decimal places` : "a whole number"} from ${min} to ${max}.`;
+    return;
+  }
+  draft.value = next;
+  pasteIssue.value = "";
 }
 function confirm(next = value.value) {
   if (disabled || next === null) return;
@@ -123,6 +140,7 @@ function focusDisplay(event: Event) {
       :show-close-button="false"
       @open-auto-focus="focusDisplay"
       @keydown="keyboard"
+      @paste="paste"
     >
       <header class="ui-numeric-header">
         <div>
@@ -166,13 +184,17 @@ function focusDisplay(event: Event) {
           <span>{{ draft.text || "—" }}</span
           ><small v-if="unit">{{ unit }}</small>
         </div>
-        <p :id="hintId" :class="{ 'ui-numeric-error': value === null }">
+        <p
+          :id="hintId"
+          :class="{ 'ui-numeric-error': value === null || pasteIssue !== '' }"
+        >
           {{
-            value === null
+            pasteIssue ||
+            (value === null
               ? `Enter ${decimals ? "a value" : "a whole number"} from ${min} to ${max}${unit ? ` ${unit}` : ""}.`
               : draft.fresh
                 ? "Type a new value to replace this one."
-                : "Ready when you are."
+                : "Ready when you are.")
           }}
         </p>
       </div>

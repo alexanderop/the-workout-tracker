@@ -20,7 +20,7 @@
     "lint:oxlint": "pnpm -r lint",
     "lint:vue": "eslint \"apps/*/src/**/*.{vue,ts,css}\" \"packages/*/src/**/*.{vue,ts,css}\" --max-warnings 0",
     "typecheck:native": "node node_modules/@typescript/native/bin/tsc --noEmit -p tsconfig.native.json",
-    "test:unit": "pnpm --filter @form/workout test:unit",
+    "test:unit": "pnpm --filter @form/ui test:unit && pnpm --filter @form/workout test:unit",
     "test:browser": "pnpm --filter @form/workout test:browser",
     "test:e2e": "pnpm --filter @form/workout test:e2e",
     "test": "pnpm test:unit && pnpm test:browser && pnpm test:e2e",

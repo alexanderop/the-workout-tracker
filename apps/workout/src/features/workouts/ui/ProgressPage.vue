@@ -4,19 +4,16 @@ import { computed, watch } from "vue";
 import { TrendingUp, ArrowRight } from "@lucide/vue";
 import type { CompletedSession } from "../domain";
 import { fmt, shortDate, trainingTotals } from "./presentation";
+import { successfulProgress } from "./progress";
 const { history } = defineProps<{ history: CompletedSession[] }>();
 const progressExercise = defineModel<string>("exercise", { required: true });
 const emit = defineEmits<{ navigate: [page: "workouts"] }>();
 const navigate = (page: "workouts") => emit("navigate", page);
 const totals = computed(() => trainingTotals(history));
-const trainedExercises = computed(() => {
-  const names = new Map<string, string>();
-  for (const session of history)
-    for (const ex of session.exercises)
-      if (ex.sets.some((set) => set.completed))
-        names.set(ex.exerciseId, ex.name);
-  return [...names].map(([id, name]) => ({ id, name }));
-});
+const progress = computed(() => successfulProgress(history));
+const trainedExercises = computed(() =>
+  progress.value.map(({ id, name }) => ({ id, name })),
+);
 watch(
   trainedExercises,
   (list) => {
@@ -25,24 +22,10 @@ watch(
   },
   { immediate: true },
 );
-const trend = computed(() =>
-  history
-    .slice()
-    .reverse()
-    .flatMap((session) => {
-      const sets = session.exercises
-        .filter((ex) => ex.exerciseId === progressExercise.value)
-        .flatMap((ex) => ex.sets.filter((set) => set.completed));
-      return sets.length
-        ? [
-            {
-              at: session.finishedAt,
-              weight: Math.max(...sets.map((set) => set.weightKg)),
-            },
-          ]
-        : [];
-    })
-    .slice(-12),
+const trend = computed(
+  () =>
+    progress.value.find((exercise) => exercise.id === progressExercise.value)
+      ?.trend ?? [],
 );
 const trendMax = computed(() =>
   Math.max(10, ...trend.value.map((point) => point.weight)),
@@ -58,17 +41,12 @@ const trendPoints = computed(() =>
   })),
 );
 const records = computed(() =>
-  trainedExercises.value.map((ex) => {
-    const sets = history.flatMap((session) =>
-      session.exercises
-        .filter((item) => item.exerciseId === ex.id)
-        .flatMap((item) => item.sets.filter((set) => set.completed)),
-    );
-    const best = sets
-      .slice()
-      .sort((a, b) => b.weightKg - a.weightKg || b.reps - a.reps)[0];
-    return { ...ex, weight: best?.weightKg ?? 0, reps: best?.reps ?? 0 };
-  }),
+  progress.value.map(({ id, name, best }) => ({
+    id,
+    name,
+    weight: best.weightKg,
+    reps: best.reps,
+  })),
 );
 </script>
 
@@ -101,12 +79,20 @@ const records = computed(() =>
       Start training<ArrowRight :size="17" />
     </BaseButton>
   </div>
+  <div v-else-if="!trainedExercises.length" class="empty-state panel">
+    <TrendingUp :size="34" />
+    <h2>No successful sets yet</h2>
+    <p class="muted">
+      Log a set with at least one repetition to see your weight trend and
+      personal bests.
+    </p>
+  </div>
   <template v-else
     ><section class="chart-panel panel">
       <div class="section-heading">
         <div>
           <h2>Weight over time</h2>
-          <p class="muted small">Heaviest logged set per session · kg</p>
+          <p class="muted small">Heaviest successful set per workout · kg</p>
         </div>
         <label class="sr-only" for="progress-exercise">Exercise progress</label
         ><BaseSelectNative
@@ -161,7 +147,7 @@ const records = computed(() =>
     <section>
       <div class="section-heading">
         <h2>Personal bests</h2>
-        <span class="muted small">Heaviest completed sets</span>
+        <span class="muted small">Heaviest successful sets</span>
       </div>
       <div class="records-grid">
         <article v-for="record in records" :key="record.id" class="record-card">

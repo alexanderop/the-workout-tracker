@@ -1,6 +1,6 @@
 import { sessionTotals, type CompletedSession } from "../domain";
 export const fmt = (value: number) =>
-  new Intl.NumberFormat("en", { maximumFractionDigits: 1 }).format(value);
+  new Intl.NumberFormat("en", { maximumFractionDigits: 2 }).format(value);
 export const shortDate = (at: number) =>
   new Date(at).toLocaleDateString("en", { month: "short", day: "numeric" });
 export const longDate = (at: number) =>
