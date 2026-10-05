@@ -8,6 +8,11 @@ const base = process.env.VITE_BASE_PATH ?? "/";
 
 export default defineConfig({
   base,
+  build: {
+    assetsInlineLimit(filePath) {
+      if (filePath.endsWith(".webp")) return false;
+    },
+  },
   plugins: [
     VueRouter({
       routesFolder: "src/pages",

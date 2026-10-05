@@ -86,6 +86,31 @@ Choose a test by the failure it must expose. Keep `pnpm verify` as type checking
 
 Install Chrome with `pnpm --filter @form/workout exec playwright install chrome`. CI installs it before browser execution. The E2E command generates Playwright specs, builds the app with the root base path, and serves it on port 4197. Keep that port free. Generated specs, reports, and traces are ignored by Git. Failed journeys retain traces and screenshots.
 
+### Performance and offline guardrails
+
+Run `pnpm performance:check` before delivering image, font, dependency, rendering, or PWA changes. It builds the production app, checks asset budgets, checks offline artwork in Chrome, and runs Lighthouse CI. This command remains separate from `pnpm verify` and `pnpm test`.
+
+Install Chrome using the command above. Keep port 4198 free. By default the build and checks use `/the-workout-tracker/`; set `VITE_BASE_PATH` consistently to audit a different deployment path. The command builds `apps/workout/dist`, which is also the deployment artifact. It never audits the development server or Histoire.
+
+| Command | Purpose |
+| --- | --- |
+| `pnpm performance:check` | Build and run all performance/offline checks |
+| `pnpm performance:budget` | Inspect the existing production build and imported exercise sources |
+| `pnpm performance:offline` | Start a production preview and verify offline restart plus all catalog artwork |
+| `pnpm performance:lighthouse` | Start a production preview and audit Workouts and Exercises |
+
+The last three commands require a fresh `pnpm performance:build` with the same base path. [Asset budgets](../apps/workout/performance-budgets.json) cap the complete uncompressed build at 1,750,000 bytes, gzip JavaScript (including the service worker) at 200,000 bytes, imported exercise images at 750,000 bytes combined and 20,000 bytes each, thumbnail dimensions at 192px, and image data URLs embedded in JavaScript at zero bytes. The checker rejects PNG/JPEG assets emitted into the bundled assets directory; installation icons in the public root remain permitted. These deterministic checks cover assets that lazy loading might hide from a Lighthouse page audit.
+
+[Lighthouse configuration](../lighthouserc.cjs) runs three fresh-storage mobile audits per route with simulated throttling and median assertions. Required thresholds are performance score at least 90, Largest Contentful Paint at most 2,500ms, Total Blocking Time at most 300ms, and Cumulative Layout Shift at most 0.1. The audit URLs include a route-specific query parameter because Lighthouse CI groups URLs without their hash; this keeps the two hash routes independently gated. Reports stay local in `.lighthouseci`; there is no public report upload. Lighthouse is a lab measurement, not a measurement of real users' INP or installed-device startup.
+
+The separate Chrome regression installs the service worker from Workouts, switches offline, closes the page and opens Exercises in a new page, then fetches and decodes every emitted WebP plus the rendered catalog images, including offscreen artwork. Exercises without matched illustrations may still use their intentional icon fallback. This verifies the first offline visit to the catalog rather than warming its images online first. It does not simulate browser cache eviction, an OS process restart, or iOS installation.
+
+Initial delivery baseline on 2026-10-05: the isolated performance change passed all six local Chrome Lighthouse runs and the offline artwork check. Its production build was 1,265,763 bytes, gzip JavaScript 167,847 bytes, and 46 exercise images totaled 401,144 bytes. The earlier working-tree audit included a separate, uncommitted artwork expansion with 77 images totaling 620,106 bytes; the image budget accommodates that measured expansion. These are local lab results, not a CI or real-device guarantee. Keep this baseline distinct from later changes to limits.
+
+CI runs these checks on pushes and pull requests before uploading the Pages artifact. A failed check blocks deployment. Lighthouse and offline browser diagnostics are retained as the `workout-performance-results` artifact for 14 days, including on failure. Repository branch protection is a separate setting; this workflow alone does not block Git pushes or merges.
+
+When a budget fails, inspect the report, identify the added bytes or rendering work, and reduce the regression. Change a limit only alongside a documented product reason and fresh measurements; do not automatically increase it to match the failing result. Three-run medians reduce timing noise but do not eliminate host variation. Reproduce timing failures on an idle machine before adjusting thresholds. See [Lighthouse CI assertions](https://googlechrome.github.io/lighthouse-ci/docs/configuration.html) and [Workbox precaching](https://developer.chrome.com/docs/workbox/modules/workbox-precaching) for the underlying behavior.
+
 ### Write unit tests without mocks
 
 Call real domain functions with explicit values. Pass time and IDs through parameters or the existing application dependencies. Do not use module mocks, spies, patched globals, or fake timers. Extract a pure decision when a rule is trapped inside a Vue component or composable. Leave browser interaction and lifecycle checks at the browser layer.

@@ -17,6 +17,8 @@ Use this workflow to add or replace the workout app's offline thumbnails. Follow
 6. Commit both the source PNG and generated WebP with the artwork map change. Conversion runs only when you invoke the script. Builds use the committed WebPs.
 7. Run `pnpm verify` for type checking and linting. Use the [production preview](../README.md#run) to inspect the artwork after a complete online load and an offline reload.
 
-Keep `webp` in the Workbox `globPatterns` in `apps/workout/vite.config.ts`. The service worker precaches emitted thumbnails for offline use after installation completes. Vite may inline small assets in JavaScript, which is also precached. Unimported source PNGs remain in the repository and are not bundled into the workout app.
+Keep `webp` in the Workbox `globPatterns` in `apps/workout/vite.config.ts`. The service worker precaches emitted thumbnails for offline use after installation completes. Production WebPs are always emitted as separate files, including small thumbnails, so unchanged images can be reused independently of JavaScript updates. Unimported source PNGs remain in the repository and are not bundled into the workout app.
 
 The app has no full-size image viewer or runtime image cache. Revisit image delivery before adding large illustrations or a substantially larger catalog. The design-system image gallery keeps its independent sources.
+
+Run `pnpm performance:check` after changing production artwork or its delivery. The [performance guardrails](workflows.md#performance-and-offline-guardrails) enforce size and dimension budgets, audit mobile page loading with Lighthouse, and verify that every catalog image decodes after an offline restart. Keep complete thumbnail precaching; lazy loading alone does not provide offline availability.

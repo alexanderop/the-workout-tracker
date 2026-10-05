@@ -23,7 +23,13 @@
     "test:unit": "pnpm --filter @form/workout test:unit",
     "test:browser": "pnpm --filter @form/workout test:browser",
     "test:e2e": "pnpm --filter @form/workout test:e2e",
-    "test": "pnpm test:unit && pnpm test:browser && pnpm test:e2e"
+    "test": "pnpm test:unit && pnpm test:browser && pnpm test:e2e",
+    "performance:build": "node scripts/performance-vite.mjs build",
+    "performance:serve": "node scripts/performance-vite.mjs serve",
+    "performance:budget": "pnpm --filter @form/workout exec node scripts/check-performance-budgets.mjs",
+    "performance:offline": "pnpm --filter @form/workout exec playwright test --config playwright.performance.config.ts",
+    "performance:lighthouse": "lhci autorun",
+    "performance:check": "pnpm performance:build && pnpm performance:budget && pnpm performance:offline && pnpm performance:lighthouse"
   },
   "devDependencies": {
     "@eslint/css": "^2.0.0",
@@ -39,6 +45,7 @@
     "prettier": "^3.9.9",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.71.0",
-    "vue-eslint-parser": "^10.4.1"
+    "vue-eslint-parser": "^10.4.1",
+    "@lhci/cli": "0.15.1"
   }
 }

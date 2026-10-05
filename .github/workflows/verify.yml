@@ -4,6 +4,7 @@ permissions:
   contents: read
 jobs:
   verify:
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     env:
       VITE_BASE_PATH: /${{ github.event.repository.name }}/
@@ -28,8 +29,19 @@ jobs:
             apps/workout/test-results
             apps/workout/playwright-report
           if-no-files-found: ignore
-      - run: pnpm --filter @form/workout build
-        if: github.event_name != 'pull_request' && github.ref_name == (vars.PAGES_BRANCH || 'main')
+      - name: Lighthouse, asset budgets, and offline artwork
+        run: pnpm performance:check
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: workout-performance-results
+          path: |
+            .lighthouseci
+            apps/workout/playwright-report/performance
+            apps/workout/test-results
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 14
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request' && github.ref_name == (vars.PAGES_BRANCH || 'main')
         with:

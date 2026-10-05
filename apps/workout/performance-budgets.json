@@ -1,0 +1,8 @@
+{
+  "buildBytes": 1750000,
+  "javascriptGzipBytes": 200000,
+  "exerciseImageBytes": 750000,
+  "singleExerciseImageBytes": 20000,
+  "exerciseImageDimension": 192,
+  "inlineImageBytes": 0
+}
