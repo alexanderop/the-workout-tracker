@@ -18,11 +18,11 @@ const parts = (timestamp: number) => {
 };
 
 describe("workout calendar", () => {
-  it("ends a fourteen-day window on the local day across New Year", () => {
+  it("ends a seven-day window on the local day across New Year", () => {
     const days = rollingDays(localDay(at(2027, 1, 5, 23)));
-    expect(days).toHaveLength(14);
-    expect(parts(days[0] ?? 0)).toEqual([2026, 12, 23]);
-    expect(parts(days[13] ?? 0)).toEqual([2027, 1, 5]);
+    expect(days).toHaveLength(7);
+    expect(parts(days[0] ?? 0)).toEqual([2026, 12, 30]);
+    expect(parts(days[6] ?? 0)).toEqual([2027, 1, 5]);
     expect(parts(localDay(at(2027, 1, 6)))).toEqual([2027, 1, 6]);
   });
   it("uses civil dates through both daylight-saving transitions", () => {

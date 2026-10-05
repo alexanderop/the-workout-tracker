@@ -38,7 +38,7 @@ Configuration and replacement require the exercise's numeric drafts to be saved 
 
 A **completed workout** (`CompletedSession`) is a finished session in history. Repeating it creates a new active workout with fresh identities, copied weights, planned repetition targets, and unchecked sets. Saving it as a template creates a separate editable plan. Neither operation mutates the historical record.
 
-The dashboard training rhythm groups completed workouts by the local calendar date of `finishedAt`. It counts workouts, so two sessions on one date contribute two to the fourteen-day total and one occupied date. The window includes today and the preceding thirteen civil dates. Timestamps later than the injected current time are excluded until that time arrives, including later timestamps on today’s date. The active workout does not contribute. Calendar selection is temporary view state and does not filter or change the journal.
+The dashboard training rhythm groups completed workouts by the local calendar date of `finishedAt`. Two sessions on one date occupy one marked date, and both appear when that date is selected. The Home strip includes today and the preceding six civil dates. Timestamps later than the injected current time are excluded until that time arrives, including later timestamps on today’s date. The active workout does not contribute. Calendar selection is temporary view state and does not filter or change the journal.
 
 ## Set, logged set, and volume
 

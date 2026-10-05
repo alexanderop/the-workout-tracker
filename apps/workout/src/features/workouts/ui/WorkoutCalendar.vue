@@ -17,6 +17,7 @@ const { sessions, now } = defineProps<{
   sessions: readonly CompletedSession[];
   now: number;
 }>();
+defineSlots<{ default?: () => unknown }>();
 const emit = defineEmits<{ detail: [id: string] }>();
 const today = computed(() => localDay(now));
 const sorted = computed(() =>
@@ -27,9 +28,6 @@ const index = computed(() =>
   indexCompletedSessions(sorted.value.slice(0, eligibleCount.value)),
 );
 const days = computed(() => rollingDays(today.value));
-const count = computed(() =>
-  days.value.reduce((sum, day) => sum + (index.value.get(day)?.length ?? 0), 0),
-);
 const selected = ref(today.value);
 const month = ref(monthStart(today.value));
 const open = ref(false);
@@ -46,17 +44,11 @@ const dateLabel = (day: number) =>
     month: "long",
     year: "numeric",
   });
-const shortLabel = (day: number) =>
-  new Date(day).toLocaleDateString("en", { day: "numeric", month: "short" });
 const monthLabel = computed(() =>
   new Date(month.value).toLocaleDateString("en", {
     month: "long",
     year: "numeric",
   }),
-);
-const rangeLabel = computed(
-  () =>
-    `${shortLabel(days.value[0] ?? today.value)} – ${shortLabel(today.value)}`,
 );
 function label(day: number) {
   const amount = index.value.get(day)?.length ?? 0;
@@ -114,12 +106,7 @@ function afterClose(event: Event) {
 <template>
   <section class="training-rhythm" aria-label="Training rhythm">
     <header ref="calendarHeading" class="rhythm-heading">
-      <div>
-        <p class="rhythm-kicker">PAST 14 DAYS</p>
-        <h2>
-          {{ count }} <span>{{ count === 1 ? "workout" : "workouts" }}</span>
-        </h2>
-      </div>
+      <slot><h2>Training rhythm</h2></slot>
       <BaseButtonIcon
         class="calendar-action"
         label="Open training calendar"
@@ -128,7 +115,7 @@ function afterClose(event: Event) {
       /></BaseButtonIcon>
     </header>
     <div class="calendar-scroll">
-      <div class="rhythm-days" role="group" aria-label="Past 14 days">
+      <div class="rhythm-days" role="group" aria-label="Past 7 days">
         <button
           v-for="day in days"
           :key="day"
@@ -138,15 +125,14 @@ function afterClose(event: Event) {
           :class="{ today: day === today, completed: index.has(day) }"
           @click="openDay(day)"
         >
-          <span>{{ new Date(day).getDate() }}</span
+          <small>{{
+            new Date(day).toLocaleDateString("en", { weekday: "short" })
+          }}</small
+          ><span>{{ new Date(day).getDate() }}</span
           ><i aria-hidden="true" />
         </button>
       </div>
     </div>
-    <footer class="rhythm-caption">
-      <span>{{ rangeLabel }}</span
-      ><span><i aria-hidden="true" />Completed workout</span>
-    </footer>
   </section>
   <BaseSheet
     :open="open"
@@ -232,7 +218,7 @@ function afterClose(event: Event) {
 
 <style scoped>
 .training-rhythm {
-  padding: 8px 0 25px;
+  padding: 0 0 16px;
   border-bottom: 1px solid var(--surface);
 }
 .rhythm-heading {
@@ -240,25 +226,17 @@ function afterClose(event: Event) {
   align-items: center;
   justify-content: space-between;
 }
-.rhythm-kicker {
-  margin: 0;
-  font-size: 10px;
-  letter-spacing: 1.7px;
-  color: var(--muted);
+.rhythm-heading {
+  margin-bottom: 16px;
 }
 .rhythm-heading h2 {
-  margin: 9px 0 18px;
-  font-size: 44px;
-  line-height: 1;
-  font-weight: 500;
-  letter-spacing: -2px;
+  font-size: 20px;
 }
-.rhythm-heading h2 span {
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 400;
-  letter-spacing: 0;
-  margin-left: 5px;
+.rhythm-days button {
+  min-height: 64px;
+}
+.rhythm-days small {
+  font-size: 10px;
 }
 .calendar-action {
   display: grid;
@@ -316,25 +294,6 @@ button.today {
 button[aria-pressed="true"] {
   background: var(--surface);
   color: var(--text);
-}
-.rhythm-caption {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 13px;
-  font-size: 10px;
-  color: var(--muted);
-}
-.rhythm-caption > span {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.rhythm-caption i {
-  width: 6px;
-  height: 6px;
-  background: var(--purple);
-  border-radius: 50%;
 }
 .calendar-month-heading {
   display: flex;

@@ -8,7 +8,7 @@ definePage({
   path: "/workouts",
   params: {
     query: {
-      view: { parser: "workout-view", format: "value", default: "history" },
+      view: { parser: "workout-view", format: "value", default: "home" },
     },
   },
 });
@@ -26,12 +26,10 @@ const { snapshot, routines, history, active, saving, now } = workspace;
     :routines="routines"
     :history="history"
     :active="active"
-    :exercises="snapshot.exercises"
     :saving="saving"
     :now="now"
     @update:view="selectWorkoutView"
     @start="dialogs?.startWorkout($event)"
-    @edit="dialogs?.editRoutine($event)"
     @detail="dialogs?.showDetail($event)"
     @navigate="navigate"
   />

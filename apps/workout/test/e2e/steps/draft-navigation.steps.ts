@@ -37,7 +37,8 @@ When("I discard my template changes", async ({ page }) => {
   await page.getByRole("dialog", { name: "Discard template changes?", exact: true }).getByRole("button", { name: "Discard changes", exact: true }).click();
 });
 Then("the template editor is closed", async ({ page }) => {
-  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(templateEditor(page)).toHaveCount(0);
+  await expect(page.getByRole("dialog", { name: "Templates", exact: true })).toBeVisible();
 });
 
 async function seedActive(page: Page, completed: boolean) {

@@ -6,7 +6,16 @@ export const router = experimental_createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
   resolver,
   scrollBehavior(to, from, savedPosition) {
-    if (to.path === from.path) return false;
+    if (
+      to.path === from.path &&
+      !(
+        to.name === "workouts" &&
+        from.name === "workouts" &&
+        to.params.view !== from.params.view &&
+        (to.params.view === "history" || from.params.view === "history")
+      )
+    )
+      return false;
     return savedPosition ?? { top: 0 };
   },
 });

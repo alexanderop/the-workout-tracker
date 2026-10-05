@@ -2569,3 +2569,22 @@ textarea::placeholder {
     animation: none;
   }
 }
+
+.compact-home .main-footer {
+  margin-top: 12px;
+}
+.compact-home .save-status:empty {
+  display: none;
+}
+@media (max-width: 760px) {
+  .compact-home .main-footer nav {
+    display: none;
+  }
+  .main.compact-home {
+    padding-top: max(20px, env(safe-area-inset-top));
+    padding-bottom: calc(68px + env(safe-area-inset-bottom));
+  }
+  .compact-home .main-footer .save-status {
+    margin-top: 0;
+  }
+}

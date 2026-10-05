@@ -1,7 +1,14 @@
 <script setup lang="ts">
-import { computed, ref, useTemplateRef } from "vue";
+import { computed, nextTick, ref, useTemplateRef, watch } from "vue";
 import { BaseSheet, BaseButton, BaseInput, BaseSelectNative } from "@form/ui";
-import { Plus, Check, Repeat2, BookmarkPlus } from "@lucide/vue";
+import {
+  Plus,
+  Check,
+  Repeat2,
+  BookmarkPlus,
+  Dumbbell,
+  ArrowRight,
+} from "@lucide/vue";
 import ExerciseCatalog from "./ExerciseCatalog.vue";
 import RoutineEditor from "./RoutineEditor.vue";
 import type { CompletedSession, Routine } from "../domain";
@@ -10,7 +17,8 @@ import { sessionTotals, routineFromSession } from "../domain";
 import type { WorkoutWorkspace, WorkoutPage } from "./useWorkoutWorkspace";
 import type { Confirmation } from "./dialogTypes";
 import { fmt, longDate, sessionMinutes } from "./presentation";
-const { workspace } = defineProps<{
+const { workspace, templatesOpen = false } = defineProps<{
+  templatesOpen?: boolean;
   workspace: Pick<
     WorkoutWorkspace,
     | "snapshot"
@@ -41,6 +49,8 @@ const {
 const emit = defineEmits<{
   navigate: [page: WorkoutPage];
   "template-saved": [];
+  "close-templates": [];
+  "template-closed": [event: Event];
 }>();
 const navigate = (page: WorkoutPage) => emit("navigate", page);
 const optionSetId = ref<string | null>(null);
@@ -78,7 +88,47 @@ const detail = computed(() =>
     : undefined,
 );
 const routineOpen = ref(false);
-const routineEditor = useTemplateRef<InstanceType<typeof RoutineEditor>>("routineEditor");
+const templateContent = useTemplateRef<HTMLElement>("templateContent");
+const routines = computed(() => Object.values(snapshot.value?.routines ?? {}));
+const exercises = computed(() => snapshot.value?.exercises ?? {});
+let templateFocus: string | null = null;
+async function focusTemplateContent() {
+  await nextTick();
+  const content = templateContent.value;
+  if (routineOpen.value) {
+    content
+      ?.querySelector<HTMLInputElement>('input[name="routine-name"]')
+      ?.focus();
+    return;
+  }
+  const buttons = Array.from(
+    content?.querySelectorAll<HTMLButtonElement>("button") ?? [],
+  );
+  (
+    buttons.find((button) => button.dataset.templateId === templateFocus) ??
+    buttons[0]
+  )?.focus();
+}
+function cancelRoutine() {
+  routineOpen.value = false;
+  if (templatesOpen) void focusTemplateContent();
+}
+function closeTemplates() {
+  if (routineOpen.value) {
+    routineEditor.value?.requestClose();
+    return;
+  }
+  emit("close-templates");
+}
+watch(
+  () => templatesOpen,
+  (open, wasOpen) => {
+    if (!open && wasOpen && routineOpen.value)
+      routineEditor.value?.requestClose();
+  },
+);
+const routineEditor =
+  useTemplateRef<InstanceType<typeof RoutineEditor>>("routineEditor");
 const editingRoutine = ref<Routine | null>(null);
 const templateSource = ref<CompletedSession | null>(null);
 let routineRevision = 0;
@@ -130,14 +180,21 @@ function editRoutine(routine: Routine | null) {
   editingRoutine.value = routine;
   routineRevision = snapshot.value?.revision ?? 0;
   routineOpen.value = true;
+  templateFocus = routine?.id ?? null;
+  void focusTemplateContent();
 }
 async function saveRoutine(routine: RoutineValues) {
   const existing = templateSource.value ? null : editingRoutine.value;
   const command = existing
-    ? { type: "save-routine" as const, routine: { ...routine, id: existing.id } }
+    ? {
+        type: "save-routine" as const,
+        routine: { ...routine, id: existing.id },
+      }
     : { type: "create-routine" as const, routine };
   if (await run(command, routineRevision)) {
     routineOpen.value = false;
+    templateFocus = existing?.id ?? null;
+    void focusTemplateContent();
     message.value = "Template saved";
     emit("template-saved");
   }
@@ -184,7 +241,9 @@ async function createExercise() {
   if (saved) {
     customName.value = "";
     createOpen.value = false;
-    const created = Object.values(saved.exercises).find((exercise) => !previousIds.has(exercise.id));
+    const created = Object.values(saved.exercises).find(
+      (exercise) => !previousIds.has(exercise.id),
+    );
     if (pickerOpen.value && created)
       selectedExercises.value = [...selectedExercises.value, created.id];
   }
@@ -276,24 +335,103 @@ defineExpose({
     </template>
   </BaseSheet>
   <BaseSheet
-    :open="routineOpen"
+    :open="routineOpen || templatesOpen"
     :title="
-      editingRoutine && !templateSource ? 'Edit template' : 'Create template'
+      routineOpen
+        ? editingRoutine && !templateSource
+          ? 'Edit template'
+          : 'Create template'
+        : 'Templates'
     "
     description="Set up the exercises you want to come back to."
     wide
-    @close="routineEditor?.requestClose()"
-    ><RoutineEditor
-      v-if="routineOpen"
-      ref="routineEditor"
-      :key="editingRoutine?.id ?? 'new'"
-      :routine="editingRoutine"
-      :source="templateSource"
-      :exercises="catalog"
-      :busy="saving"
-      @save="saveRoutine"
-      @cancel="routineOpen = false"
-    />
+    @close="closeTemplates"
+    @close-auto-focus="emit('template-closed', $event)"
+    ><div ref="templateContent">
+      <RoutineEditor
+        v-if="routineOpen"
+        ref="routineEditor"
+        :key="editingRoutine?.id ?? 'new'"
+        :routine="editingRoutine"
+        :source="templateSource"
+        :exercises="catalog"
+        :busy="saving"
+        @save="saveRoutine"
+        @cancel="cancelRoutine"
+      />
+      <template v-if="!routineOpen">
+        <BaseButton
+          v-if="routines.length"
+          unstyled
+          class="btn secondary"
+          @click="editRoutine(null)"
+          ><Plus :size="17" />New template</BaseButton
+        >
+        <div v-if="!routines.length" class="overview-empty">
+          <BookmarkPlus :size="26" />
+          <h2>Your shortcuts to the next session</h2>
+          <p class="muted">
+            Save a past workout as a template, or create one with your favorite
+            exercises.
+          </p>
+          <BaseButton unstyled class="btn secondary" @click="editRoutine(null)">
+            <Plus :size="17" />Create template
+          </BaseButton>
+        </div>
+        <div v-else class="routine-grid">
+          <article
+            v-for="routine in routines"
+            :key="routine.id"
+            class="routine-card panel"
+          >
+            <header>
+              <span class="routine-symbol"><Dumbbell :size="20" /></span
+              ><BaseButton
+                unstyled
+                class="text-button"
+                :aria-label="`Edit ${routine.name}`"
+                :data-template-id="routine.id"
+                @click="editRoutine(routine)"
+              >
+                Edit
+              </BaseButton>
+            </header>
+            <h2>{{ routine.name }}</h2>
+            <p class="muted small routine-description">
+              {{ routine.description || "A plan for your next session." }}
+            </p>
+            <ul class="exercise-preview">
+              <li
+                v-for="(entry, index) in routine.exercises.slice(0, 4)"
+                :key="index"
+              >
+                <span>{{ exercises[entry.exerciseId]?.name }}</span
+                ><span class="muted"
+                  >{{ entry.sets.length }}
+                  {{ entry.sets.length === 1 ? "set" : "sets" }}</span
+                >
+              </li>
+              <li v-if="routine.exercises.length > 4" class="muted">
+                + {{ routine.exercises.length - 4 }} more
+              </li>
+            </ul>
+            <footer>
+              <span class="muted small"
+                >{{ routine.exercises.length }} exercises</span
+              ><BaseButton
+                unstyled
+                class="btn secondary"
+                :disabled="saving || !!active"
+                :aria-label="`Start ${routine.name}`"
+                @click="startWorkout(routine.id)"
+              >
+                Start<ArrowRight :size="16" />
+              </BaseButton>
+            </footer>
+          </article>
+        </div>
+      </template>
+    </div>
     <p v-if="error" class="field-error" role="alert">{{ error }}</p></BaseSheet
   >
   <BaseSheet
@@ -428,7 +566,12 @@ defineExpose({
       >
         Save input values
       </BaseButton>
-      <BaseButton unstyled class="text-button" :disabled="saving" @click="reviewSets">
+      <BaseButton
+        unstyled
+        class="text-button"
+        :disabled="saving"
+        @click="reviewSets"
+      >
         Review my sets
       </BaseButton>
       <p
@@ -463,7 +606,7 @@ defineExpose({
     :title="confirmation?.title ?? 'Confirm'"
     :description="confirmation?.description"
     @close="!saving && (confirmation = null)"
-    >
+  >
     <p v-if="error" class="field-error" role="alert">{{ error }}</p>
     <div class="form-actions">
       <BaseButton

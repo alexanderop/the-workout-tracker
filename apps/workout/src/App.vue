@@ -41,11 +41,19 @@ watch(() => workspace.active.value?.rest?.endsAt, clock.refresh);
 const { state, snapshot, saving, message, error, history, active } = workspace;
 const dialogs = useTemplateRef<InstanceType<typeof WorkoutDialogs>>("dialogs");
 const main = useTemplateRef<HTMLElement>("main");
+function focusTemplates(event: Event) {
+  const trigger =
+    main.value?.querySelector<HTMLButtonElement>("#workout-templates");
+  if (!trigger) return;
+  event.preventDefault();
+  trigger.focus({ preventScroll: true });
+}
 function focusMain() {
   main.value?.focus({ preventScroll: true });
 }
 const {
   page,
+  workoutView,
   destination,
   navigate,
   selectWorkoutView,
@@ -192,7 +200,10 @@ const title = computed(() => {
         id="main"
         ref="main"
         class="main"
-        :class="{ 'journal-ready': snapshot }"
+        :class="{
+          'journal-ready': snapshot,
+          'compact-home': page === 'workouts' && workoutView !== 'history',
+        }"
         tabindex="-1"
       >
         <BaseLoading v-if="state.kind === 'loading'" />
@@ -294,7 +305,10 @@ const title = computed(() => {
   <WorkoutDialogs
     ref="dialogs"
     :workspace="workspace"
+    :templates-open="page === 'workouts' && workoutView === 'templates'"
+    @close-templates="selectWorkoutView('home', 'replace')"
+    @template-closed="focusTemplates"
     @navigate="navigate"
-    @template-saved="selectWorkoutView('templates')"
+    @template-saved="selectWorkoutView('templates', 'replace')"
   />
 </template>

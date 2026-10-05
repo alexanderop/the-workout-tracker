@@ -1,4 +1,4 @@
-import { computed, nextTick, onScopeDispose, ref, watch } from "vue";
+import { computed, nextTick, onScopeDispose } from "vue";
 import type { Ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import type { WorkoutPage } from "../features/workouts/ui";
@@ -10,7 +10,6 @@ export function useWorkoutNavigation(
 ) {
   const route = useRoute();
   const router = useRouter();
-  const rememberedView = ref<"history" | "templates">("history");
   const page = computed(() => route.name);
   let focusedLink: EventTarget | null = null;
 
@@ -31,19 +30,22 @@ export function useWorkoutNavigation(
     router.afterEach((to, from, failure) => {
       const link = focusedLink;
       focusedLink = null;
-      if (failure || to.path === from.path || !link) return;
+      if (failure) return;
+      if (
+        to.name === "workouts" &&
+        from.name === "workouts" &&
+        to.params.view !== "templates" &&
+        to.params.view !== from.params.view &&
+        (to.params.view === "history" || from.params.view === "history")
+      ) {
+        nextTick(focusMain).catch(reportNavigationError);
+        return;
+      }
+      if (to.path === from.path || !link) return;
       nextTick(() => {
         if (document.activeElement === link) focusMain();
       }).catch(reportNavigationError);
     }),
-  );
-
-  watch(
-    () => (route.name === "workouts" ? route.params.view : undefined),
-    (view) => {
-      if (view) rememberedView.value = view;
-    },
-    { immediate: true, flush: "sync" },
   );
 
   function reportNavigationError() {
@@ -55,7 +57,7 @@ export function useWorkoutNavigation(
     if (next === "today" || next === "history" || next === "workouts") {
       return {
         name: "workouts",
-        params: { view: rememberedView.value },
+        params: { view: "home" },
       } as const;
     }
     return { name: next };
@@ -71,16 +73,21 @@ export function useWorkoutNavigation(
     router.push(destination(next)).catch(reportNavigationError);
   }
 
-  function selectWorkoutView(view: "history" | "templates") {
-    rememberedView.value = view;
+  function selectWorkoutView(
+    view: "home" | "history" | "templates",
+    mode: "push" | "replace" = "push",
+  ) {
     if (route.name !== "workouts") return;
-    router
-      .replace({ name: "workouts", params: { view } })
-      .catch(reportNavigationError);
+    router[mode]({ name: "workouts", params: { view } }).catch(
+      reportNavigationError,
+    );
   }
 
   return {
     page,
+    workoutView: computed(() =>
+      route.name === "workouts" ? route.params.view : undefined,
+    ),
     destination,
     navigate,
     selectWorkoutView,

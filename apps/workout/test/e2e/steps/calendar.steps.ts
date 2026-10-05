@@ -29,13 +29,13 @@ Given(
       }),
     );
     await expect(
-      page.getByRole("region", { name: "Training rhythm" }),
-    ).toContainText("2 workouts");
+      page.getByRole("group", { name: "Past 7 days" }).getByRole("button"),
+    ).toHaveCount(7);
   },
 );
 When("I select today in my training rhythm", async ({ page }) => {
   await page
-    .getByRole("group", { name: "Past 14 days" })
+    .getByRole("group", { name: "Past 7 days" })
     .getByRole("button", {
       name: "Monday, October 5, 2026, 2 completed workouts",
     })

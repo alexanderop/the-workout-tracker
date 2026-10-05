@@ -21,7 +21,7 @@ export function monthStart(day: number, offset = 0): number {
 }
 
 export function rollingDays(today: number): readonly number[] {
-  return Array.from({ length: 14 }, (_, index) => shiftDay(today, index - 13));
+  return Array.from({ length: 7 }, (_, index) => shiftDay(today, index - 6));
 }
 
 export function monthDays(month: number): readonly (number | null)[] {

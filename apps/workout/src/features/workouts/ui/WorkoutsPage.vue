@@ -3,9 +3,9 @@ import { BaseButton, BaseInput } from "@form/ui";
 import { computed, ref } from "vue";
 import {
   Plus,
-  Dumbbell,
+  ArrowLeft,
   ArrowRight,
-  BookmarkPlus,
+  Bookmark,
   ChevronRight,
   Search,
 } from "@lucide/vue";
@@ -21,27 +21,25 @@ const {
   routines,
   history: allHistory,
   active,
-  exercises,
   saving,
   now,
 } = defineProps<{
   routines: Routine[];
   history: CompletedSession[];
   active: Snapshot["active"];
-  exercises: Snapshot["exercises"];
   saving: boolean;
   now: number;
 }>();
 const emit = defineEmits<{
   start: [id: string | null];
-  edit: [routine: Routine | null];
   navigate: [page: "session"];
   detail: [id: string];
 }>();
-const tab = defineModel<"history" | "templates">("view", {
-  default: "history",
+const tab = defineModel<"home" | "history" | "templates">("view", {
+  default: "home",
 });
 const search = ref("");
+const latest = computed(() => allHistory[0]);
 const isFreshJournal = computed(
   () => !active && !routines.length && !allHistory.length,
 );
@@ -53,81 +51,90 @@ const history = computed(() =>
 </script>
 <template>
   <div class="workouts-dashboard">
-    <header class="dashboard-heading"><h1>Workouts</h1></header>
-    <WorkoutCalendar
-      :sessions="allHistory"
-      :now="now"
-      @detail="emit('detail', $event)"
-    />
-    <section v-if="active" class="active-workout-card">
-      <div>
+    <template v-if="tab !== 'history'">
+      <WorkoutCalendar
+        :sessions="allHistory"
+        :now="now"
+        @detail="emit('detail', $event)"
+      >
+        <h1>Workouts</h1>
+      </WorkoutCalendar>
+      <section v-if="active" class="active-workout-card">
         <span class="active-label"><i aria-hidden="true" />IN PROGRESS</span>
         <h2>{{ active.name }}</h2>
         <p>
           {{ active.exercises.length }} exercises ·
           {{ sessionTotals(active).completedSets }} sets logged
         </p>
-      </div>
-      <BaseButton
-        unstyled
-        class="btn primary"
-        @click="emit('navigate', 'session')"
-        >Continue workout<ArrowRight :size="18"
-      /></BaseButton>
-    </section>
-    <BaseButton
-      v-else-if="!isFreshJournal"
-      unstyled
-      class="btn primary dashboard-start"
-      :disabled="saving"
-      @click="emit('start', null)"
-      ><Plus :size="18" />Start workout</BaseButton
-    >
-    <section v-if="isFreshJournal" class="workout-welcome panel">
-      <span class="welcome-mark" aria-hidden="true"
-        ><Dumbbell :size="26"
-      /></span>
-      <h2>Your first workout starts here.</h2>
-      <p class="muted">Choose an exercise and log your first set.</p>
-      <BaseButton
-        unstyled
-        class="btn primary"
-        :disabled="saving"
-        @click="emit('start', null)"
-      >
-        <Plus :size="18" aria-hidden="true" /><span
-          >Start your first workout</span
-        >
-      </BaseButton>
-    </section>
-    <div class="overview-toolbar">
-      <div class="overview-tabs" aria-label="Workout views">
         <BaseButton
           unstyled
-          :aria-pressed="tab === 'history'"
-          :class="{ selected: tab === 'history' }"
-          @click="tab = 'history'"
-        >
-          History <span>{{ allHistory.length }}</span></BaseButton
-        ><BaseButton
+          class="btn primary"
+          @click="emit('navigate', 'session')"
+          >Continue workout<ArrowRight :size="18"
+        /></BaseButton>
+      </section>
+      <section v-else class="home-start">
+        <p v-if="isFreshJournal" class="muted">
+          Choose an exercise and log your first set.
+        </p>
+        <BaseButton
           unstyled
-          :aria-pressed="tab === 'templates'"
-          :class="{ selected: tab === 'templates' }"
-          @click="tab = 'templates'"
+          class="btn primary dashboard-start"
+          :disabled="saving"
+          @click="emit('start', null)"
+          ><Plus :size="18" />{{
+            isFreshJournal ? "Start your first workout" : "Start workout"
+          }}</BaseButton
         >
-          Templates <span>{{ routines.length }}</span>
-        </BaseButton>
-      </div>
+      </section>
+      <section class="latest-workout" aria-label="Latest workout">
+        <div class="latest-heading">
+          <h2>Latest workout</h2>
+          <BaseButton unstyled class="text-button" @click="tab = 'history'"
+            >View history<ChevronRight :size="16"
+          /></BaseButton>
+        </div>
+        <article v-if="latest" class="workout-history-card">
+          <BaseButton
+            unstyled
+            class="history-card-title"
+            @click="emit('detail', latest.id)"
+            ><span
+              ><small class="muted">{{ shortDate(latest.finishedAt) }}</small
+              ><strong>{{ latest.name }}</strong></span
+            ><ChevronRight :size="18"
+          /></BaseButton>
+          <div class="history-metrics">
+            <span>{{ sessionMinutes(latest) }} <small>min</small></span
+            ><span
+              >{{ sessionTotals(latest).completedSets }}
+              <small>sets</small></span
+            ><span
+              >{{ fmt(sessionTotals(latest).volumeKg) }} <small>kg</small></span
+            >
+          </div>
+        </article>
+        <p v-else class="muted home-empty">
+          Your completed workouts will appear here.
+        </p>
+      </section>
       <BaseButton
         unstyled
-        v-if="tab === 'templates'"
-        class="text-button"
-        @click="emit('edit', null)"
-      >
-        <Plus :size="16" />New template
-      </BaseButton>
-    </div>
+        id="workout-templates"
+        class="btn secondary templates-link"
+        @click="tab = 'templates'"
+        ><Bookmark :size="18" />Templates <span>{{ routines.length }}</span
+        ><ChevronRight :size="16"
+      /></BaseButton>
+    </template>
     <template v-if="tab === 'history'">
+      <BaseButton
+        unstyled
+        class="text-button history-back"
+        @click="tab = 'home'"
+        ><ArrowLeft :size="18" />Back to workouts</BaseButton
+      >
+      <header class="dashboard-heading"><h1>History</h1></header>
       <div v-if="allHistory.length" class="search-field history-search">
         <Search :size="17" /><BaseInput
           v-model="search"
@@ -175,70 +182,6 @@ const history = computed(() =>
         </p>
       </div>
     </template>
-    <template v-else>
-      <div v-if="!routines.length" class="overview-empty">
-        <BookmarkPlus :size="26" />
-        <h2>Your shortcuts to the next session</h2>
-        <p class="muted">
-          Save a past workout as a template, or create one with your favorite
-          exercises.
-        </p>
-        <BaseButton unstyled class="btn secondary" @click="emit('edit', null)">
-          <Plus :size="17" />Create template
-        </BaseButton>
-      </div>
-      <div v-else class="routine-grid">
-        <article
-          v-for="routine in routines"
-          :key="routine.id"
-          class="routine-card panel"
-        >
-          <header>
-            <span class="routine-symbol"><Dumbbell :size="20" /></span
-            ><BaseButton
-              unstyled
-              class="text-button"
-              :aria-label="`Edit ${routine.name}`"
-              @click="emit('edit', routine)"
-            >
-              Edit
-            </BaseButton>
-          </header>
-          <h2>{{ routine.name }}</h2>
-          <p class="muted small routine-description">
-            {{ routine.description || "A plan for your next session." }}
-          </p>
-          <ul class="exercise-preview">
-            <li
-              v-for="(entry, index) in routine.exercises.slice(0, 4)"
-              :key="index"
-            >
-              <span>{{ exercises[entry.exerciseId]?.name }}</span
-              ><span class="muted"
-                >{{ entry.sets.length }}
-                {{ entry.sets.length === 1 ? "set" : "sets" }}</span
-              >
-            </li>
-            <li v-if="routine.exercises.length > 4" class="muted">
-              + {{ routine.exercises.length - 4 }} more
-            </li>
-          </ul>
-          <footer>
-            <span class="muted small"
-              >{{ routine.exercises.length }} exercises</span
-            ><BaseButton
-              unstyled
-              class="btn secondary"
-              :disabled="saving || !!active"
-              :aria-label="`Start ${routine.name}`"
-              @click="emit('start', routine.id)"
-            >
-              Start<ArrowRight :size="16" />
-            </BaseButton>
-          </footer>
-        </article>
-      </div>
-    </template>
   </div>
 </template>
 
@@ -248,18 +191,18 @@ const history = computed(() =>
   margin-inline: auto;
   min-width: 0;
 }
-.dashboard-heading {
-  margin-bottom: 24px;
-}
-.dashboard-heading h1 {
+h1 {
   margin: 0;
   font-size: 27px;
   font-weight: 550;
   letter-spacing: -1px;
 }
+.dashboard-heading {
+  margin: 16px 0 24px;
+}
 .active-workout-card {
-  margin: 24px 0;
-  padding: 20px;
+  margin: 20px 0;
+  padding: 16px;
   border: 1px solid var(--surface);
   border-radius: 12px;
 }
@@ -278,10 +221,9 @@ const history = computed(() =>
   background: var(--purple);
 }
 .active-workout-card h2 {
-  margin: 12px 0 7px;
-  font-size: 22px;
+  margin: 10px 0 6px;
+  font-size: 20px;
   font-weight: 500;
-  letter-spacing: -0.5px;
   overflow-wrap: anywhere;
 }
 .active-workout-card p {
@@ -291,63 +233,54 @@ const history = computed(() =>
 }
 .active-workout-card .btn {
   width: 100%;
-  margin-top: 20px;
-  min-height: 46px;
+  margin-top: 14px;
+  min-height: 44px;
   justify-content: space-between;
+}
+.home-start {
+  margin: 20px 0;
+}
+.home-start p {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.5;
 }
 .dashboard-start {
   width: 100%;
-  margin: 24px 0;
   min-height: 48px;
 }
-.overview-toolbar {
-  margin: 26px 0 17px;
-  padding: 0;
-  border: 0;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.overview-tabs {
+.latest-heading {
   display: flex;
-  padding: 4px;
-  gap: 3px;
-  background: var(--surface);
-  border-radius: 9px;
-  width: 100%;
-  border: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
-.overview-tabs button {
-  flex: 1;
-  min-height: 44px;
-  padding: 8px 12px;
+.latest-heading h2 {
+  font-size: 14px;
+  font-weight: 500;
   margin: 0;
-  border: 0;
-  border-radius: 6px;
+}
+.latest-heading .text-button,
+.history-back {
+  min-height: 44px;
+}
+.latest-heading .text-button {
+  font-size: 12px;
+}
+.home-empty {
+  margin: 8px 0 20px;
   font-size: 13px;
+  line-height: 1.5;
 }
-.overview-tabs button.selected {
-  background: var(--background);
-  color: var(--text);
-  border: 0;
+.templates-link {
+  margin-top: 18px;
+  width: 100%;
+  min-height: 48px;
+  justify-content: flex-start;
 }
-.overview-tabs button span {
-  padding: 0 0 0 4px;
-  background: none;
-  font-size: 11px;
-}
-.overview-empty {
-  min-height: 0;
-  padding: 28px 8px;
-}
-.overview-empty p {
-  font-size: 13px;
-}
-.workout-welcome {
-  margin: 24px 0;
-  padding: 24px 20px;
-}
-.workout-welcome h2 {
-  font-size: 21px;
+.templates-link span {
+  color: var(--muted);
+  margin-left: auto;
 }
 .history-search {
   margin-bottom: 8px;
@@ -356,7 +289,7 @@ const history = computed(() =>
   display: block;
 }
 .workout-history-card {
-  padding: 16px 0;
+  padding: 12px 0;
   border: 0;
   border-bottom: 1px solid var(--surface);
   border-radius: 0;
@@ -388,7 +321,7 @@ const history = computed(() =>
   overflow-wrap: anywhere;
 }
 .history-metrics {
-  margin: 0;
+  margin: 10px 0 0;
   padding: 0;
   gap: 18px;
   border: 0;
@@ -399,5 +332,9 @@ const history = computed(() =>
 }
 .history-metrics small {
   font-size: 11px;
+}
+.overview-empty {
+  min-height: 0;
+  padding: 28px 8px;
 }
 </style>

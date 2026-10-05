@@ -34,7 +34,10 @@ type WorkoutRouteContext = {
   readonly workoutsHref: Readonly<Ref<string>>;
   readonly progressExercise: Ref<string>;
   readonly navigate: (page: WorkoutPage) => void;
-  readonly selectWorkoutView: (view: "history" | "templates") => void;
+  readonly selectWorkoutView: (
+    view: "home" | "history" | "templates",
+    mode?: "push" | "replace",
+  ) => void;
 };
 
 const contextKey: InjectionKey<WorkoutRouteContext> = Symbol(
