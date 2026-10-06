@@ -49,8 +49,26 @@ export function openDexieWorkoutStorage(
   };
   const initialize = () => {
     initialized ??= database.transaction("rw", table, async () => {
-      if ((await table.get("snapshot")) === undefined)
+      const raw = await table.get("snapshot");
+      if (raw === undefined) {
         await table.put(seed, "snapshot");
+        return;
+      }
+      const parsed = snapshotSchema.safeParse(raw);
+      if (!parsed.success) return;
+      const missing = Object.values(seed.exercises).filter(
+        (exercise) => !exercise.custom && !Object.hasOwn(parsed.data.exercises, exercise.id),
+      );
+      if (!missing.length) return;
+      const updated = snapshotSchema.parse({
+        ...parsed.data,
+        revision: parsed.data.revision + 1,
+        exercises: {
+          ...parsed.data.exercises,
+          ...Object.fromEntries(missing.map((exercise) => [exercise.id, exercise])),
+        },
+      });
+      await table.put(updated, "snapshot");
     });
     return initialized;
   };

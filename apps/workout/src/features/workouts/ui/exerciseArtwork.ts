@@ -73,6 +73,13 @@ import overheadTricepsExtension from "./assets/exercises/overhead-triceps-extens
 import tricepsKickback from "./assets/exercises/triceps-kickback.webp";
 import crunch from "./assets/exercises/crunch.webp";
 import cableCrunch from "./assets/exercises/cable-crunch.webp";
+import egymAbdominalCrunch from "./assets/exercises/egym-abdominal-crunch.webp";
+import egymRotaryTorso from "./assets/exercises/egym-rotary-torso.webp";
+import egymSquat from "./assets/exercises/egym-squat.webp";
+import egymSeatedRow from "./assets/exercises/egym-seated-row.webp";
+import egymLatPulldown from "./assets/exercises/egym-lat-pulldown.webp";
+import egymShoulderPress from "./assets/exercises/egym-shoulder-press.webp";
+import egymChestPress from "./assets/exercises/egym-chest-press.webp";
 import hangingKneeRaise from "./assets/exercises/hanging-knee-raise.webp";
 import hangingLegRaise from "./assets/exercises/hanging-leg-raise.webp";
 import reverseCrunch from "./assets/exercises/reverse-crunch.webp";
@@ -158,6 +165,13 @@ const artwork: ReadonlyMap<string, { name: string; equipment: string; src: strin
   ["triceps-kickback", { name: "Triceps kickback", equipment: "Dumbbell", src: tricepsKickback }],
   ["crunch", { name: "Crunch", equipment: "Bodyweight", src: crunch }],
   ["cable-crunch", { name: "Cable crunch", equipment: "Cable", src: cableCrunch }],
+  ["egym-abdominal-crunch", { name: "EGYM Abdominal crunch", equipment: "EGYM", src: egymAbdominalCrunch }],
+  ["egym-rotary-torso", { name: "EGYM Rotary torso", equipment: "EGYM", src: egymRotaryTorso }],
+  ["egym-squat", { name: "EGYM Squat", equipment: "EGYM", src: egymSquat }],
+  ["egym-seated-row", { name: "EGYM Seated row", equipment: "EGYM", src: egymSeatedRow }],
+  ["egym-lat-pulldown", { name: "EGYM Lat pulldown", equipment: "EGYM", src: egymLatPulldown }],
+  ["egym-shoulder-press", { name: "EGYM Shoulder press", equipment: "EGYM", src: egymShoulderPress }],
+  ["egym-chest-press", { name: "EGYM Chest press", equipment: "EGYM", src: egymChestPress }],
   ["hanging-knee-raise", { name: "Hanging knee raise", equipment: "Bodyweight", src: hangingKneeRaise }],
   ["hanging-leg-raise", { name: "Hanging leg raise", equipment: "Bodyweight", src: hangingLegRaise }],
   ["reverse-crunch", { name: "Reverse crunch", equipment: "Bodyweight", src: reverseCrunch }],

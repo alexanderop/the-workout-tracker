@@ -24,3 +24,9 @@ The app has no full-size image viewer or runtime image cache. Revisit image deli
 Run `pnpm performance:check` after changing production artwork or its delivery. The [performance guardrails](workflows.md#performance-and-offline-guardrails) enforce size and dimension budgets, audit mobile page loading with Lighthouse, and verify that every catalog image decodes after an offline restart. Keep complete thumbnail precaching; lazy loading alone does not provide offline availability.
 
 The 31 images added on 2026-10-05 were generated individually with the built-in image generation tool. Their exact prompts and filenames are saved in [generation-2026-10-05.json](../apps/workout/src/features/workouts/ui/assets/exercises/generation-2026-10-05.json). This batch completes artwork coverage for the 82 built-in exercises; 77 distinct illustrations are used because some compatible variants share earlier artwork.
+
+EGYM Abdominal crunch was added on 2026-10-06 using the user-supplied PNG, retained as `egym-abdominal-crunch.png` with its optimized WebP sibling. The machine was identified against the [EGYM manual, M2 Abdominal](https://storage.googleapis.com/egym-b2b-website/downloads/operation_manual_for_egym_strength_machines_EN.pdf).
+
+EGYM Rotary torso (M12) was added on 2026-10-06 using the user-supplied PNG, retained as `egym-rotary-torso.png` with its optimized WebP sibling. See the [EGYM machine overview](https://knowledge.egym.com/en/manuals-and-compliance-documentation/smart-strength-series-3-owner-s-manual/overview-of-egym-machines.html).
+
+Five further user-supplied EGYM photographs were added on 2026-10-06: Squat, Seated row, Lat pulldown, Shoulder press, and Chest press. Sources and optimized thumbnails use the `egym-` prefix with those exercise names. Their naming follows the EGYM machine overview linked above.

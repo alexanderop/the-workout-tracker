@@ -23,6 +23,22 @@ afterEach(async () => {
 });
 
 describe("real IndexedDB workout storage", () => {
+  it("adds new built-in exercises on reopen without replacing existing journal data", async () => {
+    const { first, second, initial, name, adapters } = isolatedStorage();
+    const saved = { ...initial, revision: 1, settings: { autoRest: false, restSeconds: 30 } };
+    await first.compareAndSave(0, saved);
+    first.close();
+    second.close();
+    const exercise = { id: "new-built-in", name: "New machine", category: "Core", equipment: "EGYM", custom: false };
+    const seed = { ...initial, exercises: { ...initial.exercises, [exercise.id]: exercise } };
+    const reopened = openDexieWorkoutStorage(name, seed);
+    adapters.push(reopened);
+    const expected = { ...saved, revision: 2, exercises: { ...saved.exercises, [exercise.id]: exercise } };
+    expect(await reopened.read()).toEqual({ kind: "ready", snapshot: expected });
+    expect(await reopened.read()).toEqual({ kind: "ready", snapshot: expected });
+    expect((await reopened.compareAndSave(1, saved)).kind).toBe("conflict");
+  });
+
   it("allows only one concurrent writer to advance a revision", async () => {
     const { first, second, initial } = isolatedStorage();
     const next = { ...initial, revision: 1, settings: { autoRest: false, restSeconds: 30 } };
