@@ -115,7 +115,7 @@ describe("workout application", () => {
   it("does not overwrite a change made after the caller's reviewed revision", async () => {
     const { app, memory } = setup();
     expect(
-      (await app.execute({ type: "start", routineId: null }, 0)).kind,
+      (await app.execute({ type: "start-selected", exerciseIds: ["bench-press"] }, 0)).kind,
     ).toBe("saved");
     const stale = await app.execute(
       { type: "settings", settings: { restSeconds: 30, autoRest: false } },
@@ -130,6 +130,29 @@ describe("workout application", () => {
       },
     });
     expect(memory.current().revision).toBe(1);
+  });
+
+  it("commits exactly one complete workout when starts compete", async () => {
+    const { app, memory } = setup();
+    const command = { type: "start-selected" as const, exerciseIds: ["bench-press", "squat"] };
+    const results = await Promise.all([app.execute(command, 0), app.execute(command, 0)]);
+    expect(results.map((result) => result.kind).sort()).toEqual(["conflict", "saved"]);
+    expect(memory.current().revision).toBe(1);
+    expect(memory.current().active?.exercises.map((exercise) => exercise.exerciseId)).toEqual(["bench-press", "squat"]);
+    expect(memory.current().active?.exercises[0]?.sets).toEqual([
+      { id: expect.any(String), weightKg: 0, reps: 8, targetReps: 8, completed: false },
+    ]);
+  });
+
+  it("leaves no partial workout when selected creation cannot save", async () => {
+    const { dependencies, memory } = setup();
+    const app = createWorkouts({ ...dependencies, storage: {
+      ...dependencies.storage,
+      async compareAndSave() { return { kind: "unavailable", message: "Storage unavailable" }; },
+    } });
+    expect((await app.execute({ type: "start-selected", exerciseIds: ["bench-press"] }, 0)).kind).toBe("unavailable");
+    expect(memory.current().active).toBeNull();
+    expect(memory.current().revision).toBe(0);
   });
 
   it("checks the revision even when a competing command would otherwise be a no-op", async () => {

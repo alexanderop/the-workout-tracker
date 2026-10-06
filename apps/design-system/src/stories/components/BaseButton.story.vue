@@ -26,8 +26,8 @@ const disabled = ref(false);
 const label = ref("Start workout");
 </script>
 <template>
-  <Story title="02 Components/BaseButton">
-    <Variant title="Usage" auto-props-disabled>
+  <Story id="components-button" title="02 Components/BaseButton">
+    <Variant id="usage" title="Usage" auto-props-disabled>
       <div class="story-content">
         <BaseButton
           :variant="variant"

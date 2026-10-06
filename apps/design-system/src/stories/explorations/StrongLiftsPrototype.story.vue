@@ -1,13 +1,14 @@
 <script setup lang="ts">
+import ExplorationNotice from "../../ExplorationNotice.vue";
 import StrongLiftsPrototype from "./stronglifts/StrongLiftsPrototype.vue";
 </script>
 <template>
-  <Story title="03 Patterns/StrongLifts · interactive prototype">
-    <Variant id="fresh" title="01 · Start a workout" :meta="{ wrapper: false }"><StrongLiftsPrototype scenario="fresh" /></Variant>
-    <Variant id="training" title="02 · Mid-workout" :meta="{ wrapper: false }"><StrongLiftsPrototype scenario="training" /></Variant>
-    <Variant id="missed" title="03 · Missed reps" :meta="{ wrapper: false }"><StrongLiftsPrototype scenario="missed" /></Variant>
-    <Variant id="complete" title="04 · All exercises completed" :meta="{ wrapper: false }"><StrongLiftsPrototype scenario="complete" /></Variant>
-    <Variant id="empty" title="05 · Build from empty" :meta="{ wrapper: false }"><StrongLiftsPrototype scenario="empty" /></Variant>
+  <Story title="06 Explorations/StrongLifts · interactive prototype">
+    <Variant id="fresh" title="01 · Start a workout" :meta="{ wrapper: false }"><ExplorationNotice /><StrongLiftsPrototype scenario="fresh" /></Variant>
+    <Variant id="training" title="02 · Mid-workout" :meta="{ wrapper: false }"><ExplorationNotice /><StrongLiftsPrototype scenario="training" /></Variant>
+    <Variant id="missed" title="03 · Missed reps" :meta="{ wrapper: false }"><ExplorationNotice /><StrongLiftsPrototype scenario="missed" /></Variant>
+    <Variant id="complete" title="04 · All exercises completed" :meta="{ wrapper: false }"><ExplorationNotice /><StrongLiftsPrototype scenario="complete" /></Variant>
+    <Variant id="empty" title="05 · Build from empty" :meta="{ wrapper: false }"><ExplorationNotice /><StrongLiftsPrototype scenario="empty" /></Variant>
   </Story>
 </template>
 <docs lang="md">

@@ -4,14 +4,20 @@ import { useTemplateRef, computed, ref, watch } from "vue";
 import { Check, Search } from "@lucide/vue";
 import type { Exercise } from "../domain";
 import ExerciseThumbnail from "./ExerciseThumbnail.vue";
-const { exercises, selected, busy } = defineProps<{
+const {
+  exercises,
+  selected,
+  busy,
+  initialSearch = "",
+} = defineProps<{
   exercises: readonly Exercise[];
   selected?: readonly string[];
   busy?: boolean;
+  initialSearch?: string;
 }>();
 const emit = defineEmits<{ toggle: [id: string] }>();
 const list = useTemplateRef<HTMLElement>("list");
-const search = ref("");
+const search = ref(initialSearch);
 const muscle = ref("");
 const equipment = ref("");
 const groups = computed(() =>
@@ -71,6 +77,7 @@ watch([search, muscle, equipment], () => {
   <div ref="list" class="picker-list catalog-list">
     <component
       :is="selected ? BaseButton : 'div'"
+      :unstyled="selected ? true : undefined"
       v-for="exercise in results"
       :key="exercise.id"
       class="catalog-row"

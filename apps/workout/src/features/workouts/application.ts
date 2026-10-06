@@ -11,7 +11,7 @@ import {
 } from "./domain";
 import type { WorkoutStorage, Result, DraftJournal } from "./ports";
 import { routineValuesSchema, type RoutineValues } from "./domain/routineDrafts";
-export type { LoadState, Result } from "./ports";
+export type { LoadState, Result, WorkoutStorage } from "./ports";
 
 export type ApplicationCommand =
   | Command

@@ -49,3 +49,13 @@ When("I rename the template {string} to {string}", async ({ workout }, from: str
 Then("my only template is {string} with {string}", async ({ workout }, name: string, exercise: string) => {
   await workout.expectSingleTemplate(name, exercise);
 });
+
+When("I select an exercise then cancel before starting", async ({ workout }) => {
+  await workout.cancelSelection();
+});
+
+Then("I capture the started workout", async ({ page, $testInfo }) => {
+  const path = $testInfo.outputPath("started-workout.png");
+  await page.screenshot({ path, fullPage: true });
+  await $testInfo.attach("Started workout", { path, contentType: "image/png" });
+});

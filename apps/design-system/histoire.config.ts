@@ -2,9 +2,10 @@ import { defineConfig } from "histoire";
 import { HstVue } from "@histoire/plugin-vue";
 export default defineConfig({
   plugins: [HstVue()],
+  routerMode: "hash",
   setupFile: "./src/histoire.setup.ts",
   theme: {
-    title: "The Workout Tracker · Design System",
+    title: "The Workout Tracker · Product design",
     defaultColorScheme: "dark",
   },
   defaultStoryProps: {

@@ -21,7 +21,7 @@ export class WorkoutPage {
       .getByRole("dialog")
       .filter({
         has: this.page.getByRole("heading", {
-          name: "Add exercises",
+          name: "Select exercises",
           exact: true,
         }),
       });
@@ -30,9 +30,21 @@ export class WorkoutPage {
       .fill("Bench press");
     await picker.getByRole("button", { name: /^Bench press Chest/ }).click();
     await picker
-      .getByRole("button", { name: "Add 1 exercise", exact: true })
+      .getByRole("button", { name: "Start (1)", exact: true })
       .click();
     await expect(this.weight()).toBeVisible();
+  }
+
+  async cancelSelection() {
+    await this.page.getByRole("button", { name: "Start your first workout", exact: true }).click();
+    const picker = this.page.getByRole("dialog", { name: "Select exercises", exact: true });
+    await picker.getByRole("textbox", { name: "Search exercises" }).fill("Bench press");
+    await picker.getByRole("button", { name: /^Bench press Chest/ }).click();
+    await expect(picker.getByRole("button", { name: "Start (1)", exact: true })).toBeEnabled();
+    await picker.getByRole("button", { name: "Close dialog", exact: true }).click();
+    await this.page.reload();
+    await expect(this.page.getByRole("button", { name: "Start your first workout", exact: true })).toBeVisible();
+    await expect(this.page.getByRole("button", { name: "Continue workout", exact: true })).toHaveCount(0);
   }
 
   weight() {

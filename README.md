@@ -10,7 +10,7 @@ This pnpm monorepo contains three independently owned workspaces:
 
 - `apps/workout` (`@form/workout`): the PWA, workout domain, IndexedDB storage, application styles.
 - `packages/ui` (`@form/ui`): reusable Vue components, design tokens. It has no workout or persistence dependencies.
-- `apps/design-system` (`@form/design-system`): Histoire stories for components, variants, controls, usage documentation and the shared workout palette. Run `pnpm dev:ui` and open http://127.0.0.1:4186.
+- `apps/design-system` (`@form/design-system`): the Histoire product design workspace, with foundations, components, patterns, complete product pages, flows and explorations. Run `pnpm dev:ui` and open http://127.0.0.1:4186.
 
 The app imports its buttons, form controls, dialogs and mobile numeric editor from `@form/ui`, with shared colors from `@form/ui/tokens.css`. The dependency uses `workspace:*`. Each workspace declares its own dependencies and uses strict TypeScript settings from `tsconfig.base.json`.
 
@@ -53,7 +53,7 @@ The preview uses the same address. Stop the development server first. Keep the s
 - Export and import JSON backups from Settings, or delete all personal data after confirmation.
 - Use the app offline after its first complete production load. Use your browser's installation option, or Share → Add to Home Screen on iOS.
 
-No accounts, analytics, cloud sync, or demo workout history. New installations contain exercises but no workouts or templates. New exercise weights start at zero. Repeated workouts and templates keep their own set values; previous performance is shown as a reference.
+The installed app has no accounts, analytics, cloud sync, or demo workout history. Histoire examples use separate, temporary sample data. New installations contain exercises but no workouts or templates. New exercise weights start at zero. Repeated workouts and templates keep their own set values; previous performance is shown as a reference.
 
 ## Your data
 
@@ -104,17 +104,32 @@ For a local deployment build, run `VITE_BASE_PATH=/the-workout-tracker/ pnpm bui
 
 The display name and download filenames use The Workout Tracker. The internal IndexedDB name remains unchanged. The workout-first model uses backup version 2 and does not migrate older snapshots or version 1 backups.
 
-## Component explorer
+## Product design workspace
 
-The previous custom gallery is replaced by Histoire. Stories live in `apps/design-system/src/stories/**/*.story.vue` and import only public `@form/ui` exports. Use the Controls panel to edit props, the Docs panel for usage guidance, and the viewport controls for mobile layouts. The explorer is organized into Start here, Foundations, Components and Patterns, with foundations, component states and interactive patterns. Each story documents Usage, Variants, States, Behavior, and Examples and limitations.
+Histoire is the living product design workspace. Start in **04 Pages** to review complete screens with the real application shell, navigation and dialogs. Open **05 Flows** to walk through connected workout journeys. Use the viewport controls to compare phone and desktop layouts, the Docs panel for context, and **Reset example** in Controls to restore the selected example.
 
-`pnpm dev:ui` starts the explorer; `pnpm build:ui` produces its standalone static site in `apps/design-system/.histoire/dist`. The explorer uses Histoire 1.0 beta with its supported Vite 7 version in its own workspace. The workout app remains on Vite 8. Stories are interactive documentation. Automated behavior tests live in `apps/workout/test` and run separately from Histoire. `pnpm verify` still runs only type checking and linting. The workout Pages deployment remains separate.
+```sh
+pnpm dev:ui
+```
 
-### Design-system organization
+Open http://127.0.0.1:4186. This root command coordinates Histoire and a workout-owned preview server on port 4187; both ports must be available. Stopping the command stops both servers. Page and flow examples run the real application with isolated, temporary sample data. Edits, logged sets and drafts disappear on reset or reload and never change the personal journal in the installed app. Their clock starts from a repeatable example date and advances so rest timers remain interactive.
 
-- `stories/StartHere.story.vue`: product audience, core needs, design principles and review questions.
-- `stories/foundations/`: semantic color roles, typography, spacing and touch sizes, corners and borders, icons, motion.
-- `stories/components/`: BaseButton, BaseButtonIcon, BaseInput, BaseInputNumber, BaseTextarea, BaseSelectNative, BaseSwitch, BaseField, BaseDialog, BaseSheet and BaseMuscleMap. Form controls each have their own page instead of one combined Forms page.
-- `stories/patterns/`: training-set entry, exercise selection, template editing, settings, empty states and errors. These are interactive design examples with isolated local state, not copies of workout persistence or domain logic.
+`pnpm build:ui` produces the standalone static site in `apps/design-system/.histoire/dist`, including its product previews. It needs no running workout server after building. The root commands also synchronize the app-owned example catalog into the explorer. Use these commands rather than starting or building only the design-system workspace when working on product previews.
 
-Start documentation with what a component means and when to use it. Put implementation names and token values second. Document real keyboard/focus behavior rather than displaying a fake focus state. Explain which parts of a pattern are illustrative; never present sample feedback as a real save. Spacing examples are design reference values, not a second source of global tokens.
+The explorer uses Histoire 1.0 beta with Vite 7; the workout app compiles its own preview with Vite 8. They share public `@form/ui` exports without importing each other's source. The normal workout build and deployment remain separate. Product previews do not register a service worker and do not establish real storage, reload recovery, offline or installation behavior. Inspect those in the production app. Automated behavior tests live in `apps/workout/test` and run separately; `pnpm verify` remains type checking and linting only.
+
+### Design workspace organization
+
+| Section | Contents |
+| --- | --- |
+| **00 Start here** | Product audience, design principles, catalog guidance and naming |
+| **01 Foundations** | Semantic colors, typography, spacing, touch sizes, icons and motion |
+| **02 Components** | Public `@form/ui` components, variants and interactive controls |
+| **03 Patterns** | Illustrative compositions with local sample state and explicit limitations |
+| **04 Pages** | Workouts, Exercises, Active workout, Progress and Settings in named states |
+| **05 Flows** | First workout, repeat a workout, and finish and review |
+| **06 Explorations** | Proposals clearly distinguished from implemented product behavior |
+
+Stories live in `apps/design-system/src/stories/**/*.story.vue`. Complete pages render the production application through its preview document; do not copy page markup or move workout rules into the UI package for the explorer. Sample feedback in patterns and explorations must not imply a real save. Spacing examples are reference values, not additional global tokens.
+
+See [the design contract](docs/design.md#product-design-workspace) for presentation rules and [the preview workflow](docs/workflows.md#add-a-product-page-state-or-flow) for adding examples.

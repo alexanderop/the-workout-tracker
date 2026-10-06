@@ -14,6 +14,7 @@ type InstallationCapability = {
 };
 
 type WorkoutRouteContext = {
+  readonly initialExerciseSearch?: string;
   readonly installation: InstallationCapability;
   readonly workspace: ReturnType<typeof useWorkoutWorkspace>;
   readonly dialogs: Readonly<

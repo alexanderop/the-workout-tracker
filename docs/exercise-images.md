@@ -22,3 +22,5 @@ Keep `webp` in the Workbox `globPatterns` in `apps/workout/vite.config.ts`. The 
 The app has no full-size image viewer or runtime image cache. Revisit image delivery before adding large illustrations or a substantially larger catalog. The design-system image gallery keeps its independent sources.
 
 Run `pnpm performance:check` after changing production artwork or its delivery. The [performance guardrails](workflows.md#performance-and-offline-guardrails) enforce size and dimension budgets, audit mobile page loading with Lighthouse, and verify that every catalog image decodes after an offline restart. Keep complete thumbnail precaching; lazy loading alone does not provide offline availability.
+
+The 31 images added on 2026-10-05 were generated individually with the built-in image generation tool. Their exact prompts and filenames are saved in [generation-2026-10-05.json](../apps/workout/src/features/workouts/ui/assets/exercises/generation-2026-10-05.json). This batch completes artwork coverage for the 82 built-in exercises; 77 distinct illustrations are used because some compatible variants share earlier artwork.

@@ -59,8 +59,7 @@ export function useCircleWorkout(scenario: Scenario) {
   function save(set: CircleSet, weight: number, reps: number) {
     const wasBlank = set.reps === null;
     set.weight = weight;
-    // Editing an unlogged set changes its weight, but does not record work.
-    if (!wasBlank) set.reps = reps;
+      if (!wasBlank) set.reps = reps;
     if (wasBlank) set.target = reps;
     updateRest(set, false);
     notice.value = wasBlank ? "Planned values updated. Tap the circle to log the target reps." : "Logged set corrected.";

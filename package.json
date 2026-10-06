@@ -15,8 +15,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check:architecture": "node scripts/check-architecture.mjs",
-    "dev:ui": "pnpm --filter @form/design-system dev",
-    "build:ui": "pnpm --filter @form/design-system build",
+    "dev:ui": "node scripts/design-workspace.mjs dev",
+    "build:ui": "node scripts/design-workspace.mjs build",
     "lint:oxlint": "pnpm -r lint",
     "lint:vue": "eslint \"apps/*/src/**/*.{vue,ts,css}\" \"packages/*/src/**/*.{vue,ts,css}\" --max-warnings 0",
     "typecheck:native": "node node_modules/@typescript/native/bin/tsc --noEmit -p tsconfig.native.json",
@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "@eslint/css": "^2.0.0",
+    "@lhci/cli": "0.15.1",
     "@shadcn/lint": "^0.2.0",
     "@typescript/native": "npm:typescript@7.0.2",
     "@vue/compiler-sfc": "^3.5.43",
@@ -45,7 +46,6 @@
     "prettier": "^3.9.9",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.71.0",
-    "vue-eslint-parser": "^10.4.1",
-    "@lhci/cli": "0.15.1"
+    "vue-eslint-parser": "^10.4.1"
   }
 }

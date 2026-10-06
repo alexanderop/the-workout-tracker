@@ -30,12 +30,19 @@ import { useWorkoutNavigation } from "./app/useWorkoutNavigation";
 import { provideWorkoutRouteContext } from "./app/workoutRouteContext";
 import type { Workouts, DraftJournal } from "./features/workouts";
 import { useWorkoutClock } from "./app/useWorkoutClock";
-import { usePwa } from "./usePwa";
-const { workouts, drafts } = defineProps<{
+import type { WorkoutEnvironment } from "./app/environment";
+const {
+  workouts,
+  drafts,
+  environment,
+  initialExerciseSearch = "",
+} = defineProps<{
   workouts: Workouts;
   drafts: DraftJournal;
+  environment: WorkoutEnvironment;
+  initialExerciseSearch?: string;
 }>();
-const clock = useWorkoutClock();
+const clock = useWorkoutClock(environment.now);
 const workspace = useWorkoutWorkspace(workouts, drafts, clock.now);
 watch(() => workspace.active.value?.rest?.endsAt, clock.refresh);
 const { state, snapshot, saving, message, error, history, active } = workspace;
@@ -74,8 +81,9 @@ const {
   installMessage,
   install,
   updateServiceWorker,
-} = usePwa();
+} = environment.useInstallation();
 provideWorkoutRouteContext({
+  initialExerciseSearch,
   workspace,
   dialogs,
   progressExercise,
@@ -175,7 +183,7 @@ const title = computed(() => {
     </aside>
 
     <div class="workspace">
-      <header v-if="page !== 'workouts' || !snapshot || !online" class="topbar">
+      <header v-if="(page !== 'workouts' && page !== 'session') || !snapshot || !online" class="topbar">
         <div>
           <span class="muted">Your workspace</span><span class="slash">/</span
           ><span>{{ title }}</span>

@@ -9,3 +9,5 @@ export type {
 export * from "./domain";
 export type { DraftJournal } from "./application";
 export * from "./domain/drafts";
+
+export type { WorkoutStorage } from "./application";

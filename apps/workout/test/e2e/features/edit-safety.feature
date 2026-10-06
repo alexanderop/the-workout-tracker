@@ -3,9 +3,9 @@ Feature: Preserve local workout edits
     Given I have a fresh workout journal
     When I start a workout with Bench press
 
-  Scenario: Logging responds to the first click while the workout name is edited
+  Scenario: Dismissing rename preserves input until discard is confirmed
     When I type the workout name "My local name"
-    And I log a set while the name is unsaved
+    And I dismiss rename and choose to keep editing
     Then the workout name remains "My local name"
     When I save the workout name
     Then reloading shows the saved workout name "My local name"
@@ -33,11 +33,11 @@ Feature: Preserve local workout edits
     And I discard the unsaved exercise note
     Then I have left the workout editor
 
-  Scenario: The workout back link asks before losing a name
+  Scenario: Browser Back asks before losing a name
     When I type the workout name "My local name"
-    And I follow the workout back link
+    And I press browser Back from the workout
     Then I can keep editing my workout name
-    When I follow the workout back link
+    When I press browser Back from the workout
     And I discard the unsaved workout name
     Then I have left the workout editor
 

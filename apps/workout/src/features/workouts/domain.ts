@@ -209,6 +209,7 @@ export const snapshotSchema = snapshotShape
 export type Snapshot = z.infer<typeof snapshotSchema>;
 
 const sessionId = { sessionId: identifier };
+const selectedExerciseIds = z.array(identifier).min(1).max(50).refine((ids) => new Set(ids).size === ids.length);
 const values = { weightKg: weight, reps: actualReps };
 const plannedValues = { weightKg: weight, reps };
 export function setTargetReps(set: WorkoutSet): number {
@@ -222,15 +223,12 @@ export const commandSchema = z
       .object({
         type: z.literal("add-exercises"),
         ...sessionId,
-        exerciseIds: z
-          .array(identifier)
-          .min(1)
-          .max(50)
-          .refine((ids) => new Set(ids).size === ids.length),
+        exerciseIds: selectedExerciseIds,
       })
       .strict(),
+    z.object({ type: z.literal("start-selected"), exerciseIds: selectedExerciseIds }).strict(),
     z
-      .object({ type: z.literal("start"), routineId: identifier.nullable() })
+      .object({ type: z.literal("start"), routineId: identifier })
       .strict(),
     z
       .object({
@@ -419,6 +417,7 @@ export function reduceWorkout(
     case "repeat":
       return repeatWorkout(command);
     case "start":
+    case "start-selected":
       return startWorkout(command);
     case "rename":
     case "discard":
@@ -470,14 +469,14 @@ export function reduceWorkout(
     });
   }
   function startWorkout(
-    command: Extract<Command, { type: "start" }>,
+    command: Extract<Command, { type: "start" | "start-selected" }>,
   ): Transition {
     if (snapshot.active) return reject("Finish your current workout first.");
-    const routine = command.routineId
-      ? snapshot.routines[command.routineId]
-      : null;
-    if (command.routineId && !routine) return reject("Routine was not found.");
-    const sessionExercises = routineExercises(routine);
+    const routine = command.type === "start" ? snapshot.routines[command.routineId] : null;
+    if (command.type === "start" && !routine) return reject("Routine was not found.");
+    const sessionExercises = command.type === "start-selected"
+      ? selectedExercises(command.exerciseIds)
+      : routineExercises(routine);
     if (typeof sessionExercises === "string") return reject(sessionExercises);
     const id = inputs.id();
     if (snapshot.completed[id]) return reject("Workout ID already exists.");
@@ -515,6 +514,29 @@ export function reduceWorkout(
       });
     }
     return sessionExercises;
+  }
+  function selectedExercises(ids: readonly string[]): SessionExercise[] | string {
+    const additions: SessionExercise[] = [];
+    for (const exerciseId of ids) {
+      const exercise = snapshot.exercises[exerciseId];
+      if (!exercise) return "Exercise was not found.";
+      additions.push({
+        id: inputs.id(),
+        exerciseId: exercise.id,
+        name: exercise.name,
+        category: exercise.category,
+        sets: [
+          {
+            id: inputs.id(),
+            weightKg: 0,
+            reps: 8,
+            targetReps: 8,
+            completed: false,
+          },
+        ],
+      });
+    }
+    return additions;
   }
   function reduceActive(
     command: Extract<Command, { sessionId: string }>,
@@ -576,26 +598,8 @@ export function reduceWorkout(
           : command.exerciseIds;
       if (active.exercises.length + ids.length > 50)
         return reject("A workout can contain up to 50 exercises.");
-      const additions: SessionExercise[] = [];
-      for (const exerciseId of ids) {
-        const exercise = snapshot.exercises[exerciseId];
-        if (!exercise) return reject("Exercise was not found.");
-        additions.push({
-          id: inputs.id(),
-          exerciseId: exercise.id,
-          name: exercise.name,
-          category: exercise.category,
-          sets: [
-            {
-              id: inputs.id(),
-              weightKg: 0,
-              reps: 8,
-              targetReps: 8,
-              completed: false,
-            },
-          ],
-        });
-      }
+      const additions = selectedExercises(ids);
+      if (typeof additions === "string") return reject(additions);
       return saveActive({
         ...active,
         exercises: [...active.exercises, ...additions],

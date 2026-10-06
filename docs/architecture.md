@@ -6,11 +6,23 @@ Domain terminology lives in [context](context.md); recurring implementation task
 
 ## Workspace ownership
 
-- `apps/workout` owns the PWA, workout feature, persistence, and application layout.
+- `apps/workout` owns the PWA, workout feature, persistence, application layout, and isolated product-preview runtime.
 - `packages/ui` owns generic Vue components, shared tokens, and the workout theme mapping. It has no workout-domain or persistence dependencies.
-- `apps/design-system` owns Histoire foundations, component examples, and illustrative patterns. It imports public UI exports and uses isolated story state rather than the workout service.
+- `apps/design-system` owns the Histoire catalog, foundations, component examples, illustrative patterns and explorations. Its page and flow stories embed the workout-owned preview document through `ProductPreview.vue`; they do not import the workout application or service.
 
 Applications consume the UI package; the UI package cannot depend on applications. Cross-workspace relative imports and private deep imports are forbidden. The UI package ships source compiled by its consumers, not a separately built distribution.
+
+## Product preview boundary
+
+Histoire displays the actual `App.vue`, route adapters, feature pages, styles and shared components through a separate workout-owned `preview.html` entry. Each application compiles its own source with its own toolchain. The document boundary isolates global styles, overlays, viewport media queries and navigation; no application-to-application source dependency is permitted.
+
+`apps/workout/src/preview` owns named scenarios, valid seed snapshots, in-memory storage and drafts, and preview initialization. Every preview document creates its own service, memory-history router and advancing clock from a deterministic epoch. Reset recreates the document and all its sample state. The preview entry must not select browser persistence or register a service worker. Its lifetime includes service and clock cleanup. Production composition continues to supply real browser capabilities.
+
+`apps/workout/src/preview/catalog.json` is the authoritative catalog of example IDs and descriptions. `scripts/design-workspace.mjs` synchronizes its checked-in mirror at `apps/design-system/src/preview-catalog.json` when starting or building Histoire. The mirror lets a fresh checkout discover and typecheck stories; edit the source catalog, not the mirror. Domain snapshots and runtime dependencies stay inside the workout workspace.
+
+`ProductPreview.vue` embeds a selected example; its Controls panel owns reset outside the product viewport. Scenario loading validates the selected ID and seed data. Initial transient UI state belongs to narrow initialization inputs on its existing owner, rather than simulated clicks, copied page templates, or a second routing policy. Preview interactions execute the real workout commands against memory adapters. They demonstrate application behavior but provide no proof of IndexedDB, browser draft recovery, offline availability or installation.
+
+The root `dev:ui` command starts Histoire on port 4186 and the workout preview server on strict port 4187. Histoire proxies `/product-preview` to the preview server. Its file-serving allow list includes the repository root so pnpm-linked shared assets, including fonts, load in development. Opening the preview server root or `index.html` redirects to `preview.html`, preserving scenario query parameters, so development never boots the production entry without its PWA plugin. A missing scenario opens the first-visit workout screen; an explicitly unknown scenario still reports an error. The coordinator owns both processes and stops them together. The root `build:ui` command builds the workout preview, copies it into the explorer's public assets and builds Histoire. The resulting `apps/design-system/.histoire/dist/product-preview` travels with the static explorer; it does not depend on a deployed workout app or a running preview server. The production workout build remains separate.
 
 ## Module ownership
 
@@ -42,7 +54,7 @@ Solid arrows show source dependencies. At runtime the application calls the inje
 
 The workout pages remain inside the workout feature. Workouts, templates, training, the exercise catalog, and progress are views of the same snapshot, not independent persistence boundaries.
 
-`App.vue` owns the application shell and PWA integration. `app/router.ts` owns Vue Router 5 hash navigation with the deployment base path. The generated routes in `pages/` are application adapters that import feature pages through `features/workouts/ui.ts`. They share the shell-owned workspace and dialogs through `app/workoutRouteContext.ts`; they do not create controllers. Feature pages receive the data they display and emit user actions. Calendar, history filtering, and chart projections belong with their pages. Shared formatting stays in the feature UI.
+`App.vue` owns the application shell and receives runtime capabilities from its composition. `app/router.ts` creates Vue Router 5 navigation using an injected history; production uses hash history with the deployment base path and product previews use memory history. The generated routes in `pages/` are application adapters that import feature pages through `features/workouts/ui.ts`. They share the shell-owned workspace and dialogs through `app/workoutRouteContext.ts`; they do not create controllers. Feature pages receive the data they display and emit user actions. Calendar, history filtering, and chart projections belong with their pages. Shared formatting stays in the feature UI.
 
 `WorkoutsPage`, `ExercisesPage`, `TrainingPage`, and `ProgressPage` own the main page templates. Home and full History are separate views in WorkoutsPage. `TrainingDock` owns the mobile training controls. `WorkoutDialogs` owns template browsing in the same sheet as routine editing, exercise selection, set options, confirmations, and completed-session details. `WorkoutSettings` owns the Settings page body, preferences, and backup controls. `pages/SettingsRoute.vue` exposes it at `/settings` and composes its installation section through the existing slot.
 
@@ -54,7 +66,7 @@ Navigation errors appear through the workspace error notice. Shell links and fea
 
 Progress selection and cross-page dialog state also survive page navigation. Routine editing retains the revision captured when the editor opens. Backup import retains the revision captured when the file is read. Its pending file selection is local to the Settings page and is cleared when the page unmounts. Completing a workout opens its detail after returning to the workout overview.
 
-`App.vue` creates `usePwa` once. The Settings route receives readonly installation state and an install action through `app/workoutRouteContext.ts`. The route owns the installation entry point. The shell opens a shared installation sheet; `usePwa` owns native prompt availability, platform detection, standalone-mode listeners and installer result state. `BaseInstallInstructions` receives presentation props and emits intent without browser access, so the workout feature does not depend on PWA infrastructure. It cannot import application wiring or select a storage adapter. The existing architecture checks enforce this boundary.
+Production composition supplies PWA capabilities to `App.vue`. The Settings route receives readonly installation state and an install action through `app/workoutRouteContext.ts`. The route owns the installation entry point. The shell opens a shared installation sheet; `usePwa` owns native prompt availability, platform detection, standalone-mode listeners and installer result state. `BaseInstallInstructions` receives presentation props and emits intent without browser access, so the workout feature does not depend on PWA infrastructure. It cannot import application wiring or select a storage adapter. The existing architecture checks enforce this boundary.
 
 ## Public entry points
 
@@ -143,3 +155,9 @@ Optional session-exercise notes keep existing version 2 snapshots and backups re
 ### Data deletion across stores
 
 `deleteAllData` writes a default snapshot with an increased revision through the existing atomic comparison. Only a successful reset can erase drafts. The browser draft adapter persists immutable revision markers and removes older app-owned draft records, including malformed records. Draft writers check the maximum deletion revision before and after writing, and recovery ignores older records. Unrelated browser keys and newer drafts remain untouched. IndexedDB and localStorage are separate resources; cleanup failure is a visible partial result, not an atomic rollback guarantee.
+
+### Selected-workout creation and history reference
+
+`WorkoutDialogs` keeps a temporary start/add picker intent. Add captures its session identity. The domain `start-selected` command resolves selected catalog IDs, constructs default sets and starts the full workout in the existing atomic application save. Template-only `start` requires a template ID. The dialog closes only after success; it does not orchestrate separate start and add writes. No setup draft or persisted schema was added.
+
+`domain/exerciseHistory.ts` selects the latest completed workout with logged sets for a catalog identity. `TrainingPage` presents that reference and owns the rename sheet; `useWorkoutName` continues to own dirty input, revision and conflict handling. Finish still passes through the workspace draft guards.

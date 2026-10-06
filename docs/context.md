@@ -20,6 +20,8 @@ A **target set** contains planned weight in kilograms and repetitions. Templates
 
 An **active workout** (`ActiveSession`) is the session currently being recorded. There can be at most one. It owns session exercises, sets, its start time, and an optional rest deadline. A new exercise starts with zero weight; previous performance is shown as a reference rather than applied implicitly.
 
+Starting a new workout first opens temporary exercise selection. Start requires at least one exercise and creates the complete active workout in one revision. Cancelling selection creates no workout. The clock becomes visible after the save succeeds; its start time is sampled during command execution. Failed saves retain selection for retry. Adding exercises captures the active workout identity when the picker opens and cannot silently target a different workout. Template starts continue to copy their prescribed targets.
+
 **Discarding** removes the active workout without adding a history record. **Finishing** creates a completed workout with the same session identity. Finishing requires at least one logged set, and the interface requires unresolved input to be handled first.
 
 ## Editing an active exercise

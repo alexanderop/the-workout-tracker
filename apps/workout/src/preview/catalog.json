@@ -1,0 +1,137 @@
+[
+  {
+    "id": "workouts.first-visit",
+    "title": "First visit",
+    "section": "pages",
+    "group": "workouts",
+    "description": "An empty journal ready for a first workout."
+  },
+  {
+    "id": "workouts.history",
+    "title": "With history",
+    "section": "pages",
+    "group": "workouts",
+    "description": "Six completed workouts with inspectable details."
+  },
+  {
+    "id": "workouts.templates",
+    "title": "Templates",
+    "section": "pages",
+    "group": "workouts",
+    "description": "A reusable full-body template with per-set targets."
+  },
+  {
+    "id": "workouts.active",
+    "title": "Workout in progress",
+    "section": "pages",
+    "group": "workouts",
+    "description": "Resume an unfinished workout from the overview."
+  },
+  {
+    "id": "exercises.all",
+    "title": "All exercises",
+    "section": "pages",
+    "group": "exercises",
+    "description": "The complete built-in movement library."
+  },
+  {
+    "id": "exercises.filtered",
+    "title": "Filtered results",
+    "section": "pages",
+    "group": "exercises",
+    "description": "A search for dumbbell movements."
+  },
+  {
+    "id": "exercises.no-results",
+    "title": "No results",
+    "section": "pages",
+    "group": "exercises",
+    "description": "An unmatched search and its recovery guidance."
+  },
+  {
+    "id": "training.ready",
+    "title": "Ready to log",
+    "section": "pages",
+    "group": "training",
+    "description": "Three exercises with editable targets and no logged sets."
+  },
+  {
+    "id": "training.partial",
+    "title": "Partially completed",
+    "section": "pages",
+    "group": "training",
+    "description": "Four logged sets alongside unfinished work."
+  },
+  {
+    "id": "training.resting",
+    "title": "Resting",
+    "section": "pages",
+    "group": "training",
+    "description": "A real 90-second countdown after logging a set."
+  },
+  {
+    "id": "training.completed",
+    "title": "Ready to finish",
+    "section": "pages",
+    "group": "training",
+    "description": "Every set logged, ready for the finish confirmation."
+  },
+  {
+    "id": "progress.empty",
+    "title": "No history",
+    "section": "pages",
+    "group": "progress",
+    "description": "Progress before any completed workouts."
+  },
+  {
+    "id": "progress.history",
+    "title": "With history",
+    "section": "pages",
+    "group": "progress",
+    "description": "Six workouts showing increasing weights and training volume."
+  },
+  {
+    "id": "settings.default",
+    "title": "Default preferences",
+    "section": "pages",
+    "group": "settings",
+    "description": "Preferences and backup controls using isolated example data."
+  },
+  {
+    "id": "flows.first-workout",
+    "title": "First workout",
+    "section": "flows",
+    "group": "first-workout",
+    "description": "Choose movements, start the workout, log and finish.",
+    "steps": [
+      "Open exercise selection from Start workout.",
+      "Choose exercises, then press Start to begin.",
+      "Edit weight and repetitions, then log a set.",
+      "Finish the workout and review its summary."
+    ]
+  },
+  {
+    "id": "flows.repeat-workout",
+    "title": "Repeat a workout",
+    "section": "flows",
+    "group": "repeat-workout",
+    "description": "Use completed history to start a new workout with copied targets.",
+    "steps": [
+      "Open a completed workout.",
+      "Repeat it to create a new active workout.",
+      "Review copied targets and log a set."
+    ]
+  },
+  {
+    "id": "flows.finish-review",
+    "title": "Finish and review",
+    "section": "flows",
+    "group": "finish-review",
+    "description": "Finish a fully logged workout and inspect its summary.",
+    "steps": [
+      "Finish the workout.",
+      "Confirm finishing.",
+      "Inspect the completed summary and return to history."
+    ]
+  }
+]

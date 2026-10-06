@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ExplorationNotice from "../../ExplorationNotice.vue";
 import { computed, ref } from "vue";
 import { BaseInput } from "@form/ui";
 import benchPress from "../../assets/exercises/bench-press.png";
@@ -130,8 +131,8 @@ const matches = computed(() =>
 </script>
 
 <template>
-  <Story title="03 Patterns/Exercise imagery">
-    <Variant title="Equipment gallery">
+  <Story title="06 Explorations/Exercise imagery">
+    <Variant title="Equipment gallery"><ExplorationNotice />
       <main class="preview imagery-preview">
         <header class="imagery-header">
           <p class="imagery-eyebrow">Exercise library · Art direction</p>
@@ -164,7 +165,7 @@ const matches = computed(() =>
         </p>
       </main>
     </Variant>
-    <Variant title="Exercise picker">
+    <Variant title="Exercise picker"><ExplorationNotice />
       <main class="preview imagery-picker">
         <header class="imagery-header">
           <p class="imagery-eyebrow">Build your workout</p>

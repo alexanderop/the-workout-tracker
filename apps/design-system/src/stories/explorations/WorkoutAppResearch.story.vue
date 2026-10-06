@@ -1,12 +1,13 @@
 <script setup lang="ts">
+import ExplorationNotice from "../../ExplorationNotice.vue";
 import WorkoutAppResearchStudy from "./workout-research/WorkoutAppResearchStudy.vue";
 import WorkoutAppResearchOverview from "./workout-research/WorkoutAppResearchOverview.vue";
 import { references } from "./workout-research/references";
 </script>
 <template>
-  <Story title="03 Patterns/Workout apps · research & designs">
-    <Variant id="comparison" title="00 · Compare the ten" :meta="{ wrapper: false }"><WorkoutAppResearchOverview /></Variant>
-    <Variant v-for="(reference, index) in references" :id="reference.id" :key="reference.id" :title="`${String(index + 1).padStart(2, '0')} · ${reference.name}`" :meta="{ wrapper: false }"><WorkoutAppResearchStudy :reference="reference" /></Variant>
+  <Story title="06 Explorations/Workout apps · research & designs">
+    <Variant id="comparison" title="00 · Compare the ten" :meta="{ wrapper: false }"><ExplorationNotice /><WorkoutAppResearchOverview /></Variant>
+    <Variant v-for="(reference, index) in references" :id="reference.id" :key="reference.id" :title="`${String(index + 1).padStart(2, '0')} · ${reference.name}`" :meta="{ wrapper: false }"><ExplorationNotice /><WorkoutAppResearchStudy :reference="reference" /></Variant>
   </Story>
 </template>
 <docs lang="md">

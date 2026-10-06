@@ -9,6 +9,7 @@ export class EditSafetyPage {
     });
   }
   async editName(name: string) {
+    if (!await this.name().isVisible()) await this.page.getByRole("button", { name: "Rename workout", exact: true }).click();
     await this.name().fill(name);
   }
   async saveName() {
@@ -16,7 +17,7 @@ export class EditSafetyPage {
       .getByRole("button", { name: "Save name", exact: true })
       .click();
     await expect(this.page.getByRole("button", { name: "Save name", exact: true })).toHaveCount(0);
-    await expect(this.name()).toBeEnabled();
+    await expect(this.page.getByRole("button", { name: "Rename workout", exact: true })).toBeVisible();
   }
   async logSet() {
     await this.page
@@ -27,7 +28,13 @@ export class EditSafetyPage {
     ).toHaveAttribute("value", "1");
   }
   async expectName(name: string) {
-    await expect(this.name()).toHaveValue(name);
+    const heading = this.page.getByRole("heading", { name, exact: true });
+    await expect(this.name().or(heading)).toBeVisible();
+    if (await this.name().isVisible()) {
+      await expect(this.name()).toHaveValue(name);
+      return;
+    }
+    await expect(heading).toBeVisible();
   }
   async expectConflict() {
     await expect(
@@ -77,11 +84,6 @@ export class EditSafetyPage {
       .getByRole("button", { name: "Discard changes", exact: true })
       .click();
     await expect(this.page).not.toHaveURL(/#\/session/);
-  }
-  async leaveByLink() {
-    await this.page
-      .getByRole("link", { name: "Back to workouts", exact: true })
-      .click();
   }
   async discardName() {
     await this.page

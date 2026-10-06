@@ -1,0 +1,130 @@
+{
+  "tool": "image_gen (built-in)",
+  "date": "2026-10-05",
+  "assets": [
+    {
+      "file": "push-up.png",
+      "prompt": "Use case: product-mockup. Create one isolated workout exercise thumbnail for PUSH-UP: a matched pair of low push-up handles on a rolled-edge thin charcoal exercise mat, no person. Premium realistic 3D gym equipment product illustration, matte charcoal black rubber and brushed silver metal edge highlights, three-quarter view, compact centered composition fully inside frame with generous transparent margin. Genuinely transparent background. Strong recognizable silhouette legible at 64px. No text, logos, labels, border, room or floor scenery. Consistent neutral studio light. Save as push-up.png."
+    },
+    {
+      "file": "dumbbell-fly.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. DUMBBELL FLY: flat black padded weight bench with two matching dumbbells placed symmetrically beside it, equipment only. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "low-cable-fly.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. LOW CABLE FLY: compact dual adjustable cable crossover frame, both pulleys set low near base, individual silver D handles attached by visible cables. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "incline-push-up.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. INCLINE PUSH-UP: sturdy low black padded exercise bench with broad stable feet and an empty thin exercise mat extending in front. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "chin-up.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. CHIN-UP: standalone compact black steel pull-up tower, prominent straight silver horizontal chin-up bar at top, simple stable base. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "close-grip-pulldown.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. CLOSE-GRIP PULLDOWN: compact seated lat pulldown machine with black seat and thigh pads, overhead cable ending in a close-grip silver V handle. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "straight-arm-pulldown.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. STRAIGHT-ARM PULLDOWN: single tall cable weight-stack tower, high pulley with visible hanging cable and short straight silver bar attachment at waist height, standing exercise station without seat. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "inverted-row.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. INVERTED ROW: compact squat rack with one silver straight bar securely supported at waist height, open space beneath it and a thin charcoal exercise mat, no weights on bar. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "dumbbell-pullover.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. DUMBBELL PULLOVER: flat black padded weight bench and one prominent heavy round black dumbbell with silver handle beside head end. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "reverse-lunge.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. REVERSE LUNGE: a pair of black hexagonal dumbbells with silver handles arranged on a compact thin charcoal rubber exercise mat. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "walking-lunge.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. WALKING LUNGE: two heavy round black dumbbells with silver handles resting at the front of a narrow elongated charcoal exercise mat. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "glute-bridge.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. GLUTE BRIDGE bodyweight exercise: an unrolled thick charcoal exercise mat with a gently rolled short edge, simple minimalist bodyweight training equipment, no weights. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "hip-adduction.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. HIP ADDUCTION: seated inner-thigh resistance machine, charcoal padded seat and backrest, two outward-open articulated leg arms with black inner-thigh pads facing outward from center to contact inner thighs, silver pivot details, compact weight stack. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "single-leg-romanian-deadlift.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. SINGLE-LEG ROMANIAN DEADLIFT: one heavy black hexagonal dumbbell with bright knurled silver handle, resting diagonally on a small charcoal exercise mat. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "cable-lateral-raise.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. CABLE LATERAL RAISE: slim adjustable cable weight-stack tower with pulley near base and one silver D handle attached on short visible cable. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "front-raise.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. DUMBBELL FRONT RAISE: a matched pair of compact black round dumbbells with polished silver grips, diagonally arranged one behind another, no rack. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "reverse-fly.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. DUMBBELL REVERSE FLY: two modest black hex dumbbells with silver handles beside an adjustable black padded bench inclined to 30 degrees. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "reverse-pec-deck.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. REVERSE PEC DECK: rear-delt butterfly machine, narrow black chest pad and seat facing toward weight-stack tower, two pivoting arms opened wide with upright silver hand grips at shoulder height. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "dumbbell-shrug.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. DUMBBELL SHRUG: pair of very heavy black round dumbbells with multiple thick plates and bright knurled silver handles, symmetrically arranged. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "incline-dumbbell-curl.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. INCLINE DUMBBELL CURL: black adjustable weight bench with backrest raised to 60 degrees, two modest matching dumbbells beside seat. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "concentration-curl.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. CONCENTRATION CURL: low compact black padded flat bench, one black round dumbbell with silver grip prominently beside its front foot. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "overhead-triceps-extension.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. DUMBBELL OVERHEAD TRICEPS EXTENSION: single heavy black round dumbbell standing upright vertically on one circular end, silver handle centered, simple compact equipment portrait. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "triceps-kickback.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. DUMBBELL TRICEPS KICKBACK: a flat narrow black padded bench with one modest black hex dumbbell prominently next to its front foot. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "crunch.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. BODYWEIGHT CRUNCH: an unrolled rectangular charcoal exercise mat, very slightly curled short edge, textured foam, no weights, compact diagonal composition. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "cable-crunch.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. CABLE CRUNCH: slim charcoal cable weight-stack tower with overhead pulley and black braided double-rope attachment hanging down, small kneeling mat in front. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "hanging-knee-raise.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. HANGING KNEE RAISE: charcoal steel captain chair station, prominent black elbow pads, upright silver hand grips and back pad, stable open base with room below arm supports. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "hanging-leg-raise.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. HANGING LEG RAISE: a tall simple freestanding charcoal steel pull-up frame, straight silver top bar and two padded black hanging ab straps suspended from it, open space below, wide stable feet. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "reverse-crunch.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. BODYWEIGHT REVERSE CRUNCH: unrolled flat charcoal ribbed exercise mat with slightly raised curved far edge, no weights or other equipment, diagonally framed. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "russian-twist.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. RUSSIAN TWIST with dumbbell: one black round dumbbell with silver handle resting horizontally near the center of a short charcoal padded exercise mat. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "pallof-press.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. PALLOF PRESS: compact charcoal single adjustable cable tower with pulley set at chest height, short visible cable extending sideways to one silver D handle, simple stable base. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    },
+    {
+      "file": "dead-bug.png",
+      "prompt": "Use case: product-mockup. One isolated exercise equipment thumbnail for a workout app. BODYWEIGHT DEAD BUG: simple thick charcoal exercise mat fully unrolled and flat, softly rounded corners and subtle fine ribbed surface, diagonal three-quarter overhead view, no weights or other equipment. Premium realistic 3D gym equipment illustration matching a charcoal-black equipment catalog: matte charcoal rubber and upholstery, dark graphite steel, brushed silver metal edges. No people. Three-quarter view, entire object centered, square composition with generous transparent margin, strong silhouette readable at 64px. Neutral studio lighting, crisp silver edge highlights. Genuinely transparent background, no environment or floor plane, no backdrop glow. No text, logos, labels, borders or watermark."
+    }
+  ]
+}

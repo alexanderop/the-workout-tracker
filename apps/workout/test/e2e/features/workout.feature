@@ -25,3 +25,10 @@ Feature: A workout journal stays on this device
     And I rename the template "Press day" to "Home press day"
     And I reload the workout
     Then my only template is "Home press day" with "Banded floor press"
+
+  Scenario: Cancelling exercise selection leaves no active workout
+    Given I have a fresh workout journal
+    When I select an exercise then cancel before starting
+    And I start a workout with Bench press
+    Then the first set starts at 0 kilograms without being logged
+    And I capture the started workout

@@ -132,7 +132,8 @@ const routineEditor =
 const editingRoutine = ref<Routine | null>(null);
 const templateSource = ref<CompletedSession | null>(null);
 let routineRevision = 0;
-const pickerOpen = ref(false);
+const picker = ref<{ kind: "start" } | { kind: "add"; sessionId: string } | null>(null);
+const pickerOpen = computed(() => picker.value !== null);
 const selectedExercises = ref<string[]>([]);
 const customName = ref("");
 const customCategory = ref("Other");
@@ -145,7 +146,8 @@ function toggleExercise(id: string) {
 }
 function openPicker() {
   selectedExercises.value = [];
-  pickerOpen.value = true;
+  if (!active.value) return;
+  picker.value = { kind: "add", sessionId: active.value.id };
 }
 const finishOpen = ref(false);
 const reviewSetId = ref<string | null>(null);
@@ -169,10 +171,15 @@ async function startWorkout(routineId: string | null) {
     navigate("session");
     return;
   }
+  if (routineId === null) {
+    selectedExercises.value = [];
+    picker.value = { kind: "start" };
+    return;
+  }
   const saved = await run({ type: "start", routineId });
   if (saved?.active) {
     navigate("session");
-    if (saved.active.exercises.length === 0) openPicker();
+
   }
 }
 function editRoutine(routine: Routine | null) {
@@ -199,20 +206,25 @@ async function saveRoutine(routine: RoutineValues) {
     emit("template-saved");
   }
 }
+function closePicker() {
+  if (saving.value) return;
+  picker.value = null;
+  selectedExercises.value = [];
+}
 async function addExercises() {
-  if (!active.value || !selectedExercises.value.length) return;
-  const previousCount = active.value.exercises.length;
-  const saved = await run({
-    type: "add-exercises",
-    sessionId: active.value.id,
-    exerciseIds: selectedExercises.value,
-  });
-  if (saved?.active) {
-    const first = saved.active.exercises[previousCount];
-    if (first) training.selectExercise(first.id);
-    pickerOpen.value = false;
-    selectedExercises.value = [];
-  }
+  const intent = picker.value;
+  if (!intent || !selectedExercises.value.length || saving.value) return;
+  const previousIds = new Set(active.value?.exercises.map((exercise) => exercise.id));
+  const command = intent.kind === "start"
+    ? { type: "start-selected" as const, exerciseIds: selectedExercises.value }
+    : { type: "add-exercises" as const, sessionId: intent.sessionId, exerciseIds: selectedExercises.value };
+  const saved = await run(command);
+  if (!saved?.active) return;
+  const first = saved.active.exercises.find((exercise) => !previousIds.has(exercise.id));
+  if (first) training.selectExercise(first.id);
+  picker.value = null;
+  selectedExercises.value = [];
+  if (intent.kind === "start") navigate("session");
 }
 async function repeatWorkout(id: string) {
   if (await run({ type: "repeat", completedId: id })) {
@@ -436,9 +448,9 @@ defineExpose({
   >
   <BaseSheet
     :open="pickerOpen"
-    title="Add exercises"
+    :title="picker?.kind === 'start' ? 'Select exercises' : 'Add exercises'"
     description="Choose the movements for this workout."
-    @close="pickerOpen = false"
+    @close="closePicker"
   >
     <ExerciseCatalog
       :exercises="catalog"
@@ -460,9 +472,7 @@ defineExpose({
         :disabled="saving || !selectedExercises.length"
         @click="addExercises"
       >
-        Add {{ selectedExercises.length }}
-        {{ selectedExercises.length === 1 ? "exercise" : "exercises"
-        }}<Check :size="17" />
+        {{ picker?.kind === "start" ? "Start" : "Add" }} ({{ selectedExercises.length }})<Check :size="17" />
       </BaseButton>
     </div>
     <p v-if="error" class="field-error" role="alert">{{ error }}</p>
@@ -653,22 +663,6 @@ defineExpose({
           ><span>minutes</span>
         </div>
       </div>
-      <div class="detail-actions">
-        <BaseButton
-          unstyled
-          class="btn primary"
-          :disabled="saving || !!active"
-          @click="repeatWorkout(detail.id)"
-        >
-          <Repeat2 :size="17" />Repeat workout</BaseButton
-        ><BaseButton
-          unstyled
-          class="btn secondary"
-          @click="convertWorkout(detail.id)"
-        >
-          <BookmarkPlus :size="17" />Save as template
-        </BaseButton>
-      </div>
       <section
         v-for="exercise in detail.exercises"
         :key="exercise.id"
@@ -691,7 +685,24 @@ defineExpose({
             }}</span
           >
         </div>
-      </section></template
+      </section>
+      <div class="detail-actions">
+        <BaseButton
+          unstyled
+          class="btn primary"
+          :disabled="saving || !!active"
+          @click="repeatWorkout(detail.id)"
+        >
+          <Repeat2 :size="17" />Repeat workout</BaseButton
+        ><BaseButton
+          unstyled
+          class="btn secondary"
+          @click="convertWorkout(detail.id)"
+        >
+          <BookmarkPlus :size="17" />Save as template
+        </BaseButton>
+      </div>
+      </template
     ></BaseSheet
   >
 </template>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, useTemplateRef, watch } from "vue";
 import { BaseButton, BaseButtonIcon, BaseInput, BaseSheet } from "@form/ui";
-import { Plus, Dumbbell, Clock3, ShieldCheck, Ellipsis, Check } from "@lucide/vue";
+import { Plus, Dumbbell, Clock3, ShieldCheck, Ellipsis, Check, Pencil } from "@lucide/vue";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import { setTargetReps, type SessionExercise } from "../domain";
 import type { Confirmation } from "./dialogTypes";
@@ -10,7 +10,8 @@ import ExerciseThumbnail from "./ExerciseThumbnail.vue";
 import type { TrainingRow } from "./useTrainingSession";
 import ExerciseConfiguration from "./ExerciseConfiguration.vue";
 import TrainingSetEditor from "./TrainingSetEditor.vue";
-import { duration, fmt } from "./presentation";
+import { lastExercisePerformance } from "../domain/exerciseHistory";
+import { duration, fmt, longDate } from "./presentation";
 import "./training.css";
 const { workspace, workoutsHref } = defineProps<{
   workspace: WorkoutWorkspace;
@@ -36,6 +37,23 @@ const emit = defineEmits<{
 }>();
 const { text: name, issue: nameIssue, dirty: nameDirty, conflict: nameConflict, save: rename, keepMine, useSaved } = workspace.workoutName;
 const nameDismiss = ref(false);
+const renameOpen = ref(false);
+async function closeRename() {
+  if (saving.value) return;
+  if (await requestNameDiscard()) renameOpen.value = false;
+}
+async function saveName() {
+  await rename();
+  if (!nameDirty.value) renameOpen.value = false;
+}
+async function keepName() {
+  await keepMine();
+  if (!nameDirty.value) renameOpen.value = false;
+}
+function adoptName() {
+  useSaved();
+  renameOpen.value = false;
+}
 const configurationEditor = useTemplateRef<InstanceType<typeof ExerciseConfiguration>>("configurationEditor");
 let pendingLeave: { promise: Promise<boolean>; resolve: (leave: boolean) => void } | null = null;
 function settleNameLeave(leave: boolean) {
@@ -82,6 +100,10 @@ const selectedRows = computed<TrainingRow[]>(() =>
 const definition = computed(() => selectedExercise.value
   ? snapshot.value?.exercises[selectedExercise.value.exerciseId]
   : undefined);
+const lastTime = computed(() => {
+  const exercise = selectedExercise.value;
+  return exercise ? lastExercisePerformance(snapshot.value?.completed ?? {}, exercise.exerciseId) : null;
+});
 const prescription = computed(() => {
   const sets = selectedExercise.value?.sets ?? [];
   const targets = new Set(sets.map(setTargetReps));
@@ -93,6 +115,7 @@ watch(
     settleNameLeave(false);
     configId.value = null;
     editorSet.value = null;
+    renameOpen.value = false;
   },
 );
 const isComplete = (exercise: SessionExercise) =>
@@ -204,28 +227,10 @@ function discard() {
     <header class="active-workout-heading">
       <div>
         <p class="eyebrow">ACTIVE WORKOUT · {{ elapsed }}</p>
-        <h1>
-          <BaseInput
-            v-model="name"
-            aria-label="Workout name"
-            maxlength="80"
-            :disabled="saving"
-            @keydown.enter.prevent="rename"
-          />
-        </h1>
-        <div v-if="nameDirty" class="form-actions">
-          <template v-if="nameConflict">
-            <p role="status">The saved workout name changed. Keep your name or use “{{ active.name }}”.</p>
-            <BaseButton :disabled="saving" @click="keepMine">Keep my name</BaseButton>
-            <BaseButton variant="secondary" :disabled="saving" @click="useSaved">Use saved name</BaseButton>
-          </template>
-          <template v-else>
-            <BaseButton :disabled="saving" @click="rename">Save name</BaseButton>
-            <BaseButton variant="ghost" :disabled="saving" @click="requestNameDiscard">Cancel name edit</BaseButton>
-          </template>
+        <div class="workout-title">
+          <h1>{{ active.name }}</h1>
+          <BaseButtonIcon label="Rename workout" :disabled="saving" @click="renameOpen = true"><Pencil :size="16" /></BaseButtonIcon>
         </div>
-        <p v-if="nameDirty" class="muted small">Save or cancel your name change before finishing.</p>
-        <p v-if="nameIssue" class="field-error" role="alert">{{ nameIssue }}</p>
       </div>
       <BaseButton
         variant="secondary"
@@ -289,6 +294,10 @@ function discard() {
             <SetRow v-for="row in selectedRows" :key="row.set.id" ref="setRows" :row="row" :busy="saving" :current="training.current.value?.set.id === row.set.id" :dirty="training.dirty(row)" :conflict="training.conflict(row)"
               @edit="training.edit(row.set.id, $event)" @commit="commit(row.set.id)" @select="training.selectSet(row.set.id)" @options="edit(row.set.id)" @discard="training.useSaved(row.set.id)" @keep="training.keepInput(row.set.id)" @recover="training.chooseDraft(row.set.id, $event)" />
           </div>
+          <section v-if="lastTime" class="workout-last-time" aria-label="Last time">
+            <header><h3>Last time</h3><span>{{ longDate(lastTime.finishedAt) }}</span></header>
+            <p v-for="(set, index) in lastTime.sets" :key="set.id"><span>Set {{ index + 1 }}</span><strong>{{ fmt(set.weightKg) }} kg × {{ set.reps }} reps</strong></p>
+          </section>
           <p v-if="isComplete(selectedExercise)" class="workout-exercise-complete"><Check :size="16" /> All {{ selectedExercise.sets.length }} sets logged</p>
         </article>
     <p v-if="training.notice.value" class="workout-guidance" role="status">{{ training.notice.value }}</p>
@@ -353,6 +362,30 @@ function discard() {
       @add="addFromOptions"
       @replaced="focusReplacement"
     />
+    <BaseSheet :open="renameOpen" title="Rename workout" @close="closeRename">
+        <label class="field"><span>Workout name</span>
+          <BaseInput
+            v-model="name"
+            aria-label="Workout name"
+            maxlength="80"
+            :disabled="saving"
+            @keydown.enter.prevent="saveName"
+          />
+        </label>
+        <div v-if="nameDirty" class="form-actions">
+          <template v-if="nameConflict">
+            <p role="status">The saved workout name changed. Keep your name or use “{{ active.name }}”.</p>
+            <BaseButton :disabled="saving" @click="keepName">Keep my name</BaseButton>
+            <BaseButton variant="secondary" :disabled="saving" @click="adoptName">Use saved name</BaseButton>
+          </template>
+          <template v-else>
+            <BaseButton :disabled="saving" @click="saveName">Save name</BaseButton>
+            <BaseButton variant="ghost" :disabled="saving" @click="closeRename">Cancel name edit</BaseButton>
+          </template>
+        </div>
+        <p v-if="nameDirty" class="muted small">Save or cancel your name change before finishing.</p>
+        <p v-if="nameIssue" class="field-error" role="alert">{{ nameIssue }}</p>
+    </BaseSheet>
     <BaseSheet :open="nameDismiss" title="Discard unsaved name?" description="Your saved workout name stays unchanged." @close="settleNameLeave(false)">
       <div class="form-actions">
         <BaseButton variant="secondary" @click="settleNameLeave(false)">Keep editing</BaseButton>

@@ -8,8 +8,9 @@ const { Given, When, Then } = createBdd(test);
 When("I type the workout name {string}", async ({ page }, name: string) => {
   await new EditSafetyPage(page).editName(name);
 });
-When("I log a set while the name is unsaved", async ({ page }) => {
-  await new EditSafetyPage(page).logSet();
+When("I dismiss rename and choose to keep editing", async ({ page }) => {
+  await page.getByRole("dialog", { name: "Rename workout", exact: true }).getByRole("button", { name: "Close dialog", exact: true }).click();
+  await page.getByRole("button", { name: "Keep editing", exact: true }).click();
 });
 Then("the workout name remains {string}", async ({ page }, name: string) => {
   await new EditSafetyPage(page).expectName(name);
@@ -37,7 +38,7 @@ When("I keep my workout name", async ({ page }) => {
   await expect(
     page.getByRole("button", { name: "Save name", exact: true }),
   ).toHaveCount(0);
-  await expect(new EditSafetyPage(page).name()).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Rename workout", exact: true })).toBeVisible();
 });
 When("I use the saved workout name", async ({ page }) => {
   await page
@@ -59,9 +60,6 @@ Then("keeping the note retains {string}", async ({ page }, text: string) => {
 When("I discard the unsaved exercise note", async ({ page }) => {
   await new EditSafetyPage(page).discardNote();
 });
-When("I follow the workout back link", async ({ page }) => {
-  await new EditSafetyPage(page).leaveByLink();
-});
 Then("I can keep editing my workout name", async ({ page }) => {
   await page.getByRole("button", { name: "Keep editing", exact: true }).click();
   await new EditSafetyPage(page).expectName("My local name");
@@ -79,13 +77,13 @@ Given("all workout sets are logged without an active rest", async ({ page }) => 
   const f = createWorkoutFactory("name-finish");
   const active = f.activeSession({ exercises: [f.sessionExercise({ sets: [f.set({ completed: true })] })] });
   await seedWorkoutStorage(page, f.snapshot({ active }));
-  await expect(page.getByRole("textbox", { name: "Workout name", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Rename workout", exact: true })).toBeVisible();
 });
 Then("mobile Finish is disabled while the name is unsaved", async ({ page }) => {
-  await expect(page.getByRole("region", { name: "Training controls" }).getByRole("button", { name: "Finish", exact: true })).toBeDisabled();
+  await expect(page.getByRole("region", { name: "Training controls", includeHidden: true }).getByRole("button", { name: "Finish", exact: true, includeHidden: true })).toBeDisabled();
 });
 Then("mobile Finish is enabled", async ({ page }) => {
-  await expect(page.getByRole("region", { name: "Training controls" }).getByRole("button", { name: "Finish", exact: true })).toBeEnabled();
+  await expect(page.getByRole("region", { name: "Training controls", includeHidden: true }).getByRole("button", { name: "Finish", exact: true })).toBeEnabled();
 });
 
 Then("the narrow workout actions have full touch targets", async ({ page }) => {

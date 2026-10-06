@@ -45,8 +45,8 @@ onMounted(() => {
 });
 </script>
 <template>
-  <Story title="01 Foundations/Colors and meaning">
-    <Variant title="Semantic palette"
+  <Story id="foundations-colors" title="01 Foundations/Colors and meaning">
+    <Variant id="palette" title="Semantic palette"
       ><div class="stack">
         <h1>Color has a purpose.</h1>
         <p class="note">

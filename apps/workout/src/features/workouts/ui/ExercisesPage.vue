@@ -3,7 +3,7 @@ import { BaseButton } from "@form/ui";
 import { Plus } from "@lucide/vue";
 import type { Exercise } from "../domain";
 import ExerciseCatalog from "./ExerciseCatalog.vue";
-defineProps<{ exercises: readonly Exercise[] }>();
+defineProps<{ exercises: readonly Exercise[]; initialSearch?: string }>();
 const emit = defineEmits<{ create: [] }>();
 </script>
 <template>
@@ -18,6 +18,6 @@ const emit = defineEmits<{ create: [] }>();
     </BaseButton>
   </div>
   <section class="panel catalog-panel">
-    <ExerciseCatalog :exercises="exercises" />
+    <ExerciseCatalog :exercises="exercises" :initial-search="initialSearch" />
   </section>
 </template>

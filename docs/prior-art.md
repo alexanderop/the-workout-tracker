@@ -39,3 +39,9 @@ In the configurable study, each exercise owns its set count and target reps. Con
 Reviewed [Tilly at 0bb6bbb](https://github.com/carlassmann/tilly/tree/0bb6bbba42b9e283d0147ea2d0213e4495b00f17), including its live mobile tour and source for dialogs, startup and PWA installation. We adopt coordinated sheet motion, subtle press feedback, a branded loading surface and platform-specific installation instructions through our existing Vue/Reka components. Our motion tokens, dark/purple palette and workout semantics remain local decisions. No Tilly source was copied.
 
 Onboarding is explicitly out of scope. We do not adopt its forced splash duration, swipe dismissal, haptics, account/sync infrastructure or icon-only mobile navigation. Canonical logging alone triggers completion feedback; editing a number does not log a set. See the [design contract](design.md#mobile-motion-and-feedback).
+
+## Alpha Progression workout flow
+
+[Alpha Progression](https://alphaprogression.com/de) and the real app screenshots in [iGeeksBlog’s review](https://www.igeeksblog.com/alpha-progression-app-for-iphone/) informed the select-then-start flow, thumbnail exercise strip, aligned rounded set cells, compact workout header, exercise options and previous-performance reference. The screenshots are reference evidence, not a guarantee of the current app’s exact behavior.
+
+The [design contract](design.md#workout-first-screens) adapts these patterns to our charcoal palette, purple accent and exercise artwork. Atomic creation, cancellation without an active workout and clock visibility after saving are our explicit product rules; screenshot research did not establish Alpha Progression’s exact persistence or timing behavior. Recommendations, generated plans and periodization remain outside this change.

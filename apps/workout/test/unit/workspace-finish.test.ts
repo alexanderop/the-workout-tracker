@@ -77,3 +77,14 @@ it("exposes data management without a raw command executor", () => {
   expectTypeOf(workspace.service).not.toHaveProperty("execute");
   expect(workspace.service).not.toHaveProperty("execute");
 });
+
+it("logging preserves a local workout name through the saved snapshot update", async () => {
+  const { workspace, active, set } = setup();
+  workspace.workoutName.text.value = "Local draft name";
+  await workspace.run({ type: "set-completed", sessionId: active.id, setId: set.id, completed: false });
+  await workspace.run({ type: "set-completed", sessionId: active.id, setId: set.id, completed: true });
+  expect(workspace.workoutName.text.value).toBe("Local draft name");
+  expect(workspace.workoutName.dirty.value).toBe(true);
+  await workspace.workoutName.save();
+  expect(workspace.active.value?.name).toBe("Local draft name");
+});

@@ -1,10 +1,10 @@
 import { onMounted, onUnmounted, ref } from "vue";
 
-export function useWorkoutClock() {
-  const now = ref(Date.now());
+export function useWorkoutClock(readNow: () => number) {
+  const now = ref(readNow());
   let tick: ReturnType<typeof setInterval> | undefined;
   function refresh() {
-    now.value = Date.now();
+    now.value = readNow();
   }
   onMounted(() => {
     refresh();

@@ -1,16 +1,17 @@
 <script setup lang="ts">
+import ExplorationNotice from "../../ExplorationNotice.vue";
 import ActiveWorkoutConcept from "./active-workout/ActiveWorkoutConcept.vue";
 </script>
 
 <template>
-  <Story title="03 Patterns/Active workout explorations">
-    <Variant title="A · Focus" :meta="{ wrapper: false }">
+  <Story title="06 Explorations/Active workout explorations">
+    <Variant title="A · Focus" :meta="{ wrapper: false }"><ExplorationNotice />
       <ActiveWorkoutConcept mode="focus" />
     </Variant>
-    <Variant title="B · Overview" :meta="{ wrapper: false }">
+    <Variant title="B · Overview" :meta="{ wrapper: false }"><ExplorationNotice />
       <ActiveWorkoutConcept mode="overview" />
     </Variant>
-    <Variant title="C · Rhythm" :meta="{ wrapper: false }">
+    <Variant title="C · Rhythm" :meta="{ wrapper: false }"><ExplorationNotice />
       <ActiveWorkoutConcept mode="rhythm" />
     </Variant>
   </Story>
