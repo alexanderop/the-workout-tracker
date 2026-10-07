@@ -130,6 +130,14 @@ Application tests can inject small in-memory implementations of the declared por
 
 Use typed factories under `apps/workout/test/support` to create fresh valid records. Give each scenario its own state and deterministic identities. Override only the fields relevant to the behavior. Expected results must come from the contract, not from the function under test.
 
+### Write property tests for domain invariants
+
+[Workout properties](../apps/workout/test/unit/workout-properties.test.ts) use [fast-check](https://fast-check.dev/) to replay random command sequences through `reduceWorkout` and check [domain rules](context.md) after every step. These include valid snapshots, unchanged history, preserved logged work, rest ownership, and acceptance of valid commands. They run with `pnpm test:unit`.
+
+Add a rule there when it must hold for every reachable state rather than one example. Steps choose targets from the current snapshot so that most commands can be reached from the interface. Assert a rule from the contract, never from a copy of the implementation. Also assert acceptance: snapshot validation can turn a broken transition into a rejection, and a property that checks accepted changes only will miss it. When a property fails, paste the shrunk counterexample into a named example test before fixing the reducer. If you add a command, give it a weight in `KINDS` and a builder.
+
+Prove a new property by temporarily breaking the reducer in a copy and confirming that the property fails. Generated arrays need an explicit `size`, because fast-check otherwise keeps them to about ten steps. Short journeys rarely build up logged work.
+
 ### Write application journeys
 
 Put product-language scenarios under `apps/workout/test/e2e`. Keep semantic locators and user actions in page objects. Step definitions connect product intent to those page objects. Avoid arbitrary sleeps and assertions about internal call sequences.
