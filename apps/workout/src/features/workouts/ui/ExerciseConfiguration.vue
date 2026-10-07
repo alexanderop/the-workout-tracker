@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, useTemplateRef, watch } from "vue";
+import { computed, nextTick, ref, useTemplateRef, watch } from "vue";
 import { BaseButton, BaseInputNumber, BaseSheet, BaseTextarea } from "@form/ui";
 import { ArrowLeftRight, List, Plus, StickyNote, Trash2 } from "@lucide/vue";
 import { setTargetReps, type Command, type SessionExercise } from "../domain";
@@ -7,6 +7,7 @@ import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import ExerciseCatalog from "./ExerciseCatalog.vue";
 import { fmt } from "./presentation";
 import { useUnsavedChangesWarning } from "./useUnsavedChangesWarning";
+import { useLeaveConfirmation } from "./useLeaveConfirmation";
 const { exercise, workspace } = defineProps<{
   exercise: SessionExercise | null;
   workspace: Pick<
@@ -29,8 +30,9 @@ const count = ref("1"),
 const replaceTargets = ref(false),
   note = ref(""),
   selection = ref<string[]>([]);
-const issue = ref(""),
-  dismiss = ref(false);
+const issue = ref("");
+const exitConfirmation = useLeaveConfirmation();
+const dismiss = exitConfirmation.open;
 const savePending = ref(false);
 const removalOpen = ref(false);
 const body = useTemplateRef<HTMLElement>("body");
@@ -94,7 +96,7 @@ function reset() {
   selection.value = [];
   revision = workspace.snapshot.value?.revision ?? 0;
   issue.value = "";
-  dismiss.value = false;
+  exitConfirmation.settle(false);
   removalOpen.value = false;
   baseline.value = formState();
 }
@@ -117,33 +119,23 @@ async function show(next: View, field?: "Target reps" | "Working weight") {
     : body.value?.querySelector<HTMLElement>("textarea, button, input");
   target?.focus();
 }
-let pendingExit: { promise: Promise<boolean>; resolve: (leave: boolean) => void } | null = null;
 function settleExit(discard: boolean) {
-  const pending = pendingExit;
-  pendingExit = null;
-  dismiss.value = false;
   if (discard) {
     baseline.value = formState();
     emit("close");
   }
-  pending?.resolve(discard);
+  exitConfirmation.settle(discard);
 }
 function requestExit(kind: "close" | "leave"): Promise<boolean> {
   if (workspace.saving.value || savePending.value) return Promise.resolve(false);
-  if (pendingExit) return pendingExit.promise;
-  if (!dirty.value) {
+  if (!dirty.value && !dismiss.value) {
     if (kind === "close") emit("close");
     return Promise.resolve(true);
   }
-  let resolve!: (leave: boolean) => void;
-  const promise = new Promise<boolean>((done) => { resolve = done; });
-  pendingExit = { promise, resolve };
-  dismiss.value = true;
-  return promise;
+  return exitConfirmation.request();
 }
 function close() { void requestExit("close"); }
 function requestLeave() { return requestExit("leave"); }
-onBeforeUnmount(() => settleExit(false));
 defineExpose({ requestLeave });
 async function save(
   command: Extract<

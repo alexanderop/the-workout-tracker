@@ -275,3 +275,40 @@ it("does not acknowledge a newer recovery when an older save completes", async (
     scope.stop();
   }
 });
+
+it("does not offer recovery for a name that already reached the finished workout", async () => {
+  const factory = createWorkoutFactory("phantom-name");
+  const active = factory.activeSession();
+  const snapshot = shallowRef<Snapshot>(factory.snapshot({ active }));
+  let release: (saved: Snapshot | null) => void = () => {
+    throw new Error("No pending save");
+  };
+  const scope = effectScope();
+  const editor = scope.run(() =>
+    useWorkoutName({
+      snapshot: computed(() => snapshot.value),
+      active: computed(() => snapshot.value.active),
+      saving: ref(false),
+      run: () =>
+        new Promise<Snapshot | null>((resolve) => {
+          release = resolve;
+        }),
+    }),
+  )!;
+  try {
+    editor.text.value = "Renamed";
+    const pending = editor.save();
+    snapshot.value = factory.snapshot({
+      revision: 2,
+      completed: {
+        [active.id]: factory.completedSession({ id: active.id, name: "Renamed" }),
+      },
+    });
+    release(null);
+    await pending;
+    expect(editor.recoveries.value).toEqual([]);
+    expect(editor.issue.value).toBe("");
+  } finally {
+    scope.stop();
+  }
+});

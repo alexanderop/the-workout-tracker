@@ -2,10 +2,11 @@ import { computed, nextTick, onScopeDispose } from "vue";
 import type { Ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import type { WorkoutPage } from "../features/workouts/ui";
+import { crossesHistoryView } from "./router";
 
 export function useWorkoutNavigation(
   message: Ref<string>,
-  error: Ref<string>,
+  reportError: (message: string) => void,
   focusMain: () => void,
 ) {
   const route = useRoute();
@@ -31,12 +32,11 @@ export function useWorkoutNavigation(
       const link = focusedLink;
       focusedLink = null;
       if (failure) return;
+      // Templates keeps focus with its dialog owner even when leaving History.
       if (
+        crossesHistoryView(to, from) &&
         to.name === "workouts" &&
-        from.name === "workouts" &&
-        to.params.view !== "templates" &&
-        to.params.view !== from.params.view &&
-        (to.params.view === "history" || from.params.view === "history")
+        to.params.view !== "templates"
       ) {
         nextTick(focusMain).catch(reportNavigationError);
         return;
@@ -49,7 +49,7 @@ export function useWorkoutNavigation(
   );
 
   function reportNavigationError() {
-    error.value = "This page could not be opened. Please try again or reload.";
+    reportError("This page could not be opened. Please try again or reload.");
   }
   onScopeDispose(router.onError(reportNavigationError));
 

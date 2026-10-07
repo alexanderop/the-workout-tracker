@@ -62,6 +62,9 @@ const optionSetId = ref<string | null>(null);
 const optionRow = computed(() =>
   optionSetId.value ? training.rows.get(optionSetId.value) : undefined,
 );
+watch(optionRow, (row) => {
+  if (optionSetId.value && !row) optionSetId.value = null;
+});
 function removeOptionSet() {
   const row = optionRow.value;
   if (!row || !active.value) return;
@@ -136,8 +139,15 @@ async function focusTemplateContent() {
     buttons[0]
   )?.focus();
 }
-function cancelRoutine() {
+/** Closes the editor and forgets its target so no stale conflict survives. */
+function closeRoutineEditor() {
   routineOpen.value = false;
+  editingRoutine.value = null;
+  templateSource.value = null;
+  routineConflict.value = false;
+}
+function cancelRoutine() {
+  closeRoutineEditor();
   if (templatesOpen) void focusTemplateContent();
 }
 function closeTemplates() {
@@ -227,8 +237,11 @@ async function startWorkout(routineId: string | null) {
     navigate("session");
   }
 }
-function editRoutine(routine: Routine | null) {
-  templateSource.value = null;
+function editRoutine(
+  routine: Routine | null,
+  source: CompletedSession | null = null,
+) {
+  templateSource.value = source;
   editingRoutine.value = routine;
   routineConflict.value = false;
   routineEditorVersion.value++;
@@ -251,7 +264,7 @@ async function saveRoutine(routine: RoutineValues) {
       }
     : { type: "create-routine" as const, routine };
   if (await run(command, snapshot.value?.revision ?? 0)) {
-    routineOpen.value = false;
+    closeRoutineEditor();
     templateFocus = existing?.id ?? null;
     void focusTemplateContent();
     message.value = "Template saved";
@@ -319,8 +332,7 @@ function convertWorkout(id: string) {
   const session = snapshot.value?.completed[id];
   if (!session) return;
   selectedSession.value = null;
-  editRoutine(routineFromSession(session, session.id));
-  templateSource.value = session;
+  editRoutine(routineFromSession(session, session.id), session);
 }
 async function createExercise() {
   if (!customName.value.trim() || saving.value) return;

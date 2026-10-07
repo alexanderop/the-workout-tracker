@@ -1,8 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
   canUndoSet,
+  chooseRecoveredDraft,
   decideSetCommit,
+  draftStatus,
+  editDraft,
   hasDraftConflict,
+  keepDraftInput,
+  mergeUnseenDrafts,
+  observeSavedSet,
+  resetDraftToSaved,
   restoreTrainingDraft,
   type TrainingDraftState,
 } from "../../src/features/workouts/domain/trainingDrafts";
@@ -121,4 +128,75 @@ describe("training draft decisions", () => {
     expect(canUndoSet(last, "session-a", { ...set, weightKg: 50 })).toBe(false);
     expect(canUndoSet(last, "session-a", undefined)).toBe(false);
   });
+
+  it("reports one status for every combination of stored draft flags", () => {
+    const factory = createWorkoutFactory();
+    const set = factory.set();
+    expect(draftStatus(draftState({ set, base: set }))).toEqual({ kind: "saved" });
+    expect(draftStatus(draftState({ set, base: set, touched: true }))).toEqual({
+      kind: "editing",
+    });
+    expect(
+      draftStatus(draftState({ set, base: { ...set, weightKg: 1 }, touched: true })),
+    ).toEqual({ kind: "conflict", reason: "changed-elsewhere" });
+    expect(
+      draftStatus(draftState({ set, base: set, touched: true, recoveredStale: true })),
+    ).toEqual({ kind: "conflict", reason: "recovered-stale" });
+    expect(
+      draftStatus(
+        draftState({ set, base: set, touched: true, alternatives: [factory.draft()] }),
+      ),
+    ).toEqual({ kind: "conflict", reason: "alternatives" });
+  });
+
+  it("applies draft transitions without callers combining flags", () => {
+    const factory = createWorkoutFactory();
+    const set = factory.set();
+    const clean = draftState({ set, base: set, revision: 2 });
+    const edited = { ...clean, ...editDraft(clean, { weight: "55" }, 3) };
+    expect(edited).toMatchObject({ weight: "55", touched: true, revision: 3 });
+    expect(editDraft(edited, { reps: "9" }, 4)).toEqual({ reps: "9", touched: true });
+
+    const changed = { ...set, weightKg: 60 };
+    const observed = { ...edited, ...observeSavedSet(edited, changed) };
+    expect(draftStatus(observed)).toEqual({
+      kind: "conflict",
+      reason: "recovered-stale",
+    });
+    expect(observeSavedSet(clean, changed)).toMatchObject({
+      set: changed,
+      weight: "60",
+      touched: false,
+    });
+
+    const kept = { ...observed, ...keepDraftInput(observed, 5) };
+    expect(draftStatus(kept)).toEqual({ kind: "editing" });
+    expect(kept.weight).toBe("55");
+
+    const reset = { ...kept, ...resetDraftToSaved(changed, 6) };
+    expect(draftStatus(reset)).toEqual({ kind: "saved" });
+    expect(reset).toMatchObject({ weight: "60", revision: 6 });
+
+    const elsewhere = factory.draft({ revision: 6 });
+    const merged = { ...reset, ...mergeUnseenDrafts(reset, [elsewhere]) };
+    expect(draftStatus(merged).kind).toBe("conflict");
+    expect(merged.weight).toBe(elsewhere.weight);
+    expect(mergeUnseenDrafts(reset, [])).toEqual({});
+
+    const chosen = { ...merged, ...chooseRecoveredDraft(merged, elsewhere, 6) };
+    expect(chosen.alternatives).toEqual([]);
+    expect(chosen.recoveredStale).toBe(!sameBase(elsewhere.base, changed));
+  });
 });
+
+function sameBase(
+  base: { weightKg: number; reps: number; completed: boolean; targetReps?: number },
+  set: { weightKg: number; reps: number; completed: boolean; targetReps?: number },
+) {
+  return (
+    base.weightKg === set.weightKg &&
+    base.reps === set.reps &&
+    base.completed === set.completed &&
+    base.targetReps === set.targetReps
+  );
+}

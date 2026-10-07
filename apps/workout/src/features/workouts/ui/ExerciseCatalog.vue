@@ -35,6 +35,12 @@ const list = useTemplateRef<HTMLElement>("list");
 const filterButton = useTemplateRef<HTMLButtonElement>("filterButton");
 const selectionTray = useTemplateRef<HTMLElement>("selectionTray");
 const search = ref(initialSearch);
+watch(
+  () => initialSearch,
+  (value) => {
+    search.value = value;
+  },
+);
 const filters = ref<CatalogFilters>(emptyCatalogFilters);
 const sort = ref<CatalogSort>("ascending");
 const filtersOpen = ref(false);
@@ -198,7 +204,10 @@ async function clearSearchAndFilters() {
         ><Check v-if="selected.includes(exercise.id)" :size="17"
       /></span>
     </component>
-    <div v-if="!results.length" class="empty-inline muted">
+    <div v-if="!exercises.length" class="empty-inline muted">
+      <p>No exercises yet.</p>
+    </div>
+    <div v-else-if="!results.length" class="empty-inline muted">
       <p>No matching exercises.</p>
       <button type="button" class="text-button" @click="clearSearchAndFilters">
         Clear search and filters

@@ -38,14 +38,14 @@ async function deleteAllData() {
       state.value = { kind: "ready", snapshot: result.snapshot };
       backupFile.value = null;
       backupMessage.value = "";
+      deletionMessage.value =
+        "All your data has been deleted from this browser.";
       if (result.kind === "cleanup-pending") {
         request.revision = result.snapshot.revision;
         request.issue = result.message;
         return;
       }
       deletion.value = null;
-      deletionMessage.value =
-        "All your data has been deleted from this browser.";
       return;
     }
     if (result.kind === "conflict") {
@@ -104,7 +104,7 @@ async function selectBackup(event: Event) {
 }
 async function importBackup() {
   const file = backupFile.value;
-  if (!file) return;
+  if (!file || backupBusy.value || saving.value) return;
   backupBusy.value = true;
   try {
     const result = await service.importBackup(file.json, file.revision);
@@ -116,6 +116,8 @@ async function importBackup() {
       return;
     }
     if (result.kind === "conflict") {
+      state.value = { kind: "ready", snapshot: result.snapshot };
+      backupFile.value = null;
       backupMessage.value =
         "Your data changed. Select the backup again to review the current import.";
       return;
@@ -123,7 +125,7 @@ async function importBackup() {
     backupMessage.value = result.message;
   } catch {
     backupMessage.value =
-      "Import failed. Your saved workouts have not been replaced.";
+      "Import could not finish. Reload to check your saved workouts before trying again.";
   } finally {
     backupBusy.value = false;
   }

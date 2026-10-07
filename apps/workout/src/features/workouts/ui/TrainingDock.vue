@@ -1,58 +1,57 @@
 <script setup lang="ts">
 import { BaseButton } from "@form/ui";
-import { duration } from "./presentation";
+import { nextSetLabel, restLabel } from "./presentation";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 const { workspace } = defineProps<{
   workspace: WorkoutWorkspace;
 }>();
-const { active, rest, saving, training, run, activeSetCount } = workspace;
+const { active, saving, training, run, trainingMode, canFinish } = workspace;
 const emit = defineEmits<{ finish: []; pick: [] }>();
-const next = training.next;
 function showNext() {
-  if (!next.value || saving.value) return;
-  training.selectSet(next.value.set.id);
-  training.requestReviewFocus(next.value.set.id);
+  const next = training.next.value;
+  if (!next || saving.value) return;
+  training.selectSet(next.set.id);
+  training.requestReviewFocus(next.set.id);
 }
 </script>
 <template>
-  <section v-if="active" class="training-bar" aria-label="Training controls">
-    <template v-if="active.rest"
+  <section
+    v-if="active && trainingMode"
+    class="training-bar"
+    aria-label="Training controls"
+  >
+    <template v-if="trainingMode.kind === 'resting'"
       ><div>
-        <strong>{{ rest ? `${duration(rest)} rest` : "Rest complete" }}</strong
-        ><small>{{
-          next
-            ? `Next: ${next.exercise.name} · Set ${next.index + 1}`
-            : "All sets logged"
-        }}</small>
+        <strong>{{ restLabel(trainingMode.remaining) }}</strong
+        ><small>{{ nextSetLabel(trainingMode.next) }}</small>
       </div>
       <BaseButton
         variant="secondary"
         :disabled="saving"
         @click="run({ type: 'stop-rest', sessionId: active.id })"
-        >{{ rest ? "Skip" : "Dismiss" }}</BaseButton
+        >{{ trainingMode.remaining ? "Skip" : "Dismiss" }}</BaseButton
       ></template
     >
-    <template v-else-if="next"
+    <template v-else-if="trainingMode.kind === 'next'"
       ><BaseButton
         unstyled
         class="training-bar-next"
         :disabled="saving"
         @click="showNext"
       >
-        <strong>Next: {{ next.exercise.name }}</strong
+        <strong>Next: {{ trainingMode.row.exercise.name }}</strong
         ><small
-          >Set {{ next.index + 1 }} of {{ next.exercise.sets.length }}</small
+          >Set {{ trainingMode.row.index + 1 }} of
+          {{ trainingMode.row.exercise.sets.length }}</small
         >
       </BaseButton>
     </template>
-    <template v-else-if="activeSetCount"
+    <template v-else-if="trainingMode.kind === 'all-logged'"
       ><div>
         <strong>All sets logged</strong
         ><small>Review or finish your workout</small>
       </div>
-      <BaseButton
-        :disabled="saving || workspace.workoutName.dirty.value"
-        @click="emit('finish')"
+      <BaseButton :disabled="!canFinish" @click="emit('finish')"
         >Finish</BaseButton
       ></template
     >

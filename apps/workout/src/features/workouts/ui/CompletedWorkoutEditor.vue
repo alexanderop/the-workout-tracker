@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, onScopeDispose, ref } from "vue";
+import { computed, ref } from "vue";
 import { BaseSheet, BaseButton, BaseInput, BaseInputNumber } from "@form/ui";
 import type { CompletedSession } from "../domain";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import { useCompletedWorkoutEditor } from "./useCompletedWorkoutEditor";
 import { useUnsavedChangesWarning } from "./useUnsavedChangesWarning";
+import { useLeaveConfirmation } from "./useLeaveConfirmation";
 
 const { session, workspace } = defineProps<{
   session: CompletedSession;
@@ -18,12 +19,26 @@ const rows = computed(
 );
 const keypadOpen = ref(false);
 useUnsavedChangesWarning(() => dirty.value || keypadOpen.value);
-const discardIntent = ref<"close" | "reload" | "navigate" | null>(null);
-let finishNavigation: ((allow: boolean) => void) | null = null;
+const discardIntent = ref<"close" | "reload" | "navigate">("close");
+const discardConfirmation = useLeaveConfirmation();
+const discardOpen = discardConfirmation.open;
+async function confirmDiscard(
+  intent: "close" | "reload" | "navigate",
+): Promise<boolean> {
+  discardIntent.value = intent;
+  const discard = await discardConfirmation.request();
+  if (!discard) return false;
+  if (intent === "reload") {
+    editor.reload();
+    return true;
+  }
+  emit("close");
+  return true;
+}
 function requestClose() {
   if (pending.value) return;
   if (dirty.value) {
-    discardIntent.value = "close";
+    void confirmDiscard("close");
     return;
   }
   emit("close");
@@ -31,27 +46,17 @@ function requestClose() {
 function requestReload() {
   if (pending.value) return;
   if (dirty.value) {
-    discardIntent.value = "reload";
+    void confirmDiscard("reload");
     return;
   }
   editor.reload();
 }
 function keepEditing() {
-  discardIntent.value = null;
-  finishNavigation?.(false);
-  finishNavigation = null;
+  discardConfirmation.settle(false);
 }
 function discard() {
   if (pending.value) return;
-  const intent = discardIntent.value;
-  discardIntent.value = null;
-  if (intent === "reload") {
-    editor.reload();
-    return;
-  }
-  finishNavigation?.(true);
-  finishNavigation = null;
-  emit("close");
+  discardConfirmation.settle(true);
 }
 function requestLeave(): boolean | Promise<boolean> {
   if (pending.value || keypadOpen.value) return false;
@@ -59,15 +64,9 @@ function requestLeave(): boolean | Promise<boolean> {
     emit("close");
     return true;
   }
-  finishNavigation?.(false);
-  discardIntent.value = "navigate";
-  return new Promise<boolean>((resolve) => {
-    finishNavigation = resolve;
-  });
+  discardConfirmation.settle(false);
+  return confirmDiscard("navigate");
 }
-onScopeDispose(() => {
-  finishNavigation?.(false);
-});
 async function save() {
   if (await editor.save()) emit("saved");
 }
@@ -177,7 +176,7 @@ defineExpose({ requestClose, requestLeave });
     </form>
   </BaseSheet>
   <BaseSheet
-    :open="discardIntent !== null"
+    :open="discardOpen"
     title="Discard workout changes?"
     :description="
       discardIntent === 'reload'

@@ -22,10 +22,13 @@ export function usePwa() {
   const installed = ref(isStandalone());
   const installOpen = ref(false);
   const installing = ref(false);
-  const canInstall = computed(() => installEvent.value !== null);
+  const canInstall = computed(
+    () => installEvent.value !== null && !installed.value,
+  );
   const platform = detectInstallPlatform();
   const updateDisplayMode = () => {
     installed.value = isStandalone();
+    if (installed.value) installEvent.value = null;
   };
   const installMessage = ref("");
   const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW();
@@ -33,7 +36,7 @@ export function usePwa() {
     online.value = navigator.onLine;
   };
   const captureInstall = (event: Event) => {
-    if (isInstallEvent(event)) {
+    if (isInstallEvent(event) && !installed.value) {
       installEvent.value = event;
     }
   };

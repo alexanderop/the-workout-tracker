@@ -2,9 +2,15 @@ import { computed, type Ref } from "vue";
 import type { Workouts, DraftJournal, ApplicationCommand } from "../application";
 import { sessionTotals, remainingRestSeconds } from "../domain";
 import { useWorkouts } from "./useWorkouts";
-import { useTrainingSession } from "./useTrainingSession";
+import { useTrainingSession, type TrainingRow } from "./useTrainingSession";
 import { useWorkoutName } from "./useWorkoutName";
 import { duration } from "./presentation";
+/** What the active workout asks of the user next; shared by page and dock. */
+export type TrainingMode =
+  | { kind: "resting"; remaining: number; next: TrainingRow | undefined }
+  | { kind: "next"; row: TrainingRow }
+  | { kind: "all-logged" }
+  | { kind: "empty" };
 export type WorkoutPage =
   "today" | "workouts" | "history" | "exercises" | "progress" | "session" | "settings";
 export function useWorkoutWorkspace(
@@ -58,6 +64,21 @@ export function useWorkoutWorkspace(
   const rest = computed(() =>
     active.value ? remainingRestSeconds(active.value, now.value) : 0,
   );
+  const trainingMode = computed<TrainingMode | null>(() => {
+    const session = active.value;
+    if (!session) return null;
+    const next = training.next.value;
+    if (session.rest) return { kind: "resting", remaining: rest.value, next };
+    if (next) return { kind: "next", row: next };
+    return activeSetCount.value ? { kind: "all-logged" } : { kind: "empty" };
+  });
+  /** Presentation gate only; `run` still enforces finish safety. */
+  const canFinish = computed(
+    () =>
+      !saving.value &&
+      !workoutName.dirty.value &&
+      activeTotals.value.completedSets > 0,
+  );
   const elapsed = computed(() =>
     duration(active.value ? (now.value - active.value.startedAt) / 1000 : 0),
   );
@@ -74,6 +95,8 @@ export function useWorkoutWorkspace(
     activeTotals,
     activeSetCount,
     rest,
+    trainingMode,
+    canFinish,
     elapsed,
   };
 }

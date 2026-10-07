@@ -40,13 +40,148 @@ export function restoreTrainingDraft<T extends TrainingDraftState>(
   };
 }
 
+/**
+ * The single status a set's input is in. Stored flags are interpreted only
+ * here, so callers never combine `touched`, `recoveredStale` and
+ * `alternatives` themselves.
+ */
+export type DraftStatus =
+  | { kind: "saved" }
+  | { kind: "editing" }
+  | {
+      kind: "conflict";
+      reason: "recovered-stale" | "changed-elsewhere" | "alternatives";
+    };
+
+export function draftStatus(state: TrainingDraftState): DraftStatus {
+  if (!state.touched) return { kind: "saved" };
+  if (state.alternatives.length > 0)
+    return { kind: "conflict", reason: "alternatives" };
+  if (state.recoveredStale)
+    return { kind: "conflict", reason: "recovered-stale" };
+  if (!sameSet(state.base, state.set))
+    return { kind: "conflict", reason: "changed-elsewhere" };
+  return { kind: "editing" };
+}
+
 export function hasDraftConflict(state: TrainingDraftState): boolean {
-  return (
-    state.touched &&
-    (state.recoveredStale ||
-      !sameSet(state.base, state.set) ||
-      state.alternatives.length > 0)
-  );
+  return draftStatus(state).kind === "conflict";
+}
+
+/** True while the input differs from, or awaits review against, the saved set. */
+export function hasPendingInput(state: TrainingDraftState): boolean {
+  return draftStatus(state).kind !== "saved";
+}
+
+type DraftPatch = Partial<
+  Pick<
+    TrainingDraftState,
+    | "weight"
+    | "reps"
+    | "base"
+    | "touched"
+    | "recoveredStale"
+    | "revision"
+    | "records"
+    | "alternatives"
+  >
+>;
+
+/** Typing into a set captures its baseline the first time only. */
+export function editDraft(
+  state: TrainingDraftState,
+  values: Partial<RawValues>,
+  revision: number,
+): DraftPatch {
+  return {
+    ...(state.touched ? {} : { base: { ...state.set }, revision }),
+    ...values,
+    touched: true,
+  };
+}
+
+/** Adopts the saved set: used for discarding input and after a commit. */
+export function resetDraftToSaved(
+  set: WorkoutSet,
+  revision?: number,
+): DraftPatch {
+  return {
+    weight: String(set.weightKg),
+    reps: String(set.reps),
+    base: { ...set },
+    touched: false,
+    recoveredStale: false,
+    alternatives: [],
+    ...(revision === undefined ? {} : { revision }),
+  };
+}
+
+/** Keeps the entered input and accepts the current saved set as its baseline. */
+export function keepDraftInput(
+  state: TrainingDraftState,
+  revision: number,
+): DraftPatch {
+  return {
+    base: { ...state.set },
+    revision,
+    recoveredStale: false,
+    alternatives: [],
+    touched: true,
+  };
+}
+
+/** Selects one of several recovered drafts; it still needs review if stale. */
+export function chooseRecoveredDraft(
+  state: TrainingDraftState,
+  draft: SetDraft,
+  revision: number | undefined,
+): DraftPatch {
+  return {
+    weight: draft.weight,
+    reps: draft.reps,
+    base: draft.base,
+    revision: draft.revision,
+    recoveredStale:
+      draft.revision !== revision || !sameSet(draft.base, state.set),
+    alternatives: [],
+    touched: true,
+  };
+}
+
+/** A new canonical set arrived. Untouched input follows it; edits keep theirs. */
+export function observeSavedSet(
+  state: TrainingDraftState,
+  set: WorkoutSet,
+): DraftPatch & { set: WorkoutSet } {
+  if (!state.touched) return { set, ...resetDraftToSaved(set) };
+  return {
+    set,
+    recoveredStale: state.recoveredStale || !sameSet(state.base, set),
+  };
+}
+
+/** Drafts written by another tab always require review before saving. */
+export function mergeUnseenDrafts(
+  state: TrainingDraftState,
+  unseen: readonly SetDraft[],
+): DraftPatch {
+  const first = unseen[0];
+  if (!first) return {};
+  const records = [...state.records, ...unseen];
+  return {
+    ...(state.touched
+      ? {}
+      : {
+          weight: first.weight,
+          reps: first.reps,
+          base: first.base,
+          revision: first.revision,
+        }),
+    records,
+    alternatives: records,
+    touched: true,
+    recoveredStale: true,
+  };
 }
 
 export function isDraftDirty(state: TrainingDraftState): boolean {

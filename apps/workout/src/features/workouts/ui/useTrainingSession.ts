@@ -4,7 +4,6 @@ import type { Command, SessionExercise, Snapshot, WorkoutSet } from "../domain";
 import { setTargetReps } from "../domain";
 import {
   parseSetValues,
-  sameSet,
   type RawValues,
   type SetDraft,
 } from "../domain/drafts";
@@ -12,9 +11,16 @@ import {
 import {
   restoreTrainingDraft,
   hasDraftConflict,
+  hasPendingInput,
   isDraftDirty,
   decideSetCommit,
   canUndoSet,
+  editDraft,
+  resetDraftToSaved,
+  keepDraftInput,
+  chooseRecoveredDraft,
+  observeSavedSet,
+  mergeUnseenDrafts,
   type TrainingDraftState,
 } from "../domain/trainingDrafts";
 
@@ -104,9 +110,7 @@ export function useTrainingSession(options: {
     if (exercises.some((exercise) => exercise.id === selectedExerciseId.value))
       return;
     const ordered = orderedRows();
-    const pendingRow = ordered.find(
-      (row) => row.touched || hasDraftConflict(row),
-    );
+    const pendingRow = ordered.find(hasPendingInput);
     const first = pendingRow ?? ordered.find((row) => !row.set.completed);
     selectedExerciseId.value = first?.exercise.id ?? exercises[0]?.id ?? null;
     selected.value = pendingRow?.set.id ?? null;
@@ -148,14 +152,7 @@ export function useTrainingSession(options: {
   ) {
     const row = rows.get(set.id);
     if (row) {
-      if (row.touched && !sameSet(row.base, set)) row.recoveredStale = true;
-      row.set = set;
-      row.exercise = exercise;
-      row.index = index;
-      if (row.touched) return;
-      row.weight = String(set.weightKg);
-      row.reps = String(set.reps);
-      row.base = { ...set };
+      Object.assign(row, observeSavedSet(row, set), { exercise, index });
       return;
     }
     const recovered = recoverRecords(sessionId, set.id);
@@ -253,12 +250,10 @@ export function useTrainingSession(options: {
   function edit(setId: string, values: Partial<RawValues>) {
     const row = rows.get(setId);
     if (!row || options.saving.value) return;
-    if (!row.touched) {
-      row.base = { ...row.set };
-      row.revision = options.snapshot.value?.revision ?? 0;
-    }
-    row.touched = true;
-    Object.assign(row, values);
+    Object.assign(
+      row,
+      editDraft(row, values, options.snapshot.value?.revision ?? 0),
+    );
     row.issue = "";
     selectSet(setId);
     persist(row);
@@ -273,38 +268,24 @@ export function useTrainingSession(options: {
       ];
     } catch {}
     if (!consume(row)) return;
-    row.weight = String(row.set.weightKg);
-    row.reps = String(row.set.reps);
-    row.base = { ...row.set };
-    row.touched = false;
-    row.recoveredStale = false;
-    row.alternatives = [];
+    Object.assign(row, resetDraftToSaved(row.set));
     row.issue = "";
   }
   function keepInput(setId: string) {
     const row = rows.get(setId);
     const snapshot = options.snapshot.value;
     if (!row || !snapshot || options.saving.value) return;
-    row.base = { ...row.set };
-    row.revision = snapshot.revision;
-    row.recoveredStale = false;
-    row.alternatives = [];
+    Object.assign(row, keepDraftInput(row, snapshot.revision));
     row.issue = "";
-    row.touched = true;
     persist(row);
   }
   function chooseDraft(setId: string, draft: SetDraft) {
     const row = rows.get(setId);
     if (!row) return;
-    row.weight = draft.weight;
-    row.reps = draft.reps;
-    row.base = draft.base;
-    row.revision = draft.revision;
-    row.recoveredStale =
-      draft.revision !== options.snapshot.value?.revision ||
-      !sameSet(draft.base, row.set);
-    row.alternatives = [];
-    row.touched = true;
+    Object.assign(
+      row,
+      chooseRecoveredDraft(row, draft, options.snapshot.value?.revision),
+    );
     persist(row);
   }
   async function commit(setId: string, valuesOnly = false) {
@@ -339,14 +320,9 @@ export function useTrainingSession(options: {
     );
     if (!result) return;
     consume(row, acknowledged);
-    row.touched = false;
-    row.recoveredStale = false;
-    row.alternatives = [];
+    const saved = savedSetBaseline(result, setId, { ...values, completed });
+    Object.assign(row, resetDraftToSaved(saved, result.revision));
     row.issue = "";
-    row.base = savedSetBaseline(result, setId, { ...values, completed });
-    row.revision = result.revision;
-    row.weight = String(row.base.weightKg);
-    row.reps = String(row.base.reps);
     reportCommit(row, session.id, completed, valuesOnly);
     Object.assign(row, restoreTrainingDraft(row));
     recoverUnseenDrafts(session.id);
@@ -355,11 +331,11 @@ export function useTrainingSession(options: {
     snapshot: Snapshot,
     setId: string,
     fallback: SetDraft["base"],
-  ) {
+  ): WorkoutSet {
     return (
       snapshot.active?.exercises
         .flatMap((exercise) => exercise.sets)
-        .find((set) => set.id === setId) ?? fallback
+        .find((set) => set.id === setId) ?? { ...fallback, id: setId }
     );
   }
   function reportCommit(
@@ -437,7 +413,7 @@ export function useTrainingSession(options: {
     if (!row?.set.completed || !session || !snapshot || options.saving.value)
       return;
     if (!recoverUnseenDrafts(session.id)) return;
-    if (row.touched || conflict(row)) {
+    if (hasPendingInput(row)) {
       notice.value = "Save or discard this set’s input before undoing its log.";
       selectSet(setId);
       return;
@@ -458,6 +434,7 @@ export function useTrainingSession(options: {
       notice.value = "Set marked as not logged. You can log it again.";
     }
   }
+  /** Undoes the most recent log through the same guards as an explicit undo. */
   async function undo() {
     const last = lastLog.value,
       snapshot = options.snapshot.value;
@@ -467,21 +444,7 @@ export function useTrainingSession(options: {
       lastLog.value = null;
       return;
     }
-    if (
-      await options.run(
-        {
-          type: "set-completed",
-          sessionId: last.sessionId,
-          setId: last.setId,
-          completed: false,
-        },
-        snapshot.revision,
-      )
-    ) {
-      selectSet(last.setId);
-      lastLog.value = null;
-      notice.value = "Set marked as not logged.";
-    }
+    await undoSet(last.setId);
   }
   async function tapSet(setId: string): Promise<boolean> {
     const row = rows.get(setId),
@@ -489,7 +452,7 @@ export function useTrainingSession(options: {
       snapshot = options.snapshot.value;
     if (!row || !session || !snapshot || options.saving.value) return false;
     if (!recoverUnseenDrafts(session.id)) return false;
-    if (row.touched || conflict(row)) {
+    if (hasPendingInput(row)) {
       selectSet(setId);
       notice.value =
         "Review this set's input before using the circle shortcut.";
@@ -518,7 +481,7 @@ export function useTrainingSession(options: {
       session = active.value;
     if (!row || !session || options.saving.value) return false;
     if (!recoverUnseenDrafts(session.id)) return false;
-    if (row.touched) {
+    if (hasPendingInput(row)) {
       notice.value = "Save or discard this set's draft before clearing it.";
       return false;
     }
@@ -549,7 +512,7 @@ export function useTrainingSession(options: {
     if (
       command.type !== "set-exercise-note" &&
       [...rows.values()].some(
-        (row) => row.exercise.id === command.exerciseId && row.touched,
+        (row) => row.exercise.id === command.exerciseId && hasPendingInput(row),
       )
     ) {
       notice.value =
@@ -564,13 +527,11 @@ export function useTrainingSession(options: {
           : "Exercise updated. Logged sets are unchanged.";
     return !!saved;
   }
-  const pending = computed(() =>
-    orderedRows().filter((row) => row.touched || conflict(row)),
-  );
+  const pending = computed(() => orderedRows().filter(hasPendingInput));
   async function saveEdits() {
     for (const row of pending.value) {
       await commit(row.set.id, true);
-      if (row.touched) {
+      if (hasPendingInput(row)) {
         selectSet(row.set.id);
         return false;
       }
@@ -591,18 +552,8 @@ export function useTrainingSession(options: {
       }
       const known = new Set(row.records.map((record) => record.id));
       const unseen = recovered.filter((record) => !known.has(record.id));
-      const first = unseen[0];
-      if (!first) continue;
-      if (!row.touched) {
-        row.weight = first.weight;
-        row.reps = first.reps;
-        row.base = first.base;
-        row.revision = first.revision;
-      }
-      row.records = [...row.records, ...unseen];
-      row.alternatives = [...row.records];
-      row.touched = true;
-      row.recoveredStale = true;
+      if (!unseen.length) continue;
+      Object.assign(row, mergeUnseenDrafts(row, unseen));
       row.issue =
         "Another tab has input drafts for this set. Review them before saving.";
     }

@@ -51,7 +51,14 @@ export function useWorkoutName(
     () => dirty.value && workspace.active.value?.name !== draft.value?.baseName,
   );
   const canSave = computed(
-    () => dirty.value && !conflict.value && !workspace.saving.value,
+    () =>
+      dirty.value &&
+      !conflict.value &&
+      !submitting.value &&
+      !workspace.saving.value,
+  );
+  const recoveryBusy = computed(
+    () => !!recovering.value || workspace.saving.value,
   );
   const text = computed({
     get: () => draft.value?.text ?? "",
@@ -82,17 +89,29 @@ export function useWorkoutName(
   function detachOutgoing(previousName: string | undefined) {
     const outgoing = draft.value;
     if (!outgoing || outgoing.text === previousName) return;
+    recoveryIssues.delete(outgoing.sessionId);
     detached.set(outgoing.sessionId, {
       sessionId: outgoing.sessionId,
       text: outgoing.text,
       baseName: outgoing.baseName,
     });
   }
+  /** A detached name that already reached its completed workout needs no recovery. */
+  function pruneSavedRecoveries() {
+    const completed = workspace.snapshot.value?.completed ?? {};
+    for (const [sessionId, entry] of detached)
+      if (completed[sessionId]?.name === entry.text) {
+        detached.delete(sessionId);
+        recoveryIssues.delete(sessionId);
+      }
+  }
   watch(
     () => workspace.snapshot.value,
     (_snapshot, previous) => {
+      pruneSavedRecoveries();
       if (draft.value?.sessionId !== workspace.active.value?.id) {
         detachOutgoing(previous?.active?.name);
+        pruneSavedRecoveries();
         useSaved();
         return;
       }
@@ -122,11 +141,11 @@ export function useWorkoutName(
       submitted.revision,
     );
     submitting.value = false;
+    if (draft.value?.sessionId !== submitted.sessionId) return;
     if (!saved) {
       issue.value = "Name not saved. Your input is still here.";
       return;
     }
-    if (draft.value?.sessionId !== submitted.sessionId) return;
     const active = saved.active;
     if (!active || active.id !== submitted.sessionId) return;
     draft.value = {
@@ -206,5 +225,6 @@ export function useWorkoutName(
     resolveRecovery,
     recoveryIssues,
     recovering,
+    recoveryBusy,
   };
 }

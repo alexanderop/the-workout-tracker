@@ -45,7 +45,7 @@ const {
 const clock = useWorkoutClock(environment.now);
 const workspace = useWorkoutWorkspace(workouts, drafts, clock.now);
 watch(() => workspace.active.value?.rest?.endsAt, clock.refresh);
-const { state, snapshot, saving, message, error, history, active } = workspace;
+const { state, snapshot, saving, message, error, notice, history, active } = workspace;
 const dialogs = useTemplateRef<InstanceType<typeof WorkoutDialogs>>("dialogs");
 const router = useRouter();
 onScopeDispose(router.beforeEach(() => dialogs.value?.requestLeave() ?? true));
@@ -68,7 +68,11 @@ const {
   selectWorkoutView,
   workoutsHref,
   prepareLinkNavigation,
-} = useWorkoutNavigation(message, error, focusMain);
+} = useWorkoutNavigation(
+  message,
+  (text) => workspace.fail(text, true),
+  focusMain,
+);
 const progressExercise = ref("");
 const {
   installOpen,
@@ -246,7 +250,11 @@ const title = computed(() => {
         <template v-else-if="snapshot">
           <div v-if="error" class="notice" role="alert">
             <CircleHelp :size="18" /><span>{{ error }}</span
-            ><BaseButton unstyled class="text-button" @click="reload"
+            ><BaseButton
+              v-if="notice.kind === 'failed' && notice.reload"
+              unstyled
+              class="text-button"
+              @click="reload"
               >Reload</BaseButton
             ><BaseButtonIcon label="Dismiss error" @click="error = ''">
               <X :size="16" />

@@ -7,7 +7,7 @@ const { controller } = defineProps<{
   controller: ReturnType<typeof useWorkoutName>;
 }>();
 const open = ref(false);
-const { recoveries, recoveryIssues, recovering } = controller;
+const { recoveries, recoveryIssues, recoveryBusy } = controller;
 useUnsavedChangesWarning(
   () => controller.dirty.value || recoveries.value.length > 0,
 );
@@ -62,7 +62,7 @@ watch(
       <div class="name-recovery-actions">
         <BaseButton
           v-if="entry.state !== 'missing'"
-          :disabled="!!recovering"
+          :disabled="recoveryBusy"
           @click="
             controller.resolveRecovery(
               entry.sessionId,
@@ -75,7 +75,7 @@ watch(
         >
         <BaseButton
           variant="secondary"
-          :disabled="!!recovering"
+          :disabled="recoveryBusy"
           @click="controller.resolveRecovery(entry.sessionId, 'discard')"
           >Discard name</BaseButton
         >

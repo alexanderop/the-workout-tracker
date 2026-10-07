@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, useTemplateRef, watch } from "vue";
+import { computed, nextTick, ref, useTemplateRef, watch } from "vue";
 import { BaseButton, BaseButtonIcon, BaseInput, BaseSheet } from "@form/ui";
 import { Plus, Dumbbell, Clock3, ShieldCheck, Ellipsis, Check, Pencil, ChevronLeft } from "@lucide/vue";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
@@ -10,8 +10,9 @@ import ExerciseThumbnail from "./ExerciseThumbnail.vue";
 import type { TrainingRow } from "./useTrainingSession";
 import ExerciseConfiguration from "./ExerciseConfiguration.vue";
 import TrainingSetEditor from "./TrainingSetEditor.vue";
+import { useLeaveConfirmation } from "./useLeaveConfirmation";
 import { lastExercisePerformance } from "../domain/exerciseHistory";
-import { duration, fmt, longDate } from "./presentation";
+import { fmt, longDate, nextSetLabel, restLabel } from "./presentation";
 import "./training.css";
 const { workspace, workoutsHref } = defineProps<{
   workspace: WorkoutWorkspace;
@@ -24,9 +25,10 @@ const {
   activeTotals,
   activeSetCount,
   elapsed,
-  rest,
   training,
   run,
+  trainingMode,
+  canFinish,
 } = workspace;
 const emit = defineEmits<{
   finish: [];
@@ -36,7 +38,6 @@ const emit = defineEmits<{
   navigate: [page: "workouts"];
 }>();
 const { text: name, issue: nameIssue, dirty: nameDirty, conflict: nameConflict, save: rename, keepMine, useSaved } = workspace.workoutName;
-const nameDismiss = ref(false);
 const renameOpen = ref(false);
 async function closeRename() {
   if (saving.value) return;
@@ -55,12 +56,11 @@ function adoptName() {
   renameOpen.value = false;
 }
 const configurationEditor = useTemplateRef<InstanceType<typeof ExerciseConfiguration>>("configurationEditor");
-let pendingLeave: { promise: Promise<boolean>; resolve: (leave: boolean) => void } | null = null;
+const nameLeave = useLeaveConfirmation();
+const nameDismiss = nameLeave.open;
 function settleNameLeave(leave: boolean) {
   if (leave) useSaved();
-  nameDismiss.value = false;
-  pendingLeave?.resolve(leave);
-  pendingLeave = null;
+  nameLeave.settle(leave);
 }
 async function requestLeave(): Promise<boolean> {
   if (saving.value) return false;
@@ -69,14 +69,8 @@ async function requestLeave(): Promise<boolean> {
 }
 function requestNameDiscard(): Promise<boolean> {
   if (!nameDirty.value) return Promise.resolve(true);
-  if (pendingLeave) return pendingLeave.promise;
-  let resolve!: (leave: boolean) => void;
-  const promise = new Promise<boolean>((done) => { resolve = done; });
-  pendingLeave = { promise, resolve };
-  nameDismiss.value = true;
-  return promise;
+  return nameLeave.request();
 }
-onBeforeUnmount(() => settleNameLeave(false));
 defineExpose({ requestLeave });
 
 const editorSet = ref<string | null>(null);
@@ -120,12 +114,7 @@ watch(
 );
 const isComplete = (exercise: SessionExercise) =>
   exercise.sets.every((set) => set.completed);
-const allDone = computed(
-  () =>
-    !!activeSetCount.value &&
-    activeTotals.value.completedSets === activeSetCount.value,
-);
-const nextRow = training.next;
+const allDone = computed(() => !!activeSetCount.value && !training.next.value);
 function pick() {
   emit("pick");
 }
@@ -235,7 +224,7 @@ function discard() {
       <BaseButton
         variant="secondary"
         class="active-workout-finish"
-        :disabled="saving || nameDirty || !activeTotals.completedSets"
+        :disabled="!canFinish"
         @click="emit('finish')"
         >Finish</BaseButton
       >
@@ -307,7 +296,7 @@ function discard() {
           <p class="eyebrow">ALL SETS LOGGED</p>
           <h2>That’s your last set.</h2>
           <p>Review your sets, or add another exercise.</p>
-          <BaseButton :disabled="saving || nameDirty" @click="emit('finish')"
+          <BaseButton :disabled="!canFinish" @click="emit('finish')"
             >Finish workout</BaseButton
           >
         </div>
@@ -326,26 +315,22 @@ function discard() {
       </div>
       <aside class="workout-rest-panel">
         <Clock3 :size="20" /><strong>{{
-          active.rest ? duration(rest) : "Ready when you are"
+          trainingMode?.kind === "resting"
+            ? restLabel(trainingMode.remaining)
+            : "Ready when you are"
         }}</strong>
-        <p>
-          {{
-            nextRow
-              ? `Next: ${nextRow.exercise.name} · Set ${nextRow.index + 1} of ${nextRow.exercise.sets.length}`
-              : "All planned work recorded"
-          }}
-        </p>
+        <p>{{ nextSetLabel(training.next.value) }}</p>
         <small>{{
           snapshot?.settings.autoRest
             ? "Your configured rest starts after logging."
             : "Automatic rest is turned off."
         }}</small
         ><BaseButton
-          v-if="active.rest"
+          v-if="trainingMode?.kind === 'resting'"
           variant="secondary"
           :disabled="saving"
           @click="run({ type: 'stop-rest', sessionId: active.id })"
-          >{{ rest ? "Skip rest" : "Dismiss timer" }}</BaseButton
+          >{{ trainingMode.remaining ? "Skip rest" : "Dismiss timer" }}</BaseButton
         >
         <p class="saved-indicator">
           <ShieldCheck :size="14" />{{
