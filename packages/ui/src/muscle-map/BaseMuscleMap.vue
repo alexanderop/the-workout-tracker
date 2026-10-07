@@ -13,11 +13,13 @@ const {
   view = "both",
   interactive = false,
   disabled = false,
+  presentation = "full",
 } = defineProps<{
   highlights?: readonly MuscleHighlight[];
   view?: MuscleMapView;
   interactive?: boolean;
   disabled?: boolean;
+  presentation?: "full" | "illustration";
 }>();
 const selected = defineModel<MuscleRegion | null>({ default: null });
 const attrs = useAttrs();
@@ -66,8 +68,10 @@ function select(region: MuscleRegion): void {
 <template>
   <div
     class="ui-muscle-map"
+    :class="{ 'ui-muscle-map-illustration': presentation === 'illustration' }"
     data-slot="muscle-map"
-    role="group"
+    :role="presentation === 'full' ? 'group' : undefined"
+    :aria-hidden="presentation === 'illustration' ? true : undefined"
     :aria-label="accessibleLabel()"
   >
     <div class="ui-muscle-map-figures" aria-hidden="true">
@@ -93,18 +97,18 @@ function select(region: MuscleRegion): void {
             }"
           />
         </svg>
-        <span>{{ bodyView.label }}</span>
+        <span v-if="presentation === 'full'">{{ bodyView.label }}</span>
       </div>
     </div>
-    <div class="ui-muscle-map-legend">
+    <div v-if="presentation === 'full'" class="ui-muscle-map-legend">
       <span><i class="is-primary" />Primary</span
       ><span><i class="is-supporting" />Supporting</span
       ><span><i />Not highlighted</span>
     </div>
-    <p v-if="interactive" class="ui-muscle-map-hint">
+    <p v-if="interactive && presentation === 'full'" class="ui-muscle-map-hint">
       Choose a muscle below to locate it on the map.
     </p>
-    <ul class="ui-muscle-map-list">
+    <ul v-if="presentation === 'full'" class="ui-muscle-map-list">
       <li v-for="region in rows" :key="region.id">
         <button
           v-if="interactive"

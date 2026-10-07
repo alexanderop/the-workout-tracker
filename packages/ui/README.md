@@ -190,6 +190,10 @@ The visible text list communicates each region's involvement independently of co
 
 See **02 Components / BaseMuscleMap** in Histoire for interactive controls, parent reset, read-only selection, empty highlights and independent front/back instances. These examples use local sample data and are not integrated into the workout app. The component makes no fatigue or recovery claims and has no storage dependencies.
 
+`BaseMuscleMap` accepts `presentation="illustration"` for decorative figures inside a labeled parent card. This mode hides the figure labels, legend and region list, and exposes no interactive regions. The parent supplies the visible label and any selection control. The default `full` presentation retains its accessible text equivalent.
+
+Pure TypeScript consumers may import `MuscleHighlight`, `MuscleMapView` and `MuscleRegion` from the type-only `@form/ui/muscle-map-types` export without loading Vue component declarations. SVG geometry remains private.
+
 ## Mobile feedback components
 
 - `BaseFeedback :active="confirmed"` wraps a status icon. It pulses only on a false-to-true change after mounting, without timers. Consumers retain the accessible label, canonical success state and error handling; never bind it to a draft or pending request. Initially confirmed values and undo do not animate.

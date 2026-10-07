@@ -209,7 +209,7 @@ const title = computed(() => {
         ref="main"
         class="main"
         :class="{
-          'journal-ready': snapshot,
+          'journal-ready': snapshot && page !== 'exercises',
           'compact-home': page === 'workouts' && workoutView !== 'history',
         }"
         tabindex="-1"

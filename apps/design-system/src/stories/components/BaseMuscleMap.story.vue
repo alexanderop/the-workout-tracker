@@ -9,6 +9,7 @@ import {
   type MuscleMapView,
 } from "@form/ui";
 const headingId = useId();
+const filterGroup = ref("Legs");
 const selected = ref<MuscleRegion | null>(null);
 const secondSelected = ref<MuscleRegion | null>(null);
 const disabled = ref(false);
@@ -75,6 +76,32 @@ const legs: readonly MuscleHighlight[] = [
         />
       </section>
     </Variant>
+    <Variant title="Illustration · labeled filter cards">
+      <div class="muscle-map-example-pair">
+        <button
+          type="button"
+          class="muscle-map-filter-example"
+          :aria-pressed="filterGroup === 'Chest'"
+          @click="filterGroup = 'Chest'"
+        >
+          <BaseMuscleMap
+            presentation="illustration"
+            view="front"
+            :highlights="press"
+          />
+          <span>Chest</span>
+        </button>
+        <button
+          type="button"
+          class="muscle-map-filter-example"
+          :aria-pressed="filterGroup === 'Legs'"
+          @click="filterGroup = 'Legs'"
+        >
+          <BaseMuscleMap presentation="illustration" :highlights="legs" />
+          <span>Legs</span>
+        </button>
+      </div>
+    </Variant>
     <Variant title="Empty · no highlights">
       <section class="muscle-map-example">
         <span class="muscle-map-example-eyebrow">A FRESH START</span>
@@ -112,6 +139,22 @@ const legs: readonly MuscleHighlight[] = [
   </Story>
 </template>
 <style scoped>
+.muscle-map-filter-example {
+  width: 160px;
+  padding: 16px;
+  color: var(--ui-foreground);
+  background: var(--ui-muted);
+  border: 2px solid transparent;
+  border-radius: 24px;
+  font: inherit;
+}
+.muscle-map-filter-example[aria-pressed="true"] {
+  border-color: var(--ui-primary);
+}
+.muscle-map-filter-example:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 4px;
+}
 .muscle-map-example {
   width: 100%;
   max-width: 560px;
@@ -173,6 +216,8 @@ Import `BaseMuscleMap`, `MuscleHighlight`, `MuscleRegion` and `MuscleMapView` fr
 ## Variants
 
 Exercise selection, a read-only lower-body selection, empty data and two independently controlled maps. `view` accepts `front`, `back` or `both` (default). The text list follows the visible geometry and lists shared regions only once. Changing views preserves selection, even when its region becomes hidden.
+
+`presentation="illustration"` renders only decorative figures for a labeled parent card. It hides labels, legend and region controls, including when `interactive` is supplied. The parent must provide the visible label and interaction. The default `full` presentation retains the complete text equivalent.
 
 ## States
 

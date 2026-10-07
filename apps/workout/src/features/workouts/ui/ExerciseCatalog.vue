@@ -1,9 +1,22 @@
 <script setup lang="ts">
-import { BaseInput, BaseSelectNative, BaseButton } from "@form/ui";
-import { useTemplateRef, computed, ref, watch } from "vue";
-import { Check, Search } from "@lucide/vue";
+import { BaseInput, BaseButton } from "@form/ui";
+import { useTemplateRef, computed, ref, watch, nextTick } from "vue";
+import {
+  Check,
+  Search,
+  SlidersHorizontal,
+  ArrowDownAZ,
+  ArrowUpAZ,
+} from "@lucide/vue";
 import type { Exercise } from "../domain";
 import ExerciseThumbnail from "./ExerciseThumbnail.vue";
+import ExerciseFilterSheet from "./ExerciseFilterSheet.vue";
+import {
+  emptyCatalogFilters,
+  filterCatalog,
+  type CatalogFilters,
+  type CatalogSort,
+} from "./catalogFilters";
 const {
   exercises,
   selected,
@@ -16,10 +29,18 @@ const {
   initialSearch?: string;
 }>();
 const emit = defineEmits<{ toggle: [id: string] }>();
+const controls = useTemplateRef<HTMLElement>("controls");
 const list = useTemplateRef<HTMLElement>("list");
 const search = ref(initialSearch);
-const muscle = ref("");
-const equipment = ref("");
+const filters = ref<CatalogFilters>(emptyCatalogFilters);
+const sort = ref<CatalogSort>("ascending");
+const filtersOpen = ref(false);
+const filterCount = computed(
+  () =>
+    Number(Boolean(filters.value.category)) +
+    Number(Boolean(filters.value.equipment)) +
+    Number(filters.value.onlyCustom),
+);
 const groups = computed(() =>
   [...new Set(exercises.map((exercise) => exercise.category))].sort(),
 );
@@ -27,21 +48,20 @@ const equipmentOptions = computed(() =>
   [...new Set(exercises.map((exercise) => exercise.equipment))].sort(),
 );
 const results = computed(() =>
-  exercises.filter(
-    (exercise) =>
-      (!muscle.value || exercise.category === muscle.value) &&
-      (!equipment.value || exercise.equipment === equipment.value) &&
-      `${exercise.name} ${exercise.category} ${exercise.equipment}`
-        .toLowerCase()
-        .includes(search.value.trim().toLowerCase()),
-  ),
+  filterCatalog(exercises, search.value, filters.value, sort.value),
 );
-watch([search, muscle, equipment], () => {
+watch([search, filters, sort], () => {
   if (list.value) list.value.scrollTop = 0;
 });
+async function clearSearchAndFilters() {
+  search.value = "";
+  filters.value = emptyCatalogFilters;
+  await nextTick();
+  controls.value?.querySelector<HTMLInputElement>("input")?.focus();
+}
 </script>
 <template>
-  <div class="catalog-controls">
+  <div ref="controls" class="catalog-controls">
     <div class="search-field picker-search">
       <Search :size="18" /><BaseInput
         v-model="search"
@@ -50,29 +70,45 @@ watch([search, muscle, equipment], () => {
         @keydown.enter.prevent
       />
     </div>
-    <div class="catalog-filters">
-      <label class="field"
-        ><span>Muscle group</span
-        ><BaseSelectNative v-model="muscle" class="input">
-          <option value="">{{ selected ? "All" : "All muscles" }}</option>
-          <option v-for="group in groups" :key="group">{{ group }}</option>
-        </BaseSelectNative></label
-      >
-      <label class="field"
-        ><span>Equipment</span
-        ><BaseSelectNative v-model="equipment" class="input">
-          <option value="">{{ selected ? "All" : "All equipment" }}</option>
-          <option v-for="item in equipmentOptions" :key="item">
-            {{ item }}
-          </option>
-        </BaseSelectNative></label
-      >
-    </div>
   </div>
-  <p class="catalog-count muted small" role="status">
-    {{ results.length }} exercises<span v-if="selected?.length">
-      · {{ selected.length }} selected</span
+  <div class="catalog-toolbar">
+    <button
+      type="button"
+      class="catalog-filter-button"
+      aria-label="Filters"
+      aria-haspopup="dialog"
+      @click="filtersOpen = true"
     >
+      <span role="status"
+        >{{ results.length }}
+        {{ results.length === 1 ? "exercise" : "exercises"
+        }}<span v-if="filterCount">
+          · {{ filterCount }}
+          {{ filterCount === 1 ? "filter" : "filters" }}</span
+        ></span
+      >
+      <SlidersHorizontal :size="20" aria-hidden="true" />
+    </button>
+    <button
+      type="button"
+      class="catalog-sort-button"
+      :aria-label="sort === 'ascending' ? 'Sort Z to A' : 'Sort A to Z'"
+      @click="sort = sort === 'ascending' ? 'descending' : 'ascending'"
+    >
+      {{ sort === "ascending" ? "A–Z" : "Z–A"
+      }}<ArrowDownAZ
+        v-if="sort === 'ascending'"
+        :size="20"
+        aria-hidden="true"
+      /><ArrowUpAZ v-else :size="20" aria-hidden="true" />
+    </button>
+  </div>
+  <p
+    v-if="selected?.length"
+    class="catalog-selection-count muted small"
+    role="status"
+  >
+    {{ selected.length }} selected
   </p>
   <div ref="list" class="picker-list catalog-list">
     <component
@@ -91,7 +127,8 @@ watch([search, muscle, equipment], () => {
       <span class="catalog-row-name"
         >{{ exercise.name
         }}<small
-          >{{ exercise.category }} · {{ exercise.equipment
+          ><span class="sr-only">{{ exercise.category }} · </span
+          >{{ exercise.equipment
           }}<span v-if="exercise.custom"> · Custom</span></small
         ></span
       >
@@ -99,8 +136,18 @@ watch([search, muscle, equipment], () => {
         ><Check v-if="selected.includes(exercise.id)" :size="17"
       /></span>
     </component>
-    <p v-if="!results.length" class="empty-inline muted">
-      No matches. Try another filter or create your own exercise.
-    </p>
+    <div v-if="!results.length" class="empty-inline muted">
+      <p>No matching exercises.</p>
+      <button type="button" class="text-button" @click="clearSearchAndFilters">
+        Clear search and filters
+      </button>
+    </div>
   </div>
+  <ExerciseFilterSheet
+    v-model="filters"
+    :open="filtersOpen"
+    :equipment="equipmentOptions"
+    :categories="groups"
+    @close="filtersOpen = false"
+  />
 </template>

@@ -76,7 +76,7 @@ Production composition supplies PWA capabilities to `App.vue`. The Settings rout
 
 Other features may import only the public index and only from their application layer. `featureDependencies` in `tooling/architecture/policy.mjs` declares permitted feature dependencies. It starts empty. Dependency cycles are rejected.
 
-`packages/ui` owns generic components and design tokens. It has no workout, application, or persistence dependencies. Its public package exports are `@form/ui`, `@form/ui/tokens.css`, `@form/ui/styles.css`, and `@form/ui/workout-theme.css`. Palette values live in `tokens.css`; `workout-theme.css` maps those values to generic component roles for both applications.
+`packages/ui` owns generic components and design tokens. It has no workout, application, or persistence dependencies. Its public package exports are `@form/ui`, `@form/ui/tokens.css`, `@form/ui/styles.css`, `@form/ui/workout-theme.css`, and the type-only `@form/ui/muscle-map-types`. Palette values live in `tokens.css`; `workout-theme.css` maps those values to generic component roles for both applications.
 
 ## Storage contract
 
@@ -163,3 +163,9 @@ Optional session-exercise notes keep existing version 2 snapshots and backups re
 `WorkoutDialogs` keeps a temporary start/add picker intent. Add captures its session identity. The domain `start-selected` command resolves selected catalog IDs, constructs default sets and starts the full workout in the existing atomic application save. Template-only `start` requires a template ID. The dialog closes only after success; it does not orchestrate separate start and add writes. No setup draft or persisted schema was added.
 
 `domain/exerciseHistory.ts` selects the latest completed workout with logged sets for a catalog identity. `TrainingPage` presents that reference and owns the rename sheet; `useWorkoutName` continues to own dirty input, revision and conflict handling. Finish still passes through the workspace draft guards.
+
+## Exercise catalog presentation
+
+`ui/ExerciseCatalog.vue` owns transient search, filters and alphabetical ordering while callers own selected IDs and all commands. Its pure `catalogFilters.ts` projection intersects search with equipment, category and custom-only fields without mutating catalog data. `ExerciseFilterSheet.vue` owns one nested sheet and its overview/equipment/muscle navigation and focus transitions. `catalogIllustrations.ts` holds explicit equipment artwork and broad group illustrations using public UI types. None of this state is persisted or added to backups.
+
+The catalog retains fragment roots so its list remains a direct child of picker sheets. The sheet layout reserves space for the caller's sticky Start/Add action and scrolls only the list. Filtering never removes IDs from the caller's selection.

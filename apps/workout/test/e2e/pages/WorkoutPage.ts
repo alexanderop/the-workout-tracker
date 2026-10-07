@@ -153,7 +153,7 @@ export class WorkoutPage {
       .getByRole("link", { name: "Exercises", exact: true })
       .click();
     await this.page
-      .getByRole("button", { name: "Create exercise", exact: true })
+      .getByRole("button", { name: "Create", exact: true })
       .click();
     const dialog = this.page.getByRole("dialog");
     await dialog

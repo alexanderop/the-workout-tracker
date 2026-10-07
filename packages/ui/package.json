@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./muscle-map-types": "./src/muscle-map/types.ts",
     "./tokens.css": "./src/tokens.css",
     "./styles.css": "./src/styles.css",
     "./workout-theme.css": "./src/workout-theme.css"

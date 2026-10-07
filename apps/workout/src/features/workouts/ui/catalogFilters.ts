@@ -1,0 +1,40 @@
+import type { Exercise } from "../domain";
+
+export type CatalogFilters = Readonly<{
+  equipment: string;
+  category: string;
+  onlyCustom: boolean;
+}>;
+export type CatalogSort = "ascending" | "descending";
+export const emptyCatalogFilters: CatalogFilters = {
+  equipment: "",
+  category: "",
+  onlyCustom: false,
+};
+
+export function filterCatalog(
+  exercises: readonly Exercise[],
+  search: string,
+  filters: CatalogFilters,
+  sort: CatalogSort,
+): Exercise[] {
+  const query = search.trim().toLowerCase();
+  return exercises
+    .filter((exercise) => matchesFilters(exercise, filters))
+    .filter((exercise) =>
+      `${exercise.name} ${exercise.category} ${exercise.equipment}`
+        .toLowerCase()
+        .includes(query),
+    )
+    .sort((a, b) => {
+      const order = a.name.localeCompare(b.name) || a.id.localeCompare(b.id);
+      return sort === "ascending" ? order : -order;
+    });
+}
+
+function matchesFilters(exercise: Exercise, filters: CatalogFilters): boolean {
+  if (filters.equipment && exercise.equipment !== filters.equipment)
+    return false;
+  if (filters.category && exercise.category !== filters.category) return false;
+  return !filters.onlyCustom || exercise.custom;
+}

@@ -151,7 +151,7 @@ export function importViolation(
   }
   if (
     source.layer === "ui" &&
-    /^(?:vue|@vueuse\/core|@form\/ui|@lucide\/vue|lucide-vue-next|reka-ui)$/.test(
+    /^(?:vue|@vueuse\/core|@form\/ui(?:\/muscle-map-types)?|@lucide\/vue|lucide-vue-next|reka-ui)$/.test(
       specifier,
     )
   )

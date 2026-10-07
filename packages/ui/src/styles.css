@@ -877,3 +877,26 @@
     animation: none;
   }
 }
+
+.ui-muscle-map-illustration .ui-muscle-map-figures {
+  margin: 0;
+  gap: 4px;
+}
+.ui-muscle-map-illustration .ui-muscle-map-view {
+  width: auto;
+  flex: 0 1 72px;
+  min-width: 0;
+}
+.ui-muscle-map-illustration .ui-muscle-map-view svg {
+  height: 116px;
+}
+.ui-muscle-map-illustration .ui-muscle-map-outline {
+  fill: color-mix(
+    in srgb,
+    var(--ui-muted-foreground) 35%,
+    var(--ui-background)
+  );
+}
+.ui-muscle-map-illustration .ui-muscle-map-region:not(.is-highlighted) {
+  fill-opacity: 0.55;
+}
