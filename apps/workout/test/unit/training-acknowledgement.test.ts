@@ -92,4 +92,19 @@ describe("set draft acknowledgement", () => {
     expect(workspace.training.pending.value[0]?.weight).toBe("70");
     expect(workspace.training.pending.value[0]?.recoveredStale).toBe(true);
   });
+
+  it("recovers input arriving during a save without another action discovering it", async () => {
+    const { workspace, storage, set, active, journal, writeElsewhere, holdWrite } = setup();
+    workspace.training.edit(set.id, { weight: "60" });
+    const release = holdWrite();
+    const saving = workspace.training.commit(set.id);
+    writeElsewhere("70");
+    release();
+    await saving;
+
+    expect(storage.current().active?.exercises[0]?.sets[0]).toMatchObject({ weightKg: 60, completed: true });
+    expect(journal.recover(active.id, set.id).map((record) => record.weight)).toEqual(["70"]);
+    expect(workspace.training.pending.value[0]?.weight).toBe("70");
+    expect(workspace.training.pending.value[0]?.recoveredStale).toBe(true);
+  });
 });

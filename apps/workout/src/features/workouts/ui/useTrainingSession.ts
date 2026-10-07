@@ -52,10 +52,11 @@ export function useTrainingSession(options: {
       reviewFocus.value = null;
     },
   );
-  function consume(row: TrainingRow) {
+  function consume(row: TrainingRow, records = row.records) {
     try {
-      options.journal.consume(row.records);
-      row.records = [];
+      options.journal.consume(records);
+      const acknowledged = new Set(records.map((record) => record.id));
+      row.records = row.records.filter((record) => !acknowledged.has(record.id));
       row.storageIssue = "";
       return true;
     } catch {
@@ -300,18 +301,14 @@ export function useTrainingSession(options: {
       snapshot = options.snapshot.value,
       session = active.value;
     if (!row || !snapshot || !session || options.saving.value) return;
+    if (!recoverUnseenDrafts(session.id)) return;
     const decision = decideSetCommit(row, valuesOnly);
     if (decision.kind === "blocked") {
       row.issue = decision.issue;
       return;
     }
     const { values, completed } = decision;
-    try {
-      row.records = [
-        ...row.records,
-        ...options.journal.recover(session.id, setId),
-      ];
-    } catch {}
+    const acknowledged = [...row.records];
     const result = await options.run(
       {
         ...(valuesOnly
@@ -325,15 +322,18 @@ export function useTrainingSession(options: {
       snapshot.revision,
     );
     if (!result) return;
-    consume(row);
+    consume(row, acknowledged);
     row.touched = false;
     row.recoveredStale = false;
     row.alternatives = [];
     row.issue = "";
     row.base = savedSetBaseline(result, setId, { ...values, completed });
+    row.revision = result.revision;
     row.weight = String(row.base.weightKg);
     row.reps = String(row.base.reps);
     reportCommit(row, session.id, completed, valuesOnly);
+    Object.assign(row, restoreTrainingDraft(row));
+    recoverUnseenDrafts(session.id);
   }
   function savedSetBaseline(
     snapshot: Snapshot,
@@ -537,7 +537,7 @@ export function useTrainingSession(options: {
         recovered = options.journal.recover(sessionId, row.set.id);
       } catch {
         row.storageIssue =
-          "Could not check saved drafts. Try again before finishing.";
+          "Could not check saved drafts. Try again before saving.";
         selectSet(row.set.id);
         notice.value = row.storageIssue;
         return false;
@@ -557,7 +557,7 @@ export function useTrainingSession(options: {
       row.touched = true;
       row.recoveredStale = true;
       row.issue =
-        "Another tab has input drafts for this set. Review them before finishing.";
+        "Another tab has input drafts for this set. Review them before saving.";
     }
     return true;
   }
