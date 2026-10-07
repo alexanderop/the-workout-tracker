@@ -133,8 +133,7 @@ function focusDisplay(event: Event) {
         class="ui-numeric-trigger"
         variant="secondary"
         :disabled="disabled"
-        :aria-label="label"
-        :aria-description="`Current value: ${modelValue === '' ? 'empty' : modelValue}${unit ? ` ${unit}` : ''}`"
+        :aria-label="`${label}: ${modelValue === '' ? 'empty' : modelValue}${unit ? ` ${unit}` : ''}`"
         >{{ modelValue === "" ? "—" : modelValue }}</BaseButton
       >
     </BaseDialogTrigger>

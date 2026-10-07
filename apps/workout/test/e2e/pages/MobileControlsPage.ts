@@ -14,8 +14,7 @@ export class MobileControlsPage {
   async inspectKeypad() {
     await this.page
       .getByRole("button", {
-        name: "Set 1 weight for Bench press",
-        exact: true,
+        name: /^Set 1 weight for Bench press: /,
       })
       .click();
     const dialog = this.page.getByRole("dialog", {
@@ -43,8 +42,7 @@ export class MobileControlsPage {
     await confirm.click();
     await expect(
       this.page.getByRole("button", {
-        name: "Set 1 weight for Bench press",
-        exact: true,
+        name: /^Set 1 weight for Bench press: /,
       }),
     ).toHaveText("5");
   }

@@ -62,7 +62,7 @@ Given("Bench press is logged and Back squat is unfinished", async ({ workout, pa
 });
 When("I confirm a Back squat weight of 55 kilograms", async ({ page }) => {
   await page.getByRole("navigation", { name: "Workout exercises", exact: true }).getByRole("button", { name: "Back squat", exact: true }).click();
-  await page.getByRole("button", { name: "Set 1 weight for Back squat", exact: true }).click();
+  await page.getByRole("button", { name: /^Set 1 weight for Back squat: / }).click();
   const editor = page.getByRole("dialog", { name: "Weight", exact: true });
   await editor.getByRole("group", { name: "Number editor" }).press("5");
   await editor.getByRole("group", { name: "Number editor" }).press("5");
@@ -74,15 +74,15 @@ When("I switch to Bench press and review my input drafts", async ({ page }) => {
   await page.getByRole("dialog", { name: "Finish this workout?", exact: true }).getByRole("button", { name: "Review my sets", exact: true }).click();
 });
 Then("the Back squat input draft is visible", async ({ page }) => {
-  await expect(page.getByRole("button", { name: "Set 1 weight for Back squat", exact: true })).toHaveText("55");
+  await expect(page.getByRole("button", { name: /^Set 1 weight for Back squat: / })).toHaveText("55");
   await expect(page.getByText("Input retained on this device.", { exact: false })).toBeVisible();
 });
 Then("the Back squat draft is visible and focused", async ({ page }) => {
-  await expect(page.getByRole("button", { name: "Set 1 weight for Back squat", exact: true })).toHaveText("55");
+  await expect(page.getByRole("button", { name: /^Set 1 weight for Back squat: / })).toHaveText("55");
   await expect(page.getByRole("button", { name: "Options for set 1 of Back squat", exact: true })).toBeFocused();
 });
 Then("Back squat is selected", async ({ page }) => {
-  await expect(page.getByRole("button", { name: "Set 1 weight for Back squat", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Set 1 weight for Back squat: / })).toBeVisible();
 });
 When("I log my final Back squat set", async ({ page }) => {
   await page.getByRole("button", { name: "Log set 1 of Back squat", exact: true }).click();

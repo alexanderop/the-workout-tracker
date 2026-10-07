@@ -49,8 +49,7 @@ export class WorkoutPage {
 
   weight() {
     return this.page.getByRole("button", {
-      name: "Set 1 weight for Bench press",
-      exact: true,
+      name: /^Set 1 weight for Bench press: /,
     });
   }
 

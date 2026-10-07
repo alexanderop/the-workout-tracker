@@ -26,7 +26,7 @@ export class CompletedWorkoutPage {
   }
   async weight(value: string) {
     await this.editor()
-      .getByRole("button", { name: "Bench press set 1 weight", exact: true })
+      .getByRole("button", { name: /^Bench press set 1 weight: / })
       .click();
     const keypad = this.page.getByRole("dialog", {
       name: "Weight",
@@ -40,8 +40,7 @@ export class CompletedWorkoutPage {
     await expect(keypad).toHaveCount(0);
     await expect(
       this.editor().getByRole("button", {
-        name: "Bench press set 1 weight",
-        exact: true,
+        name: /^Bench press set 1 weight: /,
       }),
     ).toBeFocused();
   }

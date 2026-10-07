@@ -2,6 +2,10 @@
 
 Read [AGENTS.md](../AGENTS.md) first. Use [context](context.md) for behavior, [architecture](architecture.md) for ownership, and [design](design.md) for interaction rules. Paths below are relative to the repository root.
 
+## Explicit AOP workflows
+
+When AOP is explicitly requested, use the project [model configuration](../.aop-mode/models.md). It assigns implementation, review and panel models and keeps reasoning effort separate from model identifiers. Check availability against the current host; report substitutions and unmet model-family requirements. The configuration does not activate AOP automatically.
+
 ## Add or change a workout command
 
 1. Identify the domain transition in `apps/workout/src/features/workouts/domain.ts`. Extend the validated command model and pure reducer where the behavior belongs. Keep time and generated identities explicit.
@@ -92,7 +96,7 @@ Choose a test by the failure it must expose. Keep `pnpm verify` as type checking
 | Command | Proof |
 | --- | --- |
 | `pnpm test:unit` | Pure rules and application orchestration in Node |
-| `pnpm test:browser` | Real browser storage adapters in Chrome |
+| `pnpm test:browser` | Shared UI components and real browser storage adapters in Chrome |
 | `pnpm test:e2e` | Executable Gherkin journeys against the production app build in Chrome |
 
 Install Chrome with `pnpm --filter @form/workout exec playwright install chrome`. CI installs it before browser execution. The E2E command generates Playwright specs, builds the app with the root base path, and serves it on port 4197. Keep that port free. Generated specs, reports, and traces are ignored by Git. Failed journeys retain traces and screenshots.
@@ -137,6 +141,18 @@ Use typed factories under `apps/workout/test/support` to create fresh valid reco
 Add a rule there when it must hold for every reachable state rather than one example. Steps choose targets from the current snapshot so that most commands can be reached from the interface. Assert a rule from the contract, never from a copy of the implementation. Also assert acceptance: snapshot validation can turn a broken transition into a rejection, and a property that checks accepted changes only will miss it. When a property fails, paste the shrunk counterexample into a named example test before fixing the reducer. If you add a command, give it a weight in `KINDS` and a builder.
 
 Prove a new property by temporarily breaking the reducer in a copy and confirming that the property fails. Generated arrays need an explicit `size`, because fast-check otherwise keeps them to about ten steps. Short journeys rarely build up logged work.
+
+### Write component tests in the browser
+
+Shared UI components are tested with [Vitest Browser Mode](https://vitest.dev/guide/browser/) and `vitest-browser-vue` in real Chrome. These tests live in `packages/ui/test/browser/*.browser.test.ts`, and `pnpm test:browser` runs them. Browser Mode supplies layout, focus, pointer hit-testing and the accessibility tree. Do not add jsdom, polyfills or patched globals.
+
+- Render a fixture from `packages/ui/test/fixtures/`. A fixture wraps the component the way a consumer would and shows emitted state, for example the confirmed value next to a numeric input.
+- Await `render`. Query by role and accessible name. Act through locators such as `locator.click()`, never `element().click()`: locator actions check that a pointer can reach the target, so an overlay that blocks it fails the test.
+- Name tests with BDD nesting: `given …` → `when …` → `should …`.
+- Assert focus with `toHaveFocus`, record a dialog's structure with `toMatchAriaInlineSnapshot`, and run `expectNoAxeViolations` from `packages/ui/test/support/axe.ts` in each meaningful open state. The helper also fails on incomplete axe results. A `knownIssues` exception must name the rule and fails once the issue is fixed.
+- Teleported content, such as dialogs, is queried through `page`. While a modal is open, content outside it is `aria-hidden`, so a fixture's output is read by test ID.
+
+The [setup file](../packages/ui/test/support/browser-setup.ts) loads the package stylesheets so that tests see the real stacking and layout. Prove a new test by breaking a copy of the component and confirming that the test fails.
 
 ### Write application journeys
 

@@ -55,8 +55,7 @@ Then(
     ).toHaveValue("Corrected workout");
     await expect(
       editor.getByRole("button", {
-        name: "Bench press set 1 weight",
-        exact: true,
+        name: /^Bench press set 1 weight: /,
       }),
     ).toHaveText("55");
     await editor.getByRole("button", { name: "Cancel", exact: true }).click();
@@ -73,8 +72,7 @@ Then(
     ).toBeVisible();
     await expect(
       page.getByRole("button", {
-        name: "Set 1 weight for Bench press",
-        exact: true,
+        name: /^Set 1 weight for Bench press: /,
       }),
     ).toHaveText("40");
     await expect(
@@ -105,8 +103,7 @@ Then(
     ).toHaveValue("Local correction");
     await expect(
       editor.getByRole("button", {
-        name: "Bench press set 1 weight",
-        exact: true,
+        name: /^Bench press set 1 weight: /,
       }),
     ).toHaveText("55");
     await expect(editor.getByRole("alert")).toContainText("Saved data changed");
@@ -135,8 +132,7 @@ Then(
     ).toHaveValue(name);
     await expect(
       editor.getByRole("button", {
-        name: "Bench press set 1 weight",
-        exact: true,
+        name: /^Bench press set 1 weight: /,
       }),
     ).toHaveText(weight);
   },
@@ -170,7 +166,7 @@ When(
   async ({ page }, value: string) => {
     await new CompletedWorkoutPage(page)
       .editor()
-      .getByRole("button", { name: "Bench press set 1 weight", exact: true })
+      .getByRole("button", { name: /^Bench press set 1 weight: / })
       .click();
     const keypad = page.getByRole("dialog", { name: "Weight", exact: true });
     for (const digit of value)

@@ -203,8 +203,7 @@ Then(
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(
       page.getByRole("button", {
-        name: "Set 1 weight for Bench press",
-        exact: true,
+        name: /^Set 1 weight for Bench press: /,
       }),
     ).toBeVisible();
     await page
