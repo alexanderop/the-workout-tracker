@@ -34,7 +34,6 @@ export function usePwa() {
   };
   const captureInstall = (event: Event) => {
     if (isInstallEvent(event)) {
-      event.preventDefault();
       installEvent.value = event;
     }
   };
