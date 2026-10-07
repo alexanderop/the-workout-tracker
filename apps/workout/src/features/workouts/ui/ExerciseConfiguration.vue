@@ -6,6 +6,7 @@ import { setTargetReps, type Command, type SessionExercise } from "../domain";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import ExerciseCatalog from "./ExerciseCatalog.vue";
 import { fmt } from "./presentation";
+import { useUnsavedChangesWarning } from "./useUnsavedChangesWarning";
 const { exercise, workspace } = defineProps<{
   exercise: SessionExercise | null;
   workspace: Pick<
@@ -34,7 +35,7 @@ const savePending = ref(false);
 const removalOpen = ref(false);
 const body = useTemplateRef<HTMLElement>("body");
 let revision = 0;
-let baseline = "";
+const baseline = ref("");
 let replacementFocusId: string | null = null;
 const formState = () =>
   JSON.stringify([
@@ -44,6 +45,10 @@ const formState = () =>
     replaceTargets.value,
     note.value,
   ]);
+const dirty = computed(() =>
+  !!exercise && (view.value === "note" || view.value === "configure") && formState() !== baseline.value,
+);
+useUnsavedChangesWarning(() => dirty.value);
 const minimum = computed(() =>
   Math.max(1, exercise?.sets.filter((set) => set.completed).length ?? 1),
 );
@@ -91,7 +96,7 @@ function reset() {
   issue.value = "";
   dismiss.value = false;
   removalOpen.value = false;
-  baseline = formState();
+  baseline.value = formState();
 }
 watch(
   () => exercise?.id,
@@ -105,7 +110,7 @@ async function show(next: View, field?: "Target reps" | "Working weight") {
   reset();
   view.value = next;
   if (field) replaceTargets.value = true;
-  baseline = formState();
+  baseline.value = formState();
   await nextTick();
   const target = field
     ? body.value?.querySelector<HTMLElement>(`[aria-label="${field}"]`)
@@ -118,7 +123,7 @@ function settleExit(discard: boolean) {
   pendingExit = null;
   dismiss.value = false;
   if (discard) {
-    baseline = formState();
+    baseline.value = formState();
     emit("close");
   }
   pending?.resolve(discard);
@@ -126,8 +131,7 @@ function settleExit(discard: boolean) {
 function requestExit(kind: "close" | "leave"): Promise<boolean> {
   if (workspace.saving.value || savePending.value) return Promise.resolve(false);
   if (pendingExit) return pendingExit.promise;
-  const dirty = exercise && (view.value === "note" || view.value === "configure") && formState() !== baseline;
-  if (!dirty) {
+  if (!dirty.value) {
     if (kind === "close") emit("close");
     return Promise.resolve(true);
   }
@@ -159,6 +163,7 @@ async function save(
         );
         if (added) replacementFocusId = added.id;
       }
+      baseline.value = formState();
       emit("close");
       return;
     }

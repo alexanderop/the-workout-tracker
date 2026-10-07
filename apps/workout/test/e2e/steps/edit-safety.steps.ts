@@ -44,6 +44,9 @@ When("I use the saved workout name", async ({ page }) => {
   await page
     .getByRole("button", { name: "Use saved name", exact: true })
     .click();
+  await expect(
+    page.getByRole("dialog", { name: "Rename workout", exact: true }),
+  ).toHaveCount(0);
 });
 When(
   "I write the unsaved exercise note {string}",

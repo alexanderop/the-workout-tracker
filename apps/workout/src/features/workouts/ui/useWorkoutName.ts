@@ -1,4 +1,4 @@
-import { computed, ref, watch, type Ref } from "vue";
+import { computed, reactive, ref, watch, type Ref } from "vue";
 import type { ActiveSession } from "../domain";
 import type { useWorkouts } from "./useWorkouts";
 
@@ -9,6 +9,10 @@ type NameDraft = {
   revision: number;
 };
 
+type DetachedNameDraft = Readonly<Omit<NameDraft, "revision">>;
+type NameRecovery = DetachedNameDraft &
+  ({ state: "ready" | "conflict"; savedName: string } | { state: "missing" });
+
 export function useWorkoutName(
   workspace: Pick<
     ReturnType<typeof useWorkouts>,
@@ -18,10 +22,30 @@ export function useWorkoutName(
   },
 ) {
   const draft = ref<NameDraft | null>(null);
+  const detached = reactive(new Map<string, DetachedNameDraft>());
+  const recoveryIssues = reactive(new Map<string, string>());
+  const recovering = ref<string | null>(null);
+  const recoveries = computed<NameRecovery[]>(() =>
+    [...detached.values()].map((entry) => {
+      const completed = workspace.snapshot.value?.completed[entry.sessionId];
+      if (!completed) return { ...entry, state: "missing" };
+      return {
+        ...entry,
+        savedName: completed.name,
+        state:
+          completed.name === entry.baseName || completed.name === entry.text
+            ? "ready"
+            : "conflict",
+      };
+    }),
+  );
   const issue = ref("");
   const submitting = ref(false);
   const dirty = computed(
-    () => !!draft.value && draft.value.text !== workspace.active.value?.name,
+    () =>
+      !!draft.value &&
+      draft.value.sessionId === workspace.active.value?.id &&
+      draft.value.text !== workspace.active.value.name,
   );
   const conflict = computed(
     () => dirty.value && workspace.active.value?.name !== draft.value?.baseName,
@@ -55,22 +79,36 @@ export function useWorkoutName(
       !submitting.value && (!dirty.value || draft.value?.text === previousName)
     );
   }
+  function detachOutgoing(previousName: string | undefined) {
+    const outgoing = draft.value;
+    if (!outgoing || outgoing.text === previousName) return;
+    detached.set(outgoing.sessionId, {
+      sessionId: outgoing.sessionId,
+      text: outgoing.text,
+      baseName: outgoing.baseName,
+    });
+  }
   watch(
     () => workspace.snapshot.value,
     (_snapshot, previous) => {
-      if (
-        canAdoptSaved(previous?.active?.name) ||
-        draft.value?.sessionId !== workspace.active.value?.id
-      ) {
+      if (draft.value?.sessionId !== workspace.active.value?.id) {
+        detachOutgoing(previous?.active?.name);
         useSaved();
         return;
       }
-      if (!conflict.value && draft.value && workspace.snapshot.value) {
-        draft.value.revision = workspace.snapshot.value.revision;
+      if (canAdoptSaved(previous?.active?.name)) {
+        useSaved();
+        return;
       }
+      rebaseRevision();
     },
     { immediate: true, flush: "sync" },
   );
+  function rebaseRevision() {
+    if (!conflict.value && draft.value && workspace.snapshot.value) {
+      draft.value.revision = workspace.snapshot.value.revision;
+    }
+  }
   async function save() {
     if (!draft.value || !canSave.value) return;
     const submitted = { ...draft.value };
@@ -115,5 +153,58 @@ export function useWorkoutName(
     };
     await save();
   }
-  return { text, issue, dirty, conflict, save, keepMine, useSaved };
+  async function resolveRecovery(
+    sessionId: string,
+    action: "save" | "keep-mine" | "discard",
+  ) {
+    const submitted = detached.get(sessionId);
+    if (!submitted) return;
+    if (action === "discard") {
+      detached.delete(sessionId);
+      recoveryIssues.delete(sessionId);
+      return;
+    }
+    const snapshot = workspace.snapshot.value;
+    const recovery = recoveries.value.find((entry) => entry.sessionId === sessionId);
+    if (!snapshot || !recovery || recovery.state === "missing") return;
+    if (workspace.saving.value || recovering.value) return;
+    if (action === "save" && recovery.state === "conflict") return;
+    await saveRecovery(submitted, snapshot.revision);
+  }
+  async function saveRecovery(submitted: DetachedNameDraft, revision: number) {
+    const { sessionId } = submitted;
+    if (!submitted.text.trim()) {
+      recoveryIssues.set(sessionId, "Give this workout a name.");
+      return;
+    }
+    recovering.value = sessionId;
+    const saved = await workspace.run(
+      { type: "rename-completed", sessionId, name: submitted.text },
+      revision,
+    );
+    recovering.value = null;
+    if (detached.get(sessionId) !== submitted) return;
+    if (!saved) {
+      recoveryIssues.set(
+        sessionId,
+        "Name not saved. Your input is still here.",
+      );
+      return;
+    }
+    detached.delete(sessionId);
+    recoveryIssues.delete(sessionId);
+  }
+  return {
+    text,
+    issue,
+    dirty,
+    conflict,
+    save,
+    keepMine,
+    useSaved,
+    recoveries,
+    resolveRecovery,
+    recoveryIssues,
+    recovering,
+  };
 }

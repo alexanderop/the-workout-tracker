@@ -12,7 +12,8 @@ import {
 import ExerciseCatalog from "./ExerciseCatalog.vue";
 import RoutineEditor from "./RoutineEditor.vue";
 import type { CompletedSession, Routine } from "../domain";
-import type { RoutineValues } from "../domain/routineDrafts";
+import { compareRoutineBaseline, type RoutineValues } from "../domain/routineDrafts";
+import WorkoutNameRecovery from "./WorkoutNameRecovery.vue";
 import { sessionTotals, routineFromSession } from "../domain";
 import type { WorkoutWorkspace, WorkoutPage } from "./useWorkoutWorkspace";
 import type { Confirmation } from "./dialogTypes";
@@ -131,7 +132,12 @@ const routineEditor =
   useTemplateRef<InstanceType<typeof RoutineEditor>>("routineEditor");
 const editingRoutine = ref<Routine | null>(null);
 const templateSource = ref<CompletedSession | null>(null);
-let routineRevision = 0;
+const routineEditorVersion = ref(0);
+const routineConflict = ref(false);
+const routineState = computed(() => editingRoutine.value && !templateSource.value
+  ? compareRoutineBaseline(editingRoutine.value, snapshot.value?.routines[editingRoutine.value.id])
+  : "unchanged",
+);
 const picker = ref<{ kind: "start" } | { kind: "add"; sessionId: string } | null>(null);
 const pickerOpen = computed(() => picker.value !== null);
 const selectedExercises = ref<string[]>([]);
@@ -149,14 +155,18 @@ function openPicker() {
   if (!active.value) return;
   picker.value = { kind: "add", sessionId: active.value.id };
 }
-const finishOpen = ref(false);
+const finishSessionId = ref<string | null>(null);
+const finishOpen = computed(() => finishSessionId.value !== null);
+watch(() => active.value?.id, (id) => {
+  if (finishSessionId.value !== id) finishSessionId.value = null;
+}, { flush: "sync" });
 const reviewSetId = ref<string | null>(null);
 function reviewSets() {
   const row = training.pending.value[0];
   if (!row || saving.value) return;
   training.selectSet(row.set.id);
   reviewSetId.value = row.set.id;
-  finishOpen.value = false;
+  finishSessionId.value = null;
 }
 function finishClosed(event: Event) {
   const id = reviewSetId.value;
@@ -185,26 +195,50 @@ async function startWorkout(routineId: string | null) {
 function editRoutine(routine: Routine | null) {
   templateSource.value = null;
   editingRoutine.value = routine;
-  routineRevision = snapshot.value?.revision ?? 0;
+  routineConflict.value = false;
+  routineEditorVersion.value++;
+  error.value = "";
   routineOpen.value = true;
   templateFocus = routine?.id ?? null;
   void focusTemplateContent();
 }
 async function saveRoutine(routine: RoutineValues) {
+  if (saving.value) return;
   const existing = templateSource.value ? null : editingRoutine.value;
+  if (routineState.value !== "unchanged") {
+    routineConflict.value = true;
+    return;
+  }
   const command = existing
     ? {
         type: "save-routine" as const,
         routine: { ...routine, id: existing.id },
       }
     : { type: "create-routine" as const, routine };
-  if (await run(command, routineRevision)) {
+  if (await run(command, snapshot.value?.revision ?? 0)) {
     routineOpen.value = false;
     templateFocus = existing?.id ?? null;
     void focusTemplateContent();
     message.value = "Template saved";
     emit("template-saved");
   }
+}
+function useSavedRoutine() {
+  const saved = editingRoutine.value && snapshot.value?.routines[editingRoutine.value.id];
+  if (!saved || saving.value) return;
+  editingRoutine.value = saved;
+  routineConflict.value = false;
+  routineEditorVersion.value++;
+  error.value = "";
+  void focusTemplateContent();
+}
+function keepRoutineChanges() {
+  const saved = editingRoutine.value && snapshot.value?.routines[editingRoutine.value.id];
+  if (!saved || saving.value) return;
+  editingRoutine.value = saved;
+  routineConflict.value = false;
+  error.value = "";
+  routineEditor.value?.save();
 }
 function closePicker() {
   if (saving.value) return;
@@ -261,10 +295,14 @@ async function createExercise() {
   }
 }
 async function finishWorkout() {
-  const id = active.value?.id;
-  if (!id || workspace.workoutName.dirty.value) return;
+  const id = finishSessionId.value;
+  if (!id || active.value?.id !== id) {
+    finishSessionId.value = null;
+    return;
+  }
+  if (workspace.workoutName.dirty.value) return;
   if (await training.run({ type: "finish", sessionId: id })) {
-    finishOpen.value = false;
+    finishSessionId.value = null;
     navigate("workouts");
     selectedSession.value = id;
     message.value = "Workout saved. Another session in the books.";
@@ -291,8 +329,8 @@ defineExpose({
     createOpen.value = true;
   },
   openFinish: () => {
-    if (workspace.workoutName.dirty.value) return;
-    finishOpen.value = true;
+    if (!active.value || workspace.workoutName.dirty.value) return;
+    finishSessionId.value = active.value.id;
   },
   showOptions: (id: string) => {
     optionSetId.value = id;
@@ -305,6 +343,7 @@ defineExpose({
 </script>
 
 <template>
+  <WorkoutNameRecovery :controller="workspace.workoutName" />
   <BaseSheet
     :open="!!optionRow"
     :title="
@@ -363,7 +402,7 @@ defineExpose({
       <RoutineEditor
         v-if="routineOpen"
         ref="routineEditor"
-        :key="editingRoutine?.id ?? 'new'"
+        :key="routineEditorVersion"
         :routine="editingRoutine"
         :source="templateSource"
         :exercises="catalog"
@@ -371,6 +410,15 @@ defineExpose({
         @save="saveRoutine"
         @cancel="cancelRoutine"
       />
+      <div v-if="routineOpen && routineConflict" class="draft-finish-notice">
+        <p role="alert">{{ routineState === "deleted"
+          ? "This template was deleted in another tab. Your input is still here, but it cannot be saved to the deleted template."
+          : "This template changed in another tab. Your input is still here. Choose which version to keep." }}</p>
+        <div v-if="routineState !== 'deleted'" class="form-actions">
+          <BaseButton variant="secondary" :disabled="saving" @click="useSavedRoutine">Use saved version</BaseButton>
+          <BaseButton :disabled="saving" @click="keepRoutineChanges">Keep my changes</BaseButton>
+        </div>
+      </div>
       <template v-if="!routineOpen">
         <BaseButton
           v-if="routines.length"
@@ -547,7 +595,7 @@ defineExpose({
     :open="finishOpen"
     title="Finish this workout?"
     description="Only logged sets count toward your progress. Unlogged sets stay in the session record."
-    @close="finishOpen = false"
+    @close="finishSessionId = null"
     @close-auto-focus="finishClosed"
     ><div class="finish-stats">
       <div>
@@ -599,7 +647,7 @@ defineExpose({
         unstyled
         class="btn secondary"
         :disabled="saving"
-        @click="finishOpen = false"
+        @click="finishSessionId = null"
       >
         Keep training</BaseButton
       ><BaseButton

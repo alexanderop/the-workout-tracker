@@ -219,6 +219,7 @@ export const commandSchema = z
   .discriminatedUnion("type", [
     z.object({ type: z.literal("repeat"), completedId: identifier }).strict(),
     z.object({ type: z.literal("rename"), ...sessionId, name }).strict(),
+    z.object({ type: z.literal("rename-completed"), ...sessionId, name }).strict(),
     z
       .object({
         type: z.literal("add-exercises"),
@@ -396,6 +397,17 @@ export function reduceWorkout(
       : reject(validated.error.issues[0]?.message ?? "Invalid workout change.");
   };
   switch (command.type) {
+    case "rename-completed": {
+      const completed = snapshot.completed[command.sessionId];
+      if (!completed) return reject("This completed workout was not found.");
+      return changed({
+        ...snapshot,
+        completed: {
+          ...snapshot.completed,
+          [completed.id]: { ...completed, name: command.name.trim() },
+        },
+      });
+    }
     case "settings":
       return changed({ ...snapshot, settings: command.settings });
     case "save-routine":
@@ -539,7 +551,10 @@ export function reduceWorkout(
     return additions;
   }
   function reduceActive(
-    command: Extract<Command, { sessionId: string }>,
+    command: Exclude<
+      Extract<Command, { sessionId: string }>,
+      { type: "rename-completed" }
+    >,
   ): Transition {
     if (command.type === "finish" && snapshot.completed[command.sessionId])
       return unchanged();

@@ -1,5 +1,6 @@
-import { computed, effectScope } from "vue";
+import { computed, effectScope, ref, shallowRef } from "vue";
 import { describe, expect, it } from "vitest";
+import type { Snapshot } from "../../src/features/workouts/domain";
 import { createWorkouts } from "../../src/features/workouts/application";
 import { useWorkouts } from "../../src/features/workouts/ui/useWorkouts";
 import { useWorkoutName } from "../../src/features/workouts/ui/useWorkoutName";
@@ -11,7 +12,11 @@ import {
 
 function setup() {
   const factory = createWorkoutFactory("name");
-  const active = factory.activeSession();
+  const active = factory.activeSession({
+    exercises: [
+      factory.sessionExercise({ sets: [factory.set({ completed: true })] }),
+    ],
+  });
   const memory = createMemoryStorage(factory.snapshot({ active }));
   const app = createWorkouts({
     storage: memory.storage,
@@ -156,4 +161,117 @@ describe("workout name editing", () => {
       }
     },
   );
+});
+
+describe("detached workout names", () => {
+  it("preserves remote-finished input and applies it only to the original workout", async () => {
+    const { editor, app, memory, active, scope } = setup();
+    try {
+      editor.text.value = "My unsaved name";
+      await app.execute({ type: "finish", sessionId: active.id }, 0);
+      expect(editor.recoveries.value).toMatchObject([
+        { sessionId: active.id, text: "My unsaved name", state: "ready" },
+      ]);
+      await app.execute({ type: "repeat", completedId: active.id }, 1);
+      expect(editor.text.value).toBe("Morning workout");
+      expect(editor.dirty.value).toBe(false);
+      await editor.resolveRecovery(active.id, "save");
+      expect(memory.current().completed[active.id]?.name).toBe(
+        "My unsaved name",
+      );
+      expect(memory.current().active?.name).toBe("Morning workout");
+      expect(editor.recoveries.value).toEqual([]);
+    } finally {
+      scope.stop();
+    }
+  });
+  it("requires explicit conflict resolution after the completed name changes", async () => {
+    const { editor, app, memory, active, scope } = setup();
+    try {
+      editor.text.value = "Local name";
+      await app.execute(
+        { type: "rename", sessionId: active.id, name: "Remote name" },
+        0,
+      );
+      await app.execute({ type: "finish", sessionId: active.id }, 1);
+      expect(editor.recoveries.value).toMatchObject([
+        { text: "Local name", state: "conflict", savedName: "Remote name" },
+      ]);
+      await editor.resolveRecovery(active.id, "save");
+      expect(memory.current().completed[active.id]?.name).toBe("Remote name");
+      await editor.resolveRecovery(active.id, "keep-mine");
+      expect(memory.current().completed[active.id]?.name).toBe("Local name");
+    } finally {
+      scope.stop();
+    }
+  });
+  it("keeps text for a missing workout until explicitly discarded", async () => {
+    const { editor, app, active, scope } = setup();
+    try {
+      editor.text.value = "Keep this text";
+      await app.execute({ type: "discard", sessionId: active.id }, 0);
+      expect(editor.recoveries.value).toMatchObject([
+        { text: "Keep this text", state: "missing" },
+      ]);
+      await editor.resolveRecovery(active.id, "save");
+      expect(editor.recoveries.value).toMatchObject([
+        { text: "Keep this text", state: "missing" },
+      ]);
+      await editor.resolveRecovery(active.id, "discard");
+      expect(editor.recoveries.value).toEqual([]);
+    } finally {
+      scope.stop();
+    }
+  });
+});
+
+it("does not acknowledge a newer recovery when an older save completes", async () => {
+  const factory = createWorkoutFactory("deferred-name");
+  const active = factory.activeSession();
+  const completed = factory.completedSession({
+    id: active.id,
+    name: active.name,
+  });
+  const snapshot = shallowRef<Snapshot>(factory.snapshot({ active }));
+  let release: (saved: Snapshot) => void = () => {
+    throw new Error("No pending save");
+  };
+  const scope = effectScope();
+  const editor = scope.run(() =>
+    useWorkoutName({
+      snapshot: computed(() => snapshot.value),
+      active: computed(() => snapshot.value.active),
+      saving: ref(false),
+      run: () =>
+        new Promise<Snapshot>((resolve) => {
+          release = resolve;
+        }),
+    }),
+  )!;
+  try {
+    editor.text.value = "First recovery";
+    snapshot.value = factory.snapshot({
+      revision: 1,
+      completed: { [active.id]: completed },
+    });
+    const pending = editor.resolveRecovery(active.id, "save");
+    snapshot.value = factory.snapshot({ revision: 2, active });
+    editor.text.value = "Newer recovery";
+    snapshot.value = factory.snapshot({
+      revision: 3,
+      completed: { [active.id]: completed },
+    });
+    release(
+      factory.snapshot({
+        revision: 4,
+        completed: { [active.id]: { ...completed, name: "First recovery" } },
+      }),
+    );
+    await pending;
+    expect(editor.recoveries.value).toMatchObject([
+      { sessionId: active.id, text: "Newer recovery", state: "ready" },
+    ]);
+  } finally {
+    scope.stop();
+  }
 });

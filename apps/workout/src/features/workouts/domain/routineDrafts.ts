@@ -25,3 +25,24 @@ export function parseRoutineDraft(draft: RoutineDraft): RoutineValues | null {
   });
   return result.success ? result.data : null;
 }
+
+export function compareRoutineBaseline(
+  baseline: Routine,
+  saved: Routine | undefined,
+): "unchanged" | "changed" | "deleted" {
+  if (!saved) return "deleted";
+  const unchanged = baseline.id === saved.id &&
+    baseline.name === saved.name &&
+    baseline.description === saved.description &&
+    baseline.exercises.length === saved.exercises.length &&
+    baseline.exercises.every((entry, index) => {
+      const current = saved.exercises[index]!;
+      return entry.exerciseId === current.exerciseId &&
+        entry.sets.length === current.sets.length &&
+        entry.sets.every((set, setIndex) =>
+          set.weightKg === current.sets[setIndex]!.weightKg &&
+          set.reps === current.sets[setIndex]!.reps,
+        );
+    });
+  return unchanged ? "unchanged" : "changed";
+}

@@ -34,9 +34,11 @@ Replacement moves only unfinished work to a fresh session exercise and fresh set
 
 A session exercise can have an optional note of up to 2,000 characters. Saving trims surrounding whitespace and removes empty notes. Notes appear during training and in completed workout details. Repeating a workout or saving it as a template does not copy session notes. Notes do not move to a replacement exercise.
 
-Workout names save explicitly. Local name edits retain the saved name and revision they started from. A name changed in another tab requires an explicit choice to keep local input or use the saved name. Unsubmitted name edits, note edits, configuration changes and template changes require confirmation before leaving or dismissing their editor.
+Workout names save explicitly. Local name edits retain the saved name and revision they started from. A name changed in another tab requires an explicit choice to keep local input or use the saved name. If another tab finishes the workout, an unsaved name remains available for explicit recovery to that same completed workout. It never applies to a replacement active workout. A missing original workout leaves the retained text available to copy or discard.
 
-Configuration and replacement require the exercise's numeric drafts to be saved or discarded first. Note saves are independent of numeric drafts. Each editor saves against its opening revision and retains input on failure. Temporary note and configuration input becomes durable only after Save. Explicitly confirmed removal deletes the exercise, its logged sets, and its input drafts.
+Unsubmitted name edits, note edits, configuration changes and template changes require confirmation before leaving or dismissing their editor. Dirty editors also request the browser's normal reload or close warning. This warning depends on browser support and user interaction; it does not provide recovery after an operating-system termination. Names retained after remote completion remain local to the open tab until saved.
+
+Configuration and replacement require the exercise's numeric drafts to be saved or discarded first. Note saves are independent of numeric drafts. Note and configuration editors save against their opening revision and retain input on failure. A template save can use the latest revision when that template still matches its accepted baseline. A changed template requires an explicit choice to keep local changes or use the saved version. A deleted template cannot be recreated by a stale save. Temporary note and configuration input becomes durable only after Save. Explicitly confirmed removal deletes the exercise, its logged sets, and its input drafts.
 
 ## Completed workout
 

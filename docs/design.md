@@ -160,6 +160,8 @@ For manual overlay review, use Phone · short and Desktop: open, Tab and Shift+T
 
 Every workout exercise, including completed entries, exposes an options button. Its sheet shows set count, target reps, and weight, with “Mixed” for varied targets. Options include Edit sets, Add or Edit note, Replace exercise, Remove exercise, and Add exercises. Focused editors use the same sheet. Changed note and configuration forms ask before discarding input.
 
+Dirty name, note, configuration, and template editors request the browser's native reload or close warning. A name interrupted by remote completion appears in a persistent **Review unsaved names** notice. Recovery shows the original workout and the retained name, with an explicit save or discard action. Template conflicts keep the editor visible and offer **Keep my changes** or **Use saved version**; unrelated activity does not force a conflict.
+
 Replacement previews the remaining set count, preserved logged work, and reset to 0 kg before saving. Fully logged entries direct users to Add exercises. Notes are plain text and appear on the active card and completed workout details. Removal confirms the logged-set count and deletion of unsaved input. Storage and revision errors retain the editor's input; Reload saved values explicitly abandons that local input and refreshes the revision.
 
 ### Workouts home explorations

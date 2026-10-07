@@ -5,6 +5,7 @@ import { Plus, Trash2 } from "@lucide/vue";
 import type { CompletedSession, Exercise, Routine } from "../domain";
 import { parseRoutineDraft, type RoutineValues } from "../domain/routineDrafts";
 import ExerciseCatalog from "./ExerciseCatalog.vue";
+import { useUnsavedChangesWarning } from "./useUnsavedChangesWarning";
 const { routine, source, exercises, busy } = defineProps<{
   routine: Routine | null;
   source?: CompletedSession | null;
@@ -49,10 +50,12 @@ function normalizedNumber(value: string | number) {
   return text && Number.isFinite(Number(text)) ? Number(text) : text;
 }
 const baseline = semanticDraft();
+const dirty = computed(() => semanticDraft() !== baseline);
+useUnsavedChangesWarning(() => dirty.value);
 const discardOpen = ref(false);
 function requestClose() {
   if (busy) return;
-  if (semanticDraft() !== baseline) {
+  if (dirty.value) {
     discardOpen.value = true;
     return;
   }
@@ -63,7 +66,7 @@ function discardChanges() {
   discardOpen.value = false;
   emit("cancel");
 }
-defineExpose({ requestClose });
+defineExpose({ requestClose, save });
 type Removal =
   | { kind: "exercise"; entry: ExerciseDraft }
   | { kind: "set"; entry: ExerciseDraft; set: SetDraft };
