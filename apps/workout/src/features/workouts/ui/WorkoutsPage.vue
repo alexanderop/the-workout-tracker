@@ -234,7 +234,7 @@ h1 {
 }
 .active-workout-card .btn {
   width: 100%;
-  margin-top: 14px;
+  margin-block-start: 14px;
   min-height: 44px;
   justify-content: space-between;
 }
@@ -274,17 +274,17 @@ h1 {
   line-height: 1.5;
 }
 .templates-link {
-  margin-top: 18px;
+  margin-block-start: 18px;
   width: 100%;
   min-height: 48px;
   justify-content: flex-start;
 }
 .templates-link span {
   color: var(--muted);
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 .history-search {
-  margin-bottom: 8px;
+  margin-block-end: 8px;
 }
 .workout-history-grid {
   display: block;
@@ -292,7 +292,7 @@ h1 {
 .workout-history-card {
   padding: 12px 0;
   border: 0;
-  border-bottom: 1px solid var(--surface);
+  border-block-end: 1px solid var(--surface);
   border-radius: 0;
   background: none;
 }

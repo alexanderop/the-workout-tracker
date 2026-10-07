@@ -87,9 +87,9 @@ watch(
 .name-recovery-notice {
   position: fixed;
   z-index: 40;
-  bottom: calc(5rem + env(safe-area-inset-bottom));
-  left: 1rem;
-  right: 1rem;
+  inset-block-end: calc(5rem + env(safe-area-inset-bottom, 0px));
+  inset-inline-start: 1rem;
+  inset-inline-end: 1rem;
   margin-inline: auto;
   max-width: 30rem;
   padding: 1rem;

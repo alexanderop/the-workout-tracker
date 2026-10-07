@@ -63,7 +63,7 @@ const emit = defineEmits<{ install: [] }>();
   display: grid;
   gap: 12px;
   margin: 0;
-  padding-left: 24px;
+  padding-inline-start: 24px;
 }
 .ui-install-note {
   color: var(--muted);

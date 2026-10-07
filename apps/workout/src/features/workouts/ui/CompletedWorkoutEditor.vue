@@ -211,7 +211,7 @@ defineExpose({ requestClose, requestLeave });
   grid-template-columns: 44px minmax(0, 1fr) minmax(0, 1fr);
   align-items: center;
   gap: 10px;
-  margin-top: 12px;
+  margin-block-start: 12px;
 }
 .unlogged {
   grid-column: 2 / -1;
@@ -219,7 +219,7 @@ defineExpose({ requestClose, requestLeave });
 }
 .completed-actions {
   position: sticky;
-  bottom: 0;
+  inset-block-end: 0;
   padding-block: 12px;
   background: var(--background);
 }

@@ -332,7 +332,7 @@ function save() {
   grid-template-columns: 40px minmax(0, 1fr) minmax(0, 1fr) 40px;
   gap: 10px;
   align-items: center;
-  margin-top: 12px;
+  margin-block-start: 12px;
 }
 .input {
   width: 100%;
@@ -347,11 +347,12 @@ function save() {
 .template-picker :deep(.catalog-list) {
   max-height: 320px;
   overflow: auto;
+  overscroll-behavior: contain;
 }
 .skipped-label {
   display: block;
   font-size: 9px;
-  margin-top: 4px;
+  margin-block-start: 4px;
 }
 @media (max-width: 380px) {
   .template-set {

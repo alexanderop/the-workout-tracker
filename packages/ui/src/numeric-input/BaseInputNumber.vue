@@ -261,7 +261,7 @@ function focusDisplay(event: Event) {
   width: min(420px, calc(100% - 32px));
   max-width: none;
   max-height: calc(100dvh - 32px);
-  overflow: hidden;
+  overflow: clip;
   overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
@@ -300,7 +300,7 @@ function focusDisplay(event: Event) {
   letter-spacing: -0.6px;
 }
 .ui-numeric-description {
-  margin-top: 8px;
+  margin-block-start: 8px;
   font-size: 12px;
   line-height: 1.5;
 }
@@ -333,7 +333,7 @@ function focusDisplay(event: Event) {
   font-size: 14px;
 }
 .ui-numeric-preset small {
-  margin-left: 4px;
+  margin-inline-start: 4px;
   font-size: 10px;
   color: var(--ui-muted-foreground);
 }
@@ -388,13 +388,15 @@ function focusDisplay(event: Event) {
   font-weight: 500;
   touch-action: manipulation;
 }
-.ui-numeric-key:hover,
-.ui-numeric-preset:hover {
-  background: color-mix(
-    in oklab,
-    var(--ui-secondary) 85%,
-    var(--ui-foreground)
-  );
+@media (hover: hover) and (pointer: fine) {
+  .ui-numeric-key:hover,
+  .ui-numeric-preset:hover {
+    background: color-mix(
+      in oklch,
+      var(--ui-secondary) 85%,
+      var(--ui-foreground)
+    );
+  }
 }
 .ui-numeric-confirm {
   display: flex;
@@ -414,14 +416,14 @@ function focusDisplay(event: Event) {
 }
 @media (max-width: 650px) {
   :global(.ui-numeric-dialog) {
-    top: auto;
-    bottom: 0;
-    left: 0;
+    inset-block-start: auto;
+    inset-block-end: 0;
+    inset-inline-start: 0;
     transform: none;
     width: 100%;
     max-height: 100dvh;
     border-radius: 18px 18px 0 0;
-    padding: 22px 20px calc(20px + env(safe-area-inset-bottom));
+    padding: 22px 20px calc(20px + env(safe-area-inset-bottom, 0px));
   }
 }
 @media (max-height: 700px) {
@@ -438,13 +440,13 @@ function focusDisplay(event: Event) {
 }
 @media (max-height: 600px) and (max-width: 650px) {
   :global(.ui-numeric-dialog) {
-    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
   }
   .ui-numeric-description {
-    margin-top: 4px;
+    margin-block-start: 4px;
   }
   .ui-numeric-suggestions > p {
-    margin-bottom: 6px;
+    margin-block-end: 6px;
   }
   .ui-numeric-display span {
     font-size: 30px;

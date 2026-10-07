@@ -188,7 +188,7 @@ const legs: readonly MuscleHighlight[] = [
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 20px;
+  margin-block-start: 20px;
 }
 .muscle-map-example-pair {
   display: flex;

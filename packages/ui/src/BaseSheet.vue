@@ -175,8 +175,8 @@ defineSlots<{ default?: () => unknown }>();
   --ui-sheet-drag: 0px;
   display: block;
   position: fixed;
-  left: 50%;
-  top: 50%;
+  inset-inline-start: 50%;
+  inset-block-start: 50%;
   transform: translate(-50%, -50%);
   z-index: 51;
   width: min(520px, calc(100% - 40px));
@@ -184,6 +184,7 @@ defineSlots<{ default?: () => unknown }>();
   max-height: calc(100dvh - 64px);
   overflow-y: auto;
   overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   background: var(--background);
   border: 1px solid var(--surface);
   border-radius: 12px;
@@ -192,12 +193,32 @@ defineSlots<{ default?: () => unknown }>();
 :global(.sheet.wide) {
   width: min(620px, calc(100% - 40px));
 }
+/* The header and a direct form footer stay in view while long content
+   scrolls between them. Negative margins reach the sheet's padding edge. */
+.sheet-drag-area {
+  position: sticky;
+  inset-block-start: -28px;
+  z-index: 1;
+  margin: -28px -28px 0;
+  padding: 28px 28px 0;
+  background: var(--background);
+}
+:global(.sheet > .form-actions),
+:global(.sheet > form > .form-actions) {
+  position: sticky;
+  inset-block-end: -28px;
+  z-index: 1;
+  margin-inline: -28px;
+  margin-block-end: -28px;
+  padding: 12px 28px 28px;
+  background: var(--background);
+}
 .sheet-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 18px;
-  margin-bottom: 28px;
+  margin-block-end: 28px;
 }
 .sheet-title {
   font-size: 22px;
@@ -206,7 +227,7 @@ defineSlots<{ default?: () => unknown }>();
 }
 .sheet-description {
   font-size: 12px;
-  margin-top: 9px;
+  margin-block-start: 9px;
 }
 .sheet-header .icon-button {
   margin: -7px -10px 0 0;
@@ -217,7 +238,7 @@ defineSlots<{ default?: () => unknown }>();
   height: 1px;
   padding: 0;
   margin: -1px;
-  overflow: hidden;
+  overflow: clip;
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
@@ -232,9 +253,11 @@ defineSlots<{ default?: () => unknown }>();
   flex-shrink: 0;
   color: var(--muted);
 }
-.icon-button:hover {
-  background: var(--surface);
-  color: var(--text);
+@media (hover: hover) and (pointer: fine) {
+  .icon-button:hover {
+    background: var(--surface);
+    color: var(--text);
+  }
 }
 
 :global(.sheet) {
@@ -264,8 +287,16 @@ defineSlots<{ default?: () => unknown }>();
 @media (max-width: 650px) {
   .sheet-drag-area {
     touch-action: none;
+    inset-block-start: -24px;
     margin: -24px -20px 0;
     padding: 8px 20px 0;
+  }
+  :global(.sheet > .form-actions),
+  :global(.sheet > form > .form-actions) {
+    inset-block-end: calc(-24px - env(safe-area-inset-bottom, 0px));
+    margin-inline: -20px;
+    margin-block-end: calc(-24px - env(safe-area-inset-bottom, 0px));
+    padding: 12px 20px calc(24px + env(safe-area-inset-bottom, 0px));
   }
   .sheet-grabber {
     display: block;
@@ -278,14 +309,13 @@ defineSlots<{ default?: () => unknown }>();
   }
   :global(.sheet:not([data-state="closed"])) {
     transform: translateY(var(--ui-sheet-drag, 0px));
+  }
+}
+@media (max-width: 650px) and (prefers-reduced-motion: no-preference) {
+  :global(.sheet:not([data-state="closed"])) {
     transition: transform var(--ui-motion-exit) var(--ui-motion-ease);
   }
   :global(.sheet.is-dragging) {
-    transition: none;
-  }
-}
-@media (max-width: 650px) and (prefers-reduced-motion: reduce) {
-  :global(.sheet:not([data-state="closed"])) {
     transition: none;
   }
 }
@@ -293,18 +323,18 @@ defineSlots<{ default?: () => unknown }>();
   :global(.sheet),
   :global(.sheet.wide) {
     width: 100%;
-    top: auto;
-    bottom: 0;
-    left: 0;
+    inset-block-start: auto;
+    inset-block-end: 0;
+    inset-inline-start: 0;
     max-height: calc(100dvh - 30px);
-    padding: 24px 20px calc(24px + env(safe-area-inset-bottom));
+    padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 0px));
     border-radius: 14px 14px 0 0;
   }
   .sheet-title {
     font-size: 21px;
   }
   .sheet-header {
-    margin-bottom: 24px;
+    margin-block-end: 24px;
   }
   .icon-button {
     width: 44px;

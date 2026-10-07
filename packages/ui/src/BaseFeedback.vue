@@ -27,8 +27,10 @@ watch(
   align-items: center;
   justify-content: center;
 }
-.ui-feedback-new {
-  animation: confirmed var(--ui-motion-feedback) var(--ui-motion-ease);
+@media (prefers-reduced-motion: no-preference) {
+  .ui-feedback-new {
+    animation: confirmed var(--ui-motion-feedback) var(--ui-motion-ease);
+  }
 }
 @keyframes confirmed {
   0% {
@@ -39,11 +41,6 @@ watch(
   }
   100% {
     scale: 1;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ui-feedback-new {
-    animation: none;
   }
 }
 </style>

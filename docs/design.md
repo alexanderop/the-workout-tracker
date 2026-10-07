@@ -54,7 +54,7 @@ The interface uses a quiet visual hierarchy; empty states show actual data rathe
 
 ## Mobile motion and feedback
 
-Motion explains a change without delaying the next action. Shared motion tokens define a 120ms press response, 180ms exit, 240ms entrance and 320ms completion response. Mobile sheets and numeric editors slide from the bottom; desktop dialogs use a small scale and fade. Close, Escape and backdrop dismissal retain the existing confirmation and focus contracts. On phones, `BaseSheet` shows a grabber; dragging its header follows the finger, and a long pull or quick flick dismisses through the same path as Escape, so dirty editors still ask before discarding. A short drag springs back. Reduced motion removes the follow and spring animations.
+Motion explains a change without delaying the next action. Shared motion tokens define a 120ms press response, 180ms exit, 240ms entrance and 280ms completion response. Mobile sheets and numeric editors slide from the bottom; desktop dialogs use a small scale and fade. Close, Escape and backdrop dismissal retain the existing confirmation and focus contracts. On phones, `BaseSheet` shows a grabber; dragging its header follows the finger, and a long pull or quick flick dismisses through the same path as Escape, so dirty editors still ask before discarding. A short drag springs back. Reduced motion removes the follow and spring animations.
 
 Buttons compress subtly on press without changing layout. Completion feedback runs only when a mounted control changes from incomplete to confirmed complete, never for an initial saved value or numeric draft confirmation. Reduced motion removes movement, including sheet and dialog state animations; the final state remains visible.
 

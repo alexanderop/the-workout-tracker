@@ -219,7 +219,7 @@ function afterClose(event: Event) {
 <style scoped>
 .training-rhythm {
   padding: 0 0 16px;
-  border-bottom: 1px solid var(--surface);
+  border-block-end: 1px solid var(--surface);
 }
 .rhythm-heading {
   display: flex;
@@ -227,7 +227,7 @@ function afterClose(event: Event) {
   justify-content: space-between;
 }
 .rhythm-heading {
-  margin-bottom: 16px;
+  margin-block-end: 16px;
 }
 .rhythm-heading h2 {
   font-size: 20px;
@@ -299,7 +299,7 @@ button[aria-pressed="true"] {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-block-end: 12px;
 }
 .calendar-month-heading h3 {
   margin: 0;
@@ -310,12 +310,12 @@ button[aria-pressed="true"] {
   text-align: center;
   font-size: 11px;
   color: var(--muted);
-  padding-bottom: 9px;
+  padding-block-end: 9px;
 }
 .calendar-day-detail {
-  border-top: 1px solid var(--surface);
-  margin-top: 20px;
-  padding-top: 16px;
+  border-block-start: 1px solid var(--surface);
+  margin-block-start: 20px;
+  padding-block-start: 16px;
 }
 .calendar-day-detail > p {
   color: var(--muted);
@@ -323,7 +323,7 @@ button[aria-pressed="true"] {
   line-height: 1.5;
 }
 .calendar-empty {
-  margin-top: 18px;
+  margin-block-start: 18px;
 }
 .calendar-session {
   width: 100%;
@@ -333,7 +333,7 @@ button[aria-pressed="true"] {
   justify-content: space-between;
   gap: 12px;
   padding: 12px 0;
-  text-align: left;
+  text-align: start;
   border: 0;
   background: none;
   color: var(--text);
@@ -349,7 +349,7 @@ button[aria-pressed="true"] {
 }
 .calendar-session small {
   display: block;
-  margin-top: 5px;
+  margin-block-start: 5px;
   color: var(--muted);
   font-size: 12px;
 }

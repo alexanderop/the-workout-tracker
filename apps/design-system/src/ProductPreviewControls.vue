@@ -30,8 +30,8 @@ function resetExample() { emit("reset"); }
 .preview-controls h2, .preview-controls h3, .preview-controls p, .preview-controls ol { margin: 0; }
 .preview-controls h2 { font-size: 20px; }
 .preview-controls h3 { font-size: 15px; }
-.preview-controls ol { padding-left: 20px; }
-.preview-controls li + li { margin-top: 8px; }
+.preview-controls ol { padding-inline-start: 20px; }
+.preview-controls li + li { margin-block-start: 8px; }
 .preview-controls a { color: var(--ui-primary); text-decoration: underline; }
 .preview-controls a:focus-visible { outline: 2px solid var(--ui-primary); outline-offset: 4px; }
 .preview-controls-label { color: var(--ui-muted-foreground); font-size: 12px; }

@@ -19,17 +19,17 @@
   font-size: 0.875rem;
   line-height: 1.25rem;
   font-weight: 500;
-  transition: all 0.15s;
   flex-shrink: 0;
-  outline: none;
   background: var(--ui-primary);
   color: var(--ui-primary-foreground);
   height: 2.25rem;
   padding: 0.5rem 1rem;
   text-decoration: none;
 }
-.ui-button:not([data-unstyled]):hover {
-  background: color-mix(in oklab, var(--ui-primary) 90%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .ui-button:not([data-unstyled]):hover {
+    background: color-mix(in oklch, var(--ui-primary) 90%, transparent);
+  }
 }
 .ui-button:disabled,
 .ui-input:disabled {
@@ -47,40 +47,38 @@
 .ui-button:focus-visible,
 .ui-input:focus-visible {
   border-color: var(--ui-ring);
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ui-ring) 50%, transparent);
+  outline: 2px solid var(--ui-ring);
+  outline-offset: 2px;
 }
 .ui-button[aria-invalid="true"],
 .ui-input[aria-invalid="true"] {
   border-color: var(--ui-destructive);
   box-shadow: 0 0 0 3px
     color-mix(
-      in oklab,
+      in oklch,
       var(--ui-destructive) calc(20% + var(--ui-dark) * 20%),
       transparent
     );
 }
 .ui-button[data-variant="destructive"] {
   background: color-mix(
-    in oklab,
+    in oklch,
     var(--ui-destructive) calc(100% - var(--ui-dark) * 40%),
     transparent
   );
   color: var(--ui-destructive-foreground);
 }
-.ui-button[data-variant="destructive"]:hover {
-  background: color-mix(
-    in oklab,
-    var(--ui-destructive) calc(95% - var(--ui-dark) * 45%),
-    transparent
-  );
-}
-.ui-button[data-variant="destructive"]:focus-visible {
-  box-shadow: 0 0 0 3px
-    color-mix(
-      in oklab,
-      var(--ui-destructive) calc(20% + var(--ui-dark) * 20%),
+@media (hover: hover) and (pointer: fine) {
+  .ui-button[data-variant="destructive"]:hover {
+    background: color-mix(
+      in oklch,
+      var(--ui-destructive) calc(95% - var(--ui-dark) * 45%),
       transparent
     );
+  }
+}
+.ui-button[data-variant="destructive"]:focus-visible {
+  outline-color: var(--ui-destructive);
 }
 .ui-button[data-variant="outline"] {
   border: 1px solid var(--ui-border);
@@ -92,25 +90,31 @@
   background: var(--ui-secondary);
   color: var(--ui-secondary-foreground);
 }
-.ui-button[data-variant="secondary"]:hover {
-  background: color-mix(in oklab, var(--ui-secondary) 80%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .ui-button[data-variant="secondary"]:hover {
+    background: color-mix(in oklch, var(--ui-secondary) 80%, transparent);
+  }
 }
 .ui-button[data-variant="ghost"],
 .ui-button[data-variant="link"] {
   background: transparent;
   color: var(--ui-foreground);
 }
-.ui-button[data-variant="outline"]:hover,
-.ui-button[data-variant="ghost"]:hover {
-  background: var(--ui-accent);
-  color: var(--ui-accent-foreground);
+@media (hover: hover) and (pointer: fine) {
+  .ui-button[data-variant="outline"]:hover,
+  .ui-button[data-variant="ghost"]:hover {
+    background: var(--ui-accent);
+    color: var(--ui-accent-foreground);
+  }
 }
 .ui-button[data-variant="link"] {
   color: var(--ui-primary);
   text-underline-offset: 4px;
 }
-.ui-button[data-variant="link"]:hover {
-  text-decoration: underline;
+@media (hover: hover) and (pointer: fine) {
+  .ui-button[data-variant="link"]:hover {
+    text-decoration: underline;
+  }
 }
 .ui-button:has(> svg) {
   padding-inline: 0.75rem;
@@ -199,7 +203,7 @@
   border: 1px solid var(--ui-input);
   border-radius: calc(var(--ui-radius) - 2px);
   background: color-mix(
-    in oklab,
+    in oklch,
     var(--ui-input) calc(var(--ui-dark) * 30%),
     transparent
   );
@@ -209,9 +213,8 @@
   line-height: 1.5rem;
   box-shadow: 0 1px 2px var(--ui-shadow-soft);
   transition:
-    color 0.15s,
-    box-shadow 0.15s;
-  outline: none;
+    color 0.15s var(--ui-motion-ease),
+    box-shadow 0.15s var(--ui-motion-ease);
 }
 .ui-input::placeholder {
   color: var(--ui-muted-foreground);
@@ -309,7 +312,7 @@
 }
 .ui-field-label:has([data-state="checked"]) {
   background: color-mix(
-    in oklab,
+    in oklch,
     var(--ui-primary) calc(5% + var(--ui-dark) * 5%),
     transparent
   );
@@ -333,15 +336,6 @@
   line-height: 1.5;
   font-weight: 400;
 }
-.ui-field-description:nth-last-child(2) {
-  margin-top: -0.25rem;
-}
-[data-variant="legend"] + .ui-field-description {
-  margin-top: -0.375rem;
-}
-.ui-field-description:last-child {
-  margin-top: 0;
-}
 .ui-field[data-orientation="horizontal"] .ui-field-description {
   text-wrap: balance;
 }
@@ -350,8 +344,10 @@
   text-decoration: underline;
   text-underline-offset: 4px;
 }
-.ui-field-description a:hover {
-  color: var(--ui-primary);
+@media (hover: hover) and (pointer: fine) {
+  .ui-field-description a:hover {
+    color: var(--ui-primary);
+  }
 }
 .ui-field-error {
   color: var(--ui-destructive);
@@ -369,7 +365,6 @@
 }
 .ui-field-separator {
   position: relative;
-  margin-block: -0.5rem;
   height: 1.25rem;
   font-size: 0.875rem;
   line-height: 1.25rem;
@@ -398,12 +393,15 @@
 .ui-dialog-content {
   box-sizing: border-box;
   position: fixed;
-  top: 50%;
-  left: 50%;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
   z-index: 50;
   display: grid;
   width: 100%;
   max-width: calc(100% - 2rem);
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   transform: translate(-50%, -50%);
   gap: 1rem;
   border: 1px solid var(--ui-border);
@@ -415,17 +413,20 @@
     0 10px 15px -3px var(--ui-shadow-dialog),
     0 4px 6px -4px var(--ui-shadow-dialog);
 }
+/* Fades are not motion; the scale runs only when motion is welcome. */
 .ui-dialog-overlay[data-state="open"] {
-  animation: ui-fade-in var(--ui-motion-enter) ease-out;
+  animation: ui-fade-in var(--ui-motion-enter) var(--ui-motion-ease);
 }
 .ui-dialog-overlay[data-state="closed"] {
-  animation: ui-fade-out var(--ui-motion-exit) ease-in;
+  animation: ui-fade-out var(--ui-motion-exit) var(--ui-motion-ease);
 }
-.ui-dialog-content[data-state="open"] {
-  animation: ui-dialog-in var(--ui-motion-enter) var(--ui-motion-ease);
-}
-.ui-dialog-content[data-state="closed"] {
-  animation: ui-dialog-out var(--ui-motion-exit) ease-in;
+@media (prefers-reduced-motion: no-preference) {
+  .ui-dialog-content[data-state="open"] {
+    animation: ui-dialog-in var(--ui-motion-enter) var(--ui-motion-ease);
+  }
+  .ui-dialog-content[data-state="closed"] {
+    animation: ui-dialog-out var(--ui-motion-exit) var(--ui-motion-ease);
+  }
 }
 .ui-dialog-header {
   display: flex;
@@ -452,8 +453,8 @@
 }
 .ui-dialog-dismiss {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  inset-block-start: 1rem;
+  inset-inline-end: 1rem;
   display: inline-flex;
   padding: 0;
   background: transparent;
@@ -461,12 +462,26 @@
   border: 0;
   border-radius: 2px;
   opacity: 0.7;
-  transition: opacity 0.15s;
+  transition: opacity 0.15s var(--ui-motion-ease);
 }
-.ui-dialog-dismiss:hover {
+/* The 16px icon keeps a 44px tap area without growing the visual. */
+.ui-dialog-dismiss::after {
+  content: "";
+  position: absolute;
+  inset: 50% auto auto 50%;
+  inline-size: 44px;
+  block-size: 44px;
+  translate: -50% -50%;
+}
+@media (hover: hover) and (pointer: fine) {
+  .ui-dialog-dismiss:hover {
+    opacity: 1;
+  }
+}
+.ui-dialog-dismiss:active {
   opacity: 1;
 }
-.ui-dialog-dismiss:focus {
+.ui-dialog-dismiss:focus-visible {
   outline: 2px solid var(--ui-ring);
   outline-offset: 2px;
 }
@@ -484,7 +499,7 @@
     max-width: 32rem;
   }
   .ui-dialog-header {
-    text-align: left;
+    text-align: start;
   }
   .ui-dialog-footer {
     flex-direction: row;
@@ -542,42 +557,31 @@
     transform: translate(-50%, -50%) scale(0.95);
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .ui-dialog-overlay[data-state],
-  .ui-dialog-content[data-state] {
-    animation: none;
-  }
-  .ui-button,
-  .ui-input,
-  .ui-dialog-dismiss {
-    transition: none;
-  }
-}
 
 .ui-button[data-variant="outline"] {
   background: var(--ui-outline-background);
   border-color: var(--ui-outline-border);
 }
-.ui-button[data-variant="outline"]:hover {
-  background: var(--ui-outline-hover);
+@media (hover: hover) and (pointer: fine) {
+  .ui-button[data-variant="outline"]:hover {
+    background: var(--ui-outline-hover);
+  }
+  .ui-button[data-variant="ghost"]:hover {
+    background: color-mix(
+      in oklch,
+      var(--ui-accent) calc(100% - var(--ui-dark) * 50%),
+      transparent
+    );
+  }
 }
-.ui-button[data-variant="ghost"]:hover {
-  background: color-mix(
-    in oklab,
-    var(--ui-accent) calc(100% - var(--ui-dark) * 50%),
-    transparent
-  );
+.ui-button[data-variant="destructive"]:focus-visible {
+  outline-color: var(--ui-destructive);
 }
-.ui-button:focus-visible {
-  border-color: var(--ui-ring);
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ui-ring) 50%, transparent);
-}
-.ui-button[data-variant="destructive"]:focus-visible,
 .ui-button[aria-invalid="true"] {
   border-color: var(--ui-destructive);
   box-shadow: 0 0 0 3px
     color-mix(
-      in oklab,
+      in oklch,
       var(--ui-destructive) calc(20% + var(--ui-dark) * 20%),
       transparent
     );
@@ -596,7 +600,7 @@
 }
 .ui-field[data-orientation="horizontal"]:has(> .ui-field-content)
   > :is([role="checkbox"], [role="radio"]) {
-  margin-top: 1px;
+  margin-block-start: 1px;
 }
 @container field-group (min-width:28rem) {
   .ui-field[data-orientation="responsive"] > * {
@@ -610,7 +614,7 @@
   }
   .ui-field[data-orientation="responsive"]:has(> .ui-field-content)
     > :is([role="checkbox"], [role="radio"]) {
-    margin-top: 1px;
+    margin-block-start: 1px;
   }
 }
 
@@ -629,6 +633,9 @@
 }
 .ui-textarea {
   min-height: 4rem;
+  max-height: 12lh;
+  field-sizing: content;
+  resize: none;
 }
 .ui-native-select {
   height: 2.25rem;
@@ -671,15 +678,21 @@
   border-radius: 50%;
   background: var(--ui-muted-foreground);
   pointer-events: none;
-  transition: transform 0.15s;
+  transition: background-color 0.15s var(--ui-motion-ease);
 }
 .ui-switch-thumb[data-state="checked"] {
-  transform: translateX(14px);
+  translate: 14px 0;
   background: var(--ui-primary-foreground);
 }
-@media (prefers-reduced-motion: reduce) {
+.ui-switch:active .ui-switch-thumb {
+  scale: 0.9;
+}
+@media (prefers-reduced-motion: no-preference) {
   .ui-switch-thumb {
-    transition: none;
+    transition:
+      translate 0.15s var(--ui-motion-ease),
+      scale var(--ui-motion-press) var(--ui-motion-ease),
+      background-color 0.15s var(--ui-motion-ease);
   }
 }
 
@@ -709,7 +722,7 @@
 }
 .ui-muscle-map-view > span {
   display: block;
-  margin-top: 12px;
+  margin-block-start: 12px;
   color: var(--ui-muted-foreground);
   font-size: 11px;
   text-transform: uppercase;
@@ -746,7 +759,7 @@
   gap: 12px;
   font-size: 10px;
   color: var(--ui-muted-foreground);
-  margin-bottom: 20px;
+  margin-block-end: 20px;
 }
 .ui-muscle-map-legend span {
   display: flex;
@@ -769,7 +782,7 @@
   opacity: 0.4;
 }
 .ui-muscle-map-hint {
-  margin-bottom: 12px;
+  margin-block-end: 12px;
 }
 .ui-muscle-map-list {
   list-style: none;
@@ -794,7 +807,7 @@
   border-radius: 8px;
   color: inherit;
   background: var(--ui-secondary);
-  text-align: left;
+  text-align: start;
   font: inherit;
   font-size: 12px;
 }
@@ -822,28 +835,34 @@
   }
 }
 
-/* Scale is independent from consumer positioning transforms. */
+/* Scale is independent from consumer positioning transforms. Reduced
+   motion keeps the color change as press feedback. */
 .ui-button {
   transition:
-    scale var(--ui-motion-press) ease-out,
-    background-color var(--ui-motion-press),
-    color var(--ui-motion-press);
+    background-color var(--ui-motion-press) var(--ui-motion-ease),
+    color var(--ui-motion-press) var(--ui-motion-ease),
+    opacity var(--ui-motion-press) var(--ui-motion-ease);
 }
 .ui-button:not(:disabled):not([aria-disabled="true"]):active {
-  scale: 0.97;
+  opacity: 0.85;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ui-button {
+    transition:
+      scale var(--ui-motion-press) var(--ui-motion-ease),
+      background-color var(--ui-motion-press) var(--ui-motion-ease),
+      color var(--ui-motion-press) var(--ui-motion-ease),
+      opacity var(--ui-motion-press) var(--ui-motion-ease);
+  }
+  .ui-button:not(:disabled):not([aria-disabled="true"]):active {
+    opacity: 1;
+    scale: 0.97;
+  }
 }
 @media (pointer: coarse), (max-width: 650px) {
   .ui-button:not([data-unstyled]) {
     min-height: 44px;
     min-width: 44px;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ui-button:not(:disabled):not([aria-disabled="true"]):active {
-    scale: none;
-  }
-  .ui-button {
-    transition: none;
   }
 }
 
@@ -854,10 +873,18 @@
 }
 @media (max-width: 650px) {
   .ui-dialog-content:is(.sheet, .ui-numeric-dialog)[data-state="open"] {
+    animation: ui-fade-in var(--ui-motion-enter) var(--ui-motion-ease);
+  }
+  .ui-dialog-content:is(.sheet, .ui-numeric-dialog)[data-state="closed"] {
+    animation: ui-fade-out var(--ui-motion-exit) var(--ui-motion-ease);
+  }
+}
+@media (max-width: 650px) and (prefers-reduced-motion: no-preference) {
+  .ui-dialog-content:is(.sheet, .ui-numeric-dialog)[data-state="open"] {
     animation: ui-sheet-enter var(--ui-motion-enter) var(--ui-motion-ease);
   }
   .ui-dialog-content:is(.sheet, .ui-numeric-dialog)[data-state="closed"] {
-    animation: ui-sheet-exit var(--ui-motion-exit) ease-in;
+    animation: ui-sheet-exit var(--ui-motion-exit) var(--ui-motion-ease);
   }
 }
 @keyframes ui-sheet-enter {
@@ -876,11 +903,7 @@
     transform: translateY(100%);
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .ui-dialog-content:is(.sheet, .ui-numeric-dialog)[data-state] {
-    animation: none;
-  }
-}
+
 
 .ui-muscle-map-illustration .ui-muscle-map-figures {
   margin: 0;
@@ -896,7 +919,7 @@
 }
 .ui-muscle-map-illustration .ui-muscle-map-outline {
   fill: color-mix(
-    in srgb,
+    in oklch,
     var(--ui-muted-foreground) 35%,
     var(--ui-background)
   );

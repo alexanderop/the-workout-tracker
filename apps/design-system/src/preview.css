@@ -41,7 +41,7 @@ body {
 }
 .token-swatch {
   height: 80px;
-  border-bottom: 1px solid var(--ui-border);
+  border-block-end: 1px solid var(--ui-border);
 }
 .token figcaption {
   padding: 12px;

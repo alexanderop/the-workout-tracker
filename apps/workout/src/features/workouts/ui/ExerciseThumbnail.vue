@@ -15,6 +15,6 @@ watch(source, () => { failed.value = false; });
   </span>
 </template>
 <style scoped>
-.exercise-thumbnail { display: grid; place-items: center; flex: 0 0 64px; width: 64px; height: 64px; overflow: hidden; border-radius: 10px; background: var(--surface); color: var(--muted); }
+.exercise-thumbnail { display: grid; place-items: center; flex: 0 0 64px; width: 64px; height: 64px; overflow: clip; border-radius: 10px; background: var(--surface); color: var(--muted); }
 .exercise-thumbnail img { width: 100%; height: 100%; object-fit: contain; }
 </style>

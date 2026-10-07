@@ -156,6 +156,7 @@ defineSlots<{ default?: () => unknown }>();
     <template v-if="snapshot">
       <section class="settings-section">
         <h2>Training preferences</h2>
+        <div class="settings-rows">
         <label class="settings-row"
           ><span
             >Automatic rest timer<small
@@ -189,6 +190,7 @@ defineSlots<{ default?: () => unknown }>();
         >
         <div class="settings-row">
           <span>Weight unit</span><span class="muted">Kilograms · kg</span>
+        </div>
         </div>
       </section>
       <section class="settings-section">

@@ -478,7 +478,7 @@ function saveReplacement() {
 }
 .exercise-option-group {
   display: grid;
-  overflow: hidden;
+  overflow: clip;
   background: var(--surface);
   border-radius: 14px;
 }
@@ -493,7 +493,7 @@ function saveReplacement() {
   font-weight: 450;
 }
 .exercise-option-group :deep(button + button) {
-  border-top: 1px solid var(--background);
+  border-block-start: 1px solid var(--background);
 }
 .exercise-option-group :deep(button svg) {
   color: var(--muted);

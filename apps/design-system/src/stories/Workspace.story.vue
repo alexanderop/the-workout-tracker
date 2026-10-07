@@ -52,11 +52,13 @@ function storyLink(id: string, variant: string): string {
 .workspace-guide p, .workspace-guide h2 { margin: 0; }
 .workspace-sections { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .workspace-sections a { display: grid; gap: 12px; padding: 24px; border: 1px solid var(--ui-border); border-radius: var(--ui-radius); color: var(--ui-foreground); text-decoration: none; }
-.workspace-sections a:hover { background: var(--ui-secondary); }
+@media (hover: hover) and (pointer: fine) {
+  .workspace-sections a:hover { background: var(--ui-secondary);   }
+}
 .workspace-sections a:focus-visible { outline: 2px solid var(--ui-primary); outline-offset: 4px; }
 .workspace-sections p { color: var(--ui-muted-foreground); font-size: 14px; }
 .workspace-sections span { color: var(--ui-primary); }
-.workspace-guide li + li { margin-top: 12px; }
+.workspace-guide li + li { margin-block-start: 12px; }
 @media (max-width: 540px) { .workspace-sections { grid-template-columns: 1fr; } }
 </style>
 
