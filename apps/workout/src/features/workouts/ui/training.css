@@ -157,7 +157,44 @@
   .workout-selected-exercise { padding-top: 12px; }
   .workout-inline-sets .set-row,
   .workout-inline-sets .set-labels { gap: 4px; }
-  .active-workout .training-back { font-size: 12px; }
+  .active-workout .training-back {
+    display: inline-flex;
+    gap: 2px;
+    min-height: 44px;
+    margin-left: -8px;
+    padding-right: 8px;
+    color: var(--purple);
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .active-workout-heading > .active-workout-finish {
+    min-width: 44px;
+    padding-inline: 8px;
+    background: transparent;
+    color: var(--purple);
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .active-workout-heading > .active-workout-finish:disabled {
+    color: var(--muted);
+    opacity: 0.6;
+  }
+  .workout-selected-exercise h2 { font-size: 22px; }
+  .workout-selected-exercise > header .ui-icon-button { background: transparent; }
+  .workout-exercise-strip {
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: 3px;
+    scrollbar-width: none;
+  }
+  .workout-exercise-strip::-webkit-scrollbar { display: none; }
+  .workout-exercise-tab { scroll-snap-align: start; }
+  .active-workout-content > .workout-discard {
+    display: flex;
+    margin: 24px auto 0;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 500;
+  }
 }
 
 .workout-last-time { background: var(--surface); border-radius: 16px; padding: 16px; margin-top: 16px; }

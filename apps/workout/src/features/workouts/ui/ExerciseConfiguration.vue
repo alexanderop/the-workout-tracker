@@ -480,14 +480,22 @@ function saveReplacement() {
   display: grid;
   overflow: hidden;
   background: var(--surface);
-  border-radius: 20px;
+  border-radius: 14px;
 }
 .exercise-option-group :deep(button) {
   justify-content: flex-start;
-  min-height: 64px;
-  padding-inline: 20px;
+  gap: 14px;
+  min-height: 52px;
+  padding-inline: 18px;
   border: 0;
   border-radius: 0;
-  font-size: 15px;
+  font-size: 16px;
+  font-weight: 450;
+}
+.exercise-option-group :deep(button + button) {
+  border-top: 1px solid var(--background);
+}
+.exercise-option-group :deep(button svg) {
+  color: var(--muted);
 }
 </style>

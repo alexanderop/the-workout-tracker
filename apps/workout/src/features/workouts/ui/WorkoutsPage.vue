@@ -64,7 +64,8 @@ const history = computed(() =>
         <h2>{{ active.name }}</h2>
         <p>
           {{ active.exercises.length }} exercises ·
-          {{ sessionTotals(active).completedSets }} sets logged
+          {{ sessionTotals(active).completedSets }}
+          {{ sessionTotals(active).completedSets === 1 ? "set" : "sets" }} logged
         </p>
         <BaseButton
           unstyled

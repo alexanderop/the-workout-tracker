@@ -190,6 +190,7 @@ const title = computed(() => {
           (page !== 'workouts' && page !== 'session') || !snapshot || !online
         "
         class="topbar"
+        :class="{ 'is-offline': !online }"
       >
         <div>
           <span class="muted">Your workspace</span><span class="slash">/</span
@@ -279,7 +280,6 @@ const title = computed(() => {
       </main>
     </div>
     <TrainingDock
-      :workouts-href="workoutsHref"
       v-if="page === 'session' && active"
       :workspace="workspace"
       @finish="dialogs?.openFinish()"

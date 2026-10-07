@@ -847,7 +847,11 @@
   }
 }
 
-/* Both sheet families share mobile motion, independent of centered transforms. */
+/* Both sheet families share mobile motion, independent of centered transforms.
+   A swiped sheet exits from its dragged offset. */
+.ui-dialog-content:is(.sheet, .ui-numeric-dialog) {
+  --ui-sheet-drag: 0px;
+}
 @media (max-width: 650px) {
   .ui-dialog-content:is(.sheet, .ui-numeric-dialog)[data-state="open"] {
     animation: ui-sheet-enter var(--ui-motion-enter) var(--ui-motion-ease);
@@ -866,7 +870,7 @@
 }
 @keyframes ui-sheet-exit {
   from {
-    transform: translateY(0);
+    transform: translateY(var(--ui-sheet-drag, 0px));
   }
   to {
     transform: translateY(100%);

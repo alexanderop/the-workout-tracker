@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, useTemplateRef, watch } from "vue";
 import { BaseButton, BaseButtonIcon, BaseInput, BaseSheet } from "@form/ui";
-import { Plus, Dumbbell, Clock3, ShieldCheck, Ellipsis, Check, Pencil } from "@lucide/vue";
+import { Plus, Dumbbell, Clock3, ShieldCheck, Ellipsis, Check, Pencil, ChevronLeft } from "@lucide/vue";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import { setTargetReps, type SessionExercise } from "../domain";
 import type { Confirmation } from "./dialogTypes";
@@ -221,8 +221,8 @@ function discard() {
 </script>
 <template>
   <section v-if="active" class="active-workout">
-    <a class="training-back text-button" :href="workoutsHref"
-      >Back to workouts</a
+    <a class="training-back text-button" :href="workoutsHref" aria-label="Back to workouts"
+      ><ChevronLeft :size="20" aria-hidden="true" /><span class="training-back-label">Workouts</span></a
     >
     <header class="active-workout-heading">
       <div>
@@ -234,6 +234,7 @@ function discard() {
       </div>
       <BaseButton
         variant="secondary"
+        class="active-workout-finish"
         :disabled="saving || nameDirty || !activeTotals.completedSets"
         @click="emit('finish')"
         >Finish</BaseButton
@@ -299,7 +300,7 @@ function discard() {
             <header><h3>Last time</h3><span>{{ longDate(lastTime.finishedAt) }}</span></header>
             <p v-for="(set, index) in lastTime.sets" :key="set.id"><span>Set {{ index + 1 }}</span><strong>{{ fmt(set.weightKg) }} kg × {{ set.reps }} reps</strong></p>
           </section>
-          <p v-if="isComplete(selectedExercise)" class="workout-exercise-complete"><Check :size="16" /> All {{ selectedExercise.sets.length }} sets logged</p>
+          <p v-if="isComplete(selectedExercise)" class="workout-exercise-complete"><Check :size="16" /> {{ selectedExercise.sets.length === 1 ? "Set logged" : `All ${selectedExercise.sets.length} sets logged` }}</p>
         </article>
     <p v-if="training.notice.value" class="workout-guidance" role="status">{{ training.notice.value }}</p>
         <div v-if="allDone" class="workout-done">
@@ -319,7 +320,7 @@ function discard() {
           @click="pick"
           ><Plus :size="18" />Add exercises</BaseButton
         >
-        <BaseButton variant="ghost" :disabled="saving" @click="discard"
+        <BaseButton variant="ghost" class="workout-discard" :disabled="saving" @click="discard"
           >Discard workout</BaseButton
         >
       </div>

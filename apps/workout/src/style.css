@@ -1965,7 +1965,7 @@ textarea::placeholder {
     right: 0;
     z-index: 20;
     display: grid;
-    grid-template-columns: 48px minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     gap: 6px 12px;
     padding: 8px 16px calc(10px + env(safe-area-inset-bottom));
@@ -2034,9 +2034,6 @@ textarea::placeholder {
   body:has(.training-bar) .main {
     padding-top: 16px;
     padding-bottom: calc(110px + env(safe-area-inset-bottom));
-  }
-  .training-back {
-    display: none;
   }
   .session-layout {
     flex-direction: column;
@@ -2848,5 +2845,112 @@ button.catalog-chip {
     grid-template-columns: 1fr 1fr;
     align-items: center;
     padding-top: 8px;
+  }
+}
+
+/* Native mobile shell: one large title per screen, translucent chrome and
+   platform-like press behaviour. The desktop layout is unaffected. */
+@media (max-width: 650px) {
+  .topbar:not(.is-offline) {
+    display: none;
+  }
+  .main {
+    padding-top: calc(20px + env(safe-area-inset-top));
+  }
+  .topbar.is-offline ~ .main {
+    padding-top: 20px;
+  }
+  body:has(.training-bar) .main {
+    padding-top: calc(8px + env(safe-area-inset-top));
+  }
+  h1 {
+    font-size: 30px;
+    letter-spacing: -0.9px;
+  }
+  .mobile-nav,
+  .training-bar {
+    background: color-mix(in srgb, var(--background) 82%, transparent);
+    -webkit-backdrop-filter: saturate(160%) blur(20px);
+    backdrop-filter: saturate(160%) blur(20px);
+  }
+  .mobile-nav {
+    padding: 6px 8px calc(4px + env(safe-area-inset-bottom));
+  }
+  .mobile-nav a {
+    gap: 4px;
+    min-height: 48px;
+    font-size: 10px;
+    font-weight: 550;
+  }
+  .mobile-nav a.selected {
+    background: transparent;
+  }
+  .mobile-nav,
+  .training-bar,
+  .workout-exercise-strip,
+  button {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  .main-footer {
+    margin-top: 24px;
+  }
+  body:has(.training-bar) .main-footer nav {
+    display: none;
+  }
+}
+@media (display-mode: standalone) and (max-width: 650px) {
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
+}
+
+/* Native list density on phones: compact rows with hairline separators. */
+@media (max-width: 650px) {
+  .picker-list.catalog-list {
+    padding: 0 0 0 12px;
+    border-radius: 14px;
+  }
+  .picker-list .catalog-row {
+    position: relative;
+    contain-intrinsic-size: auto 68px;
+    min-height: 68px;
+    padding: 8px 12px 8px 0;
+    gap: 12px;
+    border-radius: 0;
+  }
+  .picker-list .catalog-row + .catalog-row::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 64px;
+    border-top: 1px solid var(--background);
+  }
+  .picker-list .catalog-row {
+    border: 0;
+  }
+  .catalog-row .exercise-thumbnail {
+    flex-basis: 52px;
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+  }
+  .catalog-row-name {
+    font-size: 16px;
+    font-weight: 500;
+  }
+  .catalog-row-name small {
+    margin-top: 2px;
+    font-size: 13px;
+  }
+}
+
+/* Touch screens keep no hover tint after a tap; selection still shows. */
+@media (hover: none) {
+  .picker-list button:not(.is-selected):hover {
+    background: transparent;
   }
 }

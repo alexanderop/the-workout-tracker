@@ -5,8 +5,13 @@ import BaseDialogTitle from "./dialog/BaseDialogTitle.vue";
 import BaseDialogDescription from "./dialog/BaseDialogDescription.vue";
 import BaseDialogClose from "./dialog/BaseDialogClose.vue";
 import BaseButton from "./button/BaseButton.vue";
-import { watch } from "vue";
+import { onBeforeUnmount, watch } from "vue";
 import { X } from "@lucide/vue";
+import {
+  sheetDragOffset,
+  sheetDragSlop,
+  shouldDismissSheet,
+} from "./sheet-swipe";
 const {
   open,
   title,
@@ -37,6 +42,81 @@ function restoreFocus(event: Event) {
   event.preventDefault();
   if (opener?.isConnected) opener.focus();
 }
+interface Drag {
+  area: HTMLElement;
+  sheet: HTMLElement;
+  pointerId: number;
+  startY: number;
+  lastY: number;
+  lastTime: number;
+  velocity: number;
+  active: boolean;
+}
+let drag: Drag | null = null;
+const mobileSheet = () => window.matchMedia("(max-width: 650px)").matches;
+function startDrag(event: PointerEvent) {
+  if (!event.isPrimary || event.button !== 0 || !mobileSheet()) return;
+  const area = event.currentTarget;
+  if (!(area instanceof HTMLElement)) return;
+  const sheet = area.closest<HTMLElement>(".sheet");
+  if (!sheet) return;
+  drag = {
+    area,
+    sheet,
+    pointerId: event.pointerId,
+    startY: event.clientY,
+    lastY: event.clientY,
+    lastTime: event.timeStamp,
+    velocity: 0,
+    active: false,
+  };
+}
+function moveDrag(event: PointerEvent) {
+  if (!drag || event.pointerId !== drag.pointerId) return;
+  const distance = event.clientY - drag.startY;
+  if (!drag.active) {
+    if (Math.abs(distance) < sheetDragSlop) return;
+    drag.active = true;
+    drag.area.setPointerCapture(event.pointerId);
+    drag.sheet.classList.add("is-dragging");
+  }
+  const elapsed = Math.max(1, event.timeStamp - drag.lastTime);
+  drag.velocity = (event.clientY - drag.lastY) / elapsed;
+  drag.lastY = event.clientY;
+  drag.lastTime = event.timeStamp;
+  drag.sheet.style.setProperty("--ui-sheet-drag", `${sheetDragOffset(distance)}px`);
+}
+function endDrag(event: PointerEvent) {
+  if (!drag || event.pointerId !== drag.pointerId) return;
+  const { area, sheet, active, startY, velocity } = drag;
+  drag = null;
+  if (!active) return;
+  sheet.classList.remove("is-dragging");
+  if (area.hasPointerCapture(event.pointerId))
+    area.releasePointerCapture(event.pointerId);
+  const distance = event.clientY - startY;
+  // Swallow the click a drag may end with, so it cannot press the close button.
+  const swallow = (click: Event) => click.stopPropagation();
+  sheet.addEventListener("click", swallow, { capture: true, once: true });
+  setTimeout(() => sheet.removeEventListener("click", swallow, true), 60);
+  if (
+    event.type === "pointerup" &&
+    shouldDismissSheet(distance, velocity, sheet.offsetHeight)
+  ) {
+    // Dismissal follows the same path as Escape and the backdrop, so a
+    // caller may keep the sheet open to confirm discarding input.
+    emit("close");
+    requestAnimationFrame(() => {
+      if (sheet.dataset.state !== "closed")
+        sheet.style.removeProperty("--ui-sheet-drag");
+    });
+    return;
+  }
+  sheet.style.removeProperty("--ui-sheet-drag");
+}
+onBeforeUnmount(() => {
+  drag = null;
+});
 defineSlots<{ default?: () => unknown }>();
 </script>
 <template>
@@ -54,6 +134,14 @@ defineSlots<{ default?: () => unknown }>();
       :class="{ wide }"
       @close-auto-focus="restoreFocus"
     >
+      <div
+        class="sheet-drag-area"
+        @pointerdown="startDrag"
+        @pointermove="moveDrag"
+        @pointerup="endDrag"
+        @pointercancel="endDrag"
+      >
+      <span class="sheet-grabber" aria-hidden="true"></span>
       <header class="sheet-header">
         <div>
           <BaseDialogTitle class="sheet-title">{{ title }}</BaseDialogTitle
@@ -75,6 +163,7 @@ defineSlots<{ default?: () => unknown }>();
             ><X :size="20" /></BaseButton
         ></BaseDialogClose>
       </header>
+      </div>
       <slot />
     </BaseDialogContent>
   </DialogRoot>
@@ -82,6 +171,8 @@ defineSlots<{ default?: () => unknown }>();
 
 <style scoped>
 :global(.sheet) {
+  /* Swipe offset, written inline while a mobile sheet is dragged. */
+  --ui-sheet-drag: 0px;
   display: block;
   position: fixed;
   left: 50%;
@@ -167,6 +258,37 @@ defineSlots<{ default?: () => unknown }>();
   outline: 2px solid var(--purple);
   outline-offset: 4px;
 }
+.sheet-grabber {
+  display: none;
+}
+@media (max-width: 650px) {
+  .sheet-drag-area {
+    touch-action: none;
+    margin: -24px -20px 0;
+    padding: 8px 20px 0;
+  }
+  .sheet-grabber {
+    display: block;
+    width: 36px;
+    height: 5px;
+    margin: 0 auto 14px;
+    border-radius: 3px;
+    background: var(--muted);
+    opacity: 0.45;
+  }
+  :global(.sheet:not([data-state="closed"])) {
+    transform: translateY(var(--ui-sheet-drag, 0px));
+    transition: transform var(--ui-motion-exit) var(--ui-motion-ease);
+  }
+  :global(.sheet.is-dragging) {
+    transition: none;
+  }
+}
+@media (max-width: 650px) and (prefers-reduced-motion: reduce) {
+  :global(.sheet:not([data-state="closed"])) {
+    transition: none;
+  }
+}
 @media (max-width: 650px) {
   :global(.sheet),
   :global(.sheet.wide) {
@@ -174,7 +296,6 @@ defineSlots<{ default?: () => unknown }>();
     top: auto;
     bottom: 0;
     left: 0;
-    transform: none;
     max-height: calc(100dvh - 30px);
     padding: 24px 20px calc(24px + env(safe-area-inset-bottom));
     border-radius: 14px 14px 0 0;
