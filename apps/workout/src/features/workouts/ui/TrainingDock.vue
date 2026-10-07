@@ -10,18 +10,28 @@ const { workspace, workoutsHref } = defineProps<{
 const { active, rest, saving, training, run, activeSetCount } = workspace;
 const emit = defineEmits<{ finish: []; pick: [] }>();
 const next = training.next;
+function showNext() {
+  if (!next.value || saving.value) return;
+  training.selectSet(next.value.set.id);
+  training.requestReviewFocus(next.value.set.id);
+}
 </script>
 <template>
   <section v-if="active" class="training-bar" aria-label="Training controls">
-    <a :href="workoutsHref" class="training-bar-back" aria-label="Back to workouts"
+    <a
+      :href="workoutsHref"
+      class="training-bar-back"
+      aria-label="Back to workouts"
       ><ArrowLeft :size="20"
     /></a>
     <template v-if="active.rest"
       ><div>
         <strong>{{ rest ? `${duration(rest)} rest` : "Rest complete" }}</strong
-        ><small
-          >{{ next ? `Next: ${next.exercise.name} · Set ${next.index + 1}` : "All sets logged" }}</small
-        >
+        ><small>{{
+          next
+            ? `Next: ${next.exercise.name} · Set ${next.index + 1}`
+            : "All sets logged"
+        }}</small>
       </div>
       <BaseButton
         variant="secondary"
@@ -31,18 +41,26 @@ const next = training.next;
       ></template
     >
     <template v-else-if="next"
-      ><div>
+      ><BaseButton
+        unstyled
+        class="training-bar-next"
+        :disabled="saving"
+        @click="showNext"
+      >
         <strong>Next: {{ next.exercise.name }}</strong
-        ><small>Set {{ next.index + 1 }} of {{ next.exercise.sets.length }}</small>
-      </div>
-      </template
-    >
+        ><small
+          >Set {{ next.index + 1 }} of {{ next.exercise.sets.length }}</small
+        >
+      </BaseButton>
+    </template>
     <template v-else-if="activeSetCount"
       ><div>
         <strong>All sets logged</strong
         ><small>Review or finish your workout</small>
       </div>
-      <BaseButton :disabled="saving || workspace.workoutName.dirty.value" @click="emit('finish')"
+      <BaseButton
+        :disabled="saving || workspace.workoutName.dirty.value"
+        @click="emit('finish')"
         >Finish</BaseButton
       ></template
     >

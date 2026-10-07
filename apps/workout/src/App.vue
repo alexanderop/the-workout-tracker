@@ -6,7 +6,7 @@ import {
   BaseSheet,
   BaseInstallInstructions,
 } from "@form/ui";
-import { computed, ref, useTemplateRef, watch } from "vue";
+import { computed, onScopeDispose, ref, useTemplateRef, watch } from "vue";
 import {
   ArrowDownToLine,
   ChevronRight,
@@ -25,7 +25,7 @@ import {
   WorkoutDialogs,
   download,
 } from "./features/workouts/ui";
-import { RouterLink, RouterView } from "vue-router";
+import { RouterLink, RouterView, useRouter } from "vue-router";
 import { useWorkoutNavigation } from "./app/useWorkoutNavigation";
 import { provideWorkoutRouteContext } from "./app/workoutRouteContext";
 import type { Workouts, DraftJournal } from "./features/workouts";
@@ -47,6 +47,8 @@ const workspace = useWorkoutWorkspace(workouts, drafts, clock.now);
 watch(() => workspace.active.value?.rest?.endsAt, clock.refresh);
 const { state, snapshot, saving, message, error, history, active } = workspace;
 const dialogs = useTemplateRef<InstanceType<typeof WorkoutDialogs>>("dialogs");
+const router = useRouter();
+onScopeDispose(router.beforeEach(() => dialogs.value?.requestLeave() ?? true));
 const main = useTemplateRef<HTMLElement>("main");
 function focusTemplates(event: Event) {
   const trigger =
@@ -183,7 +185,12 @@ const title = computed(() => {
     </aside>
 
     <div class="workspace">
-      <header v-if="(page !== 'workouts' && page !== 'session') || !snapshot || !online" class="topbar">
+      <header
+        v-if="
+          (page !== 'workouts' && page !== 'session') || !snapshot || !online
+        "
+        class="topbar"
+      >
         <div>
           <span class="muted">Your workspace</span><span class="slash">/</span
           ><span>{{ title }}</span>

@@ -53,7 +53,7 @@ Then("the first tab must review the other input", async ({ page }) => {
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Log set 1 of Bench press", exact: true }),
-  ).toHaveAttribute("aria-pressed", "false");
+  ).toBeEnabled();
 });
 Then(
   "reloading the second tab retains its 70 kilogram input",
@@ -91,7 +91,7 @@ Then(
     ).toBeVisible();
     await expect(
       page.getByRole("button", {
-        name: "Undo set 1 of Bench press",
+        name: "Logged set 1 of Bench press",
         exact: true,
       }),
     ).toBeVisible();

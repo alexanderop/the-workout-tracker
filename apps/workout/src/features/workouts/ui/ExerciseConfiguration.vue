@@ -292,6 +292,7 @@ function saveReplacement() {
         >
       </template>
       <template v-else-if="view === 'configure'">
+        <label class="field"><span>Number of sets</span>
         <BaseInputNumber
           v-model="count"
           label="Number of sets"
@@ -299,7 +300,7 @@ function saveReplacement() {
           :min="minimum"
           :max="30"
           :disabled="workspace.saving.value"
-        />
+        /></label>
         <label class="workout-config-toggle"
           ><input
             v-model="replaceTargets"
@@ -380,7 +381,7 @@ function saveReplacement() {
             :exercises="catalog"
             :selected="selection"
             :busy="workspace.saving.value"
-            @toggle="selection = [$event]"
+            @toggle="selection = selection.includes($event) ? [] : [$event]"
           />
           <template v-if="replacement">
             <p class="muted small">

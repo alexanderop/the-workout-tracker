@@ -11,3 +11,12 @@ Feature: Browsing exercises without losing a workout selection
     And alphabetical ordering can be reversed
     And dismissing nested filters returns focus to the workout picker
     And the original exercise can start a workout
+
+  Scenario: Selected exercises and applied filters stay available outside search results
+    Given my exercise catalog includes a custom barbell press
+    When I select Bench press in the exercise picker
+    And I browse illustrated equipment and muscle filters
+    Then only matching custom exercises appear
+    And the hidden selection and named active filters remain visible
+    And I can remove each filter without losing my search sort or selection
+    And I can remove a hidden selection on a short phone

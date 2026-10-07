@@ -35,10 +35,10 @@ export class ExerciseCatalogPage {
         name: "Select exercises",
         exact: true,
       }),
-    ).toBeInViewport();
+    ).toBeInViewport({ ratio: 1 });
     await expect(
       this.picker().getByRole("button", { name: "Start (1)", exact: true }),
-    ).toBeInViewport();
+    ).toBeInViewport({ ratio: 1 });
     await this.capture(info, "exercise-catalog");
     await this.picker()
       .getByRole("button", { name: "Filters", exact: true })
@@ -87,6 +87,88 @@ export class ExerciseCatalogPage {
     await expect(
       this.picker().getByRole("button", { name: "Start (1)", exact: true }),
     ).toBeEnabled();
+  }
+  async expectSelectionAndFiltersVisible() {
+    await this.page.setViewportSize({ width: 320, height: 568 });
+    await expect(this.rows().first()).toBeInViewport({ ratio: 1 });
+    await expect(
+      this.picker().getByRole("button", { name: "Start (1)", exact: true }),
+    ).toBeInViewport({ ratio: 1 });
+    await expect(
+      this.picker().getByRole("button", {
+        name: "Remove Bench press from selection",
+        exact: true,
+      }),
+    ).toBeVisible();
+    for (const label of ["Barbell", "Chest", "Only custom exercises"]) {
+      await expect(
+        this.picker().getByRole("button", {
+          name: `Remove ${label} filter`,
+          exact: true,
+        }),
+      ).toBeVisible();
+    }
+  }
+  async removeNamedFilters() {
+    await this.picker()
+      .getByRole("button", { name: "Sort Z to A", exact: true })
+      .click();
+    for (const label of ["Only custom exercises", "Chest", "Barbell"]) {
+      await this.picker()
+        .getByRole("button", { name: `Remove ${label} filter`, exact: true })
+        .click();
+      await expect(
+        this.picker().getByRole("button", { name: "Filters", exact: true }),
+      ).toBeFocused();
+      await expect(
+        this.picker().getByRole("button", {
+          name: `Remove ${label} filter`,
+          exact: true,
+        }),
+      ).toHaveCount(0);
+      await expect(
+        this.picker().getByRole("textbox", { name: "Search exercises" }),
+      ).toHaveValue("press");
+      await expect(
+        this.picker().getByRole("button", { name: "Sort A to Z", exact: true }),
+      ).toBeVisible();
+      await expect(
+        this.picker().getByRole("button", {
+          name: "Remove Bench press from selection",
+          exact: true,
+        }),
+      ).toBeVisible();
+    }
+    await expect(
+      this.picker().getByRole("button", { name: /^Bench press Chest/ }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await expect(this.rows()).not.toHaveCount(1);
+  }
+  async removeHiddenSelection() {
+    await this.page.setViewportSize({ width: 320, height: 568 });
+    await this.picker()
+      .getByRole("textbox", { name: "Search exercises" })
+      .fill("squat");
+    await expect(
+      this.picker().getByRole("button", { name: /^Bench press Chest/ }),
+    ).toHaveCount(0);
+    const remove = this.picker().getByRole("button", {
+      name: "Remove Bench press from selection",
+      exact: true,
+    });
+    await expect(remove).toBeInViewport({ ratio: 1 });
+    await expect(this.rows().first()).toBeInViewport({ ratio: 1 });
+    await expect(
+      this.picker().getByRole("button", { name: "Start (1)", exact: true }),
+    ).toBeInViewport({ ratio: 1 });
+    await remove.click();
+    await expect(remove).toHaveCount(0);
+    await expect(
+      this.picker().getByRole("textbox", { name: "Search exercises" }),
+    ).toBeFocused();
+    await expect(
+      this.picker().getByRole("button", { name: "Start (0)", exact: true }),
+    ).toBeDisabled();
   }
   async resetFilters() {
     await this.picker()

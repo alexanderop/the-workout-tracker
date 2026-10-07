@@ -18,7 +18,9 @@ const row = computed(() => (setId ? training.rows.get(setId) : undefined));
 const confirmation = ref<"clear" | "discard" | null>(null);
 watch(
   () => setId,
-  () => { confirmation.value = null; },
+  () => {
+    confirmation.value = null;
+  },
 );
 async function confirm() {
   if (confirmation.value === "discard" && row.value)
@@ -72,6 +74,13 @@ async function clear() {
       <BaseButton
         v-if="row.set.completed"
         variant="secondary"
+        :disabled="busy || row.touched"
+        @click="training.undoSet(row.set.id)"
+        >Undo log</BaseButton
+      >
+      <BaseButton
+        v-if="row.set.completed"
+        variant="secondary"
         :disabled="busy"
         @click="confirmation = 'clear'"
         >Clear logged set</BaseButton
@@ -107,7 +116,7 @@ async function clear() {
         Cancel
       </BaseButton>
       <BaseButton :disabled="busy" @click="confirm">
-        {{ confirmation === 'clear' ? 'Clear set' : 'Discard input' }}
+        {{ confirmation === "clear" ? "Clear set" : "Discard input" }}
       </BaseButton>
     </div>
   </BaseSheet>

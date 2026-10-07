@@ -2473,6 +2473,7 @@ textarea::placeholder {
 /* Keep picker actions reachable while the exercise list scrolls. */
 .sheet:has(> .picker-actions) {
   display: flex;
+  gap: 0;
   flex-direction: column;
   height: min(820px, calc(100dvh - 64px));
   overflow: clip;
@@ -2498,7 +2499,6 @@ textarea::placeholder {
     margin-bottom: 16px;
   }
 }
-
 
 .journal-ready {
   animation: journal-enter var(--ui-motion-enter) ease-out;
@@ -2582,8 +2582,53 @@ textarea::placeholder {
   font-weight: 550;
   cursor: pointer;
 }
+.catalog-selection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .catalog-selection-count {
-  margin: 0 0 10px;
+  flex-shrink: 0;
+  margin: 0;
+}
+.catalog-selection .catalog-chips {
+  min-width: 0;
+}
+.catalog-chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px;
+  margin-bottom: 6px;
+  overscroll-behavior-x: contain;
+}
+.catalog-chip {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--purple);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  white-space: nowrap;
+}
+button.catalog-chip {
+  cursor: pointer;
+}
+.catalog-chip > svg {
+  flex-shrink: 0;
+}
+.catalog-chip:disabled {
+  opacity: 0.5;
+}
+.catalog-chip:focus-visible {
+  outline: 2px solid var(--purple);
+  outline-offset: -4px;
 }
 .picker-list.catalog-list {
   padding: 8px;
@@ -2787,4 +2832,21 @@ textarea::placeholder {
 }
 .picker-actions .btn.primary:disabled {
   opacity: 0.5;
+}
+
+@media (max-width: 650px) and (max-height: 650px) {
+  .sheet:has(> .picker-actions) {
+    padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+  }
+  .sheet:has(> .picker-actions) .sheet-header {
+    margin-bottom: 8px;
+  }
+  .sheet:has(> .picker-actions) .catalog-toolbar {
+    padding-block: 0;
+  }
+  .sheet:has(> .picker-actions) .picker-actions {
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    padding-top: 8px;
+  }
 }

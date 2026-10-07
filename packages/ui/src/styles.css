@@ -832,7 +832,7 @@
 .ui-button:not(:disabled):not([aria-disabled="true"]):active {
   scale: 0.97;
 }
-@media (pointer: coarse) {
+@media (pointer: coarse), (max-width: 650px) {
   .ui-button:not([data-unstyled]) {
     min-height: 44px;
     min-width: 44px;

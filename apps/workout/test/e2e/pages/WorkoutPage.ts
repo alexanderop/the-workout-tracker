@@ -76,7 +76,7 @@ export class WorkoutPage {
         name: "Log set 1 of Bench press",
         exact: true,
       }),
-    ).toHaveAttribute("aria-pressed", "false");
+    ).toBeEnabled();
     await expect(
       this.page.getByRole("progressbar", { name: "Logged sets" }),
     ).toHaveCount(0);
@@ -85,7 +85,7 @@ export class WorkoutPage {
   async expectUnloggedDraft(value: string) {
     await this.expectUnloggedSet(value);
     await expect(
-      this.page.getByText("Draft saved on this device.", { exact: false }),
+      this.page.getByText("Input retained on this device.", { exact: false }),
     ).toBeVisible();
   }
 

@@ -41,6 +41,7 @@ const {
 const emit = defineEmits<{
   "update:modelValue": [value: string];
   open: [];
+  close: [];
 }>();
 const open = ref(false);
 const draft = ref(beginEditing(modelValue));
@@ -59,7 +60,10 @@ const digits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 watch(
   open,
   (isOpen) => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      emit("close");
+      return;
+    }
     draft.value = beginEditing(modelValue);
     pasteIssue.value = "";
     presets.value = numericPresets(modelValue, limits.value);
@@ -157,82 +161,84 @@ function focusDisplay(event: Event) {
           >
         </BaseDialogClose>
       </header>
-      <section class="ui-numeric-suggestions" aria-label="Suggested values">
-        <p>Quick pick <span>Tap to use</span></p>
-        <div class="ui-numeric-presets">
+      <div class="ui-numeric-body">
+        <section class="ui-numeric-suggestions" aria-label="Suggested values">
+          <p>Quick pick <span>Tap to use</span></p>
+          <div class="ui-numeric-presets">
+            <BaseButton
+              v-for="preset in presets"
+              :key="preset"
+              type="button"
+              variant="secondary"
+              class="ui-numeric-preset"
+              :aria-label="`Use ${preset}${unit ? ` ${unit}` : ''}`"
+              @click="confirm(preset)"
+              >{{ preset }}<small v-if="unit">{{ unit }}</small></BaseButton
+            >
+          </div>
+        </section>
+        <div
+          ref="display"
+          tabindex="-1"
+          role="group"
+          aria-label="Number editor"
+          :aria-describedby="hintId"
+          class="ui-numeric-display"
+        >
+          <div role="status" aria-live="polite" aria-atomic="true">
+            <span>{{ draft.text || "—" }}</span
+            ><small v-if="unit">{{ unit }}</small>
+          </div>
+          <p
+            :id="hintId"
+            :class="{ 'ui-numeric-error': value === null || pasteIssue !== '' }"
+          >
+            {{
+              pasteIssue ||
+              (value === null
+                ? `Enter ${decimals ? "a value" : "a whole number"} from ${min} to ${max}${unit ? ` ${unit}` : ""}.`
+                : draft.fresh
+                  ? "Type a new value to replace this one."
+                  : "Ready when you are.")
+            }}
+          </p>
+        </div>
+        <div class="ui-numeric-keypad" role="group" aria-label="Numeric keypad">
           <BaseButton
-            v-for="preset in presets"
-            :key="preset"
+            v-for="digit in digits"
+            :key="digit"
             type="button"
             variant="secondary"
-            class="ui-numeric-preset"
-            :aria-label="`Use ${preset}${unit ? ` ${unit}` : ''}`"
-            @click="confirm(preset)"
-            >{{ preset }}<small v-if="unit">{{ unit }}</small></BaseButton
+            class="ui-numeric-key"
+            @click="press(digit)"
+            >{{ digit }}</BaseButton
           >
+          <BaseButton
+            v-if="decimals"
+            type="button"
+            variant="secondary"
+            class="ui-numeric-key"
+            aria-label="Decimal point"
+            @click="press('.')"
+            >.</BaseButton
+          >
+          <span v-else />
+          <BaseButton
+            type="button"
+            variant="secondary"
+            class="ui-numeric-key"
+            @click="press('0')"
+            >0</BaseButton
+          >
+          <BaseButton
+            type="button"
+            variant="secondary"
+            class="ui-numeric-key"
+            aria-label="Backspace"
+            @click="press('Backspace')"
+            ><Delete :size="22"
+          /></BaseButton>
         </div>
-      </section>
-      <div
-        ref="display"
-        tabindex="-1"
-        role="group"
-        aria-label="Number editor"
-        :aria-describedby="hintId"
-        class="ui-numeric-display"
-      >
-        <div role="status" aria-live="polite" aria-atomic="true">
-          <span>{{ draft.text || "—" }}</span
-          ><small v-if="unit">{{ unit }}</small>
-        </div>
-        <p
-          :id="hintId"
-          :class="{ 'ui-numeric-error': value === null || pasteIssue !== '' }"
-        >
-          {{
-            pasteIssue ||
-            (value === null
-              ? `Enter ${decimals ? "a value" : "a whole number"} from ${min} to ${max}${unit ? ` ${unit}` : ""}.`
-              : draft.fresh
-                ? "Type a new value to replace this one."
-                : "Ready when you are.")
-          }}
-        </p>
-      </div>
-      <div class="ui-numeric-keypad" role="group" aria-label="Numeric keypad">
-        <BaseButton
-          v-for="digit in digits"
-          :key="digit"
-          type="button"
-          variant="secondary"
-          class="ui-numeric-key"
-          @click="press(digit)"
-          >{{ digit }}</BaseButton
-        >
-        <BaseButton
-          v-if="decimals"
-          type="button"
-          variant="secondary"
-          class="ui-numeric-key"
-          aria-label="Decimal point"
-          @click="press('.')"
-          >.</BaseButton
-        >
-        <span v-else />
-        <BaseButton
-          type="button"
-          variant="secondary"
-          class="ui-numeric-key"
-          @click="press('0')"
-          >0</BaseButton
-        >
-        <BaseButton
-          type="button"
-          variant="secondary"
-          class="ui-numeric-key"
-          aria-label="Backspace"
-          @click="press('Backspace')"
-          ><Delete :size="22"
-        /></BaseButton>
       </div>
       <BaseButton
         type="button"
@@ -256,7 +262,7 @@ function focusDisplay(event: Event) {
   width: min(420px, calc(100% - 32px));
   max-width: none;
   max-height: calc(100dvh - 32px);
-  overflow: auto;
+  overflow: hidden;
   overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
@@ -270,6 +276,18 @@ function focusDisplay(event: Event) {
 }
 :global(.ui-numeric-overlay) {
   z-index: 53;
+}
+.ui-numeric-body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.ui-numeric-header,
+.ui-numeric-confirm {
+  flex-shrink: 0;
 }
 .ui-numeric-header {
   display: flex;
@@ -408,14 +426,32 @@ function focusDisplay(event: Event) {
   }
 }
 @media (max-height: 700px) {
-  :global(.ui-numeric-dialog) {
+  :global(.ui-numeric-dialog),
+  .ui-numeric-body {
     gap: 12px;
   }
   .ui-numeric-display {
-    padding-block: 10px;
+    padding-block: 4px;
   }
   .ui-numeric-key {
     min-height: 46px;
+  }
+}
+@media (max-height: 600px) and (max-width: 650px) {
+  :global(.ui-numeric-dialog) {
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  .ui-numeric-description {
+    margin-top: 4px;
+  }
+  .ui-numeric-suggestions > p {
+    margin-bottom: 6px;
+  }
+  .ui-numeric-display span {
+    font-size: 30px;
+  }
+  .ui-numeric-key {
+    min-height: 44px;
   }
 }
 </style>

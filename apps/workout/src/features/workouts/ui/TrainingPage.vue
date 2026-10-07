@@ -293,6 +293,7 @@ function discard() {
             <div class="set-labels" aria-hidden="true"><span>Set</span><span>kg</span><span>Reps</span><span>Log</span><span></span></div>
             <SetRow v-for="row in selectedRows" :key="row.set.id" ref="setRows" :row="row" :busy="saving" :current="training.current.value?.set.id === row.set.id" :dirty="training.dirty(row)" :conflict="training.conflict(row)"
               @edit="training.edit(row.set.id, $event)" @commit="commit(row.set.id)" @select="training.selectSet(row.set.id)" @options="edit(row.set.id)" @discard="training.useSaved(row.set.id)" @keep="training.keepInput(row.set.id)" @recover="training.chooseDraft(row.set.id, $event)" />
+            <BaseButton variant="secondary" class="workout-add-set" :disabled="saving || selectedExercise.sets.length >= 30" @click="training.addSet(selectedExercise.id)"><Plus :size="18" />Add set</BaseButton>
           </div>
           <section v-if="lastTime" class="workout-last-time" aria-label="Last time">
             <header><h3>Last time</h3><span>{{ longDate(lastTime.finishedAt) }}</span></header>

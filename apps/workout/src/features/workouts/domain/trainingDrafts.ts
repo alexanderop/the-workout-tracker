@@ -1,5 +1,10 @@
 import type { WorkoutSet } from "../domain";
-import { parseSetValues, sameSet, type RawValues, type SetDraft } from "./drafts";
+import {
+  parseSetValues,
+  sameSet,
+  type RawValues,
+  type SetDraft,
+} from "./drafts";
 
 export type TrainingDraftState = RawValues & {
   set: WorkoutSet;
@@ -11,12 +16,15 @@ export type TrainingDraftState = RawValues & {
   alternatives: SetDraft[];
 };
 
-export function restoreTrainingDraft<T extends TrainingDraftState>(state: T): T {
+export function restoreTrainingDraft<T extends TrainingDraftState>(
+  state: T,
+): T {
   const recovered = state.records[0];
   if (!recovered) return state;
   const distinct = state.records.some(
     (candidate) =>
-      candidate.weight !== recovered.weight || candidate.reps !== recovered.reps,
+      candidate.weight !== recovered.weight ||
+      candidate.reps !== recovered.reps,
   );
   return {
     ...state,
@@ -25,7 +33,8 @@ export function restoreTrainingDraft<T extends TrainingDraftState>(state: T): T 
     base: recovered.base,
     touched: true,
     recoveredStale:
-      recovered.revision !== state.revision || !sameSet(recovered.base, state.set),
+      recovered.revision !== state.revision ||
+      !sameSet(recovered.base, state.set),
     revision: recovered.revision,
     alternatives: distinct ? state.records : [],
   };
@@ -53,7 +62,8 @@ export type SetCommitDecision =
       values: { weightKg: number; reps: number };
       completed: boolean;
     }
-  | { kind: "blocked"; issue: string };
+  | { kind: "blocked"; issue: string }
+  | { kind: "unchanged" };
 
 export function decideSetCommit(
   state: TrainingDraftState,
@@ -72,12 +82,17 @@ export function decideSetCommit(
       issue:
         "Enter 0–1000 kg and 0–1000 whole repetitions. Planned sets need at least one rep.",
     };
+  if (
+    !valuesOnly &&
+    state.set.completed &&
+    !isDraftDirty(state) &&
+    !state.touched
+  )
+    return { kind: "unchanged" };
   return {
     kind: "ready",
     values,
-    completed: valuesOnly
-      ? state.set.completed
-      : isDraftDirty(state) || !state.set.completed,
+    completed: valuesOnly ? state.set.completed : true,
   };
 }
 

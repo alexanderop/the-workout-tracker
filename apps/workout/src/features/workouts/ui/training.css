@@ -166,3 +166,27 @@
 .workout-last-time header > span, .workout-last-time p { color: var(--muted); font-size: 12px; }
 .workout-last-time p { margin: 10px 0 0; }
 .workout-last-time strong { color: var(--text); font-weight: 500; }
+
+.set-toggle.logged:not(.has-draft) {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.set-logged-label {
+  font-size: 9px;
+  line-height: 1.2;
+}
+.workout-add-set {
+  width: 100%;
+  margin-top: 12px;
+}
+.training-bar-next {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: left;
+}

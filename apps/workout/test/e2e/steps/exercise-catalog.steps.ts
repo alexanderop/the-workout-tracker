@@ -61,3 +61,19 @@ Then(
 Then("the original exercise can start a workout", async ({ page }) => {
   await new ExerciseCatalogPage(page).startSelected();
 });
+
+Then(
+  "the hidden selection and named active filters remain visible",
+  async ({ page }) => {
+    await new ExerciseCatalogPage(page).expectSelectionAndFiltersVisible();
+  },
+);
+Then(
+  "I can remove each filter without losing my search sort or selection",
+  async ({ page }) => {
+    await new ExerciseCatalogPage(page).removeNamedFilters();
+  },
+);
+Then("I can remove a hidden selection on a short phone", async ({ page }) => {
+  await new ExerciseCatalogPage(page).removeHiddenSelection();
+});

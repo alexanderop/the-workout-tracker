@@ -108,8 +108,8 @@ defineExpose({
         type="submit"
         class="set-toggle"
         :class="{ logged: row.set.completed, 'has-draft': dirty }"
-        :aria-label="`${row.set.completed ? (dirty ? 'Save' : 'Undo') : 'Log'} set ${row.index + 1} of ${row.exercise.name}`"
-        :aria-pressed="row.set.completed"
+        :aria-label="`${row.set.completed ? (dirty ? 'Save' : 'Logged') : 'Log'} set ${row.index + 1} of ${row.exercise.name}`"
+        :aria-disabled="row.set.completed && !dirty"
         :disabled="busy"
       >
         <BaseFeedback :active="row.set.completed">
@@ -118,6 +118,9 @@ defineExpose({
             :size="19"
           />
         </BaseFeedback>
+        <span v-if="row.set.completed && !dirty" class="set-logged-label"
+          >Logged</span
+        >
       </BaseButton>
       <BaseButtonIcon
         type="button"
@@ -179,11 +182,11 @@ defineExpose({
       {{ row.storageIssue }}
     </p>
     <p v-else-if="row.touched && !conflict" class="draft-note">
-      Draft saved on this device.
+      Input retained on this device.
       {{
         row.set.completed
-          ? "Save to update this set."
-          : "Log when you finish this set."
+          ? "Save to apply it to this logged set."
+          : "It is not logged. Log when you finish this set."
       }}
     </p>
   </form>

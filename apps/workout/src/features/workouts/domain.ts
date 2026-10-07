@@ -313,6 +313,17 @@ export const commandSchema = z
         replacementExerciseId: identifier,
       })
       .strict(),
+    z.object({
+      type: z.literal("correct-completed"),
+      ...sessionId,
+      name: name.optional(),
+      sets: z.array(z.object({
+        exerciseId: identifier,
+        setId: identifier,
+        weightKg: weight,
+        reps: actualReps,
+      }).strict().readonly()).max(1500).readonly(),
+    }).strict(),
     z.object({ type: z.literal("finish"), ...sessionId }).strict(),
     z.object({ type: z.literal("discard"), ...sessionId }).strict(),
     z.object({ type: z.literal("stop-rest"), ...sessionId }).strict(),
@@ -397,6 +408,8 @@ export function reduceWorkout(
       : reject(validated.error.issues[0]?.message ?? "Invalid workout change.");
   };
   switch (command.type) {
+    case "correct-completed":
+      return correctCompleted(command);
     case "rename-completed": {
       const completed = snapshot.completed[command.sessionId];
       if (!completed) return reject("This completed workout was not found.");
@@ -448,6 +461,36 @@ export function reduceWorkout(
     case "set-completed":
       return reduceActive(command);
   }
+  function correctCompleted(command: Extract<Command, { type: "correct-completed" }>): Transition {
+      const completed = snapshot.completed[command.sessionId];
+      if (!completed) return reject("This completed workout was not found.");
+      const patches = new Map<string, (typeof command.sets)[number]>();
+      for (const patch of command.sets) {
+        const exercise = completed.exercises.find((row) => row.id === patch.exerciseId);
+        const set = exercise?.sets.find((row) => row.id === patch.setId);
+        if (!set) return reject("This set was not found in the completed workout.");
+        if (!set.completed) return reject("Only logged sets can be corrected.");
+        if (patches.has(patch.setId)) return reject("A set can only be corrected once.");
+        patches.set(patch.setId, patch);
+      }
+      return changed({
+        ...snapshot,
+        completed: {
+          ...snapshot.completed,
+          [completed.id]: {
+            ...completed,
+            name: command.name?.trim() ?? completed.name,
+            exercises: completed.exercises.map((exercise) => ({
+              ...exercise,
+              sets: exercise.sets.map((set) => {
+                const patch = patches.get(set.id);
+                return patch ? { ...set, weightKg: patch.weightKg, reps: patch.reps } : set;
+              }),
+            })),
+          },
+        },
+      });
+    }
   function repeatWorkout(
     command: Extract<Command, { type: "repeat" }>,
   ): Transition {
@@ -553,7 +596,7 @@ export function reduceWorkout(
   function reduceActive(
     command: Exclude<
       Extract<Command, { sessionId: string }>,
-      { type: "rename-completed" }
+      { type: "rename-completed" | "correct-completed" }
     >,
   ): Transition {
     if (command.type === "finish" && snapshot.completed[command.sessionId])

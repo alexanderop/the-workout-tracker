@@ -44,6 +44,10 @@ Configuration and replacement require the exercise's numeric drafts to be saved 
 
 A **completed workout** (`CompletedSession`) is a finished session in history. Repeating it creates a new active workout with fresh identities, copied weights, planned repetition targets, and unchecked sets. Saving it as a template creates a separate editable plan. Neither operation mutates the historical record.
 
+Completed workouts support an explicit correction of their name and logged sets' recorded weight and repetitions. One save applies all corrections atomically. It preserves workout, exercise and set identities, timestamps, logged flags, notes and planned repetition targets, including absent legacy targets. Unlogged sets remain read-only. Corrections do not change an active workout or its rest timer. History totals and progress derive from the corrected record.
+
+The completed-workout editor keeps raw input separate from active training drafts. It saves against the revision captured when opened. A conflict or failed save retains the input; reloading saved values explicitly abandons it. Changed input requires confirmation before dismissal and requests the browser's native reload warning. Unsaved completed-workout corrections are not recovered after an operating-system termination.
+
 The dashboard training rhythm groups completed workouts by the local calendar date of `finishedAt`. Two sessions on one date occupy one marked date, and both appear when that date is selected. The Home strip includes today and the preceding six civil dates. Timestamps later than the injected current time are excluded until that time arrives, including later timestamps on today’s date. The active workout does not contribute. Calendar selection is temporary view state and does not filter or change the journal.
 
 ## Set, logged set, and volume
@@ -52,7 +56,7 @@ A **workout set** (`WorkoutSet`) has an identity, weight, repetitions, a `comple
 
 Personal bests and weight trends include only logged sets with positive repetitions. Zero-repetition attempts remain in history and logged-set totals, but cannot establish a record or a trend point. Zero-weight sets with positive repetitions remain valid successful work.
 
-The active workout exposes weight and repetitions in each set row. Its check button logs an unfinished set, saves a changed logged set, or undoes an unchanged logged set. Corrections do not restart rest. Clearing is explicit and restores the repetition target. Entering a number, confirming a numeric editor, logging a set, and finishing a workout are distinct actions. Confirming the numeric editor updates the containing input draft; it does not mark a set logged. Cancel leaves the prior input unchanged.
+The active workout exposes weight and repetitions in each set row. Its action logs an unfinished set or saves corrections to a logged set. An unchanged logged set displays a non-mutating Logged state. Undo logging is an explicit set-options action. Corrections do not restart rest. Clearing is explicit and restores the repetition target. Entering a number, confirming a numeric editor, logging a set, and finishing a workout are distinct actions. Confirming the numeric editor updates the containing input draft; it does not mark a set logged. Cancel leaves the prior input unchanged.
 
 ## Draft
 

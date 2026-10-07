@@ -56,7 +56,9 @@ export function useTrainingSession(options: {
     try {
       options.journal.consume(records);
       const acknowledged = new Set(records.map((record) => record.id));
-      row.records = row.records.filter((record) => !acknowledged.has(record.id));
+      row.records = row.records.filter(
+        (record) => !acknowledged.has(record.id),
+      );
       row.storageIssue = "";
       return true;
     } catch {
@@ -102,14 +104,20 @@ export function useTrainingSession(options: {
     if (exercises.some((exercise) => exercise.id === selectedExerciseId.value))
       return;
     const ordered = orderedRows();
-    const pendingRow = ordered.find((row) => row.touched || hasDraftConflict(row));
+    const pendingRow = ordered.find(
+      (row) => row.touched || hasDraftConflict(row),
+    );
     const first = pendingRow ?? ordered.find((row) => !row.set.completed);
     selectedExerciseId.value = first?.exercise.id ?? exercises[0]?.id ?? null;
     selected.value = pendingRow?.set.id ?? null;
   }
   function invalidateLastLog(sessionId: string | undefined) {
     if (
-      !canUndoSet(lastLog.value, sessionId, rows.get(lastLog.value?.setId ?? "")?.set)
+      !canUndoSet(
+        lastLog.value,
+        sessionId,
+        rows.get(lastLog.value?.setId ?? "")?.set,
+      )
     )
       lastLog.value = null;
   }
@@ -203,7 +211,10 @@ export function useTrainingSession(options: {
   }
   function requestReviewFocus(setId: string) {
     if (!rows.has(setId)) return;
-    reviewFocus.value = { setId, sequence: (reviewFocus.value?.sequence ?? 0) + 1 };
+    reviewFocus.value = {
+      setId,
+      sequence: (reviewFocus.value?.sequence ?? 0) + 1,
+    };
   }
   const conflict = hasDraftConflict;
   const dirty = isDraftDirty;
@@ -303,9 +314,14 @@ export function useTrainingSession(options: {
     if (!row || !snapshot || !session || options.saving.value) return;
     if (!recoverUnseenDrafts(session.id)) return;
     const decision = decideSetCommit(row, valuesOnly);
-    if (decision.kind === "blocked") {
-      row.issue = decision.issue;
-      return;
+    switch (decision.kind) {
+      case "blocked":
+        row.issue = decision.issue;
+        return;
+      case "unchanged":
+        return;
+      case "ready":
+        break;
     }
     const { values, completed } = decision;
     const acknowledged = [...row.records];
@@ -409,7 +425,38 @@ export function useTrainingSession(options: {
     const added = result?.active?.exercises
       .find((item) => item.id === exerciseId)
       ?.sets.at(-1);
-    if (added) selectSet(added.id);
+    if (added) {
+      selectSet(added.id);
+      requestReviewFocus(added.id);
+    }
+  }
+  async function undoSet(setId: string) {
+    const row = rows.get(setId),
+      session = active.value,
+      snapshot = options.snapshot.value;
+    if (!row?.set.completed || !session || !snapshot || options.saving.value)
+      return;
+    if (!recoverUnseenDrafts(session.id)) return;
+    if (row.touched || conflict(row)) {
+      notice.value = "Save or discard this set’s input before undoing its log.";
+      selectSet(setId);
+      return;
+    }
+    if (
+      await options.run(
+        {
+          type: "set-completed",
+          sessionId: session.id,
+          setId,
+          completed: false,
+        },
+        snapshot.revision,
+      )
+    ) {
+      selectSet(setId);
+      lastLog.value = null;
+      notice.value = "Set marked as not logged. You can log it again.";
+    }
   }
   async function undo() {
     const last = lastLog.value,
@@ -630,5 +677,6 @@ export function useTrainingSession(options: {
     commit,
     addSet,
     undo,
+    undoSet,
   };
 }

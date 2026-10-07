@@ -75,7 +75,7 @@ When("I switch to Bench press and review my input drafts", async ({ page }) => {
 });
 Then("the Back squat input draft is visible", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Set 1 weight for Back squat", exact: true })).toHaveText("55");
-  await expect(page.getByText("Draft saved on this device.", { exact: false })).toBeVisible();
+  await expect(page.getByText("Input retained on this device.", { exact: false })).toBeVisible();
 });
 Then("the Back squat draft is visible and focused", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Set 1 weight for Back squat", exact: true })).toHaveText("55");
@@ -86,5 +86,5 @@ Then("Back squat is selected", async ({ page }) => {
 });
 When("I log my final Back squat set", async ({ page }) => {
   await page.getByRole("button", { name: "Log set 1 of Back squat", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Undo set 1 of Back squat", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "Logged set 1 of Back squat", exact: true })).toHaveAttribute("aria-disabled", "true");
 });

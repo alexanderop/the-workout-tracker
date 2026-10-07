@@ -117,5 +117,5 @@ The first digit replaces the value. Quick picks apply immediately. Confirming ap
 
 ## Examples and limitations
 
-Applying changes only the field value; logging a set is separate. Inspect Phone · short and Desktop, including keyboard entry and focus restoration. Source shows the consumer wiring; import the shared styles once in your application entry point.
+Applying changes only the field value; logging a set is separate. Header and confirmation stay visible while the editor body scrolls on short screens. Inspect Phone · short (320 × 568) and Desktop, including keyboard entry and focus restoration. Source shows the consumer wiring; import the shared styles once in your application entry point.
 </docs>

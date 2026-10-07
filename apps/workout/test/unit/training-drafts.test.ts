@@ -85,7 +85,7 @@ describe("training draft decisions", () => {
     });
   });
 
-  it("distinguishes logging, correcting, undoing and saving only values", () => {
+  it("distinguishes logging, correcting, unchanged activation and saving only values", () => {
     const factory = createWorkoutFactory();
     const unlogged = draftState();
     expect(decideSetCommit(unlogged)).toEqual({
@@ -100,11 +100,7 @@ describe("training draft decisions", () => {
     });
     const set = factory.set({ completed: true });
     const logged = draftState({ set, base: set });
-    expect(decideSetCommit(logged)).toEqual({
-      kind: "ready",
-      values: { weightKg: 40, reps: 8 },
-      completed: false,
-    });
+    expect(decideSetCommit(logged)).toEqual({ kind: "unchanged" });
     expect(decideSetCommit({ ...logged, weight: "45", touched: true })).toEqual(
       { kind: "ready", values: { weightKg: 45, reps: 8 }, completed: true },
     );
