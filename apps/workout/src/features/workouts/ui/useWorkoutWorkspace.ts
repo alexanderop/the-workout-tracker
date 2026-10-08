@@ -43,7 +43,7 @@ export function useWorkoutWorkspace(
   });
   async function execute(command: ApplicationCommand, revision?: number) {
     if (command.type === "finish" && workoutName.dirty.value) {
-      workouts.error.value = "Save or cancel your name change before finishing.";
+      workouts.fail("Save or cancel your name change before finishing.");
       return null;
     }
     return workouts.run(command, revision);

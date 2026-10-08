@@ -7,10 +7,10 @@ import { download } from "./presentation";
 const { workspace } = defineProps<{
   workspace: Pick<
     WorkoutWorkspace,
-    "service" | "snapshot" | "state" | "saving" | "run"
+    "service" | "snapshot" | "saving" | "run" | "deleteAllData" | "importBackup"
   >;
 }>();
-const { service, snapshot, state, saving, run } = workspace;
+const { service, snapshot, saving, run, deleteAllData: deleteData, importBackup: importData } = workspace;
 const backupFile = ref<{ name: string; json: string; revision: number } | null>(
   null,
 );
@@ -29,13 +29,13 @@ function requestDeletion() {
 }
 async function deleteAllData() {
   const request = deletion.value;
-  if (!request || request.conflict || saving.value || backupBusy.value) return;
-  saving.value = true;
+  // The workspace command owns the saving lock and returns null while busy.
+  if (!request || request.conflict || backupBusy.value) return;
   request.issue = "";
   try {
-    const result = await service.deleteAllData(request.revision);
+    const result = await deleteData(request.revision);
+    if (!result) return;
     if (result.kind === "saved" || result.kind === "cleanup-pending") {
-      state.value = { kind: "ready", snapshot: result.snapshot };
       backupFile.value = null;
       backupMessage.value = "";
       deletionMessage.value =
@@ -49,7 +49,6 @@ async function deleteAllData() {
       return;
     }
     if (result.kind === "conflict") {
-      state.value = { kind: "ready", snapshot: result.snapshot };
       request.conflict = true;
       request.issue =
         "Your data changed in another tab. Close this dialog and review the deletion again.";
@@ -58,8 +57,6 @@ async function deleteAllData() {
     request.issue = result.message;
   } catch {
     request.issue = "Deletion could not finish. Try again.";
-  } finally {
-    saving.value = false;
   }
 }
 const backupMessage = ref("");
@@ -107,16 +104,15 @@ async function importBackup() {
   if (!file || backupBusy.value || saving.value) return;
   backupBusy.value = true;
   try {
-    const result = await service.importBackup(file.json, file.revision);
+    const result = await importData(file.json, file.revision);
+    if (!result) return;
     if (result.kind === "saved") {
-      state.value = { kind: "ready", snapshot: result.snapshot };
       backupFile.value = null;
       backupMessage.value =
         "Backup imported. Your existing workouts are preserved.";
       return;
     }
     if (result.kind === "conflict") {
-      state.value = { kind: "ready", snapshot: result.snapshot };
       backupFile.value = null;
       backupMessage.value =
         "Your data changed. Select the backup again to review the current import.";

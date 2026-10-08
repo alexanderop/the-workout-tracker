@@ -195,7 +195,7 @@ async function focusReplacement(id: string) {
 watch(configuration, (value) => {
   if (configId.value && !value) {
     configId.value = null;
-    training.notice.value = "This exercise is no longer in the workout.";
+    training.announce("This exercise is no longer in the workout.");
   }
 });
 function discard() {

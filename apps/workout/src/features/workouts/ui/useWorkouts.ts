@@ -15,21 +15,23 @@ export function useWorkouts(service: Workouts) {
   const state = shallowRef<LoadState>({ kind: "loading" });
   const saving = ref(false);
   const notice = shallowRef<SaveNotice>({ kind: "none" });
-  const message = computed({
-    get: () => (notice.value.kind === "saved" ? notice.value.message : ""),
-    set: (text: string) => {
-      if (text) {
-        notice.value = { kind: "saved", message: text };
-        return;
-      }
-      if (notice.value.kind === "saved") notice.value = { kind: "none" };
-    },
-  });
-  const error = computed({
-    get: () => (notice.value.kind === "failed" ? notice.value.message : ""),
-    set: (text: string) => fail(text, false),
-  });
-  function fail(text: string, reload: boolean) {
+  const message = computed(() =>
+    notice.value.kind === "saved" ? notice.value.message : "",
+  );
+  const error = computed(() =>
+    notice.value.kind === "failed" ? notice.value.message : "",
+  );
+  /** Shows a saved confirmation, replacing any previous outcome. */
+  function notify(text: string) {
+    notice.value = { kind: "saved", message: text };
+  }
+  function clearMessage() {
+    if (notice.value.kind === "saved") notice.value = { kind: "none" };
+  }
+  function clearError() {
+    if (notice.value.kind === "failed") notice.value = { kind: "none" };
+  }
+  function fail(text: string, reload = false) {
     if (text) {
       notice.value = { kind: "failed", message: text, reload };
       return;
@@ -56,7 +58,7 @@ export function useWorkouts(service: Workouts) {
       const result = await service.execute(command, expectedRevision);
       if (result.kind === "saved") {
         state.value = { kind: "ready", snapshot: result.snapshot };
-        message.value = "Saved on this device";
+        notify("Saved on this device");
         return result.snapshot;
       }
       if (result.kind === "conflict") {
@@ -79,20 +81,39 @@ export function useWorkouts(service: Workouts) {
       saving.value = false;
     }
   }
-  const dataManagement = {
-    deleteAllData: (revision: number) => service.deleteAllData(revision),
-    exportBackup: () => service.exportBackup(),
-    importBackup: (json: string, revision: number) => service.importBackup(json, revision),
-  };
+  /**
+   * Runs a data-management command under the shared saving lock and adopts
+   * the snapshot it reports. Returns null while another save is running.
+   */
+  async function guarded<R extends { kind: string; snapshot?: Snapshot }>(
+    task: () => Promise<R>,
+  ): Promise<R | null> {
+    if (saving.value) return null;
+    saving.value = true;
+    try {
+      const result = await task();
+      if (result.snapshot) state.value = { kind: "ready", snapshot: result.snapshot };
+      return result;
+    } finally {
+      saving.value = false;
+    }
+  }
   return {
-    service: dataManagement,
-    state,
+    service: { exportBackup: () => service.exportBackup() },
+    state: computed(() => state.value),
     snapshot,
-    saving,
-    notice,
+    saving: computed(() => saving.value),
+    notice: computed(() => notice.value),
     message,
     error,
+    notify,
+    clearMessage,
+    clearError,
     fail,
     run,
+    deleteAllData: (revision: number) =>
+      guarded(() => service.deleteAllData(revision)),
+    importBackup: (json: string, revision: number) =>
+      guarded(() => service.importBackup(json, revision)),
   };
 }

@@ -28,8 +28,9 @@ const { workspace, templatesOpen = false } = defineProps<{
     WorkoutWorkspace,
     | "snapshot"
     | "saving"
-    | "message"
     | "error"
+    | "notify"
+    | "clearError"
     | "run"
     | "training"
     | "active"
@@ -42,8 +43,9 @@ const { workspace, templatesOpen = false } = defineProps<{
 const {
   snapshot,
   saving,
-  message,
   error,
+  notify,
+  clearError,
   run,
   training,
   active,
@@ -69,7 +71,7 @@ function removeOptionSet() {
   const row = optionRow.value;
   if (!row || !active.value) return;
   optionSetId.value = null;
-  error.value = "";
+  clearError();
   confirmation.value = {
     title: "Remove set?",
     description: "This removes the set and its draft from your active workout.",
@@ -115,7 +117,7 @@ async function requestLeave() {
 }
 function completedSaved() {
   editingCompleted.value = null;
-  message.value = "Workout corrections saved";
+  notify("Workout corrections saved");
 }
 const routineOpen = ref(false);
 const templateContent = useTemplateRef<HTMLElement>("templateContent");
@@ -245,7 +247,7 @@ function editRoutine(
   editingRoutine.value = routine;
   routineConflict.value = false;
   routineEditorVersion.value++;
-  error.value = "";
+  clearError();
   routineOpen.value = true;
   templateFocus = routine?.id ?? null;
   void focusTemplateContent();
@@ -267,7 +269,7 @@ async function saveRoutine(routine: RoutineValues) {
     closeRoutineEditor();
     templateFocus = existing?.id ?? null;
     void focusTemplateContent();
-    message.value = "Template saved";
+    notify("Template saved");
     emit("template-saved");
   }
 }
@@ -278,7 +280,7 @@ function useSavedRoutine() {
   editingRoutine.value = saved;
   routineConflict.value = false;
   routineEditorVersion.value++;
-  error.value = "";
+  clearError();
   void focusTemplateContent();
 }
 function keepRoutineChanges() {
@@ -287,7 +289,7 @@ function keepRoutineChanges() {
   if (!saved || saving.value) return;
   editingRoutine.value = saved;
   routineConflict.value = false;
-  error.value = "";
+  clearError();
   routineEditor.value?.save();
 }
 function closePicker() {
@@ -366,7 +368,7 @@ async function finishWorkout() {
     finishSessionId.value = null;
     navigate("workouts");
     selectedSession.value = id;
-    message.value = "Workout saved. Another session in the books.";
+    notify("Workout saved. Another session in the books.");
   }
 }
 async function confirmAction() {
@@ -396,7 +398,7 @@ defineExpose({
     optionSetId.value = id;
   },
   confirm: (request: Confirmation) => {
-    error.value = "";
+    clearError();
     confirmation.value = request;
   },
 });

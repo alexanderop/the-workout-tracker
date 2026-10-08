@@ -33,9 +33,9 @@ it("shows either a save confirmation or an error, never both", async () => {
     );
     expect(workouts.notice.value).toMatchObject({ kind: "failed", reload: true });
     expect(workouts.message.value).toBe("");
-    workouts.error.value = "";
+    workouts.clearError();
     expect(workouts.notice.value).toEqual({ kind: "none" });
-    workouts.error.value = "Local guidance";
+    workouts.fail("Local guidance");
     expect(workouts.notice.value).toMatchObject({ kind: "failed", reload: false });
   } finally {
     scope.stop();

@@ -28,6 +28,30 @@ function countAwaits(node) {
   }
   return count;
 }
+function rootName(node) {
+  let current = node;
+  while (current?.type === "MemberExpression") current = current.object;
+  return current?.type === "Identifier" ? current.name : undefined;
+}
+function isDefineProps(node) {
+  if (node?.type !== "CallExpression" || node.callee.type !== "Identifier")
+    return false;
+  if (node.callee.name === "defineProps") return true;
+  return node.callee.name === "withDefaults" && isDefineProps(node.arguments[0]);
+}
+function patternNames(pattern) {
+  if (!pattern) return [];
+  if (pattern.type === "Identifier") return [pattern.name];
+  if (pattern.type === "AssignmentPattern") return patternNames(pattern.left);
+  if (pattern.type === "RestElement") return patternNames(pattern.argument);
+  if (pattern.type === "ArrayPattern")
+    return pattern.elements.flatMap(patternNames);
+  if (pattern.type === "ObjectPattern")
+    return pattern.properties.flatMap((property) =>
+      patternNames(property.type === "RestElement" ? property : property.value),
+    );
+  return [];
+}
 export default {
   meta: { name: "code-policy" },
   rules: {
@@ -88,6 +112,28 @@ export default {
             context.report({ node, messageId: "violation" });
         },
       }),
+    },
+    "no-prop-ref-writes": {
+      meta: problem(
+        "Do not write state received through props, including values destructured from it; emit an event or call the owner's command instead.",
+      ),
+      create(context) {
+        const derived = new Set();
+        const check = (target) => {
+          if (target?.type !== "MemberExpression") return;
+          if (derived.has(rootName(target)))
+            context.report({ node: target, messageId: "violation" });
+        };
+        return {
+          VariableDeclarator(node) {
+            const init = node.init;
+            if (!isDefineProps(init) && !derived.has(rootName(init))) return;
+            for (const name of patternNames(node.id)) derived.add(name);
+          },
+          AssignmentExpression: (node) => check(node.left),
+          UpdateExpression: (node) => check(node.argument),
+        };
+      },
     },
     "composable-contract": {
       meta: problem(

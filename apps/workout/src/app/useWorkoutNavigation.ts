@@ -1,11 +1,10 @@
 import { computed, nextTick, onScopeDispose } from "vue";
-import type { Ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import type { WorkoutPage } from "../features/workouts/ui";
 import { crossesHistoryView } from "./router";
 
 export function useWorkoutNavigation(
-  message: Ref<string>,
+  clearMessage: () => void,
   reportError: (message: string) => void,
   focusMain: () => void,
 ) {
@@ -23,7 +22,7 @@ export function useWorkoutNavigation(
       event.altKey
     )
       return;
-    if (page.value !== destination(next).name) message.value = "";
+    if (page.value !== destination(next).name) clearMessage();
     focusedLink = event.currentTarget;
   }
 
@@ -69,7 +68,7 @@ export function useWorkoutNavigation(
 
   function navigate(next: WorkoutPage) {
     focusedLink = null;
-    if (page.value !== destination(next).name) message.value = "";
+    if (page.value !== destination(next).name) clearMessage();
     router.push(destination(next)).catch(reportNavigationError);
   }
 

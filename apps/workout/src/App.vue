@@ -69,7 +69,7 @@ const {
   workoutsHref,
   prepareLinkNavigation,
 } = useWorkoutNavigation(
-  message,
+  workspace.clearMessage,
   (text) => workspace.fail(text, true),
   focusMain,
 );
@@ -256,7 +256,7 @@ const title = computed(() => {
               class="text-button"
               @click="reload"
               >Reload</BaseButton
-            ><BaseButtonIcon label="Dismiss error" @click="error = ''">
+            ><BaseButtonIcon label="Dismiss error" @click="workspace.clearError()">
               <X :size="16" />
             </BaseButtonIcon>
           </div>

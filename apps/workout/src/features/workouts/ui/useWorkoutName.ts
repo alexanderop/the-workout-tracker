@@ -16,8 +16,9 @@ type NameRecovery = DetachedNameDraft &
 export function useWorkoutName(
   workspace: Pick<
     ReturnType<typeof useWorkouts>,
-    "snapshot" | "run" | "saving"
+    "snapshot" | "run"
   > & {
+    saving: Readonly<Ref<boolean>>;
     active: Readonly<Ref<ActiveSession | null>>;
   },
 ) {

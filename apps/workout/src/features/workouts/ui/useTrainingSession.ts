@@ -32,7 +32,7 @@ export type TrainingRow = TrainingDraftState & {
 };
 export function useTrainingSession(options: {
   snapshot: Ref<Snapshot | null>;
-  saving: Ref<boolean>;
+  saving: Readonly<Ref<boolean>>;
   journal: DraftJournal;
   run: (command: Command, revision?: number) => Promise<Snapshot | null>;
 }) {
@@ -618,7 +618,10 @@ export function useTrainingSession(options: {
     pending,
     saveEdits,
     lastLog,
-    notice,
+    notice: computed(() => notice.value),
+    announce: (text: string) => {
+      notice.value = text;
+    },
     conflict,
     dirty,
     edit,
