@@ -82,7 +82,7 @@ Other features may import only the public index and only from their application 
 
 `WorkoutStorage` provides `read`, `compareAndSave`, `subscribe`, and `close`. It exposes domain values and explicit results, not database clients, queries, or transaction callbacks.
 
-`read` returns a ready snapshot, recoverable corrupt data, or an unavailable result. Corrupt data stays intact and can be exported. Initialization inserts starter data only when the snapshot does not exist.
+`read` returns a ready snapshot, recoverable corrupt data, or an unavailable result. Corrupt data stays intact and can be exported. Initialization inserts starter data when the snapshot does not exist. When a valid snapshot lacks a built-in exercise from the current starter data, initialization adds it and advances the revision by one, so an expected revision captured before the first read can become stale without a write from that tab. A failed initialization is not cached: the next read or write opens the database again.
 
 `compareAndSave(expectedRevision, next)` validates and compares the current revision inside the same transaction as the write:
 
@@ -93,6 +93,8 @@ Other features may import only the public index and only from their application 
 - A closed handle rejects reads and writes. Closing one handle does not close another handle.
 
 The application first reads the snapshot, rejects stale requests, and applies the domain transition. It then calls `compareAndSave`, including for no-op transitions. The second revision check catches writes that happened after the initial read. There are no automatic retries, so a conflict cannot silently regenerate IDs or overwrite another change.
+
+The read, the domain transition and the write fail separately. An exception from the transition is a programming error and returns `invalid` without touching storage. A write that throws may still have committed, so the application reads again: the expected revision means nothing was written and the result is `unavailable`; matching content means the write landed and the result is `saved`; any other snapshot is a `conflict`. If that read also fails, the result asks the user to reload before trying again. `code-policy/one-effect-per-try` keeps each awaited effect in the application and adapters in its own `try`.
 
 The service owns its storage handle. Components own subscriptions only. Disposing a component does not close the service used by other components.
 

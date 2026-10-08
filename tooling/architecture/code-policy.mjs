@@ -11,6 +11,23 @@ const problem = (message) => ({
   schema: [],
   messages: { violation: message },
 });
+const functionTypes = new Set([
+  "FunctionDeclaration",
+  "FunctionExpression",
+  "ArrowFunctionExpression",
+]);
+function countAwaits(node) {
+  if (!node || typeof node.type !== "string" || functionTypes.has(node.type))
+    return 0;
+  let count = node.type === "AwaitExpression" ? 1 : 0;
+  for (const [key, value] of Object.entries(node)) {
+    if (key === "parent") continue;
+    const children = Array.isArray(value) ? value : [value];
+    for (const child of children)
+      if (child && typeof child === "object") count += countAwaits(child);
+  }
+  return count;
+}
 export default {
   meta: { name: "code-policy" },
   rules: {
@@ -60,6 +77,17 @@ export default {
           },
         };
       },
+    },
+    "one-effect-per-try": {
+      meta: problem(
+        "Wrap each awaited effect in its own try, so a failed read, change and write can be told apart.",
+      ),
+      create: (context) => ({
+        TryStatement(node) {
+          if (countAwaits(node.block) > 1)
+            context.report({ node, messageId: "violation" });
+        },
+      }),
     },
     "composable-contract": {
       meta: problem(

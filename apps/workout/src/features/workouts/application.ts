@@ -9,7 +9,12 @@ import {
   type Command,
   type Snapshot,
 } from "./domain";
-import type { WorkoutStorage, Result, DraftJournal } from "./ports";
+import type {
+  DraftJournal,
+  Result,
+  StorageState,
+  WorkoutStorage,
+} from "./ports";
 import { routineValuesSchema, type RoutineValues } from "./domain/routineDrafts";
 export type { LoadState, Result, WorkoutStorage } from "./ports";
 
@@ -60,10 +65,15 @@ const expectedSchema = z
   .int()
   .nonnegative()
   .max(Number.MAX_SAFE_INTEGER);
-const unavailable: Result = {
+const unavailable = {
   kind: "unavailable",
   message:
     "Your browser could not access workout storage. Try reopening this app.",
+} as const;
+const unconfirmed: Result = {
+  kind: "unavailable",
+  message:
+    "Your browser could not confirm whether this change was saved. Reload before trying again.",
 };
 
 function canonical(value: unknown): string {
@@ -155,35 +165,74 @@ export function createWorkouts({
   id,
 }: WorkoutDependencies) {
   let closed = false;
+  const closedResult: Result = {
+    kind: "unavailable",
+    message: "Workout storage is closed.",
+  };
+  const readCurrent = async (): Promise<StorageState> => {
+    try {
+      return await storage.read();
+    } catch (error) {
+      console.error("Workout storage read failed.", error);
+      return unavailable;
+    }
+  };
+  const applyTransform = (
+    snapshot: Snapshot,
+    transform: (snapshot: Snapshot) => Snapshot | string,
+  ): Snapshot | string => {
+    try {
+      return transform(snapshot);
+    } catch (error) {
+      console.error("Workout change failed unexpectedly.", error);
+      return "This change failed unexpectedly. Nothing was saved.";
+    }
+  };
+  // A throwing save may still have committed, so re-read before reporting.
+  const confirmSave = async (
+    expectedRevision: number,
+    next: Snapshot,
+  ): Promise<Result> => {
+    const after = await readCurrent();
+    if (after.kind !== "ready") return unconfirmed;
+    if (after.snapshot.revision === expectedRevision) return unavailable;
+    if (canonical(after.snapshot) === canonical(next))
+      return { kind: "saved", snapshot: after.snapshot };
+    return { kind: "conflict", snapshot: after.snapshot };
+  };
+  const save = async (
+    expectedRevision: number,
+    next: Snapshot,
+  ): Promise<Result> => {
+    try {
+      return await storage.compareAndSave(expectedRevision, next);
+    } catch (error) {
+      console.error("Workout storage write failed.", error);
+      return confirmSave(expectedRevision, next);
+    }
+  };
   const write = async (
     expectedRevision: number,
     transform: (snapshot: Snapshot) => Snapshot | string,
   ): Promise<Result> => {
-    if (closed)
-      return { kind: "unavailable", message: "Workout storage is closed." };
+    if (closed) return closedResult;
     if (!expectedSchema.safeParse(expectedRevision).success)
       return { kind: "invalid", message: "Invalid workout revision." };
-    try {
-      const current = await storage.read();
-      if (current.kind === "unavailable") return current;
-      if (current.kind === "recovery")
-        return {
-          kind: "invalid",
-          message:
-            "Stored data needs recovery. Export it before making changes.",
-        };
-      if (current.snapshot.revision !== expectedRevision)
-        return { kind: "conflict", snapshot: current.snapshot };
-      const next = transform(current.snapshot);
-      if (typeof next === "string") return { kind: "invalid", message: next };
-      const validated = validateWrite(next);
-      if (validated.kind === "invalid") return validated;
-      if (closed)
-        return { kind: "unavailable", message: "Workout storage is closed." };
-      return await storage.compareAndSave(expectedRevision, validated.data);
-    } catch {
-      return unavailable;
-    }
+    const current = await readCurrent();
+    if (current.kind === "unavailable") return current;
+    if (current.kind === "recovery")
+      return {
+        kind: "invalid",
+        message: "Stored data needs recovery. Export it before making changes.",
+      };
+    if (current.snapshot.revision !== expectedRevision)
+      return { kind: "conflict", snapshot: current.snapshot };
+    const next = applyTransform(current.snapshot, transform);
+    if (typeof next === "string") return { kind: "invalid", message: next };
+    const validated = validateWrite(next);
+    if (validated.kind === "invalid") return validated;
+    if (closed) return closedResult;
+    return save(expectedRevision, validated.data);
   };
   return {
     async deleteAllData(expectedRevision: number): Promise<

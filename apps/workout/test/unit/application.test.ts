@@ -280,3 +280,67 @@ describe("workout application", () => {
     });
   });
 });
+
+describe("given a storage write that throws", () => {
+  const settings = {
+    type: "settings",
+    settings: { restSeconds: 45, autoRest: false },
+  } as const;
+
+  it("reports saved when the write committed before throwing", async () => {
+    const { memory, dependencies } = setup();
+    const app = createWorkouts({
+      ...dependencies,
+      storage: {
+        ...memory.storage,
+        async compareAndSave(expectedRevision, next) {
+          await memory.storage.compareAndSave(expectedRevision, next);
+          throw new Error("Acknowledgement lost.");
+        },
+      },
+    });
+    expect(await app.execute(settings, 0)).toMatchObject({
+      kind: "saved",
+      snapshot: { revision: 1, settings: { restSeconds: 45 } },
+    });
+  });
+
+  it("reports unavailable when nothing was written", async () => {
+    const { memory, dependencies } = setup();
+    const app = createWorkouts({
+      ...dependencies,
+      storage: {
+        ...memory.storage,
+        async compareAndSave() {
+          throw new Error("Quota exceeded.");
+        },
+      },
+    });
+    expect(await app.execute(settings, 0)).toMatchObject({
+      kind: "unavailable",
+    });
+    expect(memory.current().revision).toBe(0);
+  });
+
+  it("reports a failing change as invalid, not as a storage problem", async () => {
+    const { dependencies } = setup();
+    const app = createWorkouts({
+      ...dependencies,
+      id: () => {
+        throw new Error("Identity source failed.");
+      },
+    });
+    expect(
+      await app.execute(
+        {
+          type: "create-exercise",
+          exercise: { name: "Dip", category: "Chest", equipment: "Bodyweight" },
+        },
+        0,
+      ),
+    ).toEqual({
+      kind: "invalid",
+      message: "This change failed unexpectedly. Nothing was saved.",
+    });
+  });
+});

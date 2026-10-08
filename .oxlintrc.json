@@ -120,6 +120,16 @@
           }
         ]
       }
+    },
+    {
+      "files": [
+        "apps/workout/src/features/*/application.ts",
+        "apps/workout/src/features/*/application/**/*.ts",
+        "apps/workout/src/features/*/adapters/**/*.ts"
+      ],
+      "rules": {
+        "code-policy/one-effect-per-try": "error"
+      }
     }
   ]
 }
