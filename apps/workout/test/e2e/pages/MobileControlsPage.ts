@@ -26,17 +26,21 @@ export class MobileControlsPage {
       exact: true,
     });
     await expect(confirm).toBeInViewport({ ratio: 1 });
-    const confirmationBox = await confirm.boundingBox();
     const keys = dialog
       .getByRole("group", { name: "Numeric keypad" })
       .getByRole("button");
     for (const key of await keys.all()) {
       await expect(key).toBeInViewport({ ratio: 1 });
-      const box = await key.boundingBox();
-      expect(box?.height).toBeGreaterThanOrEqual(44);
-      if (!box || !confirmationBox)
-        throw new Error("Numeric controls must have visible bounds");
-      expect(box.y + box.height).toBeLessThanOrEqual(confirmationBox.y - 12);
+      await expect(async () => {
+        const [box, confirmationBox] = await Promise.all([
+          key.boundingBox(),
+          confirm.boundingBox(),
+        ]);
+        if (!box || !confirmationBox)
+          throw new Error("Numeric controls must have visible bounds");
+        expect(box.height).toBeGreaterThanOrEqual(44);
+        expect(box.y + box.height).toBeLessThanOrEqual(confirmationBox.y - 12);
+      }).toPass();
     }
     await dialog.getByRole("group", { name: "Number editor" }).press("5");
     await confirm.click();
@@ -113,9 +117,13 @@ export class MobileControlsPage {
     await expect(
       dialog.getByText("Number of sets", { exact: true }),
     ).toBeVisible();
-    const save = await dialog
-      .getByRole("button", { name: "Save exercise settings", exact: true })
-      .boundingBox();
-    expect(save?.height).toBeGreaterThanOrEqual(44);
+    const save = dialog.getByRole("button", {
+      name: "Save exercise settings",
+      exact: true,
+    });
+    await expect(save).toBeVisible();
+    await expect
+      .poll(async () => (await save.boundingBox())?.height ?? 0)
+      .toBeGreaterThanOrEqual(44);
   }
 }

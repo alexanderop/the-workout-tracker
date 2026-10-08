@@ -64,6 +64,7 @@ function removeOptionSet() {
   confirmation.value = {
     title: "Remove set?",
     description: "This removes the set and its draft from your active workout.",
+    actionLabel: "Remove set",
     command: {
       type: "remove-set",
       sessionId: active.value.id,
@@ -263,13 +264,7 @@ defineExpose({
         :disabled="saving"
         @click="confirmAction"
       >
-        <span v-if="confirmation?.command.type === 'discard'">
-          Discard workout
-        </span>
-        <span v-else-if="confirmation?.command.type === 'remove-set'">
-          Remove set
-        </span>
-        <span v-else>Remove exercise</span>
+        {{ confirmation?.actionLabel }}
       </BaseButton>
     </div></BaseSheet
   >

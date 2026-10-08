@@ -36,6 +36,7 @@ const emit = defineEmits<{
   options: [id: string];
   confirm: [request: Confirmation];
   navigate: [page: "workouts"];
+  back: [event: MouseEvent];
 }>();
 const { text: name, issue: nameIssue, dirty: nameDirty, conflict: nameConflict, save: rename, keepMine, useSaved } = workspace.workoutName;
 const renameOpen = ref(false);
@@ -170,6 +171,7 @@ function remove(exercise: SessionExercise) {
   emit("confirm", {
     title: "Remove exercise?",
     description: `Remove ${exercise.name}, including ${exercise.sets.filter((set) => set.completed).length} logged sets and any unsaved input for this exercise? Completed history stays unchanged.`,
+    actionLabel: "Remove exercise",
     command: {
       type: "remove-exercise",
       sessionId: active.value.id,
@@ -204,13 +206,14 @@ function discard() {
     title: "Discard this workout?",
     description:
       "This deletes the active workout and its logged sets. Completed history stays saved.",
+    actionLabel: "Discard workout",
     command: { type: "discard", sessionId: active.value.id },
   });
 }
 </script>
 <template>
   <section v-if="active" class="active-workout">
-    <a class="training-back text-button" :href="workoutsHref" aria-label="Back to workouts"
+    <a class="training-back text-button" :href="workoutsHref" aria-label="Back to workouts" @click="emit('back', $event)"
       ><ChevronLeft :size="20" aria-hidden="true" /><span class="training-back-label">Workouts</span></a
     >
     <header class="active-workout-heading">
@@ -255,7 +258,7 @@ function discard() {
           <BaseButton
             v-for="exercise in active.exercises" :key="exercise.id" unstyled
             class="workout-exercise-tab"
-            :aria-pressed="selectedExercise?.id === exercise.id"
+            :aria-current="selectedExercise?.id === exercise.id ? 'true' : undefined"
             :aria-label="`${exercise.name}${isComplete(exercise) ? ', all sets logged' : ''}`"
             @click="training.selectExercise(exercise.id)"
           >
@@ -275,8 +278,8 @@ function discard() {
             <h2>{{ selectedExercise.name }}</h2>
             <BaseButtonIcon ref="optionsButton" :label="`Options for ${selectedExercise.name}`" :disabled="saving" @click="configure(selectedExercise.id)"><Ellipsis :size="22" /></BaseButtonIcon>
           </header>
-          <BaseButton unstyled class="workout-prescription" :disabled="saving" :aria-label="`Edit sets, reps and weight for ${selectedExercise.name}`" @click="configure(selectedExercise.id)">
-            <span v-if="definition">{{ definition.equipment }}<span aria-hidden="true"> · </span></span>{{ prescription }}
+          <BaseButton unstyled class="workout-prescription" :disabled="saving" @click="configure(selectedExercise.id)">
+            <span v-if="definition">{{ definition.equipment }} · </span>{{ prescription }}<span class="sr-only">, edit sets, reps and weight for {{ selectedExercise.name }}</span>
           </BaseButton>
           <p v-if="selectedExercise.note" class="workout-exercise-note">{{ selectedExercise.note }}</p>
           <div v-if="!editorSet" class="workout-inline-sets">
@@ -296,9 +299,7 @@ function discard() {
           <p class="eyebrow">ALL SETS LOGGED</p>
           <h2>That’s your last set.</h2>
           <p>Review your sets, or add another exercise.</p>
-          <BaseButton :disabled="!canFinish" @click="emit('finish')"
-            >Finish workout</BaseButton
-          >
+          <BaseButton :disabled="!canFinish" @click="emit('finish')">Finish workout</BaseButton>
         </div>
         <BaseButton
           v-if="!active.exercises.length"
@@ -392,8 +393,6 @@ function discard() {
   <div v-else class="empty-state">
     <Dumbbell :size="32" />
     <h1>Ready for your next session?</h1>
-    <BaseButton @click="emit('navigate', 'workouts')"
-      >Choose a workout</BaseButton
-    >
+    <BaseButton @click="emit('navigate', 'workouts')">Choose a workout</BaseButton>
   </div>
 </template>

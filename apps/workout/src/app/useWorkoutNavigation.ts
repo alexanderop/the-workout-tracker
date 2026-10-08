@@ -1,7 +1,21 @@
-import { computed, nextTick, onScopeDispose } from "vue";
+import { computed, inject, nextTick, onScopeDispose, provide } from "vue";
+import type { InjectionKey } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import type { WorkoutPage } from "../features/workouts/ui";
 import { crossesHistoryView } from "./router";
+
+type PrepareLinkNavigation = (event: MouseEvent, next: WorkoutPage) => void;
+const linkNavigationKey: InjectionKey<PrepareLinkNavigation> = Symbol(
+  "PrepareLinkNavigation",
+);
+
+/** Lets a routed page's own links share the shell's focus management. */
+export function useLinkNavigation(): PrepareLinkNavigation {
+  const prepare = inject(linkNavigationKey);
+  if (!prepare)
+    throw new Error("Workout links require the application navigation.");
+  return prepare;
+}
 
 export function useWorkoutNavigation(
   clearMessage: () => void,
@@ -42,7 +56,10 @@ export function useWorkoutNavigation(
       }
       if (to.path === from.path || !link) return;
       nextTick(() => {
-        if (document.activeElement === link) focusMain();
+        // A link removed by the navigation leaves focus on <body>.
+        const focused = document.activeElement;
+        if (!focused || focused === link || focused === document.body)
+          focusMain();
       }).catch(reportNavigationError);
     }),
   );
@@ -81,6 +98,8 @@ export function useWorkoutNavigation(
       reportNavigationError,
     );
   }
+
+  provide(linkNavigationKey, prepareLinkNavigation);
 
   return {
     page,

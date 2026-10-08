@@ -72,7 +72,7 @@ defineExpose({
         type="button"
         class="set-number"
         :aria-label="`Select set ${row.index + 1} of ${row.exercise.name}`"
-        :aria-pressed="current"
+        :aria-current="current ? 'true' : undefined"
         @click="emit('select')"
       >
         {{ row.index + 1 }}

@@ -50,7 +50,7 @@ async function clear() {
           v-for="(set, index) in row.exercise.sets"
           :key="set.id"
           variant="secondary"
-          :aria-pressed="set.id === row.set.id"
+          :aria-current="set.id === row.set.id ? 'true' : undefined"
           @click="emit('select', set.id)"
           >Set {{ index + 1 }}</BaseButton
         >

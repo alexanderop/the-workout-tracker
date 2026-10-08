@@ -102,8 +102,8 @@
   border-radius: 16px;
   border: 2px solid transparent;
 }
-.workout-exercise-tab[aria-pressed="true"] { color: var(--purple); }
-.workout-exercise-tab[aria-pressed="true"] .exercise-thumbnail { border-color: var(--purple); }
+.workout-exercise-tab[aria-current="true"] { color: var(--purple); }
+.workout-exercise-tab[aria-current="true"] .exercise-thumbnail { border-color: var(--purple); }
 .workout-exercise-tab-name {
   display: block;
   max-width: 76px;

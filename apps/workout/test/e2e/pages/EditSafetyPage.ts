@@ -9,7 +9,9 @@ export class EditSafetyPage {
     });
   }
   async editName(name: string) {
-    if (!await this.name().isVisible()) await this.page.getByRole("button", { name: "Rename workout", exact: true }).click();
+    // Rename starts closed on every page load; each caller opens it once.
+    await expect(this.name()).toHaveCount(0);
+    await this.page.getByRole("button", { name: "Rename workout", exact: true }).click();
     await this.name().fill(name);
   }
   async saveName() {
@@ -27,14 +29,16 @@ export class EditSafetyPage {
       this.page.getByRole("progressbar", { name: "Logged sets" }),
     ).toHaveAttribute("value", "1");
   }
-  async expectName(name: string) {
-    const heading = this.page.getByRole("heading", { name, exact: true });
-    await expect(this.name().or(heading)).toBeVisible();
-    if (await this.name().isVisible()) {
-      await expect(this.name()).toHaveValue(name);
-      return;
-    }
-    await expect(heading).toBeVisible();
+  /** The rename sheet is still open with this unsaved input. */
+  async expectDraftName(name: string) {
+    await expect(this.name()).toHaveValue(name);
+  }
+  /** The rename sheet is closed and the workout shows this saved name. */
+  async expectSavedName(name: string) {
+    await expect(this.name()).toHaveCount(0);
+    await expect(
+      this.page.getByRole("heading", { name, exact: true }),
+    ).toBeVisible();
   }
   async expectConflict() {
     await expect(
@@ -54,7 +58,7 @@ export class EditSafetyPage {
   }
   async expectSavedAfterReload(name: string) {
     await this.page.reload();
-    await this.expectName(name);
+    await this.expectSavedName(name);
   }
   async openNote(text: string) {
     await this.page

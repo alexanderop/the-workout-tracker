@@ -3,9 +3,11 @@ import { useTemplateRef } from "vue";
 import { onBeforeRouteLeave } from "vue-router";
 import { TrainingPage } from "../features/workouts/ui";
 import { useWorkoutRouteContext } from "../app/workoutRouteContext";
+import { useLinkNavigation } from "../app/useWorkoutNavigation";
 
 definePage({ name: "session", path: "/session" });
 const { workspace, dialogs, navigate, workoutsHref } = useWorkoutRouteContext();
+const prepareLinkNavigation = useLinkNavigation();
 const trainingPage = useTemplateRef<InstanceType<typeof TrainingPage>>("trainingPage");
 onBeforeRouteLeave(() => trainingPage.value?.requestLeave() ?? true);
 </script>
@@ -20,5 +22,6 @@ onBeforeRouteLeave(() => trainingPage.value?.requestLeave() ?? true);
     @options="dialogs?.showOptions($event)"
     @confirm="dialogs?.confirm($event)"
     @navigate="navigate"
+    @back="prepareLinkNavigation($event, 'workouts')"
   />
 </template>

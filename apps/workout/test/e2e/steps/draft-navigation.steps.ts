@@ -23,7 +23,8 @@ Given("I opened a new template without making changes", async ({ workout, page }
 When("I dismiss the template using {string}", async ({ page }, method: string) => {
   const editor = templateEditor(page);
   if (method === "Escape") return editor.press("Escape");
-  if (method === "Outside") return page.mouse.click(5, 5);
+  // The topmost backdrop belongs to the template editor; its corner lies outside the sheet.
+  if (method === "Outside") return page.locator('[data-slot="dialog-overlay"]').last().click({ position: { x: 5, y: 5 } });
   await editor.getByRole("button", { name: method === "Close" ? "Close dialog" : "Cancel", exact: true }).click();
 });
 Then("I can keep editing the template {string}", async ({ page }, name: string) => {

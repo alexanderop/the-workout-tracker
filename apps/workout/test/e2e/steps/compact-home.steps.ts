@@ -44,8 +44,7 @@ Then(
     const navigation = page.getByRole("navigation", {
       name: "Mobile navigation",
     });
-    const boundary = await navigation.boundingBox();
-    expect(boundary).not.toBeNull();
+    await expect(navigation).toBeVisible();
     for (const control of [
       page.getByRole("button", { name: "Open training calendar" }),
       page.getByRole("button", {
@@ -55,10 +54,16 @@ Then(
       page.getByRole("button", { name: /^Templates/ }),
     ]) {
       await expect(control).toBeVisible();
-      const box = await control.boundingBox();
-      expect(box).not.toBeNull();
-      expect(box!.height).toBeGreaterThanOrEqual(44);
-      expect(box!.y + box!.height).toBeLessThanOrEqual(boundary!.y);
+      await expect(async () => {
+        const [box, boundary] = await Promise.all([
+          control.boundingBox(),
+          navigation.boundingBox(),
+        ]);
+        if (!box || !boundary)
+          throw new Error("Home controls and navigation must have bounds");
+        expect(box.height).toBeGreaterThanOrEqual(44);
+        expect(box.y + box.height).toBeLessThanOrEqual(boundary.y);
+      }).toPass();
     }
     const size = await page.evaluate(() => ({
       height: document.documentElement.scrollHeight,
@@ -147,10 +152,9 @@ Then("the home remains vertically scrollable", async ({ page }) => {
   expect(
     await page.evaluate(() => document.documentElement.scrollHeight),
   ).toBeGreaterThan(667);
-  await page
-    .getByRole("button", { name: /^Templates/ })
-    .scrollIntoViewIfNeeded();
-  await expect(page.getByRole("button", { name: /^Templates/ })).toBeVisible();
+  const templates = page.getByRole("button", { name: /^Templates/ });
+  await templates.scrollIntoViewIfNeeded();
+  await expect(templates).toBeInViewport();
 });
 When(
   "I save and rename a template from the template browser",
@@ -212,6 +216,8 @@ Then(
     await expect(
       page.getByRole("button", { name: "Continue workout", exact: true }),
     ).toBeVisible();
+    // The link leaves with the workout page, so focus moves to the new content.
+    await expect(page.getByRole("main")).toBeFocused();
     await expect(
       page.getByRole("button", { name: "View history", exact: true }),
     ).toBeVisible();

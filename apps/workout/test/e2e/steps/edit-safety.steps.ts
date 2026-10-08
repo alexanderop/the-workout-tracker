@@ -13,7 +13,10 @@ When("I dismiss rename and choose to keep editing", async ({ page }) => {
   await page.getByRole("button", { name: "Keep editing", exact: true }).click();
 });
 Then("the workout name remains {string}", async ({ page }, name: string) => {
-  await new EditSafetyPage(page).expectName(name);
+  await new EditSafetyPage(page).expectDraftName(name);
+});
+Then("the workout is named {string}", async ({ page }, name: string) => {
+  await new EditSafetyPage(page).expectSavedName(name);
 });
 When("I save the workout name", async ({ page }) => {
   await new EditSafetyPage(page).saveName();
@@ -65,7 +68,7 @@ When("I discard the unsaved exercise note", async ({ page }) => {
 });
 Then("I can keep editing my workout name", async ({ page }) => {
   await page.getByRole("button", { name: "Keep editing", exact: true }).click();
-  await new EditSafetyPage(page).expectName("My local name");
+  await new EditSafetyPage(page).expectDraftName("My local name");
 });
 When("I discard the unsaved workout name", async ({ page }) => {
   await new EditSafetyPage(page).discardName();
@@ -91,8 +94,11 @@ Then("mobile Finish is enabled", async ({ page }) => {
 
 Then("the narrow workout actions have full touch targets", async ({ page }) => {
   for (const button of [page.getByRole("button", { name: "Finish", exact: true }).first(), page.getByRole("button", { name: "Discard workout", exact: true })]) {
-    const box = await button.boundingBox();
-    expect(box?.height).toBeGreaterThanOrEqual(44);
-    expect(box?.width).toBeGreaterThanOrEqual(44);
+    await expect(button).toBeVisible();
+    await expect(async () => {
+      const box = await button.boundingBox();
+      expect(box?.height).toBeGreaterThanOrEqual(44);
+      expect(box?.width).toBeGreaterThanOrEqual(44);
+    }).toPass();
   }
 });

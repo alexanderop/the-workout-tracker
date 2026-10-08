@@ -7,6 +7,38 @@ const { Given, When, Then } = createBdd(test);
 Given("I have a fresh workout journal", async ({ workout }) => {
   await workout.open();
 });
+Given("I have a fresh workout journal on a controlled clock", async ({ workout, page }) => {
+  await page.clock.install();
+  await workout.open();
+});
+Given("automatic rest is on with {int} seconds between sets", async ({ workout }, seconds: number) => {
+  await workout.configureRest(seconds);
+});
+When("I log the first set", async ({ workout }) => {
+  await workout.logFirstSet();
+});
+Then("the rest timer counts down", async ({ workout }) => {
+  await workout.expectRestCountdown();
+});
+When("I skip the rest", async ({ workout }) => {
+  await workout.stopRest("Skip");
+});
+When("the {int} second rest period elapses", async ({ page }, seconds: number) => {
+  await page.clock.fastForward((seconds + 1) * 1000);
+});
+Then("the rest timer shows that rest is complete", async ({ workout }) => {
+  await workout.expectRestComplete();
+});
+When("I dismiss the rest timer", async ({ workout }) => {
+  await workout.stopRest("Dismiss");
+});
+Then("the rest timer is gone", async ({ workout }) => {
+  await workout.expectNoRest();
+});
+When("I finish my workout", async ({ workout }) => {
+  const review = await workout.finish();
+  await review.getByRole("button", { name: "Close dialog", exact: true }).click();
+});
 Given("my journal contains a previous workout at {int} kilograms", async ({ workout, page }, weight: number) => {
   await workout.open();
   const factory = createWorkoutFactory("repeat");
@@ -27,6 +59,9 @@ When("I reload the workout", async ({ workout }) => {
 });
 When("I log the first set and finish my workout", async ({ workout }) => {
   await workout.logAndFinish();
+});
+When("I open my workout history", async ({ workout }) => {
+  await workout.openHistory();
 });
 Then("my history contains one logged set with {int} kilograms of volume", async ({ workout }, volume: number) => {
   await workout.expectHistory(volume);
@@ -54,8 +89,6 @@ When("I select an exercise then cancel before starting", async ({ workout }) => 
   await workout.cancelSelection();
 });
 
-Then("I capture the started workout", async ({ page, $testInfo }) => {
-  const path = $testInfo.outputPath("started-workout.png");
-  await page.screenshot({ path, fullPage: true });
-  await $testInfo.attach("Started workout", { path, contentType: "image/png" });
+Then("I have no active workout", async ({ workout }) => {
+  await workout.expectNoActiveWorkout();
 });

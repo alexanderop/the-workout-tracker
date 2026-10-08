@@ -1,13 +1,15 @@
 import { expect, test } from "@playwright/test";
 import { readdir } from "node:fs/promises";
 
+const assets = new URL("../../dist/assets/", import.meta.url);
+
 test("previously unopened exercise artwork works after an offline restart", async ({
   page,
   context,
   baseURL,
 }) => {
   if (!baseURL) throw new Error("Performance base URL is required");
-  const artwork = (await readdir("dist/assets"))
+  const artwork = (await readdir(assets))
     .filter((name) => name.endsWith(".webp"))
     .map((name) => new URL(`assets/${name}`, baseURL).href);
   expect(artwork.length).toBeGreaterThan(0);

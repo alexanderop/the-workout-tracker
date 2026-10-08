@@ -23,7 +23,7 @@ Feature: Preserve local workout edits
     And another tab saves the workout name "Other name"
     Then I can choose which workout name to keep
     When I use the saved workout name
-    Then the workout name remains "Other name"
+    Then the workout is named "Other name"
 
   Scenario: Browser Back asks before losing an exercise note
     When I write the unsaved exercise note "Keep my shoulders down"

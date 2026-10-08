@@ -202,17 +202,8 @@ const title = computed(() => {
         </div>
         <div class="topbar-right">
           <span v-if="!online" class="connection accent"
-            ><WifiOff v-if="!online" :size="14" /><span
-              v-else
-              class="connection-dot"
-            ></span
-            >{{
-              !online
-                ? "Offline · saved locally"
-                : offlineReady
-                  ? "Ready offline"
-                  : "Local workspace"
-            }}</span
+            ><WifiOff :size="14" aria-hidden="true" />Offline · saved
+            locally</span
           >
         </div>
       </header>
@@ -260,7 +251,7 @@ const title = computed(() => {
               <X :size="16" />
             </BaseButtonIcon>
           </div>
-          <div v-if="needRefresh && !active" class="notice">
+          <div v-if="needRefresh && !active" class="notice" role="status">
             <span>A new version of The Workout Tracker is ready.</span
             ><BaseButton
               unstyled

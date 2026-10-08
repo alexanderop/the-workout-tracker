@@ -7,6 +7,7 @@ Feature: A workout journal stays on this device
     When I reload the workout
     Then the 50 kilogram input is an unlogged draft
     When I log the first set and finish my workout
+    And I open my workout history
     Then my history contains one logged set with 400 kilograms of volume
     When I reload the workout
     Then my history contains one logged set with 400 kilograms of volume
@@ -29,6 +30,30 @@ Feature: A workout journal stays on this device
   Scenario: Cancelling exercise selection leaves no active workout
     Given I have a fresh workout journal
     When I select an exercise then cancel before starting
-    And I start a workout with Bench press
+    Then I have no active workout
+    When I start a workout with Bench press
     Then the first set starts at 0 kilograms without being logged
-    And I capture the started workout
+
+  Scenario: Automatic rest runs between logging a set and finishing
+    Given I have a fresh workout journal
+    And automatic rest is on with 30 seconds between sets
+    When I start a workout with Bench press
+    And I confirm a weight of 50 kilograms
+    And I log the first set
+    Then the rest timer counts down
+    When I skip the rest
+    Then the rest timer is gone
+    When I finish my workout
+    And I open my workout history
+    Then my history contains one logged set with 400 kilograms of volume
+
+  Scenario: A finished rest period can be dismissed
+    Given I have a fresh workout journal on a controlled clock
+    And automatic rest is on with 30 seconds between sets
+    When I start a workout with Bench press
+    And I log the first set
+    Then the rest timer counts down
+    When the 30 second rest period elapses
+    Then the rest timer shows that rest is complete
+    When I dismiss the rest timer
+    Then the rest timer is gone

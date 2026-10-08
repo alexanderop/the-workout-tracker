@@ -42,9 +42,14 @@ export class WorkoutPage {
     await picker.getByRole("button", { name: /^Bench press Chest/ }).click();
     await expect(picker.getByRole("button", { name: "Start (1)", exact: true })).toBeEnabled();
     await picker.getByRole("button", { name: "Close dialog", exact: true }).click();
+    await expect(picker).toHaveCount(0);
     await this.page.reload();
+  }
+
+  async expectNoActiveWorkout() {
     await expect(this.page.getByRole("button", { name: "Start your first workout", exact: true })).toBeVisible();
     await expect(this.page.getByRole("button", { name: "Continue workout", exact: true })).toHaveCount(0);
+    await expect(this.page.getByRole("button", { name: /^Workout in progress/ })).toHaveCount(0);
   }
 
   weight() {
@@ -92,25 +97,67 @@ export class WorkoutPage {
     await this.page.reload();
   }
 
-  async logAndFinish() {
+  async configureRest(seconds: number) {
+    await this.page
+      .getByRole("navigation", { name: "Mobile navigation" })
+      .getByRole("link", { name: "Settings", exact: true })
+      .click();
+    const autoRest = this.page.getByRole("switch", {
+      name: "Automatic rest timer",
+    });
+    await autoRest.check();
+    await expect(autoRest).toBeChecked();
+    const duration = this.page.getByRole("combobox", { name: "Rest duration" });
+    await duration.selectOption(String(seconds));
+    await expect(duration).toHaveValue(String(seconds));
+    await this.page
+      .getByRole("navigation", { name: "Mobile navigation" })
+      .getByRole("link", { name: "Workouts", exact: true })
+      .click();
+  }
+
+  async logFirstSet() {
     await this.page
       .getByRole("button", { name: "Log set 1 of Bench press", exact: true })
       .click();
     await expect(
       this.page.getByRole("progressbar", { name: "Logged sets" }),
     ).toHaveAttribute("value", "1");
+  }
+
+  trainingControls() {
+    return this.page.getByRole("region", { name: "Training controls" });
+  }
+
+  async expectRestCountdown() {
+    await expect(this.trainingControls()).toContainText(/\d{2}:\d{2} rest/);
+    await expect(
+      this.trainingControls().getByRole("button", { name: "Skip", exact: true }),
+    ).toBeVisible();
+  }
+
+  async expectRestComplete() {
+    await expect(this.trainingControls()).toContainText("Rest complete");
+  }
+
+  async stopRest(action: "Skip" | "Dismiss") {
+    await this.trainingControls()
+      .getByRole("button", { name: action, exact: true })
+      .click();
+  }
+
+  async expectNoRest() {
+    await expect(this.trainingControls()).toContainText("All sets logged");
+    await expect(this.trainingControls()).not.toContainText(/rest/i);
+  }
+
+  async finish() {
     await this.page
       .getByRole("button", { name: "Finish", exact: true })
       .first()
       .click();
     await this.page
-      .getByRole("dialog")
-      .filter({
-        has: this.page.getByRole("heading", {
-          name: "Finish this workout?",
-          exact: true,
-        }),
-      })
+      .getByRole("dialog", { name: "Finish this workout?", exact: true })
       .getByRole("button", { name: "Save workout", exact: true })
       .click();
     const review = this.page
@@ -121,17 +168,32 @@ export class WorkoutPage {
           exact: true,
         }),
       });
+    await expect(review).toBeVisible();
+    return review;
+  }
+
+  async logAndFinish() {
+    await this.logFirstSet();
+    const review = await this.finish();
     await expect(review).toContainText("50 kg × 8 reps");
     await review
       .getByRole("button", { name: "Close dialog", exact: true })
       .click();
   }
 
+  async openHistory() {
+    await this.page
+      .getByRole("button", { name: "View history", exact: true })
+      .click();
+    await expect(
+      this.page.getByRole("heading", { name: "History", exact: true }),
+    ).toBeVisible();
+  }
+
   async expectHistory(volume: number) {
-    if (!this.page.url().includes("view=history"))
-      await this.page
-        .getByRole("button", { name: "View history", exact: true })
-        .click();
+    await expect(
+      this.page.getByRole("heading", { name: "History", exact: true }),
+    ).toBeVisible();
     const record = this.page.getByRole("article");
     await expect(record).toHaveCount(1);
     await expect(record).toContainText("Bench press");
@@ -220,12 +282,10 @@ export class WorkoutPage {
   }
 
   async expectSingleTemplate(name: string, exercise: string) {
-    if (
-      !(await this.page
-        .getByRole("dialog", { name: "Templates", exact: true })
-        .isVisible())
-    )
-      await this.page.getByRole("button", { name: /^Templates/ }).click();
+    // The template browser is part of the URL, so it reopens after a reload.
+    await expect(
+      this.page.getByRole("dialog", { name: "Templates", exact: true }),
+    ).toBeVisible();
     const card = this.page.getByRole("article");
     await expect(card).toHaveCount(1);
     await expect(

@@ -35,9 +35,9 @@ Given("a logged Bench press workout", async ({ page }) => {
 });
 When(
   "two tabs enter 60 and 70 kilograms and the first tab tries to log",
-  async ({ page }) => {
+  async ({ page, tabs }) => {
     await new WorkoutPage(page).confirmWeight("60");
-    const other = await new QaRegressionsPage(page).otherTab();
+    const other = tabs.remember(await new QaRegressionsPage(page).otherTab());
     await new WorkoutPage(other).confirmWeight("70");
     await page
       .getByRole("button", { name: "Log set 1 of Bench press", exact: true })
@@ -57,12 +57,8 @@ Then("the first tab must review the other input", async ({ page }) => {
 });
 Then(
   "reloading the second tab retains its 70 kilogram input",
-  async ({ page }) => {
-    const other = page
-      .context()
-      .pages()
-      .find((candidate) => candidate !== page);
-    if (!other) throw new Error("The second workout tab is missing");
+  async ({ tabs }) => {
+    const other = tabs.second();
     await other.reload();
     await expect(new WorkoutPage(other).weight()).toHaveText("70");
     await other.close();
