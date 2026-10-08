@@ -1,5 +1,4 @@
 {
-  "apps/workout/src/features/workouts/domain.ts": 972,
   "apps/workout/src/features/workouts/ui/WorkoutDialogs.vue": 865,
   "apps/workout/src/features/workouts/ui/useTrainingSession.ts": 636,
   "apps/workout/src/features/workouts/ui/ExerciseConfiguration.vue": 493,
