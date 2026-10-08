@@ -177,6 +177,10 @@ Oxlint owns JavaScript/TypeScript rules, supported Vue script rules, and custom 
 - Declare slots explicitly, remove unused props/refs/emits, use PascalCase component references and kebab-case custom events/attributes. Vue's `update:*` model events retain their framework spelling. Use the [component naming contract](#component-names). Only the application root `App` and Histoire story filenames are exempt from the multi-word naming rule.
 - Keep template nesting at most eight levels. A `use*.ts` module must call an imported Vue/VueUse API or another imported composable. This is a structural check, not a proof of lifecycle correctness.
 - Product logging permits `console.warn` and `console.error`, not debug logging.
+- Keep source files at most 400 lines (`design/file-size`). Files that were already larger are listed at their current size in `tooling/lint/file-size-baseline.json`. That limit only goes down: growing past it fails, and shrinking a file fails until you lower its entry to the new size, or remove the entry once the file is at most 400 lines. Never raise an entry; split the file instead.
+- Keep each awaited effect in application and adapter code in its own `try` (`code-policy/one-effect-per-try`), so a failed read, transition and write produce different results.
+- Do not assign through props or values destructured from them (`code-policy/no-prop-ref-writes`). Call the owner's command or emit an event.
+- Domain, ports and application compile with the ECMAScript library only (`tsconfig.pure.json`, run by `pnpm typecheck:pure`), and the architecture rule allows only ECMAScript built-ins as globals there. Inject anything else.
 
 Run `pnpm lint:oxlint` or `pnpm lint:vue` for focused feedback. Both stages reject warnings. No automated tests, standalone architecture commands, formatting checks, or builds are added to verification.
 

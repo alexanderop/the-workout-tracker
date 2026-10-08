@@ -103,4 +103,9 @@ export default [
       "design/token-references": "error",
     },
   },
+  {
+    files: ["apps/*/src/**/*.{ts,vue}", "packages/*/src/**/*.{ts,vue}"],
+    plugins: { design },
+    rules: { "design/file-size": ["error", { max: 400 }] },
+  },
 ];

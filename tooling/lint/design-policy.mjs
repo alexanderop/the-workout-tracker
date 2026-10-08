@@ -1,4 +1,5 @@
 import tokenReferences from "./token-references.mjs";
+import fileSize from "./file-size.mjs";
 import vue from "eslint-plugin-vue";
 import { parse } from "@vue/compiler-sfc";
 import {
@@ -62,6 +63,7 @@ export default {
   },
   rules: {
     "token-references": tokenReferences,
+    "file-size": fileSize,
     "template-colors": {
       meta,
       create(context) {
