@@ -1,45 +1,30 @@
-import { computed, reactive, ref, watch, type Ref } from "vue";
+import { computed, ref, watch, type Ref } from "vue";
 import type { DraftJournal } from "../application";
 import type { Command, SessionExercise, Snapshot, WorkoutSet } from "../domain";
-import { setTargetReps } from "../domain";
 import {
-  parseSetValues,
-  type RawValues,
-  type SetDraft,
-} from "../domain/drafts";
-
-import {
-  restoreTrainingDraft,
   hasDraftConflict,
   hasPendingInput,
   isDraftDirty,
   decideSetCommit,
   canUndoSet,
-  editDraft,
   resetDraftToSaved,
-  keepDraftInput,
-  chooseRecoveredDraft,
-  observeSavedSet,
-  mergeUnseenDrafts,
-  type TrainingDraftState,
+  restoreTrainingDraft,
+  savedSetBaseline,
+  addedSetValues,
+  tappedSetReps,
 } from "../domain/trainingDrafts";
+import { useTrainingDrafts, type TrainingRow } from "./useTrainingDrafts";
+import { useTrainingSelection } from "./useTrainingSelection";
 
-export type TrainingRow = TrainingDraftState & {
-  exercise: SessionExercise;
-  index: number;
-  issue: string;
-  storageIssue: string;
-};
+export type { TrainingRow } from "./useTrainingDrafts";
 export function useTrainingSession(options: {
   snapshot: Ref<Snapshot | null>;
   saving: Readonly<Ref<boolean>>;
   journal: DraftJournal;
   run: (command: Command, revision?: number) => Promise<Snapshot | null>;
 }) {
-  const rows = reactive(new Map<string, TrainingRow>());
-  const selected = ref<string | null>(null);
-  const reviewFocus = ref<{ setId: string; sequence: number } | null>(null);
-  const selectedExerciseId = ref<string | null>(null);
+  const drafts = useTrainingDrafts(options);
+  const { rows, pending } = drafts;
   const lastLog = ref<{
     sessionId: string;
     setId: string;
@@ -48,73 +33,30 @@ export function useTrainingSession(options: {
   } | null>(null);
   const notice = ref("");
   const active = computed(() => options.snapshot.value?.active ?? null);
+  const selection = useTrainingSelection({
+    active,
+    rows,
+    orderedRows: drafts.orderedRows,
+  });
+  const { selected, selectSet } = selection;
   watch(
     () => active.value?.id,
     () => {
       notice.value = "";
-      selected.value = null;
-      selectedExerciseId.value = null;
       lastLog.value = null;
-      reviewFocus.value = null;
+      selection.reset();
     },
   );
-  function consume(row: TrainingRow, records = row.records) {
-    try {
-      options.journal.consume(records);
-      const acknowledged = new Set(records.map((record) => record.id));
-      row.records = row.records.filter(
-        (record) => !acknowledged.has(record.id),
-      );
-      row.storageIssue = "";
-      return true;
-    } catch {
-      row.storageIssue =
-        "Draft recovery could not be cleared. Keep this page open and try again.";
-      return false;
-    }
-  }
   watch(
     options.snapshot,
     (snapshot) => {
       if (!snapshot) return;
-      try {
-        options.journal.prune(snapshot);
-      } catch {}
-      const session = snapshot.active;
-      const exercises = session?.exercises ?? [];
-      const present = new Set<string>();
-      for (const exercise of exercises)
-        for (const [index, set] of exercise.sets.entries()) {
-          present.add(set.id);
-          synchronizeRow(session!.id, snapshot.revision, exercise, index, set);
-        }
-      for (const [id, row] of rows)
-        if (!present.has(id)) {
-          consume(row);
-          rows.delete(id);
-        }
-      invalidateLastLog(session?.id);
-      restoreSelection(exercises);
+      drafts.synchronize(snapshot);
+      invalidateLastLog(snapshot.active?.id);
+      selection.restore(snapshot.active?.exercises ?? []);
     },
     { immediate: true },
   );
-  function orderedRows() {
-    return (active.value?.exercises ?? []).flatMap((exercise) =>
-      exercise.sets.flatMap((set) => {
-        const row = rows.get(set.id);
-        return row ? [row] : [];
-      }),
-    );
-  }
-  function restoreSelection(exercises: readonly SessionExercise[]) {
-    if (exercises.some((exercise) => exercise.id === selectedExerciseId.value))
-      return;
-    const ordered = orderedRows();
-    const pendingRow = ordered.find(hasPendingInput);
-    const first = pendingRow ?? ordered.find((row) => !row.set.completed);
-    selectedExerciseId.value = first?.exercise.id ?? exercises[0]?.id ?? null;
-    selected.value = pendingRow?.set.id ?? null;
-  }
   function invalidateLastLog(sessionId: string | undefined) {
     if (
       !canUndoSet(
@@ -126,167 +68,10 @@ export function useTrainingSession(options: {
       lastLog.value = null;
   }
 
-  function recoverRecords(
-    sessionId: string,
-    setId: string,
-  ): Pick<TrainingRow, "records" | "storageIssue"> {
-    try {
-      return {
-        records: [...options.journal.recover(sessionId, setId)],
-        storageIssue: "",
-      };
-    } catch {
-      return {
-        records: [],
-        storageIssue:
-          "Draft recovery is unavailable. New edits may not survive closing this page.",
-      };
-    }
-  }
-  function synchronizeRow(
-    sessionId: string,
-    revision: number,
-    exercise: SessionExercise,
-    index: number,
-    set: WorkoutSet,
-  ) {
-    const row = rows.get(set.id);
-    if (row) {
-      Object.assign(row, observeSavedSet(row, set), { exercise, index });
-      return;
-    }
-    const recovered = recoverRecords(sessionId, set.id);
-    const fresh: TrainingRow = {
-      set,
-      exercise,
-      index,
-      revision,
-      ...recovered,
-      weight: String(set.weightKg),
-      reps: String(set.reps),
-      base: { ...set },
-      touched: false,
-      recoveredStale: false,
-      alternatives: [],
-      issue: "",
-    };
-    rows.set(set.id, restoreTrainingDraft(fresh));
-  }
-  const next = computed(() => {
-    const set = active.value?.exercises
-      .flatMap((exercise) => exercise.sets)
-      .find((set) => !set.completed);
-    return set ? rows.get(set.id) : undefined;
-  });
-  const currentExercise = computed(
-    () =>
-      active.value?.exercises.find(
-        (exercise) => exercise.id === selectedExerciseId.value,
-      ) ??
-      active.value?.exercises[0] ??
-      null,
-  );
-  const current = computed(() => {
-    const chosen = selected.value ? rows.get(selected.value) : undefined;
-    if (chosen?.exercise.id === currentExercise.value?.id) return chosen;
-    return (
-      [...rows.values()].find(
-        (row) =>
-          row.exercise.id === currentExercise.value?.id && !row.set.completed,
-      ) ?? null
-    );
-  });
-  function selectExercise(id: string) {
-    selectedExerciseId.value = id;
-    selected.value = null;
-  }
-  function selectSet(id: string) {
-    const row = rows.get(id);
-    if (!row) return;
-    selectedExerciseId.value = row.exercise.id;
-    selected.value = id;
-  }
-  function requestReviewFocus(setId: string) {
-    if (!rows.has(setId)) return;
-    reviewFocus.value = {
-      setId,
-      sequence: (reviewFocus.value?.sequence ?? 0) + 1,
-    };
-  }
   const conflict = hasDraftConflict;
   const dirty = isDraftDirty;
-  function persist(row: TrainingRow) {
-    if (!active.value || !options.snapshot.value) return;
-    try {
-      const saved = options.journal.write({
-        sessionId: active.value.id,
-        setId: row.set.id,
-        weight: row.weight,
-        reps: row.reps,
-        base: {
-          weightKg: row.base.weightKg,
-          reps: row.base.reps,
-          completed: row.base.completed,
-          targetReps: row.base.targetReps,
-        },
-        revision: row.revision,
-      });
-      const predecessors = row.records;
-      row.records = [saved];
-      retainAlternatives(row, predecessors);
-      row.storageIssue = "";
-    } catch {
-      row.storageIssue =
-        "Draft not saved on this device. Keep this page open and try again.";
-    }
-  }
-  function retainAlternatives(row: TrainingRow, predecessors: SetDraft[]) {
-    if (row.alternatives.length) {
-      row.records.unshift(...predecessors);
-      return;
-    }
-    options.journal.consume(predecessors);
-  }
-  function edit(setId: string, values: Partial<RawValues>) {
-    const row = rows.get(setId);
-    if (!row || options.saving.value) return;
-    Object.assign(
-      row,
-      editDraft(row, values, options.snapshot.value?.revision ?? 0),
-    );
-    row.issue = "";
-    selectSet(setId);
-    persist(row);
-  }
-  function useSaved(setId: string) {
-    const row = rows.get(setId);
-    if (!row) return;
-    try {
-      row.records = [
-        ...row.records,
-        ...options.journal.recover(active.value!.id, setId),
-      ];
-    } catch {}
-    if (!consume(row)) return;
-    Object.assign(row, resetDraftToSaved(row.set));
-    row.issue = "";
-  }
-  function keepInput(setId: string) {
-    const row = rows.get(setId);
-    const snapshot = options.snapshot.value;
-    if (!row || !snapshot || options.saving.value) return;
-    Object.assign(row, keepDraftInput(row, snapshot.revision));
-    row.issue = "";
-    persist(row);
-  }
-  function chooseDraft(setId: string, draft: SetDraft) {
-    const row = rows.get(setId);
-    if (!row) return;
-    Object.assign(
-      row,
-      chooseRecoveredDraft(row, draft, options.snapshot.value?.revision),
-    );
-    persist(row);
+  function edit(setId: string, values: Parameters<typeof drafts.edit>[1]) {
+    if (drafts.edit(setId, values)) selectSet(setId);
   }
   async function commit(setId: string, valuesOnly = false) {
     const row = rows.get(setId),
@@ -319,24 +104,13 @@ export function useTrainingSession(options: {
       snapshot.revision,
     );
     if (!result) return;
-    consume(row, acknowledged);
+    drafts.consume(row, acknowledged);
     const saved = savedSetBaseline(result, setId, { ...values, completed });
     Object.assign(row, resetDraftToSaved(saved, result.revision));
     row.issue = "";
     reportCommit(row, session.id, completed, valuesOnly);
     Object.assign(row, restoreTrainingDraft(row));
     recoverUnseenDrafts(session.id);
-  }
-  function savedSetBaseline(
-    snapshot: Snapshot,
-    setId: string,
-    fallback: SetDraft["base"],
-  ): WorkoutSet {
-    return (
-      snapshot.active?.exercises
-        .flatMap((exercise) => exercise.sets)
-        .find((set) => set.id === setId) ?? { ...fallback, id: setId }
-    );
   }
   function reportCommit(
     row: TrainingRow,
@@ -372,11 +146,6 @@ export function useTrainingSession(options: {
     const last = exercise?.sets.at(-1);
     return last ? rows.get(last.id) : undefined;
   }
-  function addedSetValues(row: TrainingRow | undefined) {
-    if (!row) return null;
-    const values = parseSetValues(row);
-    return values ? { ...values, reps: setTargetReps(row.set) } : null;
-  }
   async function addSet(exerciseId: string) {
     const session = active.value;
     const exercise = session?.exercises.find((item) => item.id === exerciseId);
@@ -403,7 +172,7 @@ export function useTrainingSession(options: {
       ?.sets.at(-1);
     if (added) {
       selectSet(added.id);
-      requestReviewFocus(added.id);
+      selection.requestReviewFocus(added.id);
     }
   }
   async function undoSet(setId: string) {
@@ -465,7 +234,7 @@ export function useTrainingSession(options: {
         exerciseId: row.exercise.id,
         setId,
         weightKg: row.set.weightKg,
-        reps: row.set.completed ? Math.max(0, row.set.reps - 1) : row.set.reps,
+        reps: tappedSetReps(row.set),
         completed: true,
       },
       snapshot.revision,
@@ -527,7 +296,6 @@ export function useTrainingSession(options: {
           : "Exercise updated. Logged sets are unchanged.";
     return !!saved;
   }
-  const pending = computed(() => orderedRows().filter(hasPendingInput));
   async function saveEdits() {
     for (const row of pending.value) {
       await commit(row.set.id, true);
@@ -539,25 +307,11 @@ export function useTrainingSession(options: {
     return true;
   }
   function recoverUnseenDrafts(sessionId: string): boolean {
-    for (const row of rows.values()) {
-      let recovered: readonly SetDraft[];
-      try {
-        recovered = options.journal.recover(sessionId, row.set.id);
-      } catch {
-        row.storageIssue =
-          "Could not check saved drafts. Try again before saving.";
-        selectSet(row.set.id);
-        notice.value = row.storageIssue;
-        return false;
-      }
-      const known = new Set(row.records.map((record) => record.id));
-      const unseen = recovered.filter((record) => !known.has(record.id));
-      if (!unseen.length) continue;
-      Object.assign(row, mergeUnseenDrafts(row, unseen));
-      row.issue =
-        "Another tab has input drafts for this set. Review them before saving.";
-    }
-    return true;
+    const check = drafts.recoverUnseen(sessionId);
+    if (check.kind === "ready") return true;
+    selectSet(check.row.set.id);
+    notice.value = check.row.storageIssue;
+    return false;
   }
   async function run(command: Command, revision?: number) {
     const session = active.value;
@@ -570,50 +324,27 @@ export function useTrainingSession(options: {
         return null;
       }
     }
-    const retiring = [...rows.values()].filter(
-      (row) =>
-        command.type === "finish" ||
-        command.type === "discard" ||
-        (command.type === "remove-set" && command.setId === row.set.id) ||
-        (command.type === "remove-exercise" &&
-          command.exerciseId === row.exercise.id),
-    );
-    const observed = retiring.flatMap((row) => {
-      if (command.type === "finish") return row.records;
-      try {
-        return [
-          ...row.records,
-          ...options.journal.recover(session!.id, row.set.id),
-        ];
-      } catch {
-        return row.records;
-      }
-    });
+    const observed = drafts.retiringRecords(command);
     const result = await options.run(command, revision);
-    if (result) {
-      try {
-        options.journal.consume(observed);
-      } catch {
-        notice.value =
-          "Workout saved, but old input drafts could not be cleared on this device.";
-      }
-    }
+    if (result && !drafts.acknowledge(observed))
+      notice.value =
+        "Workout saved, but old input drafts could not be cleared on this device.";
     return result;
   }
   return {
     rows,
-    reviewFocus,
-    requestReviewFocus,
+    reviewFocus: selection.reviewFocus,
+    requestReviewFocus: selection.requestReviewFocus,
     tapSet,
     clearSet,
     editExercise,
     run,
-    current,
-    next,
+    current: selection.current,
+    next: selection.next,
     selected,
-    selectedExerciseId,
-    currentExercise,
-    selectExercise,
+    selectedExerciseId: selection.selectedExerciseId,
+    currentExercise: selection.currentExercise,
+    selectExercise: selection.selectExercise,
     selectSet,
     pending,
     saveEdits,
@@ -625,9 +356,9 @@ export function useTrainingSession(options: {
     conflict,
     dirty,
     edit,
-    useSaved,
-    keepInput,
-    chooseDraft,
+    useSaved: drafts.useSaved,
+    keepInput: drafts.keepInput,
+    chooseDraft: drafts.chooseDraft,
     commit,
     addSet,
     undo,

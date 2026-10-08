@@ -1,4 +1,4 @@
-import type { WorkoutSet } from "../domain";
+import { setTargetReps, type Snapshot, type WorkoutSet } from "../domain";
 import {
   parseSetValues,
   sameSet,
@@ -239,4 +239,29 @@ export function canUndoSet(
   return (
     !!last && last.sessionId === sessionId && !!set && sameSet(last.base, set)
   );
+}
+
+/** The canonical set after a commit, or the committed values if it is gone. */
+export function savedSetBaseline(
+  snapshot: Snapshot,
+  setId: string,
+  fallback: SetDraft["base"],
+): WorkoutSet {
+  return (
+    snapshot.active?.exercises
+      .flatMap((exercise) => exercise.sets)
+      .find((set) => set.id === setId) ?? { ...fallback, id: setId }
+  );
+}
+
+/** Values for a set added after `state`, or null when its input is invalid. */
+export function addedSetValues(state: TrainingDraftState | undefined) {
+  if (!state) return null;
+  const values = parseSetValues(state);
+  return values ? { ...values, reps: setTargetReps(state.set) } : null;
+}
+
+/** The circle shortcut logs target reps first, then one fewer per tap. */
+export function tappedSetReps(set: WorkoutSet): number {
+  return set.completed ? Math.max(0, set.reps - 1) : set.reps;
 }
