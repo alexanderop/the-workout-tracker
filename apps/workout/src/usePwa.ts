@@ -1,5 +1,6 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRegisterSW } from "virtual:pwa-register/vue";
+import { watchServiceWorkerUpdates } from "./serviceWorkerUpdates";
 
 type InstallEvent = Event & {
   prompt: () => Promise<void>;
@@ -31,7 +32,14 @@ export function usePwa() {
     if (installed.value) installEvent.value = null;
   };
   const installMessage = ref("");
-  const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW();
+  let unmounted = false;
+  let stopUpdateChecks: (() => void) | undefined;
+  const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
+    onRegisteredSW(swUrl, registration) {
+      if (!registration || unmounted) return;
+      stopUpdateChecks = watchServiceWorkerUpdates(swUrl, registration);
+    },
+  });
   const updateNetwork = () => {
     online.value = navigator.onLine;
   };
@@ -52,6 +60,8 @@ export function usePwa() {
     window.addEventListener("appinstalled", markInstalled);
   });
   onUnmounted(() => {
+    unmounted = true;
+    stopUpdateChecks?.();
     displayMode.removeEventListener("change", updateDisplayMode);
     window.removeEventListener("online", updateNetwork);
     window.removeEventListener("offline", updateNetwork);

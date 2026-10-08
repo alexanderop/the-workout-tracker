@@ -58,7 +58,7 @@ Motion explains a change without delaying the next action. Shared motion tokens 
 
 Buttons compress subtly on press without changing layout. Completion feedback runs only when a mounted control changes from incomplete to confirmed complete, never for an initial saved value or numeric draft confirmation. Reduced motion removes movement, including sheet and dialog state animations; the final state remains visible.
 
-Startup shows a lightweight branded loading surface with no minimum wait. The exercise library appears immediately when its data is ready, without an entrance fade delaying readable catalog content. Installation allows browser-managed promotion alongside a user-invoked sheet with platform-specific instructions and native installation when available. There is no onboarding or guided tour. Develop shared components and review their Histoire examples before integrating application behavior.
+Startup shows a lightweight branded loading surface with no minimum wait. The exercise library appears immediately when its data is ready, without an entrance fade delaying readable catalog content. Installation allows browser-managed promotion alongside a user-invoked sheet with platform-specific instructions and native installation when available. The app checks for a new deployment hourly and whenever it returns to the foreground. It shows an Update app notice outside an active workout and reloads only when the user chooses it. There is no onboarding or guided tour. Develop shared components and review their Histoire examples before integrating application behavior.
 
 ## Button ownership
 
