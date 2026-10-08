@@ -143,7 +143,7 @@ function mergeActive(
   )
     return "Finish your current workout before importing another active workout.";
   const active = local.active ?? incoming.active;
-  if (active && completed[active.id])
+  if (active && Object.hasOwn(completed, active.id))
     return "Backup conflicts with an active workout. No data was imported.";
   return active;
 }

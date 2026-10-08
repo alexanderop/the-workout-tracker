@@ -4,6 +4,7 @@ import {
   type Inputs,
   type Transition,
 } from "./commands";
+import { ownRecord } from "./schemas";
 import type {
   ActiveSession,
   CompletedSession,
@@ -34,7 +35,7 @@ export function reduceActive(
 ): Transition {
   const { snapshot, inputs, reject, unchanged, changed, selectedExercises } =
     context;
-  if (command.type === "finish" && snapshot.completed[command.sessionId])
+  if (command.type === "finish" && ownRecord(snapshot.completed, command.sessionId))
     return unchanged();
   const candidate = snapshot.active;
   if (!candidate || candidate.id !== command.sessionId)
@@ -123,7 +124,11 @@ export function reduceActive(
         : active.exercises.find((row) => row.id === command.exerciseId);
     if (!candidateExercise) return reject("Workout exercise was not found.");
     const exercise = candidateExercise;
-    if (command.type === "remove-exercise")
+    if (command.type === "remove-exercise") {
+      if (active.exercises.length === 1)
+        return reject(
+          "A workout needs at least one exercise. Discard the workout instead.",
+        );
       return saveActive({
         ...active,
         exercises: active.exercises.filter((row) => row.id !== exercise.id),
@@ -131,6 +136,7 @@ export function reduceActive(
           ? null
           : active.rest,
       });
+    }
     const saveExercise = (
       next: SessionExercise,
       rest = active.rest,
@@ -157,7 +163,7 @@ export function reduceActive(
       return saveExercise({ ...withoutNote, ...(note ? { note } : {}) });
     }
     function replaceExercise(replacementId: string): Transition {
-      const replacement = snapshot.exercises[replacementId];
+      const replacement = ownRecord(snapshot.exercises, replacementId);
       if (!replacement) return reject("Exercise was not found.");
       if (replacement.id === exercise.exerciseId)
         return reject("Choose a different exercise.");

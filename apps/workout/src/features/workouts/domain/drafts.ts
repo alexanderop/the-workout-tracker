@@ -32,19 +32,19 @@ export function sameSet(base: SetDraft["base"], set: WorkoutSet) {
     base.targetReps === set.targetReps
   );
 }
+const WEIGHT_PATTERN = /^\d+([.,]\d+)?$/;
+const REPS_PATTERN = /^\d+$/;
+/**
+ * Parses typed input as plain decimal digits only, so notations such as
+ * `0x10` or `1e1` that `Number()` would accept are rejected.
+ */
 export function parseSetValues(
   raw: RawValues,
 ): { weightKg: number; reps: number } | null {
-  const weightKg = Number(raw.weight.replace(",", "."));
-  const reps = Number(raw.reps);
-  return raw.weight.trim() !== "" &&
-    raw.reps.trim() !== "" &&
-    Number.isFinite(weightKg) &&
-    weightKg >= 0 &&
-    weightKg <= 1000 &&
-    Number.isInteger(reps) &&
-    reps >= 0 &&
-    reps <= 1000
-    ? { weightKg, reps }
-    : null;
+  const weight = raw.weight.trim();
+  const repsText = raw.reps.trim();
+  if (!WEIGHT_PATTERN.test(weight) || !REPS_PATTERN.test(repsText)) return null;
+  const weightKg = Number(weight.replace(",", "."));
+  const reps = Number(repsText);
+  return weightKg <= 1000 && reps <= 1000 ? { weightKg, reps } : null;
 }

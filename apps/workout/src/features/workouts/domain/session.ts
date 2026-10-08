@@ -42,7 +42,8 @@ const idlePhase: readonly WorkoutPhase[] = ["idle"];
 const activePhases: readonly WorkoutPhase[] = ["training", "resting"];
 
 /**
- * Which phases accept each command. `reduceWorkout` rejects commands outside
+ * Which phases accept each command. `reduceWorkout` checks this table through
+ * `acceptsCommand` before any transition runs and rejects commands outside
  * these phases; finishing an already completed session is the one idempotent
  * exception and returns the snapshot unchanged.
  */
@@ -80,7 +81,6 @@ export function acceptsCommand(
 ): boolean {
   return commandPhases[type].includes(phase);
 }
-
 
 export function routineFromSession(
   session: CompletedSession,

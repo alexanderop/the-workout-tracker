@@ -1,5 +1,15 @@
 import { z } from "zod";
 
+/**
+ * Reads a stored record by key. Only own entries count, so identifiers such
+ * as `toString` never resolve to inherited object properties.
+ */
+export function ownRecord<T>(
+  records: Readonly<Record<string, T>>,
+  key: string,
+): T | undefined {
+  return Object.hasOwn(records, key) ? records[key] : undefined;
+}
 
 export const identifier = z
   .string()
@@ -145,12 +155,12 @@ function validateRecords(snapshot: SnapshotShape, issue: ReportIssue) {
   for (const routine of Object.values(snapshot.routines)) {
     if (
       routine.exercises.some(
-        (exercise) => !snapshot.exercises[exercise.exerciseId],
+        (exercise) => !ownRecord(snapshot.exercises, exercise.exerciseId),
       )
     )
       issue("Routine references an unknown exercise.");
   }
-  if (snapshot.active && snapshot.completed[snapshot.active.id])
+  if (snapshot.active && ownRecord(snapshot.completed, snapshot.active.id))
     issue("A workout cannot be both active and completed.");
 }
 function validateSession(
@@ -166,7 +176,7 @@ function validateSession(
     issue("Workout row IDs must be unique.");
   if (
     session.exercises.some(
-      (exercise) => !snapshot.exercises[exercise.exerciseId],
+      (exercise) => !ownRecord(snapshot.exercises, exercise.exerciseId),
     )
   )
     issue("Workout references an unknown exercise.");

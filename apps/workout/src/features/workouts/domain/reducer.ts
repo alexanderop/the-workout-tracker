@@ -6,7 +6,9 @@ import {
   type Transition,
 } from "./commands";
 import { reduceActive, type ReducerContext } from "./activeReducer";
+import { acceptsCommand, workoutPhase } from "./session";
 import {
+  ownRecord,
   snapshotSchema,
   timestamp,
   type Routine,
@@ -37,6 +39,16 @@ export function reduceWorkout(
       ? { kind: "changed", snapshot: validated.data }
       : reject(validated.error.issues[0]?.message ?? "Invalid workout change.");
   };
+  const phase = workoutPhase(snapshot);
+  const finishedAlready =
+    command.type === "finish" &&
+    ownRecord(snapshot.completed, command.sessionId) !== undefined;
+  if (!acceptsCommand(phase, command.type) && !finishedAlready)
+    return reject(
+      phase === "idle"
+        ? "This workout is no longer active."
+        : "Finish your current workout first.",
+    );
   const context: ReducerContext = {
     snapshot,
     inputs,
@@ -49,7 +61,7 @@ export function reduceWorkout(
     case "correct-completed":
       return correctCompleted(command);
     case "rename-completed": {
-      const completed = snapshot.completed[command.sessionId];
+      const completed = ownRecord(snapshot.completed, command.sessionId);
       if (!completed) return reject("This completed workout was not found.");
       return changed({
         ...snapshot,
@@ -100,7 +112,7 @@ export function reduceWorkout(
       return reduceActive(context, command);
   }
   function correctCompleted(command: Extract<Command, { type: "correct-completed" }>): Transition {
-      const completed = snapshot.completed[command.sessionId];
+      const completed = ownRecord(snapshot.completed, command.sessionId);
       if (!completed) return reject("This completed workout was not found.");
       const patches = new Map<string, (typeof command.sets)[number]>();
       for (const patch of command.sets) {
@@ -132,11 +144,10 @@ export function reduceWorkout(
   function repeatWorkout(
     command: Extract<Command, { type: "repeat" }>,
   ): Transition {
-    if (snapshot.active) return reject("Finish your current workout first.");
-    const source = snapshot.completed[command.completedId];
+    const source = ownRecord(snapshot.completed, command.completedId);
     if (!source) return reject("Workout was not found.");
     const id = inputs.id();
-    if (snapshot.completed[id]) return reject("Workout ID already exists.");
+    if (ownRecord(snapshot.completed, id)) return reject("Workout ID already exists.");
     return changed({
       ...snapshot,
       active: {
@@ -164,15 +175,14 @@ export function reduceWorkout(
   function startWorkout(
     command: Extract<Command, { type: "start" | "start-selected" }>,
   ): Transition {
-    if (snapshot.active) return reject("Finish your current workout first.");
-    const routine = command.type === "start" ? snapshot.routines[command.routineId] : null;
+    const routine = command.type === "start" ? ownRecord(snapshot.routines, command.routineId) : null;
     if (command.type === "start" && !routine) return reject("Routine was not found.");
     const sessionExercises = command.type === "start-selected"
       ? selectedExercises(command.exerciseIds)
       : routineExercises(routine);
     if (typeof sessionExercises === "string") return reject(sessionExercises);
     const id = inputs.id();
-    if (snapshot.completed[id]) return reject("Workout ID already exists.");
+    if (ownRecord(snapshot.completed, id)) return reject("Workout ID already exists.");
     return changed({
       ...snapshot,
       active: {
@@ -190,7 +200,7 @@ export function reduceWorkout(
   ): SessionExercise[] | string {
     const sessionExercises: SessionExercise[] = [];
     for (const row of routine?.exercises ?? []) {
-      const exercise = snapshot.exercises[row.exerciseId];
+      const exercise = ownRecord(snapshot.exercises, row.exerciseId);
       if (!exercise) return "Exercise was not found.";
       sessionExercises.push({
         id: inputs.id(),
@@ -211,7 +221,7 @@ export function reduceWorkout(
   function selectedExercises(ids: readonly string[]): SessionExercise[] | string {
     const additions: SessionExercise[] = [];
     for (const exerciseId of ids) {
-      const exercise = snapshot.exercises[exerciseId];
+      const exercise = ownRecord(snapshot.exercises, exerciseId);
       if (!exercise) return "Exercise was not found.";
       additions.push({
         id: inputs.id(),

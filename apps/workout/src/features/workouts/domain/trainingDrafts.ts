@@ -184,7 +184,13 @@ export function mergeUnseenDrafts(
   };
 }
 
+/** Compares numbers when the input parses, so "42,5" matches a saved 42.5. */
 export function isDraftDirty(state: TrainingDraftState): boolean {
+  const values = parseSetValues(state);
+  if (values)
+    return (
+      values.weightKg !== state.set.weightKg || values.reps !== state.set.reps
+    );
   return (
     state.weight !== String(state.set.weightKg) ||
     state.reps !== String(state.set.reps)

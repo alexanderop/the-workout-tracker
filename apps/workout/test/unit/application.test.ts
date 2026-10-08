@@ -232,6 +232,21 @@ describe("workout application", () => {
     expect(memory.current().completed).toEqual({ [completed.id]: completed });
   });
 
+  it("merges an active workout whose identity names an inherited object property", async () => {
+    const factory = createWorkoutFactory("inherited");
+    const completed = factory.completedSession();
+    const local = factory.snapshot({ completed: { [completed.id]: completed } });
+    const active = factory.activeSession({ id: "toString" });
+    const backup = JSON.stringify({
+      format: "form-workout",
+      version: 2,
+      snapshot: factory.snapshot({ active }),
+    });
+    const { app, memory } = setup(local);
+    expect((await app.importBackup(backup, 0)).kind).toBe("saved");
+    expect(memory.current().active).toEqual(active);
+  });
+
   it("reports partial deletion when draft cleanup fails, and allows an explicit retry", async () => {
     const factory = createWorkoutFactory("delete");
     const active = factory.activeSession();

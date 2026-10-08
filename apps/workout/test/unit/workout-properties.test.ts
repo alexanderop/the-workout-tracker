@@ -308,11 +308,33 @@ function checkStart(previous: Snapshot, command: Command, next: Snapshot) {
     expect(historyIds.has(set.id)).toBe(false);
 }
 
-// Notes are trimmed, and an empty note removes the field.
-function checkNote(command: Command, next: Snapshot) {
-  if (command.type !== "set-exercise-note") return;
-  const note = command.note.trim();
-  expect(findExercise(next, command)?.note).toBe(note || undefined);
+function findSet(snapshot: Snapshot, setId: string) {
+  return allSets(snapshot.active).find((set) => set.id === setId);
+}
+
+// What an accepted edit must leave behind. These hold for "unchanged" results
+// too, so a real edit that the reducer silently drops fails here.
+function checkStored(command: Command, next: Snapshot) {
+  if (command.type === "set-exercise-note") {
+    // Notes are trimmed, and an empty note removes the field.
+    const note = command.note.trim();
+    expect(findExercise(next, command)?.note).toBe(note || undefined);
+  }
+  if (command.type === "rename")
+    expect(next.active?.name).toBe(command.name.trim());
+  if (command.type === "settings")
+    expect(next.settings).toEqual(command.settings);
+  if (command.type === "set-values")
+    expect(findSet(next, command.setId)).toMatchObject({
+      weightKg: command.weightKg,
+      reps: command.reps,
+    });
+  if (command.type === "set-entry")
+    expect(findSet(next, command.setId)).toMatchObject({
+      weightKg: command.weightKg,
+      completed: command.completed,
+      ...(command.completed ? { reps: command.reps } : {}),
+    });
 }
 
 function checkStep(
@@ -320,6 +342,8 @@ function checkStep(
   command: Command,
   transition: Transition,
 ): Snapshot {
+  if (transition.kind === "rejected") return previous;
+  checkStored(command, transition.snapshot);
   if (transition.kind !== "changed") return previous;
   const next = transition.snapshot;
   expect(snapshotSchema.safeParse(next).success).toBe(true);
@@ -328,7 +352,6 @@ function checkStep(
   checkLoggedWork(previous, command, next);
   checkRest(previous, command, next);
   checkStart(previous, command, next);
-  checkNote(command, next);
   if (command.type === "configure-exercise")
     expect(findExercise(next, command)?.sets).toHaveLength(command.setCount);
   return next;
@@ -342,6 +365,7 @@ type Acceptance = (
 // Commands the domain contract allows. A rejection here means validation is
 // hiding a broken transition instead of the user's change being applied.
 function mustAccept(snapshot: Snapshot, command: Command): boolean {
+  if (command.type === "settings") return true;
   const active = snapshot.active;
   if (!active || !("sessionId" in command) || command.sessionId !== active.id)
     return false;
@@ -351,7 +375,7 @@ function mustAccept(snapshot: Snapshot, command: Command): boolean {
     discard: always,
     "stop-rest": always,
     "set-exercise-note": always,
-    "remove-exercise": always,
+    "remove-exercise": () => active.exercises.length > 1,
     "set-completed": always,
     finish: () => sessionTotals(active).completedSets > 0,
     "set-values": (_, exercise) =>
@@ -387,6 +411,8 @@ function runJourney(steps: readonly Step[]) {
   }
 }
 
+const MIN_UNDO_RUNS = 100;
+
 function replay(steps: readonly Step[], id: () => string): Snapshot {
   let snapshot = initialSnapshot();
   for (const step of steps) {
@@ -411,6 +437,7 @@ describe("given random workout journeys", () => {
   });
 
   it("should log any unlogged set with entered values and restore its target when undone", () => {
+    let exercised = 0;
     fc.assert(
       fc.property(
         journeyArbitrary,
@@ -428,6 +455,7 @@ describe("given random workout journeys", () => {
             row.sets.some((candidate) => candidate.id === set?.id),
           );
           if (!active || !set || !exercise) return;
+          exercised += 1;
           const target = { sessionId: active.id, setId: set.id };
           const logged = applyChanged(
             snapshot,
@@ -457,5 +485,7 @@ describe("given random workout journeys", () => {
       ),
       { numRuns: 200 },
     );
+    // Journeys without an unlogged set skip the check; most must reach it.
+    expect(exercised).toBeGreaterThanOrEqual(MIN_UNDO_RUNS);
   });
 });

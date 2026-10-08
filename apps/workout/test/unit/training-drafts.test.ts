@@ -6,6 +6,7 @@ import {
   draftStatus,
   editDraft,
   hasDraftConflict,
+  isDraftDirty,
   keepDraftInput,
   mergeUnseenDrafts,
   observeSavedSet,
@@ -186,6 +187,19 @@ describe("training draft decisions", () => {
     const chosen = { ...merged, ...chooseRecoveredDraft(merged, elsewhere, 6) };
     expect(chosen.alternatives).toEqual([]);
     expect(chosen.recoveredStale).toBe(!sameBase(elsewhere.base, changed));
+  });
+
+  it("treats equivalent numeric spellings of the saved values as unchanged", () => {
+    const set = createWorkoutFactory().set({ weightKg: 42.5, completed: true });
+    const logged = draftState({ set, base: set, weight: "42,5", reps: "8" });
+    expect(isDraftDirty(logged)).toBe(false);
+    expect(decideSetCommit(logged)).toEqual({ kind: "unchanged" });
+
+    const whole = createWorkoutFactory().set({ weightKg: 45 });
+    expect(isDraftDirty(draftState({ set: whole, weight: "45.0", reps: "8" }))).toBe(false);
+    expect(isDraftDirty(draftState({ set: whole, weight: "45,5", reps: "8" }))).toBe(true);
+    expect(isDraftDirty(draftState({ set: whole, weight: "45", reps: "9" }))).toBe(true);
+    expect(isDraftDirty(draftState({ set: whole, weight: "", reps: "8" }))).toBe(true);
   });
 });
 
