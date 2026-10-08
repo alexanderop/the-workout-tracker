@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": { "lib": ["ES2022"], "types": [] },
+  "include": [
+    "apps/workout/src/features/workouts/domain.ts",
+    "apps/workout/src/features/workouts/domain/**/*.ts",
+    "apps/workout/src/features/workouts/ports.ts",
+    "apps/workout/src/features/workouts/application.ts",
+    "apps/workout/src/features/workouts/index.ts"
+  ]
+}

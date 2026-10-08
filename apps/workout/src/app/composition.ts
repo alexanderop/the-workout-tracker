@@ -10,6 +10,7 @@ export function createWorkoutApp(journal: DraftJournal) {
     storage: openDexieWorkoutStorage("form-workout-v1", initialSnapshot()),
     now: Date.now,
     id: () => crypto.randomUUID(),
+    reportError: (context, error) => console.error(context, error),
   });
 }
 

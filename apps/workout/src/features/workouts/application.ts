@@ -52,6 +52,8 @@ export type WorkoutDependencies = {
   readonly journal: DraftJournal;
   readonly now: () => number;
   readonly id: () => string;
+  /** Receives unexpected failures for diagnostics; results stay the same. */
+  readonly reportError?: (context: string, error: unknown) => void;
 };
 const backupSchema = z
   .object({
@@ -163,6 +165,7 @@ export function createWorkouts({
   journal,
   now,
   id,
+  reportError = () => undefined,
 }: WorkoutDependencies) {
   let closed = false;
   const closedResult: Result = {
@@ -173,7 +176,7 @@ export function createWorkouts({
     try {
       return await storage.read();
     } catch (error) {
-      console.error("Workout storage read failed.", error);
+      reportError("Workout storage read failed.", error);
       return unavailable;
     }
   };
@@ -184,7 +187,7 @@ export function createWorkouts({
     try {
       return transform(snapshot);
     } catch (error) {
-      console.error("Workout change failed unexpectedly.", error);
+      reportError("Workout change failed unexpectedly.", error);
       return "This change failed unexpectedly. Nothing was saved.";
     }
   };
@@ -207,7 +210,7 @@ export function createWorkouts({
     try {
       return await storage.compareAndSave(expectedRevision, next);
     } catch (error) {
-      console.error("Workout storage write failed.", error);
+      reportError("Workout storage write failed.", error);
       return confirmSave(expectedRevision, next);
     }
   };

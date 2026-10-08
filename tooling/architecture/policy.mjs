@@ -20,24 +20,27 @@ const layers = {
   infrastructure: ["adapters"],
 };
 const pure = new Set(["domain", "ports", "application"]);
-const ambient = new Set([
-  "fetch",
-  "XMLHttpRequest",
-  "WebSocket",
-  "localStorage",
-  "sessionStorage",
-  "indexedDB",
-  "window",
-  "document",
-  "navigator",
-  "globalThis",
-  "self",
-  "crypto",
-  "performance",
-  "setTimeout",
-  "setInterval",
-  "queueMicrotask",
+// Pure layers may use only ECMAScript built-ins. Anything else that resolves
+// to no declaration is ambient host state (DOM, Node, timers, Intl locale).
+const builtins = new Set([
+  "undefined", "NaN", "Infinity",
+  "Object", "Function", "Array", "Number", "Boolean", "String", "Symbol",
+  "BigInt", "Date", "Math", "JSON", "Promise", "RegExp", "Reflect", "Proxy",
+  "Map", "Set", "WeakMap", "WeakSet", "WeakRef", "FinalizationRegistry",
+  "Error", "AggregateError", "EvalError", "RangeError", "ReferenceError",
+  "SyntaxError", "TypeError", "URIError",
+  "ArrayBuffer", "SharedArrayBuffer", "DataView", "Atomics",
+  "Int8Array", "Uint8Array", "Uint8ClampedArray", "Int16Array", "Uint16Array",
+  "Int32Array", "Uint32Array", "Float32Array", "Float64Array",
+  "BigInt64Array", "BigUint64Array",
+  "parseInt", "parseFloat", "isNaN", "isFinite",
+  "encodeURI", "encodeURIComponent", "decodeURI", "decodeURIComponent",
 ]);
+function inTypePosition(node) {
+  for (let current = node.parent; current; current = current.parent)
+    if (ts.isTypeNode(current) || ts.isHeritageClause(current)) return true;
+  return false;
+}
 export function describe(file) {
   const normalized = file.split(sep).join("/");
   const match = normalized.match(/\/src\/features\/([^/]+)\/(.+)$/);
@@ -320,8 +323,8 @@ export function analyze(
           ts.isPropertySignature(parent) ||
           ts.isMethodDeclaration(parent) ||
           ts.isBindingElement(parent);
-        if (!property) {
-          let forbidden = ambient.has(node.text);
+        if (!property && !inTypePosition(node)) {
+          let forbidden = !builtins.has(node.text);
           if (node.text === "Date")
             forbidden =
               !(
