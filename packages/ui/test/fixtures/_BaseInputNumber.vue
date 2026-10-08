@@ -12,7 +12,9 @@ const {
   min,
   decimals = 2,
   presetStep = 2.5,
+  triggerLabel,
 } = defineProps<{
+  triggerLabel?: string;
   initial?: string | number;
   title?: string;
   label?: string;
@@ -34,6 +36,7 @@ const value = ref(initial);
       :min="min"
       :decimals="decimals"
       :preset-step="presetStep"
+      :aria-label="triggerLabel"
     />
     <output aria-label="Confirmed value" data-testid="confirmed-value">{{ value }}</output>
   </main>

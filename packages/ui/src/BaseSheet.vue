@@ -8,6 +8,7 @@ import BaseButton from "./button/BaseButton.vue";
 import { onBeforeUnmount, watch } from "vue";
 import { X } from "@lucide/vue";
 import {
+  releaseVelocity,
   sheetDragOffset,
   sheetDragSlop,
   shouldDismissSheet,
@@ -88,17 +89,15 @@ function moveDrag(event: PointerEvent) {
 }
 function endDrag(event: PointerEvent) {
   if (!drag || event.pointerId !== drag.pointerId) return;
-  const { area, sheet, active, startY, velocity } = drag;
+  const { area, sheet, active, startY, lastTime } = drag;
+  const velocity = releaseVelocity(drag.velocity, lastTime, event.timeStamp);
   drag = null;
   if (!active) return;
   sheet.classList.remove("is-dragging");
   if (area.hasPointerCapture(event.pointerId))
     area.releasePointerCapture(event.pointerId);
   const distance = event.clientY - startY;
-  // Swallow the click a drag may end with, so it cannot press the close button.
-  const swallow = (click: Event) => click.stopPropagation();
-  sheet.addEventListener("click", swallow, { capture: true, once: true });
-  setTimeout(() => sheet.removeEventListener("click", swallow, true), 60);
+  swallowNextClick(sheet);
   if (
     event.type === "pointerup" &&
     shouldDismissSheet(distance, velocity, sheet.offsetHeight)
@@ -106,7 +105,8 @@ function endDrag(event: PointerEvent) {
     // Dismissal follows the same path as Escape and the backdrop, so a
     // caller may keep the sheet open to confirm discarding input.
     emit("close");
-    requestAnimationFrame(() => {
+    cancelAnimationFrame(settleFrame);
+    settleFrame = requestAnimationFrame(() => {
       if (sheet.dataset.state !== "closed")
         sheet.style.removeProperty("--ui-sheet-drag");
     });
@@ -114,8 +114,24 @@ function endDrag(event: PointerEvent) {
   }
   sheet.style.removeProperty("--ui-sheet-drag");
 }
+let settleFrame = 0;
+let stopSwallowing: (() => void) | null = null;
+// Swallow the click a drag may end with, so it cannot press the close button.
+function swallowNextClick(sheet: HTMLElement) {
+  stopSwallowing?.();
+  const swallow = (click: Event) => click.stopPropagation();
+  sheet.addEventListener("click", swallow, { capture: true, once: true });
+  const timer = setTimeout(() => stopSwallowing?.(), 60);
+  stopSwallowing = () => {
+    clearTimeout(timer);
+    sheet.removeEventListener("click", swallow, true);
+    stopSwallowing = null;
+  };
+}
 onBeforeUnmount(() => {
   drag = null;
+  stopSwallowing?.();
+  cancelAnimationFrame(settleFrame);
 });
 defineSlots<{ default?: () => unknown }>();
 </script>

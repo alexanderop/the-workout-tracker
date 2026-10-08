@@ -13,7 +13,9 @@ const editor = () => page.getByRole("group", { name: "Number editor" });
 // While the modal is open, everything outside it is aria-hidden, so the
 // fixture's confirmed value is read by test id rather than by role.
 const confirmed = () => page.getByTestId("confirmed-value");
-const draft = () => editor().getByRole("status");
+const draft = () => editor();
+const announcement = () =>
+  page.getByRole("status").filter({ hasText: "Weight set to" });
 const confirm = () => page.getByRole("button", { name: "Use weight" });
 
 async function openEditor() {
@@ -58,7 +60,7 @@ describe("given a weight input", () => {
             - button "Use 77.5 kg": 77.5 kg
             - button "Use 80 kg": 80 kg
           - group "Number editor":
-            - status: 70.25 kg
+            - text: 70.25 kg
             - paragraph: Type a new value to replace this one.
           - group "Numeric keypad":
             - button "1"
@@ -87,8 +89,16 @@ describe("given a weight input", () => {
     it("should replace the draft without changing the confirmed value", async () => {
       await openEditor();
       await userEvent.keyboard("55");
-      await expect.element(draft()).toHaveTextContent("55kg");
+      await expect.element(draft().getByText("55", { exact: true })).toBeVisible();
       await expect.element(confirmed()).toHaveTextContent("70.25");
+    });
+
+    it("should not announce each keypress", async () => {
+      await openEditor();
+      await userEvent.keyboard("55");
+      await expect.element(draft().getByText("55", { exact: true })).toBeVisible();
+      expect(dialog().getByRole("status").query()).toBeNull();
+      expect(document.querySelector('[role="status"]')).toBeNull();
     });
 
     describe("when pressing Enter", () => {
@@ -98,6 +108,23 @@ describe("given a weight input", () => {
         await expect.element(confirmed()).toHaveTextContent("55");
         await expect.element(dialog()).not.toBeInTheDocument();
         await expect.element(trigger()).toHaveFocus();
+      });
+
+      it("should announce the confirmed value", async () => {
+        await openEditor();
+        await userEvent.keyboard("55{Enter}");
+        await expect.element(dialog()).not.toBeInTheDocument();
+        await expect
+          .element(announcement())
+          .toHaveTextContent("Weight set to 55 kg");
+      });
+
+      it("should drop the announcement once focus leaves the trigger", async () => {
+        await openEditor();
+        await userEvent.keyboard("55{Enter}");
+        await expect.element(announcement()).toBeInTheDocument();
+        await userEvent.tab();
+        await expect.element(announcement()).not.toBeInTheDocument();
       });
     });
 
@@ -131,10 +158,37 @@ describe("given a weight input", () => {
       const first = suggestions.getByRole("button").first();
       const label = first.element().getAttribute("aria-label") ?? "";
       await first.click();
+      const value = label.replace(/^Use | kg$/g, "");
+      await expect.element(confirmed()).toHaveTextContent(value);
       await expect
-        .element(confirmed())
-        .toHaveTextContent(label.replace(/^Use | kg$/g, ""));
+        .element(announcement())
+        .toHaveTextContent(`Weight set to ${value} kg`);
     });
+  });
+});
+
+describe("given a consumer-supplied aria-label", () => {
+  it("should use it as the trigger's accessible name", async () => {
+    await render(NumberInput, {
+      props: { triggerLabel: "Bench press weight, 70.25 kg" },
+    });
+    await expect
+      .element(page.getByRole("button", { name: "Bench press weight, 70.25 kg" }))
+      .toBeVisible();
+  });
+});
+
+describe("given an opening value more precise than allowed", () => {
+  it("should disable confirmation and explain the precision", async () => {
+    await render(NumberInput, { props: { initial: 2.345, decimals: 2 } });
+    await trigger().click();
+    await expect.element(confirm()).toBeDisabled();
+    await expect
+      .element(editor())
+      .toHaveAccessibleDescription(
+        "Enter a value with up to 2 decimal places from 0 to 1000 kg.",
+      );
+    await expectNoAxeViolations(dialog().element());
   });
 });
 

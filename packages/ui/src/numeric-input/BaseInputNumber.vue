@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, useId, useTemplateRef, watch } from "vue";
+import { computed, ref, useAttrs, useId, useTemplateRef, watch } from "vue";
 import { DialogRoot } from "reka-ui";
 import { Check, Delete } from "@lucide/vue";
 import BaseButton from "../button/BaseButton.vue";
@@ -11,7 +11,9 @@ import BaseDialogClose from "../dialog/BaseDialogClose.vue";
 import {
   beginEditing,
   editNumber,
+  numericHint,
   numericPresets,
+  pasteHint,
   replaceNumber,
   validNumber,
 } from "./editing";
@@ -32,6 +34,7 @@ const {
   label: string;
   title: string;
   unit?: string;
+  /** Smallest accepted value. Values are non-negative, so use 0 or more. */
   min?: number;
   max?: number;
   decimals?: number;
@@ -46,14 +49,13 @@ const emit = defineEmits<{
 const open = ref(false);
 const draft = ref(beginEditing(modelValue));
 const pasteIssue = ref("");
+// Announced once a value is confirmed, not on every keypress; cleared when
+// focus leaves the trigger so idle inputs add no status regions to the page.
+const announcement = ref("");
+const attrs = useAttrs();
 const display = useTemplateRef<HTMLElement>("display");
 const hintId = useId();
-const limits = computed(() => ({
-  min: min,
-  max: max,
-  decimals: decimals,
-  presetStep: presetStep,
-}));
+const limits = computed(() => ({ min, max, decimals, presetStep }));
 const presets = ref<number[]>([]);
 const value = computed(() => validNumber(draft.value.text, limits.value));
 const digits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
@@ -66,6 +68,7 @@ watch(
     }
     draft.value = beginEditing(modelValue);
     pasteIssue.value = "";
+    announcement.value = "";
     presets.value = numericPresets(modelValue, limits.value);
     emit("open");
   },
@@ -83,21 +86,22 @@ function press(key: string) {
 }
 function paste(event: ClipboardEvent) {
   event.preventDefault();
-  const next = replaceNumber(
-    event.clipboardData?.getData("text/plain") ?? "",
-    limits.value,
-  );
-  if (!next) {
-    pasteIssue.value = `Paste ${decimals ? `a number with up to ${decimals} decimal places` : "a whole number"} from ${min} to ${max}.`;
-    return;
-  }
-  draft.value = next;
-  pasteIssue.value = "";
+  const text = event.clipboardData?.getData("text/plain") ?? "";
+  const next = replaceNumber(text, limits.value);
+  pasteIssue.value = next ? "" : pasteHint(limits.value);
+  if (next) draft.value = next;
 }
 function confirm(next = value.value) {
   if (disabled || next === null) return;
   emit("update:modelValue", String(next));
+  announcement.value = `${title} set to ${next}${unit ? ` ${unit}` : ""}`;
   open.value = false;
+}
+// A consumer's aria-label wins over the generated "label: value" name.
+function triggerLabel() {
+  const own = attrs["aria-label"];
+  if (typeof own === "string" && own) return own;
+  return `${label}: ${modelValue === "" ? "empty" : modelValue}${unit ? ` ${unit}` : ""}`;
 }
 function keyboard(event: KeyboardEvent) {
   if (event.ctrlKey || event.metaKey || event.altKey || event.isComposing)
@@ -133,10 +137,12 @@ function focusDisplay(event: Event) {
         class="ui-numeric-trigger"
         variant="secondary"
         :disabled="disabled"
-        :aria-label="`${label}: ${modelValue === '' ? 'empty' : modelValue}${unit ? ` ${unit}` : ''}`"
+        :aria-label="triggerLabel()"
+        @blur="announcement = ''"
         >{{ modelValue === "" ? "—" : modelValue }}</BaseButton
       >
     </BaseDialogTrigger>
+    <span v-if="announcement" role="status" class="ui-visually-hidden">{{ announcement }}</span>
     <BaseDialogContent
       class="ui-numeric-dialog"
       overlay-class="ui-numeric-overlay"
@@ -184,7 +190,7 @@ function focusDisplay(event: Event) {
           :aria-describedby="hintId"
           class="ui-numeric-display"
         >
-          <div role="status" aria-live="polite" aria-atomic="true">
+          <div>
             <span>{{ draft.text || "—" }}</span
             ><small v-if="unit">{{ unit }}</small>
           </div>
@@ -192,14 +198,7 @@ function focusDisplay(event: Event) {
             :id="hintId"
             :class="{ 'ui-numeric-error': value === null || pasteIssue !== '' }"
           >
-            {{
-              pasteIssue ||
-              (value === null
-                ? `Enter ${decimals ? "a value" : "a whole number"} from ${min} to ${max}${unit ? ` ${unit}` : ""}.`
-                : draft.fresh
-                  ? "Type a new value to replace this one."
-                  : "Ready when you are.")
-            }}
+            {{ pasteIssue || numericHint(draft, limits, unit) }}
           </p>
         </div>
         <div class="ui-numeric-keypad" role="group" aria-label="Numeric keypad">

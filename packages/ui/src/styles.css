@@ -927,3 +927,12 @@
 .ui-muscle-map-illustration .ui-muscle-map-region:not(.is-highlighted) {
   fill-opacity: 0.55;
 }
+/* Hidden visually but kept in the accessibility tree, e.g. live regions. */
+.ui-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: clip;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

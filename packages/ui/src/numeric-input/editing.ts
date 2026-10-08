@@ -1,5 +1,11 @@
-/** Calculator-style editing adapted from our workoutTracker numeric keypad. */
+/**
+ * Calculator-style editing adapted from our workoutTracker numeric keypad.
+ *
+ * Values are non-negative: the keypad has no minus key and `validNumber`
+ * rejects a sign, so `min` must be 0 or greater.
+ */
 export type NumericLimits = Readonly<{
+  /** Smallest accepted value; non-negative. */
   min: number;
   max: number;
   decimals: number;
@@ -26,8 +32,11 @@ export function editNumber(
   return { text, fresh: false };
 }
 
-function exceedsPrecision(text: string, decimals: number): boolean {
-  return (text.split(".")[1]?.length ?? 0) > decimals;
+/** Whether `text` has more fraction digits, or a point, than `decimals` allows. */
+export function exceedsPrecision(text: string, decimals: number): boolean {
+  const fraction = text.split(".")[1];
+  if (fraction === undefined) return false;
+  return decimals === 0 || fraction.length > decimals;
 }
 
 function appendDecimal(
@@ -53,17 +62,74 @@ export function validNumber(
   return value;
 }
 
+/** Explains why a draft cannot be confirmed, or invites a replacement. */
+export function numericHint(
+  draft: NumericDraft,
+  limits: NumericLimits,
+  unit: string,
+): string {
+  const range = `from ${limits.min} to ${limits.max}${unit ? ` ${unit}` : ""}`;
+  if (validNumber(draft.text, limits) !== null)
+    return draft.fresh
+      ? "Type a new value to replace this one."
+      : "Ready when you are.";
+  if (!limits.decimals) return `Enter a whole number ${range}.`;
+  if (exceedsPrecision(draft.text, limits.decimals))
+    return `Enter a value with up to ${limits.decimals} decimal ${limits.decimals === 1 ? "place" : "places"} ${range}.`;
+  return `Enter a value ${range}.`;
+}
+
+export function pasteHint(limits: NumericLimits): string {
+  const kind = limits.decimals
+    ? `a number with up to ${limits.decimals} decimal places`
+    : "a whole number";
+  return `Paste ${kind} from ${limits.min} to ${limits.max}.`;
+}
+
+const maxStepDecimals = 10;
+
+/** Decimal places needed to write `step` exactly, up to a fixed cap. */
+function decimalPlaces(step: number): number {
+  let places = 0;
+  while (
+    places < maxStepDecimals &&
+    Math.abs(Math.round(step * 10 ** places) - step * 10 ** places) > 1e-9
+  )
+    places += 1;
+  return places;
+}
+
+function greatestCommonDivisor(a: number, b: number): number {
+  return b === 0 ? a : greatestCommonDivisor(b, a % b);
+}
+
+/**
+ * Up to eight quick picks around `value`. Every preset is a multiple of
+ * `presetStep` and representable with `decimals`: when the step is finer than
+ * the precision allows (2.5 with whole numbers), the grid widens to the
+ * smallest common multiple (5), so presets never round off the grid or repeat.
+ */
 export function numericPresets(
   value: string | number,
   limits: NumericLimits,
 ): number[] {
+  if (!Number.isFinite(limits.presetStep) || limits.presetStep <= 0) return [];
+  const scale = Math.max(decimalPlaces(limits.presetStep), limits.decimals);
+  const step = Math.round(limits.presetStep * 10 ** scale);
+  const unit = 10 ** (scale - limits.decimals);
+  const grid = (step / greatestCommonDivisor(step, unit)) * unit;
+  const at = (index: number) => (index * grid) / 10 ** scale;
   const parsed =
     validNumber(String(value).replace(",", "."), limits) ?? limits.min;
-  const center = Math.round(parsed / limits.presetStep);
-  const first = Math.max(Math.ceil(limits.min / limits.presetStep), center - 3);
-  return Array.from({ length: 8 }, (_, index) =>
-    Number(((first + index) * limits.presetStep).toFixed(limits.decimals)),
-  ).filter((preset) => preset >= limits.min && preset <= limits.max);
+  const lowest = Math.ceil((limits.min * 10 ** scale) / grid - 1e-9);
+  const highest = Math.floor((limits.max * 10 ** scale) / grid + 1e-9);
+  const center = Math.round((parsed * 10 ** scale) / grid);
+  const first = Math.max(lowest, Math.min(center - 3, highest - 7));
+  const last = Math.min(highest, first + 7);
+  const presets = Array.from({ length: Math.max(0, last - first + 1) }, (_, i) =>
+    at(first + i),
+  ).filter((preset) => validNumber(String(preset), limits) !== null);
+  return [...new Set(presets)];
 }
 
 export function replaceNumber(
