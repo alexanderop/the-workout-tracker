@@ -3,6 +3,7 @@ import { computed, ref, useTemplateRef, watch } from "vue";
 import { BaseSheet, BaseButton } from "@form/ui";
 import CompletedWorkoutEditor from "./CompletedWorkoutEditor.vue";
 import WorkoutNameRecovery from "./WorkoutNameRecovery.vue";
+import DetachedInputNotice from "./DetachedInputNotice.vue";
 import WorkoutDialogsSetOptions from "./WorkoutDialogsSetOptions.vue";
 import WorkoutDialogsTemplates from "./WorkoutDialogsTemplates.vue";
 import WorkoutDialogsExercisePicker from "./WorkoutDialogsExercisePicker.vue";
@@ -208,6 +209,10 @@ defineExpose({
 
 <template>
   <WorkoutNameRecovery :controller="workspace.workoutName" />
+  <DetachedInputNotice
+    :entries="training.detached.value"
+    :dismiss="training.dismissDetached"
+  />
   <WorkoutDialogsSetOptions
     :row="optionRow"
     :saving="saving"
