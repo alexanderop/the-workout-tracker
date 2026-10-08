@@ -27,6 +27,9 @@ const trend = computed(
     progress.value.find((exercise) => exercise.id === progressExercise.value)
       ?.trend ?? [],
 );
+const firstPoint = computed(() =>
+  trend.value.length === 1 ? trend.value[0] : undefined,
+);
 const trendMax = computed(() =>
   Math.max(10, ...trend.value.map((point) => point.weight)),
 );
@@ -109,9 +112,9 @@ const records = computed(() =>
           </option>
         </BaseSelectNative>
       </div>
-      <div v-if="trend.length === 1" class="first-progress-point">
-        <strong>{{ fmt(trend[0]!.weight) }} <span>kg</span></strong>
-        <p class="muted">Your starting point · {{ shortDate(trend[0]!.at) }}</p>
+      <div v-if="firstPoint" class="first-progress-point">
+        <strong>{{ fmt(firstPoint.weight) }} <span>kg</span></strong>
+        <p class="muted">Your starting point · {{ shortDate(firstPoint.at) }}</p>
         <p class="muted small">
           Log this exercise in another workout to see your trend.
         </p>

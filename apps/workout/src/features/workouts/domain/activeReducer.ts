@@ -215,7 +215,8 @@ export function reduceActive(
             targetReps: command.values.reps,
           };
         });
-      const previous = exercise.sets.at(-1)!;
+      const previous = exercise.sets.at(-1);
+      if (!previous) return reject("Exercise has no sets.");
       const values = command.values ?? {
         weightKg: previous.weightKg,
         reps: setTargetReps(previous),
@@ -232,7 +233,8 @@ export function reduceActive(
     function addSet(
       command: Extract<Command, { type: "add-set" }>,
     ): Transition {
-      const previous = exercise.sets.at(-1)!;
+      const previous = exercise.sets.at(-1);
+      if (!previous) return reject("Exercise has no sets.");
       const reps = command.values?.reps ?? setTargetReps(previous);
       return saveExercise({
         ...exercise,

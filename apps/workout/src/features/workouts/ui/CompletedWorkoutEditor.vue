@@ -17,6 +17,10 @@ const { draft, baseline, dirty, pending, state, localError } = editor;
 const rows = computed(
   () => new Map(draft.value.sets.map((set) => [set.setId, set])),
 );
+function updateSet(id: string, field: "weightKg" | "reps", value: string | number) {
+  const row = rows.value.get(id);
+  if (row) row[field] = value;
+}
 const keypadOpen = ref(false);
 useUnsavedChangesWarning(() => dirty.value || keypadOpen.value);
 const discardIntent = ref<"close" | "reload" | "navigate">("close");
@@ -107,7 +111,7 @@ defineExpose({ requestClose, requestLeave });
               <label class="field"
                 ><span>Weight · kg</span
                 ><BaseInputNumber
-                  :model-value="rows.get(set.id)!.weightKg"
+                  :model-value="rows.get(set.id)?.weightKg ?? ''"
                   :label="`${exercise.name} set ${index + 1} weight`"
                   title="Weight"
                   unit="kg"
@@ -118,12 +122,12 @@ defineExpose({ requestClose, requestLeave });
                   :disabled="pending"
                   @open="keypadOpen = true"
                   @close="keypadOpen = false"
-                  @update:model-value="rows.get(set.id)!.weightKg = $event"
+                  @update:model-value="updateSet(set.id, 'weightKg', $event)"
               /></label>
               <label class="field"
                 ><span>Reps</span
                 ><BaseInputNumber
-                  :model-value="rows.get(set.id)!.reps"
+                  :model-value="rows.get(set.id)?.reps ?? ''"
                   :label="`${exercise.name} set ${index + 1} reps`"
                   title="Reps"
                   :min="0"
@@ -131,7 +135,7 @@ defineExpose({ requestClose, requestLeave });
                   :disabled="pending"
                   @open="keypadOpen = true"
                   @close="keypadOpen = false"
-                  @update:model-value="rows.get(set.id)!.reps = $event"
+                  @update:model-value="updateSet(set.id, 'reps', $event)"
               /></label>
             </template>
             <p v-else class="unlogged muted">

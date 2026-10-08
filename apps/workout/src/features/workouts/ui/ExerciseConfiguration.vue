@@ -63,16 +63,16 @@ const logged = computed(
 const targets = computed(() =>
   remaining.value.length ? remaining.value : (exercise?.sets ?? []),
 );
-const repsSummary = computed(() =>
-  new Set(targets.value.map(setTargetReps)).size === 1
-    ? `${setTargetReps(targets.value[0]!)} reps`
-    : "Mixed reps",
-);
-const weightSummary = computed(() =>
-  new Set(targets.value.map((set) => set.weightKg)).size === 1
-    ? `${fmt(targets.value[0]!.weightKg)} kg`
-    : "Mixed kg",
-);
+const sameValue = <T,>(values: T[]) =>
+  new Set(values).size === 1 ? values[0] : undefined;
+const repsSummary = computed(() => {
+  const reps = sameValue(targets.value.map(setTargetReps));
+  return reps === undefined ? "Mixed reps" : `${reps} reps`;
+});
+const weightSummary = computed(() => {
+  const weight = sameValue(targets.value.map((set) => set.weightKg));
+  return weight === undefined ? "Mixed kg" : `${fmt(weight)} kg`;
+});
 const catalog = computed(() =>
   Object.values(workspace.snapshot.value?.exercises ?? {}).filter(
     (item) => item.id !== exercise?.exerciseId,
@@ -86,8 +86,8 @@ const title = computed(
     `${{ actions: "", configure: "Configure ", note: "Note for ", replace: "Replace " }[view.value]}${exercise?.name ?? "Exercise"}`,
 );
 function reset() {
-  if (!exercise) return;
-  const first = remaining.value[0] ?? exercise.sets[0]!;
+  const first = remaining.value[0] ?? exercise?.sets[0];
+  if (!exercise || !first) return;
   count.value = String(exercise.sets.length);
   reps.value = String(setTargetReps(first));
   weight.value = String(first.weightKg);
@@ -247,7 +247,7 @@ function saveReplacement() {
         <BaseButton
           variant="secondary"
           :disabled="workspace.saving.value"
-          @click="emit('edit', exercise.sets[0]!.id)"
+          @click="exercise.sets[0] && emit('edit', exercise.sets[0].id)"
           ><List :size="18" />Edit sets</BaseButton
         >
         <BaseButton

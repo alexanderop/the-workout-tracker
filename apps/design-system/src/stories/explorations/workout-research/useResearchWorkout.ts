@@ -4,12 +4,16 @@ import bench from "../../../assets/exercises/bench-press.png";
 import row from "../../../assets/exercises/seated-row.png";
 import press from "../../../assets/exercises/shoulder-press.png";
 
-function createExercises() {
+function createExercise(name: string, weight: number, image: string, index: number) {
+  return { name, weight, image, sets: Array.from({ length: 3 }, (_, set): DemoSet => ({ id: index * 3 + set, weight, reps: 8, logged: index === 0 && set === 0 })) };
+}
+type DemoExercise = ReturnType<typeof createExercise>;
+function createExercises(): [DemoExercise, ...DemoExercise[]] {
   return [
-    { name: "Bench press", weight: 60, image: bench },
-    { name: "Seated row", weight: 45, image: row },
-    { name: "Shoulder press", weight: 20, image: press },
-  ].map((exercise, index) => ({ ...exercise, sets: Array.from({ length: 3 }, (_, set): DemoSet => ({ id: index * 3 + set, weight: exercise.weight, reps: 8, logged: index === 0 && set === 0 })) }));
+    createExercise("Bench press", 60, bench, 0),
+    createExercise("Seated row", 45, row, 1),
+    createExercise("Shoulder press", 20, press, 2),
+  ];
 }
 function isValid(set: DemoSet) {
   const weight = Number(set.weight);
@@ -23,7 +27,7 @@ export function useResearchWorkout() {
   const review = ref(false);
   const notice = ref("Demo only. Confirming a number does not log a set.");
   const lastId = ref<number>();
-  const exercise = computed(() => exercises.value[selected.value] ?? exercises.value[0]!);
+  const exercise = computed(() => exercises.value[selected.value] ?? exercises.value[0]);
   const current = computed(() => exercise.value.sets.find(set => !set.logged));
   const setNumber = computed(() => exercise.value.sets.findIndex(set => !set.logged) + 1);
   const logged = computed(() => exercises.value.flatMap(item => item.sets).filter(set => set.logged));

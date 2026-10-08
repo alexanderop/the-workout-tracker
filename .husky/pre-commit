@@ -1,1 +1,2 @@
 pnpm verify
+node tooling/lint/ratchet.mjs

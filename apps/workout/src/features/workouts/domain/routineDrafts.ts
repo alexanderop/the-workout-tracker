@@ -36,12 +36,12 @@ export function compareRoutineBaseline(
     baseline.description === saved.description &&
     baseline.exercises.length === saved.exercises.length &&
     baseline.exercises.every((entry, index) => {
-      const current = saved.exercises[index]!;
-      return entry.exerciseId === current.exerciseId &&
+      const current = saved.exercises[index];
+      return entry.exerciseId === current?.exerciseId &&
         entry.sets.length === current.sets.length &&
         entry.sets.every((set, setIndex) =>
-          set.weightKg === current.sets[setIndex]!.weightKg &&
-          set.reps === current.sets[setIndex]!.reps,
+          set.weightKg === current.sets[setIndex]?.weightKg &&
+          set.reps === current.sets[setIndex]?.reps,
         );
     });
   return unchanged ? "unchanged" : "changed";

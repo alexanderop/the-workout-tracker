@@ -60,11 +60,12 @@ export function useTrainingDrafts(options: {
     }
     const session = snapshot.active;
     const present = new Set<string>();
-    for (const exercise of session?.exercises ?? [])
-      for (const [index, set] of exercise.sets.entries()) {
-        present.add(set.id);
-        synchronizeRow(session!.id, snapshot.revision, exercise, index, set);
-      }
+    if (session)
+      for (const exercise of session.exercises)
+        for (const [index, set] of exercise.sets.entries()) {
+          present.add(set.id);
+          synchronizeRow(session.id, snapshot.revision, exercise, index, set);
+        }
     for (const [id, row] of rows)
       if (!present.has(id)) {
         consume(row);
@@ -171,11 +172,12 @@ export function useTrainingDrafts(options: {
   }
   function useSaved(setId: string) {
     const row = rows.get(setId);
-    if (!row) return;
+    const session = active.value;
+    if (!row || !session) return;
     try {
       row.records = [
         ...row.records,
-        ...options.journal.recover(active.value!.id, setId),
+        ...options.journal.recover(session.id, setId),
       ];
     } catch {
       // Consume what is already known; unseen records surface on next check.

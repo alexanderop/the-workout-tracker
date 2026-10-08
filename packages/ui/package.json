@@ -13,7 +13,7 @@
   "scripts": {
     "typecheck": "vue-tsc --noEmit",
     "lint": "oxlint src test --deny-warnings",
-    "test:unit": "vitest run --project unit",
+    "test:unit": "vitest run --project unit --coverage",
     "test:browser": "vitest run --project browser"
   },
   "peerDependencies": {
@@ -28,6 +28,7 @@
     "@types/node": "^26.6.4",
     "@vitejs/plugin-vue": "^6.0.9",
     "@vitest/browser-playwright": "5.0.3",
+    "@vitest/coverage-v8": "5.0.3",
     "axe-core": "^4.14.0",
     "typescript": "^6.0.3",
     "vite": "^8.3.2",

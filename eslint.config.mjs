@@ -8,6 +8,7 @@ import oxlint from "eslint-plugin-oxlint";
 
 export default [
   { ignores: ["apps/workout/src/route-map.d.ts"] },
+  { linterOptions: { reportUnusedDisableDirectives: "error" } },
   ...vue.configs["flat/essential"].map((config) => ({
     ...config,
     files: ["**/*.vue"],
@@ -91,6 +92,7 @@ export default [
       ],
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/no-misused-promises": "error",
+      "@typescript-eslint/no-non-null-assertion": "error",
     },
   },
   {

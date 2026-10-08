@@ -22,6 +22,9 @@ watch(
     confirmation.value = null;
   },
 );
+function forRow(action: (id: string) => unknown) {
+  if (row.value) action(row.value.set.id);
+}
 async function confirm() {
   if (confirmation.value === "discard" && row.value)
     training.useSaved(row.value.set.id);
@@ -58,13 +61,13 @@ async function clear() {
         :current="true"
         :dirty="training.dirty(row)"
         :conflict="training.conflict(row)"
-        @edit="(values) => training.edit(row!.set.id, values)"
-        @commit="training.commit(row!.set.id)"
-        @select="training.selectSet(row!.set.id)"
-        @options="emit('options', row!.set.id)"
-        @discard="training.useSaved(row!.set.id)"
-        @keep="training.keepInput(row!.set.id)"
-        @recover="(draft) => training.chooseDraft(row!.set.id, draft)"
+        @edit="(values) => forRow((id) => training.edit(id, values))"
+        @commit="forRow(training.commit)"
+        @select="forRow(training.selectSet)"
+        @options="forRow((id) => emit('options', id))"
+        @discard="forRow(training.useSaved)"
+        @keep="forRow(training.keepInput)"
+        @recover="(draft) => forRow((id) => training.chooseDraft(id, draft))"
       />
       <BaseButton
         :disabled="busy || !row.touched"
