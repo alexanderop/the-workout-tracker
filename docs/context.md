@@ -64,7 +64,7 @@ A **draft** is recoverable raw weight or repetition input, separate from the con
 
 After draft recovery on opening a workout, selection starts at a pending draft, then the first unfinished exercise, then the first exercise. An explicit selection is retained while that workout remains open; logging does not move it automatically. Reviewing pending sets before finishing selects and focuses the first pending set in workout order.
 
-A draft retains the saved values it was based on. If those values change, the interface asks the user to keep their input against the latest state or adopt the saved values. Recovery failures leave the input visible and report that it may be lost when the page closes. See [training drafts](architecture.md#training-drafts) for revision and acknowledgement rules.
+A draft retains the saved values it was based on. If those values change, the interface asks the user to keep their input against the latest state or adopt the saved values. Recovery failures leave the input visible and report that it may be lost when the page closes. If the workout is finished, in this or another tab, while a set still has input that differs from what was saved, that input is not applied to the completed workout and is not discarded. A notice lists it until the user dismisses it, including after reload; the user can copy the values into the completed workout through its editor. See [training drafts](architecture.md#training-drafts) for revision and acknowledgement rules.
 
 ## Snapshot, revision, and conflict
 
@@ -86,4 +86,4 @@ A **recovery export** preserves unreadable stored data for recovery. It does not
 
 Settings can delete the journal in this browser after explicit confirmation. It removes completed workouts, the active workout, templates, custom exercises and input drafts, and restores default preferences and the built-in exercise catalog. Downloaded backup files and data on other devices are unaffected. The confirmed snapshot retains an increasing revision so older tabs cannot overwrite the deletion. An empty default journal can restore a backup even after deletion.
 
-Confirmed data and input drafts use separate storage systems. If draft cleanup fails after the journal was deleted, the app reports that partial outcome and offers retry. Retrying still checks the reviewed revision, so another tab's newer changes require a fresh confirmation. Nonpersonal revision markers remain to prevent stale tabs from recreating deleted drafts.
+Confirmed data and input drafts use separate storage systems. If draft cleanup fails after the journal was deleted, the app reports that partial outcome and offers retry. Retrying still checks the reviewed revision, so another tab's newer changes require a fresh confirmation. A nonpersonal revision marker remains to prevent stale tabs from recreating deleted drafts. A stale tab that tries to save input after a deletion is asked to reload.
