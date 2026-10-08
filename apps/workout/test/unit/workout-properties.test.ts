@@ -431,10 +431,14 @@ function applyChanged(snapshot: Snapshot, command: Command, id: () => string) {
   return transition.kind === "changed" ? transition.snapshot : snapshot;
 }
 
+// Hundreds of generated journeys take several seconds on CI with coverage
+// instrumentation; the default 5s timeout would make the suite flaky.
+const PROPERTY_TIMEOUT_MS = 60_000;
+
 describe("given random workout journeys", () => {
   it("should accept valid commands, keep history and preserve logged work", () => {
     fc.assert(fc.property(journeyArbitrary, runJourney), { numRuns: 300 });
-  });
+  }, PROPERTY_TIMEOUT_MS);
 
   it("should log any unlogged set with entered values and restore its target when undone", () => {
     let exercised = 0;
@@ -487,5 +491,5 @@ describe("given random workout journeys", () => {
     );
     // Journeys without an unlogged set skip the check; most must reach it.
     expect(exercised).toBeGreaterThanOrEqual(MIN_UNDO_RUNS);
-  });
+  }, PROPERTY_TIMEOUT_MS);
 });
