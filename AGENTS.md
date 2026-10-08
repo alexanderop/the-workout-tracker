@@ -22,24 +22,7 @@ When changing terminology, behavior, ownership, or a workflow, update its author
 
 ## Paper design workspace
 
-The project has a Paper file named **The Workout Tracker — Product design**:
-[Open the project guide](https://app.paper.design/file/01M440C3G4G4K1P2R5FBR3JPKW/p-2-0).
-Use the Paper MCP tools with explicit file ID `01M440C3G4G4K1P2R5FBR3JPKW`; read the Paper guide and inspect the live file before editing. Do not assume the currently open file is this project.
-
-| Page | Page ID |
-| --- | --- |
-| 00 — Start here | `p-2-0` |
-| 01 — Foundations | `p-3-0` |
-| 02 — UI catalog | `p-4-0` |
-| 03 — Current app | `p-1-0` |
-| 04 — Design explorations | `p-5-0` |
-| 05 — User flows | `p-6-0` |
-
-Paper contains visual references and proposals. The [design contract](docs/design.md), Vue components and Histoire remain authoritative for implemented behavior. Paper and code do not automatically synchronize. Token descriptions distinguish existing code palette values from Paper aliases and extracted design references; do not assume all Paper token names exist in app CSS. Copied UI examples are independent copies, not linked component instances.
-
-Last confirmed setup, **2026-10-04**: desktop and mobile welcome screens, 88 tokens with provenance descriptions, the project guide and visual foundations were added. Paper's weekly MCP quota then interrupted setup. Recheck current access and saved content rather than assuming this blocker persists. UI catalog and exploration-page writes were not verified; the core mobile workout flow still needs adding. Inspect before creating duplicates, and recheck the foundations layout after its height adjustment.
-
-The inspected flow is: start workout → select exercises → edit numeric draft → log set / rest → finish → review. Confirming a number is distinct from logging a set; only logged sets contribute to progress. See [domain context](docs/context.md) for the current rules. Detailed local handoff notes from setup are at `/Users/alexanderopalic/.codex/visualizations/2026/10/04/01a10807-6459-71b2-b754-9aa42cf4ec4b/paper-setup-handoff.html` (machine-local, not tracked in this repository).
+For visual design tasks only, use the Paper file described in [Design › Paper design workspace](docs/design.md#paper-design-workspace). Code-only tasks do not need Paper.
 
 ## Priorities
 
@@ -54,11 +37,16 @@ Write clear, maintainable production code. Keep changes focused and dependencies
 - Deliver changes directly on `main` or merge the working branch into `main`; no pull request is required. Follow [Verification and delivery](docs/workflows.md#verification-and-delivery).
 - Clean up subscriptions, event listeners and owned resources.
 - Use `pnpm verify` for type checking and linting only. Do not add tests, formatting checks, standalone architecture checks or production builds to this verification command. Build only when needed to run or deploy the application.
+- Never weaken a guardrail to make a change pass: do not edit lint configs, `tooling/`, hooks, CI, budgets, baselines or coverage thresholds to loosen them. Fix the code, or stop and ask the owner.
 
 ## Enforced correction rules
 
 | Rule | Enforcement |
 | --- | --- |
+| No silenced checks: no `eslint-disable`, `oxlint-disable` or `@ts-*` comments, no skipped or focused tests. | `pnpm lint:guards` ([tooling/lint/no-suppressions.mjs](tooling/lint/no-suppressions.mjs)), run by `pnpm verify`. |
+| No non-null assertions (`value!`) in source or Vue templates. | Oxlint `typescript/no-non-null-assertion`, ESLint for Vue scripts, and `pnpm lint:guards` for templates. |
+| File-size baseline, performance budgets and coverage thresholds only tighten. | [tooling/lint/ratchet.mjs](tooling/lint/ratchet.mjs) in the pre-commit hook and CI. See [Quality limits only tighten](docs/workflows.md#quality-limits-only-tighten). |
+| Unit tests pass with coverage at or above the thresholds. | `pnpm test:unit` in the pre-push hook and CI. |
 | Finish actions preserve unsaved workout names and numeric input, including drafts arriving from another tab. | [Workspace command boundary](apps/workout/src/features/workouts/ui/useWorkoutWorkspace.ts), training journal checks, and [workspace finish regressions](apps/workout/test/unit/workspace-finish.test.ts), run by `pnpm test:unit` locally and in CI. See [ownership](docs/architecture.md#active-workout-integration). |
 
 ## Commands

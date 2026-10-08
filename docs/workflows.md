@@ -8,7 +8,7 @@ When AOP is explicitly requested, use the project [model configuration](../.aop-
 
 ## Add or change a workout command
 
-1. Identify the domain transition in `apps/workout/src/features/workouts/domain.ts`. Extend the validated command model and pure reducer where the behavior belongs. Keep time and generated identities explicit.
+1. Identify the domain transition in `apps/workout/src/features/workouts/domain/`. Add the command to the validated command model in `domain/commands.ts`, allow it in the phase table in `domain/session.ts`, and implement it in `domain/reducer.ts` (journal-level commands) or `domain/activeReducer.ts` (commands on the active workout). Persisted shapes live in `domain/schemas.ts`. `domain.ts` only re-exports; add new public symbols there and nothing else. Keep time and generated identities explicit.
 2. Use `application.ts` for orchestration, revision handling, and explicit results. Keep database access behind `ports.ts`; the UI must not select adapters.
 3. Expose only the necessary API through `index.ts` or `ui.ts`. Wire user actions through the feature UI and its existing shared controllers. Preserve one `useWorkoutWorkspace` instance across navigation.
 4. Handle invalid input, unavailable storage, and conflicts without discarding visible user input. Update the domain context if product meaning changes and architecture if ownership changes.
@@ -83,7 +83,7 @@ Update foundations stories and [design](design.md) when a design rule changes. I
 
 Changes may be committed directly on `main` or merged from a working branch into `main` after the appropriate checks. A pull request is not required; do not create one unless the user explicitly asks for it.
 
-Husky installs the Git hooks through the root `prepare` script when you run `pnpm install`. Before each commit, `.husky/pre-commit` runs `pnpm verify` across the workspace and blocks the commit if type checking or linting fails. The checks read the current working tree, including unstaged changes. Run `pnpm prepare` to reinstall the hooks in an existing checkout.
+Husky installs the Git hooks through the root `prepare` script when you run `pnpm install`. Before each commit, `.husky/pre-commit` runs `pnpm verify` and the [limit ratchet](#quality-limits-only-tighten), and blocks the commit if either fails. Before each push, `.husky/pre-push` runs `pnpm test:unit`, including its coverage thresholds. The checks read the current working tree, including unstaged changes. Run `pnpm prepare` to reinstall the hooks in an existing checkout. Do not bypass hooks with `--no-verify`; CI repeats every check on the pushed commit and reports a skipped hook as a failed run.
 
 `pnpm verify` runs only type checking and linting. Automated tests run through separate commands described in [Testing](#testing). Standalone architecture and workspace checks are optional and remain outside verification. Build only when needed to run or deploy the application; offline and installation behavior require the production preview described in [README.md](../README.md).
 
@@ -98,6 +98,8 @@ Choose a test by the failure it must expose. Keep `pnpm verify` as type checking
 | `pnpm test:unit` | Pure rules and application orchestration in Node |
 | `pnpm test:browser` | Shared UI components and real browser storage adapters in Chrome |
 | `pnpm test:e2e` | Executable Gherkin journeys against the production app build in Chrome |
+
+`test:unit` measures coverage. The workout logic layers (`domain/`, `application.ts`, `ui/*.ts`) and the pure `@form/ui` modules must stay at or above the thresholds in `apps/workout/coverage-thresholds.json` and `packages/ui/coverage-thresholds.json`. Raise a threshold when coverage rises; never lower one. Skipped or focused tests (`.skip`, `.only`, `.fixme`, `.todo`, `@skip`/`@only` tags) fail lint: fix or delete a test explicitly.
 
 Install Chrome with `pnpm --filter @form/workout exec playwright install chrome`. CI installs it before browser execution. The E2E command generates Playwright specs, builds the app with the root base path, and serves it on port 4197. Keep that port free. Generated specs, reports, and traces are ignored by Git. Failed journeys retain traces and screenshots.
 
@@ -177,12 +179,18 @@ Oxlint owns JavaScript/TypeScript rules, supported Vue script rules, and custom 
 - Declare slots explicitly, remove unused props/refs/emits, use PascalCase component references and kebab-case custom events/attributes. Vue's `update:*` model events retain their framework spelling. Use the [component naming contract](#component-names). Only the application root `App` and Histoire story filenames are exempt from the multi-word naming rule.
 - Keep template nesting at most eight levels. A `use*.ts` module must call an imported Vue/VueUse API or another imported composable. This is a structural check, not a proof of lifecycle correctness.
 - Product logging permits `console.warn` and `console.error`, not debug logging.
+- Do not use non-null assertions (`value!`) in source, including Vue templates. Handle the missing case with an early return or an explicit fallback. Tests may use them.
+- Do not silence a check. `eslint-disable`, `oxlint-disable`, `@ts-ignore`, `@ts-expect-error` and `@ts-nocheck` fail `pnpm lint:guards`, which runs outside both linters so a comment cannot switch it off. The generated `apps/workout/src/route-map.d.ts` is the only exception.
 - Keep source files at most 400 lines (`design/file-size`). Files that were already larger are listed at their current size in `tooling/lint/file-size-baseline.json`. That limit only goes down: growing past it fails, and shrinking a file fails until you lower its entry to the new size, or remove the entry once the file is at most 400 lines. Never raise an entry; split the file instead.
 - Keep each awaited effect in application and adapter code in its own `try` (`code-policy/one-effect-per-try`), so a failed read, transition and write produce different results.
 - Do not assign through props or values destructured from them (`code-policy/no-prop-ref-writes`). Call the owner's command or emit an event.
 - Domain, ports and application compile with the ECMAScript library only (`tsconfig.pure.json`, run by `pnpm typecheck:pure`), and the architecture rule allows only ECMAScript built-ins as globals there. Inject anything else.
 
-Run `pnpm lint:oxlint` or `pnpm lint:vue` for focused feedback. Both stages reject warnings. No automated tests, standalone architecture commands, formatting checks, or builds are added to verification.
+### Quality limits only tighten
+
+`tooling/lint/ratchet.mjs` compares the limit files with a base commit and fails when one was loosened: a raised file-size baseline entry or a new one, a raised or removed performance budget, or a lowered or removed coverage threshold. The pre-commit hook compares with `HEAD`; CI compares a push with the commit it replaced and a pull request with its base. Loosening a limit is the repository owner's decision, not an agent's.
+
+Run `pnpm lint:oxlint`, `pnpm lint:vue` or `pnpm lint:guards` for focused feedback. All stages reject warnings. No automated tests, standalone architecture commands, formatting checks, or builds are added to verification.
 
 ## Maintain context
 

@@ -77,7 +77,7 @@ Run `pnpm test` for the unit, browser, and application suites. Install Chrome fo
 
 Run `pnpm performance:check` for a production build, image/bundle size budgets, an offline artwork regression, and mobile Lighthouse audits. CI requires these checks before deployment. See [Performance and offline guardrails](docs/workflows.md#performance-and-offline-guardrails) for thresholds, reports, and local setup. They remain separate from `pnpm verify`.
 
-Commits run only `pnpm verify` automatically through Husky. See [Verification and delivery](docs/workflows.md#verification-and-delivery) for hook setup and behavior.
+Husky runs `pnpm verify` and the limit ratchet before each commit, and `pnpm test:unit` with coverage thresholds before each push. See [Verification and delivery](docs/workflows.md#verification-and-delivery) for hook setup and behavior.
 
 ## Documentation map
 

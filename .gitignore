@@ -9,7 +9,7 @@ test-results/
 
 .histoire/
 
-.audit/*.log
+docs/history/audit/**/*.log
 
 apps/workout/dist-preview/
 apps/design-system/public/product-preview/

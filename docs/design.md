@@ -185,3 +185,22 @@ Selected exercises remain visible by name in a compact review tray even when sea
 Filters open one nested sheet with overview, equipment and muscle-group views. Equipment and group cards apply immediately and return focus to their overview row. Back changes the view; Done or Escape dismisses the sheet and restores the Filters button. Reset filters preserves search and sort. The empty-state Clear search and filters action clears both search and filters. Equipment, group, custom-only and search combine by intersection. Options always come from the complete supplied catalog, including custom values. Alphabetical sorting supports A–Z and Z–A.
 
 Equipment cards reuse explicit local illustrations and EGYM photography. Unknown equipment retains its text label and a generic icon. Muscle cards illustrate the existing broad Chest, Back, Shoulders, Arms, Core and Legs groups through the public `BaseMuscleMap` illustration presentation. Custom groups use a generic figure. These highlights describe filter groups, not per-exercise anatomical involvement. No detailed anatomy classifications, gym profiles, usage counts or exercise-type taxonomy are inferred.
+
+## Paper design workspace
+
+The project has a Paper file named **The Workout Tracker — Product design**:
+[Open the project guide](https://app.paper.design/file/01M440C3G4G4K1P2R5FBR3JPKW/p-2-0).
+Use the Paper MCP tools with explicit file ID `01M440C3G4G4K1P2R5FBR3JPKW`; read the Paper guide and inspect the live file before editing. Do not assume the currently open file is this project.
+
+| Page | Page ID |
+| --- | --- |
+| 00 — Start here | `p-2-0` |
+| 01 — Foundations | `p-3-0` |
+| 02 — UI catalog | `p-4-0` |
+| 03 — Current app | `p-1-0` |
+| 04 — Design explorations | `p-5-0` |
+| 05 — User flows | `p-6-0` |
+
+Paper contains visual references and proposals. The rules in this document, Vue components and Histoire remain authoritative for implemented behavior. Paper and code do not automatically synchronize. Token descriptions distinguish existing code palette values from Paper aliases and extracted design references; do not assume all Paper token names exist in app CSS. Copied UI examples are independent copies, not linked component instances.
+
+The inspected flow is: start workout → select exercises → edit numeric draft → log set / rest → finish → review. Confirming a number is distinct from logging a set; only logged sets contribute to progress. See [domain context](context.md) for the current rules. Before adding Paper content, inspect the live file for existing pages and frames to avoid duplicates.
