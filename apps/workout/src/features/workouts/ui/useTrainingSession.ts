@@ -51,7 +51,8 @@ export function useTrainingSession(options: {
     options.snapshot,
     (snapshot) => {
       if (!snapshot) return;
-      drafts.synchronize(snapshot);
+      const issue = drafts.synchronize(snapshot);
+      if (issue) notice.value = issue;
       invalidateLastLog(snapshot.active?.id);
       selection.restore(snapshot.active?.exercises ?? []);
     },
@@ -151,6 +152,7 @@ export function useTrainingSession(options: {
     const exercise = session?.exercises.find((item) => item.id === exerciseId);
     const row = lastExerciseRow(exercise);
     if (!session || !exercise || options.saving.value) return;
+    if (!recoverUnseenDrafts(session.id)) return;
     const values = addedSetValues(row);
     if (row && (!values || conflict(row))) {
       row.issue =
@@ -359,6 +361,8 @@ export function useTrainingSession(options: {
     useSaved: drafts.useSaved,
     keepInput: drafts.keepInput,
     chooseDraft: drafts.chooseDraft,
+    detached: drafts.detached,
+    dismissDetached: drafts.dismissDetached,
     commit,
     addSet,
     undo,

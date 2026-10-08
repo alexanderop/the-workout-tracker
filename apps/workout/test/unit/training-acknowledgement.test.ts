@@ -22,7 +22,7 @@ function setup() {
     write: writers[0]!.journal.write,
     recover: (sessionId, setId) => writers.flatMap(({ journal }) => journal.recover(sessionId, setId)),
     consume: (records) => writers.forEach(({ journal }) => journal.consume(records)),
-    prune: (snapshot) => writers.forEach(({ journal }) => journal.prune(snapshot)),
+    prune: (snapshot) => writers.flatMap(({ journal }) => journal.prune(snapshot)),
     clearBefore: (revision) => writers.forEach(({ journal }) => journal.clearBefore(revision)),
   };
   let pendingWrite: Promise<void> | undefined;

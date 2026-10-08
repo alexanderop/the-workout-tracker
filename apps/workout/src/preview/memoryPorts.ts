@@ -60,6 +60,22 @@ export function createMemoryStorage(initial: Snapshot): WorkoutStorage {
   };
 }
 
+/** Same signal as the browser journal: a newer deletion obsoleted the draft. */
+export function draftsDeletedError() {
+  const error = new Error("This workout was deleted. Reload before editing.");
+  error.name = "DraftsDeletedError";
+  return error;
+}
+
+/** Drafts of a finished workout's set wait for explicit recovery. */
+export function finishedDraft(draft: SetDraft, snapshot: Snapshot): boolean {
+  return (
+    snapshot.completed[draft.sessionId]?.exercises.some((exercise) =>
+      exercise.sets.some((set) => set.id === draft.setId),
+    ) ?? false
+  );
+}
+
 export function createMemoryDraftJournal(id: () => string): DraftJournal {
   let drafts: SetDraft[] = [];
   let minimumRevision = 0;
@@ -71,14 +87,17 @@ export function createMemoryDraftJournal(id: () => string): DraftJournal {
       owned.clear();
     },
     prune(snapshot) {
+      const finished = drafts.filter((draft) => finishedDraft(draft, snapshot));
       drafts = drafts.filter(
         (draft) =>
           draft.revision >= snapshot.revision ||
+          finished.includes(draft) ||
           (snapshot.active?.id === draft.sessionId &&
             snapshot.active.exercises.some((exercise) =>
               exercise.sets.some((set) => set.id === draft.setId),
             )),
       );
+      return finished.map((draft) => draftSchema.parse(draft));
     },
     recover(sessionId, setId) {
       return drafts
@@ -88,8 +107,7 @@ export function createMemoryDraftJournal(id: () => string): DraftJournal {
         .map((draft) => draftSchema.parse(draft));
     },
     write(input) {
-      if (input.revision < minimumRevision)
-        throw new Error("This workout was deleted. Reload before editing.");
+      if (input.revision < minimumRevision) throw draftsDeletedError();
       const draft = draftSchema.parse({
         ...input,
         id: id(),

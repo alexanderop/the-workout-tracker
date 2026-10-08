@@ -1,42 +1,36 @@
-import type { Snapshot } from "../../src/features/workouts/domain";
+import {
+  snapshotSchema,
+  type Snapshot,
+} from "../../src/features/workouts/domain";
+import {
+  createMemoryStorage as createPreviewStorage,
+  draftsDeletedError,
+  finishedDraft,
+} from "../../src/preview/memoryPorts";
 import type {
   DraftInput,
   SetDraft,
 } from "../../src/features/workouts/domain/drafts";
 import type {
   DraftJournal,
-  LoadState,
   Result,
   WorkoutStorage,
 } from "../../src/features/workouts/ports";
 
+/**
+ * Tests use the same in-memory storage as product previews, so both enforce
+ * the storage contract that `storage-contract.ts` also runs against Dexie.
+ * `current` reports the latest persisted snapshot.
+ */
 export function createMemoryStorage(initial: Snapshot) {
-  let snapshot = initial;
-  let closed = false;
-  const listeners = new Set<(state: LoadState) => void>();
+  const base = createPreviewStorage(initial);
+  let snapshot = snapshotSchema.parse(initial);
   const storage: WorkoutStorage = {
-    async read() {
-      if (closed) return { kind: "unavailable", message: "Storage is closed." };
-      return { kind: "ready", snapshot };
-    },
+    ...base,
     async compareAndSave(expectedRevision, next): Promise<Result> {
-      if (closed) return { kind: "unavailable", message: "Storage is closed." };
-      if (snapshot.revision !== expectedRevision)
-        return { kind: "conflict", snapshot };
-      snapshot = next;
-      for (const listener of listeners) listener({ kind: "ready", snapshot });
-      return { kind: "saved", snapshot };
-    },
-    subscribe(listener) {
-      listeners.add(listener);
-      listener({ kind: "ready", snapshot });
-      return () => {
-        listeners.delete(listener);
-      };
-    },
-    close() {
-      closed = true;
-      listeners.clear();
+      const result = await base.compareAndSave(expectedRevision, next);
+      if (result.kind === "saved") snapshot = result.snapshot;
+      return result;
     },
   };
   return { storage, current: () => snapshot };
@@ -57,14 +51,17 @@ export function createMemoryJournal(
     },
     prune(snapshot) {
       const active = snapshot.active;
+      const finished = drafts.filter((draft) => finishedDraft(draft, snapshot));
       drafts = drafts.filter(
         (draft) =>
           draft.revision >= snapshot.revision ||
+          finished.includes(draft) ||
           (active?.id === draft.sessionId &&
             active.exercises.some((exercise) =>
               exercise.sets.some((set) => set.id === draft.setId),
             )),
       );
+      return finished;
     },
     recover(sessionId, setId) {
       return drafts.filter(
@@ -72,8 +69,7 @@ export function createMemoryJournal(
       );
     },
     write(input: DraftInput) {
-      if (input.revision < minimumRevision)
-        throw new Error("This workout was deleted. Reload before editing.");
+      if (input.revision < minimumRevision) throw draftsDeletedError();
       const draft = { ...input, id: id(), writer: "memory-writer" };
       const key = JSON.stringify([input.sessionId, input.setId]);
       const previous = owned.get(key);

@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
-import { effectScope, ref, type EffectScope } from "vue";
+import { effectScope, nextTick, ref, type EffectScope } from "vue";
 import { createWorkouts } from "../../src/features/workouts/application";
+import type { WorkoutStorage } from "../../src/features/workouts/ports";
 import { useWorkoutWorkspace } from "../../src/features/workouts/ui/useWorkoutWorkspace";
 import { createWorkoutFactory, FIXED_NOW } from "../support/factories";
 import { createMemoryJournal, createMemoryStorage } from "../support/memory-ports";
@@ -69,6 +70,78 @@ describe.each(["workspace", "training"] as const)("%s finish boundary", (entry) 
     expect(storage.current().revision).toBe(1);
     expect(await runner.run({ type: "finish", sessionId: active.id }, 1)).not.toBeNull();
     expect(storage.current().completed[active.id]?.id).toBe(active.id);
+  });
+});
+
+describe("drafts arriving while a finish commits", () => {
+  /** Two tabs share storage and the draft journal; `during` runs inside tab A's commit. */
+  function race() {
+    const factory = createWorkoutFactory("race");
+    const set = factory.set({ completed: true });
+    const active = factory.activeSession({ exercises: [factory.sessionExercise({ sets: [set] })] });
+    const storage = createMemoryStorage(factory.snapshot({ active }));
+    const drafts = createMemoryJournal(factory.id);
+    let during = () => {};
+    const committing: WorkoutStorage = {
+      ...storage.storage,
+      async compareAndSave(revision, snapshot) {
+        during();
+        return storage.storage.compareAndSave(revision, snapshot);
+      },
+    };
+    const open = (target: WorkoutStorage) => {
+      const service = createWorkouts({ storage: target, journal: drafts.journal, now: () => FIXED_NOW, id: factory.id });
+      const scope = effectScope();
+      scopes.push(scope);
+      const workspace = scope.run(() => useWorkoutWorkspace(service, drafts.journal, ref(FIXED_NOW)));
+      if (!workspace) throw new Error("The workspace was not created.");
+      return workspace;
+    };
+    const tabA = open(committing);
+    const tabB = open(storage.storage);
+    return { tabA, tabB, storage, drafts, active, set, open, onCommit: (run: () => void) => (during = run) };
+  }
+
+  it("keeps and surfaces another tab's journal draft instead of pruning it", async () => {
+    const { tabA, storage, drafts, active, set, open, onCommit } = race();
+    onCommit(() => {
+      drafts.journal.write({ sessionId: active.id, setId: set.id, weight: "65", reps: "8", revision: 0, base: set });
+    });
+    expect(await tabA.run({ type: "finish", sessionId: active.id })).not.toBeNull();
+    await nextTick();
+    expect(storage.current().completed[active.id]).toBeDefined();
+    expect(drafts.current().map((draft) => draft.weight)).toEqual(["65"]);
+    expect(tabA.training.detached.value).toMatchObject([
+      { sessionId: active.id, setId: set.id, weight: "65", reps: "8" },
+    ]);
+    expect(tabA.error.value).toContain("Bench press set 1: 65 kg × 8");
+    const reloaded = open(storage.storage);
+    expect(reloaded.training.detached.value).toMatchObject([{ setId: set.id, weight: "65" }]);
+    expect(tabA.training.dismissDetached()).toBe(true);
+    expect(drafts.current()).toEqual([]);
+    expect(tabA.training.detached.value).toEqual([]);
+  });
+
+  it("surfaces a tab's own pending input when another tab finishes the workout", async () => {
+    const { tabA, tabB, drafts, active, set, onCommit } = race();
+    onCommit(() => tabB.training.edit(set.id, { weight: "70" }));
+    expect(await tabA.run({ type: "finish", sessionId: active.id })).not.toBeNull();
+    await nextTick();
+    expect(drafts.current().map((draft) => draft.weight)).toEqual(["70"]);
+    expect(tabB.training.detached.value).toMatchObject([{ setId: set.id, weight: "70" }]);
+    expect(tabB.error.value).toContain("Bench press set 1: 70 kg × 8");
+  });
+
+  it("silently acknowledges finished drafts that match the saved values", async () => {
+    const { tabA, drafts, active, set, onCommit } = race();
+    onCommit(() => {
+      drafts.journal.write({ sessionId: active.id, setId: set.id, weight: "40", reps: "8", revision: 0, base: set });
+    });
+    expect(await tabA.run({ type: "finish", sessionId: active.id })).not.toBeNull();
+    await nextTick();
+    expect(drafts.current()).toEqual([]);
+    expect(tabA.training.detached.value).toEqual([]);
+    expect(tabA.error.value).toBe("");
   });
 });
 

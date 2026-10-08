@@ -24,9 +24,22 @@ export type WorkoutStorage = {
   readonly close: () => void;
 };
 
+/**
+ * `DraftJournal.write` throws an error with this `name` when a newer data
+ * deletion made the draft's revision obsolete. Only a reload recovers.
+ */
+export type DraftsDeletedErrorName = "DraftsDeletedError";
+
 export type DraftJournal = {
   readonly clearBefore: (revision: number) => void;
-  readonly prune: (snapshot: Snapshot) => void;
+  /**
+   * Removes obsolete drafts and returns, without removing them, the drafts
+   * that belong to a set of a finished workout. Such input arrived too late
+   * for the finish and needs explicit recovery.
+   */
+  readonly prune: (
+    snapshot: Snapshot,
+  ) => readonly import("./domain/drafts").SetDraft[];
   readonly recover: (
     sessionId: string,
     setId: string,

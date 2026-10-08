@@ -1,8 +1,9 @@
-import { computed, type Ref } from "vue";
+import { computed, watch, type Ref } from "vue";
 import type { Workouts, DraftJournal, ApplicationCommand } from "../application";
 import { sessionTotals, remainingRestSeconds } from "../domain";
 import { useWorkouts } from "./useWorkouts";
 import { useTrainingSession, type TrainingRow } from "./useTrainingSession";
+import type { DetachedDraft } from "./useDetachedDrafts";
 import { useWorkoutName } from "./useWorkoutName";
 import { duration } from "./presentation";
 /** What the active workout asks of the user next; shared by page and dock. */
@@ -11,6 +12,16 @@ export type TrainingMode =
   | { kind: "next"; row: TrainingRow }
   | { kind: "all-logged" }
   | { kind: "empty" };
+/** Explains input that a finish overtook; the drafts stay recoverable. */
+export function detachedDraftMessage(entries: readonly DetachedDraft[]) {
+  const sets = entries
+    .map(
+      (entry) =>
+        `${entry.exerciseName} set ${entry.index + 1}: ${entry.weight} kg × ${entry.reps}`,
+    )
+    .join("; ");
+  return `Input entered while this workout was finished was not saved: ${sets}. Edit the finished workout to keep it.`;
+}
 export type WorkoutPage =
   "today" | "workouts" | "history" | "exercises" | "progress" | "session" | "settings";
 export function useWorkoutWorkspace(
@@ -41,6 +52,18 @@ export function useWorkoutWorkspace(
     journal,
     run: execute,
   });
+  let surfaced = new Set<string>();
+  // Reported once no save is running, so a save confirmation cannot hide it.
+  watch(
+    () => [training.detached.value, saving.value] as const,
+    ([entries, busy]) => {
+      if (busy) return;
+      const fresh = entries.some((entry) => !surfaced.has(entry.key));
+      surfaced = new Set(entries.map((entry) => entry.key));
+      if (fresh) workouts.fail(detachedDraftMessage(entries));
+    },
+    { immediate: true },
+  );
   async function execute(command: ApplicationCommand, revision?: number) {
     if (command.type === "finish" && workoutName.dirty.value) {
       workouts.fail("Save or cancel your name change before finishing.");

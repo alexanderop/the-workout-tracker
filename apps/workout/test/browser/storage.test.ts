@@ -39,6 +39,29 @@ describe("real IndexedDB workout storage", () => {
     expect((await reopened.compareAndSave(1, saved)).kind).toBe("conflict");
   });
 
+  it("reports stored invalid data for recovery and refuses writes without touching it", async () => {
+    const factory = createWorkoutFactory("browser");
+    const initial = factory.snapshot();
+    const name = `workout-test-${crypto.randomUUID()}`;
+    const raw = { revision: "not a number", completed: "broken" };
+    const seed = new Dexie(name);
+    seed.version(1).stores({ state: "" });
+    await seed.table("state").put(raw, "snapshot");
+    seed.close();
+    const storage = openDexieWorkoutStorage(name, initial);
+    resources.push({ name, adapters: [storage] });
+    const state = await storage.read();
+    expect(state.kind).toBe("recovery");
+    if (state.kind !== "recovery") return;
+    expect(JSON.parse(state.rawExport)).toEqual({ format: "form-workout-recovery", raw });
+    expect((await storage.compareAndSave(0, { ...initial, revision: 1 })).kind).toBe("invalid");
+    expect((await storage.compareAndSave(0, initial)).kind).toBe("invalid");
+    const reopened = new Dexie(name);
+    reopened.version(1).stores({ state: "" });
+    expect(await reopened.table("state").get("snapshot")).toEqual(raw);
+    reopened.close();
+  });
+
   it("retries opening after a failed first open", async () => {
     const factory = createWorkoutFactory("browser");
     const initial = factory.snapshot();
