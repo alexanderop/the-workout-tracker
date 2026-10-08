@@ -69,8 +69,40 @@ export function openDexieWorkoutStorage(
         },
       });
       await table.put(updated, "snapshot");
+    }).catch((error: unknown) => {
+      // Forget a failed attempt so the next call retries the open.
+      initialized = undefined;
+      throw error;
     });
     return initialized;
+  };
+  const commit = async (
+    expectedRevision: number,
+    candidate: Snapshot,
+  ): Promise<Result> => {
+    const current = snapshotSchema.safeParse(await table.get("snapshot"));
+    if (!current.success)
+      return {
+        kind: "invalid",
+        message: "Stored data needs recovery. Export it before making changes.",
+      };
+    if (current.data.revision !== expectedRevision)
+      return { kind: "conflict", snapshot: current.data };
+    if (candidate.revision === expectedRevision) {
+      if (JSON.stringify(candidate) !== JSON.stringify(current.data))
+        return {
+          kind: "invalid",
+          message: "Changed workout data must advance its revision.",
+        };
+      return { kind: "saved", snapshot: current.data };
+    }
+    if (candidate.revision !== expectedRevision + 1)
+      return {
+        kind: "invalid",
+        message: "Workout revisions must advance by one.",
+      };
+    await table.put(candidate, "snapshot");
+    return { kind: "saved", snapshot: candidate };
   };
   const rawRead = async () => {
     await initialize();
@@ -95,40 +127,13 @@ export function openDexieWorkoutStorage(
         return { kind: "invalid", message: "Invalid workout data." };
       try {
         await initialize();
-        if (closed) return closedState;
-        return await database.transaction(
-          "rw",
-          table,
-          async (): Promise<Result> => {
-            const current = snapshotSchema.safeParse(
-              await table.get("snapshot"),
-            );
-            if (!current.success)
-              return {
-                kind: "invalid",
-                message:
-                  "Stored data needs recovery. Export it before making changes.",
-              };
-            if (current.data.revision !== expectedRevision)
-              return { kind: "conflict", snapshot: current.data };
-            if (candidate.data.revision === expectedRevision) {
-              if (
-                JSON.stringify(candidate.data) !== JSON.stringify(current.data)
-              )
-                return {
-                  kind: "invalid",
-                  message: "Changed workout data must advance its revision.",
-                };
-              return { kind: "saved", snapshot: current.data };
-            }
-            if (candidate.data.revision !== expectedRevision + 1)
-              return {
-                kind: "invalid",
-                message: "Workout revisions must advance by one.",
-              };
-            await table.put(candidate.data, "snapshot");
-            return { kind: "saved", snapshot: candidate.data };
-          },
+      } catch {
+        return closed ? closedState : unavailable;
+      }
+      if (closed) return closedState;
+      try {
+        return await database.transaction("rw", table, () =>
+          commit(expectedRevision, candidate.data),
         );
       } catch {
         return closed ? closedState : unavailable;

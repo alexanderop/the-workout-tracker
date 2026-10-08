@@ -39,6 +39,26 @@ describe("real IndexedDB workout storage", () => {
     expect((await reopened.compareAndSave(1, saved)).kind).toBe("conflict");
   });
 
+  it("retries opening after a failed first open", async () => {
+    const factory = createWorkoutFactory("browser");
+    const initial = factory.snapshot();
+    const name = `workout-test-${crypto.randomUUID()}`;
+    // A newer database without the state store makes the first open fail.
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open(name, 100);
+      request.onsuccess = () => {
+        request.result.close();
+        resolve();
+      };
+      request.onerror = () => reject(request.error);
+    });
+    const storage = openDexieWorkoutStorage(name, initial);
+    resources.push({ name, adapters: [storage] });
+    expect((await storage.read()).kind).toBe("unavailable");
+    await Dexie.delete(name);
+    expect(await storage.read()).toEqual({ kind: "ready", snapshot: initial });
+  });
+
   it("allows only one concurrent writer to advance a revision", async () => {
     const { first, second, initial } = isolatedStorage();
     const next = { ...initial, revision: 1, settings: { autoRest: false, restSeconds: 30 } };
