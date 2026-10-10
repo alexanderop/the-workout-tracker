@@ -86,6 +86,17 @@
           preload.href = window.__catalogBase + file;
           document.head.appendChild(preload);
         }
+        // Same for the screen the address hash names. Home also answers to a
+        // missing or unknown hash, which the router redirects there.
+        var routes = window.__routeFiles;
+        if (routes) {
+          var match = /^#\/(\w+)/.exec(location.hash);
+          var route = routes[match && match[1]] ? match[1] : "workouts";
+          var chunk = document.createElement("link");
+          chunk.rel = "modulepreload";
+          chunk.href = routes[route];
+          document.head.appendChild(chunk);
+        }
         if (german) {
           document.documentElement.lang = "de";
           document.querySelector(".startup-shell p").textContent =

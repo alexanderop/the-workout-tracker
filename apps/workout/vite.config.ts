@@ -14,6 +14,33 @@ function previewBase(command: string) {
   return command === "serve" ? "/product-preview/" : "./";
 }
 
+// The route chunk is a dynamic import, so the browser finds it only after the
+// entry has run. index.html starts that download from the address hash
+// instead; this lists the chunk URLs by route name for it.
+function routeChunkFiles(): Plugin {
+  let publicBase = "/";
+  return {
+    name: "route-chunk-files",
+    configResolved(config) {
+      publicBase = config.base;
+    },
+    transformIndexHtml: {
+      order: "post",
+      handler(html, context) {
+        if (!context.bundle) return html;
+        const files = Object.fromEntries(
+          Object.keys(context.bundle).flatMap((name) => {
+            const route = /\/(\w+)Route-[^/]+\.js$/.exec(name)?.[1];
+            return route ? [[route.toLowerCase(), publicBase + name]] : [];
+          }),
+        );
+        const script = `<script>window.__routeFiles=${JSON.stringify(files)};</script>`;
+        return html.replace("</head>", `${script}</head>`);
+      },
+    },
+  };
+}
+
 export default defineConfig(({ mode, command }) => {
   const preview = mode === "design-preview";
   return {
@@ -81,6 +108,7 @@ export default defineConfig(({ mode, command }) => {
       vue(),
       tailwindcss(),
       catalogs(),
+      routeChunkFiles(),
       {
         name: "build-version-meta",
         transformIndexHtml: () => [
