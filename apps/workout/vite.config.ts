@@ -28,9 +28,14 @@ function routeChunkFiles(): Plugin {
       order: "post",
       handler(html, context) {
         if (!context.bundle) return html;
+        // A route is src/pages/<Name>Route.vue, or the page under
+        // src/pages/<name>/ when its file name carries a path parameter.
         const files = Object.fromEntries(
-          Object.keys(context.bundle).flatMap((name) => {
-            const route = /\/(\w+)Route-[^/]+\.js$/.exec(name)?.[1];
+          Object.entries(context.bundle).flatMap(([name, chunk]) => {
+            const id =
+              chunk.type === "chunk" ? (chunk.facadeModuleId ?? "") : "";
+            const match = /\/pages\/(?:(\w+)Route\.vue|(\w+)\/\[\[)/.exec(id);
+            const route = match?.[1] ?? match?.[2];
             return route ? [[route.toLowerCase(), publicBase + name]] : [];
           }),
         );
