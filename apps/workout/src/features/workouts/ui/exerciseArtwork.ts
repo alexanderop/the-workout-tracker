@@ -4,16 +4,18 @@ import { dumbbellArtwork } from "./artwork/dumbbell";
 import { cableArtwork } from "./artwork/cable";
 import { machineArtwork } from "./artwork/machine";
 import { bodyweightArtwork } from "./artwork/bodyweight";
-import type { ArtworkEntry } from "./artwork/types";
 
 // Explicit equipment matches; do not infer artwork for custom exercises.
-const artwork: ReadonlyMap<string, ArtworkEntry> = new Map([
-  ...barbellArtwork,
-  ...dumbbellArtwork,
-  ...cableArtwork,
-  ...machineArtwork,
-  ...bodyweightArtwork,
-]);
+const artwork: ReadonlyMap<
+  string,
+  { name: string; equipment: string; src: string }
+> = new Map(
+  [barbellArtwork, dumbbellArtwork, cableArtwork, machineArtwork, bodyweightArtwork].flatMap((group) =>
+    Object.entries(group).flatMap(([equipment, rows]) =>
+      rows.map(([id, name, src]) => [id, { name, equipment, src }] as const),
+    ),
+  ),
+);
 
 export function exerciseArtwork(exercise: Exercise | undefined): string | undefined {
   if (!exercise || exercise.custom) return undefined;

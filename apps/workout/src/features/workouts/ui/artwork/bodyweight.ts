@@ -14,19 +14,23 @@ import hangingLegRaise from "../assets/exercises/hanging-leg-raise.webp";
 import reverseCrunch from "../assets/exercises/reverse-crunch.webp";
 import deadBug from "../assets/exercises/dead-bug.webp";
 
-export const bodyweightArtwork: ArtworkRows = [
-  ["pull-up", { name: "Pull-up", equipment: "Bodyweight", src: pullUp }],
-  ["ab-wheel-rollout", { name: "Ab wheel rollout", equipment: "Other", src: abWheelRollout }],
-  ["chest-dip", { name: "Chest dip", equipment: "Bodyweight", src: chestDip }],
-  ["back-extension", { name: "Back extension", equipment: "Bodyweight", src: backExtension }],
-  ["push-up", { name: "Push-up", equipment: "Bodyweight", src: pushUp }],
-  ["incline-push-up", { name: "Incline push-up", equipment: "Bodyweight", src: inclinePushUp }],
-  ["chin-up", { name: "Chin-up", equipment: "Bodyweight", src: chinUp }],
-  ["inverted-row", { name: "Inverted row", equipment: "Bodyweight", src: invertedRow }],
-  ["glute-bridge", { name: "Glute bridge", equipment: "Bodyweight", src: gluteBridge }],
-  ["crunch", { name: "Crunch", equipment: "Bodyweight", src: crunch }],
-  ["hanging-knee-raise", { name: "Hanging knee raise", equipment: "Bodyweight", src: hangingKneeRaise }],
-  ["hanging-leg-raise", { name: "Hanging leg raise", equipment: "Bodyweight", src: hangingLegRaise }],
-  ["reverse-crunch", { name: "Reverse crunch", equipment: "Bodyweight", src: reverseCrunch }],
-  ["dead-bug", { name: "Dead bug", equipment: "Bodyweight", src: deadBug }],
-];
+export const bodyweightArtwork: Readonly<Record<string, ArtworkRows>> = {
+  Bodyweight: [
+    ["pull-up", "Pull-up", pullUp],
+    ["chest-dip", "Chest dip", chestDip],
+    ["back-extension", "Back extension", backExtension],
+    ["push-up", "Push-up", pushUp],
+    ["incline-push-up", "Incline push-up", inclinePushUp],
+    ["chin-up", "Chin-up", chinUp],
+    ["inverted-row", "Inverted row", invertedRow],
+    ["glute-bridge", "Glute bridge", gluteBridge],
+    ["crunch", "Crunch", crunch],
+    ["hanging-knee-raise", "Hanging knee raise", hangingKneeRaise],
+    ["hanging-leg-raise", "Hanging leg raise", hangingLegRaise],
+    ["reverse-crunch", "Reverse crunch", reverseCrunch],
+    ["dead-bug", "Dead bug", deadBug],
+  ],
+  Other: [
+    ["ab-wheel-rollout", "Ab wheel rollout", abWheelRollout],
+  ],
+};

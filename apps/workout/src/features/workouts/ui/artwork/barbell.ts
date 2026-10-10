@@ -10,19 +10,21 @@ import barbellRow from "../assets/exercises/barbell-row.webp";
 import barbellCurl from "../assets/exercises/barbell-curl.webp";
 import skullCrusher from "../assets/exercises/skull-crusher.webp";
 
-export const barbellArtwork: ArtworkRows = [
-  ["bench-press", { name: "Bench press", equipment: "Barbell", src: benchPress }],
-  ["squat", { name: "Back squat", equipment: "Barbell", src: squat }],
-  ["front-squat", { name: "Front squat", equipment: "Barbell", src: squat }],
-  ["deadlift", { name: "Deadlift", equipment: "Barbell", src: deadlift }],
-  ["romanian-deadlift", { name: "Romanian deadlift", equipment: "Barbell", src: deadlift }],
-  ["sumo-deadlift", { name: "Sumo deadlift", equipment: "Barbell", src: deadlift }],
-  ["close-grip-bench-press", { name: "Close-grip bench press", equipment: "Barbell", src: benchPress }],
-  ["overhead-press", { name: "Overhead press", equipment: "Barbell", src: overheadPress }],
-  ["incline-bench-press", { name: "Incline bench press", equipment: "Barbell", src: inclineBenchPress }],
-  ["hip-thrust", { name: "Hip thrust", equipment: "Barbell", src: hipThrust }],
-  ["decline-bench-press", { name: "Decline bench press", equipment: "Barbell", src: declineBenchPress }],
-  ["barbell-row", { name: "Barbell row", equipment: "Barbell", src: barbellRow }],
-  ["barbell-curl", { name: "Barbell curl", equipment: "Barbell", src: barbellCurl }],
-  ["skull-crusher", { name: "Skull crusher", equipment: "Barbell", src: skullCrusher }],
-];
+export const barbellArtwork: Readonly<Record<string, ArtworkRows>> = {
+  Barbell: [
+    ["bench-press", "Bench press", benchPress],
+    ["squat", "Back squat", squat],
+    ["front-squat", "Front squat", squat],
+    ["deadlift", "Deadlift", deadlift],
+    ["romanian-deadlift", "Romanian deadlift", deadlift],
+    ["sumo-deadlift", "Sumo deadlift", deadlift],
+    ["close-grip-bench-press", "Close-grip bench press", benchPress],
+    ["overhead-press", "Overhead press", overheadPress],
+    ["incline-bench-press", "Incline bench press", inclineBenchPress],
+    ["hip-thrust", "Hip thrust", hipThrust],
+    ["decline-bench-press", "Decline bench press", declineBenchPress],
+    ["barbell-row", "Barbell row", barbellRow],
+    ["barbell-curl", "Barbell curl", barbellCurl],
+    ["skull-crusher", "Skull crusher", skullCrusher],
+  ],
+};
