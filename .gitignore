@@ -15,3 +15,4 @@ apps/workout/dist-preview/
 apps/design-system/public/product-preview/
 .lighthouseci/
 coverage/
+.test-builds/
