@@ -86,3 +86,58 @@ When(
     await new UpdatesPage(page, request).acceptInAnotherTab(tabs.second());
   },
 );
+
+Then(
+  "this tab was taken over by version 2 without reloading or a prompt",
+  async ({ page, request }) => {
+    const updates = new UpdatesPage(page, request);
+    await updates.expectTakenOverWithoutReload();
+    await updates.expectReloadKnown();
+  },
+);
+
+Then(
+  "this tab was taken over by version 2 without reloading",
+  async ({ page, request }) => {
+    await new UpdatesPage(page, request).expectTakenOverWithoutReload();
+  },
+);
+
+Then(
+  "the template {string} is still open",
+  async ({ page }, name: string) => {
+    await expect(
+      page
+        .getByRole("dialog", { name: "Create template", exact: true })
+        .getByRole("textbox", { name: "Template name", exact: true }),
+    ).toHaveValue(name);
+  },
+);
+
+When("I open Settings in this tab", async ({ page }) => {
+  await page.getByRole("link", { name: "Settings", exact: true }).first().click();
+});
+
+Then(
+  "Settings cannot be opened because this tab's version is gone",
+  async ({ page }) => {
+    await expect(page.getByRole("alert")).toContainText(
+      "This page could not be opened.",
+    );
+  },
+);
+
+When("I close the templates",async ({ page }) => {
+  await page
+    .getByRole("dialog", { name: "Templates", exact: true })
+    .getByRole("button", { name: "Close dialog", exact: true })
+    .click();
+});
+
+Then("this tab offers a reload",async ({ page, request }) => {
+  await new UpdatesPage(page, request).expectReloadOffered();
+});
+
+When("I reload from the update notice", async ({ page, request }) => {
+  await new UpdatesPage(page, request).reload();
+});

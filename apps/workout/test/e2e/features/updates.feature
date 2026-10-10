@@ -43,7 +43,8 @@ Feature: An app update never interrupts a workout
     And I confirm a weight of 50 kilograms
     And version 2 is deployed
     And another tab activates version 2
-    Then the 50 kilogram input is an unlogged draft
+    Then this tab was taken over by version 2 without reloading
+    And the 50 kilogram input is an unlogged draft
     When I reload the workout
     Then the app runs version 2
     And the 50 kilogram input is an unlogged draft
@@ -51,11 +52,26 @@ Feature: An app update never interrupts a workout
     And I open my workout history
     Then my history contains one logged set with 400 kilograms of volume
 
-  Scenario: Updating in another tab keeps an unsaved template
+  Scenario: Updating in another tab leaves this tab alone
     Given I am editing a new template called "Keep this draft"
     And a second tab shows the workouts without an active workout
     When version 2 is deployed
     Then this tab knows an update is waiting
     When I accept the update in the second tab
-    And I dismiss the template using "Escape"
-    Then I can keep editing the template "Keep this draft"
+    Then this tab was taken over by version 2 without reloading or a prompt
+    And the template "Keep this draft" is still open
+    When I dismiss the template using "Escape"
+    And I discard my template changes
+    And I close the templates
+    Then this tab offers a reload
+    When I reload from the update notice
+    Then the app runs version 2
+
+  Scenario: A tab of the old version offers a reload when its next screen is gone
+    Given a second tab shows the workouts without an active workout
+    When version 2 is deployed
+    And I accept the update in the second tab
+    Then this tab was taken over by version 2 without reloading
+    When I open Settings in this tab
+    Then Settings cannot be opened because this tab's version is gone
+    And this tab offers a reload

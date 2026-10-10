@@ -9,7 +9,10 @@ export type Installation = {
   readonly online: Readonly<Ref<boolean>>;
   readonly installed: Readonly<Ref<boolean>>;
   readonly offlineReady: Readonly<Ref<boolean>>;
+  /** A new version is waiting for this tab's user to accept it. */
   readonly needRefresh: Readonly<Ref<boolean>>;
+  /** A new version already runs elsewhere; this tab reloads only on request. */
+  readonly reloadReady: Readonly<Ref<boolean>>;
   readonly installMessage: Readonly<Ref<string>>;
   readonly install: () => Promise<void>;
   readonly updateServiceWorker: (reloadPage?: boolean) => Promise<void>;

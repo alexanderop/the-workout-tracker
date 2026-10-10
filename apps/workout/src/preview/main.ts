@@ -31,6 +31,7 @@ function usePreviewInstallation(): Installation {
     installed: ref(false),
     offlineReady: ref(false),
     needRefresh: ref(false),
+    reloadReady: ref(false),
     installMessage: ref("Installation is unavailable in this design example."),
     install() {
       installOpen.value = true;

@@ -1,5 +1,8 @@
 import { expect, type APIRequestContext, type Page } from "@playwright/test";
 
+/** Browser prompts each tab showed since its document was marked. */
+const prompts = new WeakMap<Page, string[]>();
+
 /**
  * Drives the two-version test server (scripts/serve-e2e.mjs) and observes the
  * service worker the way a user's browser would: through real registrations,
@@ -49,6 +52,12 @@ export class UpdatesPage {
 
   /** Tags the loaded document so a later check can tell if it was replaced. */
   async markDocument() {
+    const seen: string[] = [];
+    prompts.set(this.page, seen);
+    this.page.on("dialog", (dialog) => {
+      seen.push(`${dialog.type()}: ${dialog.message()}`);
+      void dialog.dismiss();
+    });
     await this.page.evaluate(() => {
       const root = document.documentElement;
       root.dataset.sameDocument = "yes";
@@ -98,9 +107,8 @@ export class UpdatesPage {
   /**
    * A second tab asks the waiting worker to take over, as the Update app button
    * does. That button is withheld during an active workout, so this stands in
-   * for any tab or window that activates the new version. Whether this tab then
-   * reloads depends on when its worker listener was attached, so callers assert
-   * only what must hold either way.
+   * for any tab or window that activates the new version. This tab must stay
+   * as it is until its own user chooses to reload.
    */
   async activateFromAnotherTab() {
     const other = await this.page.context().newPage();
@@ -127,39 +135,58 @@ export class UpdatesPage {
     ).toHaveCount(1);
   }
 
-  /**
-   * The user accepts the update in another tab. This tab's worker listener
-   * wants to reload it too, so the browser's "leave this page?" prompt is the
-   * only thing between an unsaved editor and its loss. Declining that prompt
-   * leaves this tab as it was.
-   */
+  /** The user accepts the update in another tab. */
   async acceptInAnotherTab(other: Page) {
-    this.page.on("dialog", (dialog) => void dialog.dismiss());
     await this.expectUpdateOffered(other);
     await this.accept(other);
     await this.expectVersion(other, "2");
-    await this.expectTakeoverSettled();
+  }
+
+  reloadNotice(page: Page = this.page) {
+    return page.getByRole("status").filter({
+      hasText: "Updated — reload when ready.",
+    });
   }
 
   /**
-   * This tab saw the new worker take control. The app's own listener ran first,
-   * so a reload it wants is either under way or was cancelled at the browser's
-   * prompt; what the tab shows afterwards is final.
+   * This tab saw the new worker take control. It neither reloaded nor showed a
+   * browser prompt.
    */
-  private async expectTakeoverSettled() {
-    await expect
+  async expectTakenOverWithoutReload() {    await expect
       .poll(() =>
-        this.page
-          .evaluate(() => {
-            const root = document.documentElement;
-            if (root.dataset.sameDocument !== "yes") return "reloaded";
-            return root.dataset.controllerChanged === "yes"
-              ? "taken over"
-              : "pending";
-          })
-          .catch(() => "reloaded"),
+        this.page.evaluate(
+          () => document.documentElement.dataset.controllerChanged,
+        ),
       )
-      .not.toBe("pending");
+      .toBe("yes");
+    // A reload triggered by the takeover starts a moment after the event.
+    // Waiting inside the page fails if the document is replaced meanwhile.
+    await this.page.evaluate(
+      () => new Promise((settled) => setTimeout(settled, 750)),
+    );
+    await this.expectSameDocument();
+    expect(prompts.get(this.page) ?? []).toEqual([]);
+  }
+
+  /** The reload is offered even while a dialog hides the notice. */
+  async expectReloadKnown() {
+    await expect(
+      this.page.getByRole("button", {
+        name: "Reload app",
+        exact: true,
+        includeHidden: true,
+      }),
+    ).toHaveCount(1);
+  }
+
+  async expectReloadOffered() {
+    await expect(this.reloadNotice()).toBeVisible();
+  }
+
+  async reload() {
+    await this.reloadNotice()
+      .getByRole("button", { name: "Reload app", exact: true })
+      .click();
   }
 
   async discardWorkout() {

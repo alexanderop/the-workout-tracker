@@ -9,7 +9,7 @@ What each automated check proves, how to run it, and what it does not claim. Com
 | `pnpm verify` | Type checking, linting, architecture, boundary and dead-code checks passed |
 | `pnpm test:unit` | 80 shared UI tests and 161 workout tests passed, above the coverage thresholds |
 | `pnpm test:browser` | 44 shared UI tests and 32 workout tests passed in Chrome |
-| `pnpm test:e2e` | 69 journeys passed: 61 in desktop Chrome, 3 in Pixel 7 Chrome, 5 service-worker update journeys |
+| `pnpm test:e2e` | 70 journeys passed: 61 in desktop Chrome, 3 in Pixel 7 Chrome, 6 service-worker update journeys |
 
 The recorded run was on macOS with Google Chrome. The e2e suite also passed with `--repeat-each 3` (207 runs, no failures), which is the check for flaky journeys; the suite itself does not retry.
 
@@ -25,11 +25,10 @@ Each journey runs against a production build in a fresh browser context.
 - An unlogged draft survives a reload while the update still waits.
 - Accepting the update after finishing reloads into version 2 and the logged set is still in history.
 - Another tab that activates the waiting version cannot cost this tab its unlogged draft; after reload the draft is restored, and the set can still be logged and finished.
-- When the update is accepted in a second tab, a tab with an unsaved template keeps it, because the browser's leave prompt stands between the editor and the reload.
+- When the update is accepted in a second tab, a tab with an unsaved template is not reloaded and shows no browser prompt. It keeps the editor open, and after the editor is closed it offers Reload app in an "Updated — reload when ready." notice. Choosing it loads version 2. This scenario fails if the registration code's own reload on takeover is active again.
+- A tab that was taken over and then opens a screen it had not loaded yet cannot fetch that screen's old chunk, because the new precache no longer holds it. It shows the "This page could not be opened" error and the reload notice.
 
 Not claimed: updates on a real deployment path (`/the-workout-tracker/`), update checks on the hourly timer, or behavior in an installed app. The cross-tab draft scenario sends the same message the Update app button sends, because the button is withheld during an active workout.
-
-Known behavior that differs from the design text: [Design](design.md) says the app "reloads only when the user chooses it". The reload is registered in every tab that has seen the waiting worker, so accepting the update in one tab also asks the other open tabs to reload. Unlogged weight and repetitions are restored from the draft journal. Unsaved editors (template, note, name) are protected only by the browser's leave prompt. See [architecture](architecture.md#service-worker-updates-and-tabs).
 
 ### Offline
 

@@ -43,12 +43,33 @@ export function usePwa() {
   const installMessage = ref("");
   let unmounted = false;
   let stopUpdateChecks: (() => void) | undefined;
-  const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
+  // True once this tab's user pressed Update app. Only then may a new
+  // controller reload this tab; in any other tab it only offers a reload.
+  let updateAccepted = false;
+  const reloadReady = ref(false);
+  const registered = useRegisterSW({
+    // The registration code reloads the page on a controller change in every
+    // tab that has seen the waiting worker unless it is given this hook.
+    onNeedReload() {
+      if (!updateAccepted) {
+        reloadReady.value = true;
+        return;
+      }
+      window.location.reload();
+    },
     onRegisteredSW(swUrl, registration) {
       if (!registration || unmounted) return;
       stopUpdateChecks = watchServiceWorkerUpdates(swUrl, registration);
     },
   });
+  const { offlineReady } = registered;
+  const needRefresh = computed(
+    () => registered.needRefresh.value && !reloadReady.value,
+  );
+  function updateServiceWorker() {
+    updateAccepted = true;
+    return registered.updateServiceWorker();
+  }
   const captureInstall = (event: Event) => {
     if (isInstallEvent(event) && !installed.value) {
       installEvent.value = event;
@@ -99,6 +120,7 @@ export function usePwa() {
     installed,
     offlineReady,
     needRefresh,
+    reloadReady,
     installMessage,
     install,
     updateServiceWorker,
