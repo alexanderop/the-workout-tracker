@@ -51,21 +51,27 @@ for (const file of files) {
     failures.push(`Unoptimized raster emitted in assets: ${file}`);
   }
 }
-const artworkPath = resolve(
-  root,
-  "src/features/workouts/ui/exerciseArtwork.ts",
-);
-const artwork = await readFile(artworkPath, "utf8");
-const imports = [
-  ...artwork.matchAll(/from\s+["'](\.\/assets\/exercises\/[^"']+)["']/g),
-].map((match) => match[1]);
+const artworkDirectory = resolve(root, "src/features/workouts/ui/artwork");
+const imports = (
+  await Promise.all(
+    (await filesIn(artworkDirectory))
+      .filter((file) => extname(file) === ".ts")
+      .map(async (file) =>
+        [
+          ...(await readFile(file, "utf8")).matchAll(
+            /from\s+["'](\.\.\/assets\/exercises\/[^"']+)["']/g,
+          ),
+        ].map((match) => match[1]),
+      ),
+  )
+).flat();
 if (!imports.length)
   throw new Error("No exercise artwork imports found; audit would be empty");
 let exerciseImageBytes = 0;
 for (const source of imports) {
   if (!source.endsWith(".webp"))
     failures.push(`Exercise artwork must use WebP: ${source}`);
-  const path = resolve(root, "src/features/workouts/ui", source);
+  const path = resolve(artworkDirectory, source);
   const bytes = (await stat(path)).size;
   exerciseImageBytes += bytes;
   if (bytes > budgets.singleExerciseImageBytes)
