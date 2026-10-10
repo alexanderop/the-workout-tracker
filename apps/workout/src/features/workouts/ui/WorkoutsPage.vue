@@ -15,7 +15,8 @@ import {
   type Routine,
   type CompletedSession,
 } from "../domain";
-import { fmt, sessionMinutes, shortDate } from "./presentation";
+import { useFormat, useTranslation } from "../../../i18n";
+import { sessionMinutes } from "./presentation";
 import WorkoutCalendar from "./WorkoutCalendar.vue";
 const {
   routines,
@@ -38,6 +39,8 @@ const emit = defineEmits<{
 const tab = defineModel<"home" | "history" | "templates">("view", {
   default: "home",
 });
+const { t } = useTranslation();
+const format = useFormat();
 const search = ref("");
 const latest = computed(() => allHistory[0]);
 const isFreshJournal = computed(
@@ -57,26 +60,37 @@ const history = computed(() =>
         :now="now"
         @detail="emit('detail', $event)"
       >
-        <h1>Workouts</h1>
+        <h1>{{ t("workouts.home.title") }}</h1>
       </WorkoutCalendar>
       <section v-if="active" class="active-workout-card">
-        <span class="active-label"><i aria-hidden="true" />IN PROGRESS</span>
+        <span class="active-label"
+          ><i aria-hidden="true" />{{ t("workouts.home.inProgress") }}</span
+        >
         <h2>{{ active.name }}</h2>
         <p>
-          {{ active.exercises.length }} exercises ·
-          {{ sessionTotals(active).completedSets }}
-          {{ sessionTotals(active).completedSets === 1 ? "set" : "sets" }} logged
+          {{
+            t("workouts.home.activeSummary", {
+              exercises: t(
+                "workouts.home.exerciseCount",
+                active.exercises.length,
+              ),
+              sets: t(
+                "workouts.home.setsLogged",
+                sessionTotals(active).completedSets,
+              ),
+            })
+          }}
         </p>
         <BaseButton
           unstyled
           class="btn primary"
           @click="emit('navigate', 'session')"
-          >Continue workout<ArrowRight :size="18"
+          >{{ t("workouts.home.continueWorkout") }}<ArrowRight :size="18"
         /></BaseButton>
       </section>
       <section v-else class="home-start">
         <p v-if="isFreshJournal" class="muted">
-          Choose an exercise and log your first set.
+          {{ t("workouts.home.firstHint") }}
         </p>
         <BaseButton
           unstyled
@@ -84,15 +98,17 @@ const history = computed(() =>
           :disabled="saving"
           @click="emit('start', null)"
           ><Plus :size="18" />{{
-            isFreshJournal ? "Start your first workout" : "Start workout"
+            isFreshJournal
+              ? t("workouts.home.startFirst")
+              : t("workouts.home.start")
           }}</BaseButton
         >
       </section>
-      <section class="latest-workout" aria-label="Latest workout">
+      <section class="latest-workout" :aria-label="t('workouts.home.latest')">
         <div class="latest-heading">
-          <h2>Latest workout</h2>
+          <h2>{{ t("workouts.home.latest") }}</h2>
           <BaseButton unstyled class="text-button" @click="tab = 'history'"
-            >View history<ChevronRight :size="16"
+            >{{ t("workouts.home.viewHistory") }}<ChevronRight :size="16"
           /></BaseButton>
         </div>
         <article v-if="latest" class="workout-history-card">
@@ -101,22 +117,29 @@ const history = computed(() =>
             class="history-card-title"
             @click="emit('detail', latest.id)"
             ><span
-              ><small class="muted">{{ shortDate(latest.finishedAt) }}</small
+              ><small class="muted">{{
+                format.shortDate(latest.finishedAt)
+              }}</small
               ><strong>{{ latest.name }}</strong></span
             ><ChevronRight :size="18"
           /></BaseButton>
           <div class="history-metrics">
-            <span>{{ sessionMinutes(latest) }} <small>min</small></span
+            <span
+              >{{ sessionMinutes(latest) }}
+              <small>{{ t("workouts.metrics.minutes") }}</small></span
             ><span
               >{{ sessionTotals(latest).completedSets }}
-              <small>sets</small></span
+              <small>{{
+                t("workouts.metrics.sets", sessionTotals(latest).completedSets)
+              }}</small></span
             ><span
-              >{{ fmt(sessionTotals(latest).volumeKg) }} <small>kg</small></span
+              >{{ format.number(sessionTotals(latest).volumeKg) }}
+              <small>{{ t("workouts.metrics.kilograms") }}</small></span
             >
           </div>
         </article>
         <p v-else class="muted home-empty">
-          Your completed workouts will appear here.
+          {{ t("workouts.home.latestEmpty") }}
         </p>
       </section>
       <BaseButton
@@ -124,7 +147,8 @@ const history = computed(() =>
         id="workout-templates"
         class="btn secondary templates-link"
         @click="tab = 'templates'"
-        ><Bookmark :size="18" />Templates <span>{{ routines.length }}</span
+        ><Bookmark :size="18" />{{ t("workouts.home.templates") }}
+        <span>{{ routines.length }}</span
         ><ChevronRight :size="16"
       /></BaseButton>
     </template>
@@ -133,19 +157,21 @@ const history = computed(() =>
         unstyled
         class="text-button history-back"
         @click="tab = 'home'"
-        ><ArrowLeft :size="18" />Back to workouts</BaseButton
+        ><ArrowLeft :size="18" />{{ t("workouts.history.back") }}</BaseButton
       >
-      <header class="dashboard-heading"><h1>History</h1></header>
+      <header class="dashboard-heading">
+        <h1>{{ t("workouts.history.title") }}</h1>
+      </header>
       <div v-if="allHistory.length" class="search-field history-search">
         <Search :size="17" /><BaseInput
           v-model="search"
-          aria-label="Search workout history"
-          placeholder="Find a past workout"
+          :aria-label="t('workouts.history.searchLabel')"
+          :placeholder="t('workouts.history.searchPlaceholder')"
         />
       </div>
       <div v-if="!allHistory.length" class="overview-empty">
         <p class="muted">
-          Your completed workouts will appear here, ready to repeat.
+          {{ t("workouts.history.empty") }}
         </p>
       </div>
       <div v-else class="workout-history-grid">
@@ -160,7 +186,9 @@ const history = computed(() =>
             @click="emit('detail', session.id)"
           >
             <span
-              ><small class="muted">{{ shortDate(session.finishedAt) }}</small
+              ><small class="muted">{{
+                format.shortDate(session.finishedAt)
+              }}</small
               ><strong>{{ session.name }}</strong></span
             ><ChevronRight :size="18" />
           </BaseButton>
@@ -168,18 +196,22 @@ const history = computed(() =>
             {{ session.exercises.map((exercise) => exercise.name).join(" · ") }}
           </p>
           <div class="history-metrics">
-            <span>{{ sessionMinutes(session) }} <small>min</small></span
+            <span
+              >{{ sessionMinutes(session) }}
+              <small>{{ t("workouts.metrics.minutes") }}</small></span
             ><span
               >{{ sessionTotals(session).completedSets }}
-              <small>sets</small></span
+              <small>{{
+                t("workouts.metrics.sets", sessionTotals(session).completedSets)
+              }}</small></span
             ><span
-              >{{ fmt(sessionTotals(session).volumeKg) }}
-              <small>kg</small></span
+              >{{ format.number(sessionTotals(session).volumeKg) }}
+              <small>{{ t("workouts.metrics.kilograms") }}</small></span
             >
           </div>
         </article>
         <p v-if="!history.length" class="muted">
-          No workouts match your search.
+          {{ t("workouts.history.noMatches") }}
         </p>
       </div>
     </template>

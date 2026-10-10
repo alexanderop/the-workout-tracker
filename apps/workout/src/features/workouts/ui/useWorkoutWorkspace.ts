@@ -1,4 +1,5 @@
 import { computed, watch, type Ref } from "vue";
+import type { Translate } from "../../../i18n";
 import type { Workouts, DraftJournal, ApplicationCommand } from "../application";
 import { sessionTotals, remainingRestSeconds } from "../domain";
 import { useWorkouts } from "./useWorkouts";
@@ -13,23 +14,35 @@ export type TrainingMode =
   | { kind: "all-logged" }
   | { kind: "empty" };
 /** Explains input that a finish overtook; the drafts stay recoverable. */
-function detachedDraftMessage(entries: readonly DetachedDraft[]) {
+function detachedDraftMessage(
+  entries: readonly DetachedDraft[],
+  t: Translate,
+) {
   const sets = entries
-    .map(
-      (entry) =>
-        `${entry.exerciseName} set ${entry.index + 1}: ${entry.weight} kg × ${entry.reps}`,
+    .map((entry) =>
+      t("errors.failures.detachedDraftSet", {
+        exercise: entry.exerciseName,
+        index: entry.index + 1,
+        weight: entry.weight,
+        reps: entry.reps,
+      }),
     )
     .join("; ");
-  return `Input entered while this workout was finished was not saved: ${sets}. Edit the finished workout to keep it.`;
+  return t("errors.failures.detachedDraft", { sets });
 }
 export type WorkoutPage =
   "today" | "workouts" | "history" | "exercises" | "progress" | "session" | "settings";
+/** The clock and the translator the workspace reads; tests pass fixed ones. */
+export type WorkspaceEnvironment = {
+  readonly now: Readonly<Ref<number>>;
+  readonly t: Translate;
+};
 export function useWorkoutWorkspace(
   service: Workouts,
   journal: DraftJournal,
-  now: Readonly<Ref<number>>,
+  { now, t }: WorkspaceEnvironment,
 ) {
-  const workouts = useWorkouts(service);
+  const workouts = useWorkouts(service, t);
   const { snapshot, saving } = workouts;
   const routines = computed(() =>
     Object.values(snapshot.value?.routines ?? {}),
@@ -45,12 +58,19 @@ export function useWorkoutWorkspace(
     ),
   );
   const active = computed(() => snapshot.value?.active ?? null);
-  const workoutName = useWorkoutName({ active, snapshot, run: execute, saving });
+  const workoutName = useWorkoutName({
+    active,
+    snapshot,
+    run: execute,
+    saving,
+    t,
+  });
   const training = useTrainingSession({
     snapshot,
     saving,
     journal,
     run: execute,
+    t,
   });
   let surfaced = new Set<string>();
   // Reported once no save is running, so a save confirmation cannot hide it.
@@ -60,13 +80,13 @@ export function useWorkoutWorkspace(
       if (busy) return;
       const fresh = entries.some((entry) => !surfaced.has(entry.key));
       surfaced = new Set(entries.map((entry) => entry.key));
-      if (fresh) workouts.fail(detachedDraftMessage(entries));
+      if (fresh) workouts.fail(detachedDraftMessage(entries, t));
     },
     { immediate: true },
   );
   async function execute(command: ApplicationCommand, revision?: number) {
     if (command.type === "finish" && workoutName.dirty.value) {
-      workouts.fail("Save or cancel your name change before finishing.");
+      workouts.fail(t("errors.failures.finishNeedsNameSaved"));
       return null;
     }
     return workouts.run(command, revision);

@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import { BaseButton, BaseInput, BaseSheet } from "@form/ui";
+import { useTranslation } from "../../../i18n";
 import type { useWorkoutName } from "./useWorkoutName";
 import { useUnsavedChangesWarning } from "./useUnsavedChangesWarning";
 const { controller } = defineProps<{
   controller: ReturnType<typeof useWorkoutName>;
 }>();
+const { t } = useTranslation();
 const open = ref(false);
 const { recoveries, recoveryIssues, recoveryBusy } = controller;
 useUnsavedChangesWarning(
@@ -22,15 +24,17 @@ watch(
   <aside
     v-if="recoveries.length"
     class="name-recovery-notice"
-    aria-label="Unsaved workout names"
+    :aria-label="t('training.recovery.label')"
   >
-    <p role="status">Your unsaved workout name is still here.</p>
-    <BaseButton size="sm" @click="open = true">Review unsaved names</BaseButton>
+    <p role="status">{{ t("training.recovery.stillHere") }}</p>
+    <BaseButton size="sm" @click="open = true">{{
+      t("training.recovery.review")
+    }}</BaseButton>
   </aside>
   <BaseSheet
     :open="open"
-    title="Unsaved workout names"
-    description="These workouts are no longer active. Your name changes have been preserved in this tab."
+    :title="t('training.recovery.title')"
+    :description="t('training.recovery.description')"
     @close="open = false"
   >
     <section
@@ -40,18 +44,16 @@ watch(
     >
       <h3>{{ entry.baseName }}</h3>
       <label>
-        Your unsaved name
+        {{ t("training.recovery.yourName") }}
         <BaseInput :model-value="entry.text" readonly />
       </label>
       <p v-if="entry.state === 'missing'" class="muted">
-        This workout is no longer available. Copy your name before discarding
-        it.
+        {{ t("training.recovery.missing") }}
       </p>
       <p v-else-if="entry.state === 'conflict'" class="muted">
-        The saved name changed to “{{ entry.savedName }}”. Choose whether to
-        replace it.
+        {{ t("training.recovery.conflict", { savedName: entry.savedName }) }}
       </p>
-      <p v-else class="muted">Save this name to the completed workout.</p>
+      <p v-else class="muted">{{ t("training.recovery.ready") }}</p>
       <p
         v-if="recoveryIssues.get(entry.sessionId)"
         class="field-error"
@@ -70,14 +72,16 @@ watch(
             )
           "
           >{{
-            entry.state === "conflict" ? "Keep my name" : "Save name"
+            entry.state === "conflict"
+              ? t("training.recovery.keepMine")
+              : t("training.recovery.save")
           }}</BaseButton
         >
         <BaseButton
           variant="secondary"
           :disabled="recoveryBusy"
           @click="controller.resolveRecovery(entry.sessionId, 'discard')"
-          >Discard name</BaseButton
+          >{{ t("training.recovery.discard") }}</BaseButton
         >
       </div>
     </section>

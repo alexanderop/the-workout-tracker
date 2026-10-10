@@ -10,6 +10,8 @@ export type CatalogView = Readonly<{
   search: string;
   filters: CatalogFilters;
   sort: CatalogSort;
+  /** Extra searchable text per exercise, such as translated category names. */
+  labels?: (exercise: Exercise) => string;
 }>;
 export const emptyCatalogFilters: CatalogFilters = {
   equipment: "",
@@ -19,13 +21,13 @@ export const emptyCatalogFilters: CatalogFilters = {
 
 export function filterCatalog(
   exercises: readonly Exercise[],
-  { search, filters, sort }: CatalogView,
+  { search, filters, sort, labels }: CatalogView,
 ): Exercise[] {
   const query = search.trim().toLowerCase();
   return exercises
     .filter((exercise) => matchesFilters(exercise, filters))
     .filter((exercise) =>
-      `${exercise.name} ${exercise.category} ${exercise.equipment}`
+      `${exercise.name} ${exercise.category} ${exercise.equipment} ${labels?.(exercise) ?? ""}`
         .toLowerCase()
         .includes(query),
     )

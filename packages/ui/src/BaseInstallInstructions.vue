@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import BaseButton from "./button/BaseButton.vue";
+import { useUiText } from "./ui-text";
 const {
   platform = "browser",
   canInstall = false,
@@ -14,39 +16,24 @@ const {
   message?: string;
 }>();
 const emit = defineEmits<{ install: [] }>();
+const uiText = useUiText();
+const text = computed(() => uiText.value.install);
+const steps = computed(() => text.value[platform]);
 </script>
 <template>
   <div class="ui-install">
-    <p v-if="installed" role="status">The app is installed on this device.</p>
+    <p v-if="installed" role="status">{{ text.installed }}</p>
     <template v-else>
-      <p>
-        Keep your journal close. Open it from your home screen and train offline
-        after the first complete load.
-      </p>
+      <p>{{ text.intro }}</p>
       <BaseButton v-if="canInstall" :disabled="busy" @click="emit('install')">{{
-        busy ? "Opening installer…" : "Install app"
+        busy ? text.opening : text.install
       }}</BaseButton>
-      <ol v-else-if="platform === 'ios'">
-        <li>Open this page in Safari.</li>
-        <li>Open Share, then choose Add to Home Screen.</li>
-        <li>Confirm with Add.</li>
-      </ol>
-      <ol v-else-if="platform === 'android'">
-        <li>Open your browser menu.</li>
-        <li>Choose Install app or Add to Home screen, if available.</li>
-        <li>Follow the browser instructions.</li>
-      </ol>
       <ol v-else>
-        <li>Look for Install in the address bar or browser menu.</li>
-        <li>
-          If it is unavailable, try a browser that supports app installation.
-        </li>
+        <li v-for="step in steps" :key="step">{{ step }}</li>
       </ol>
     </template>
     <p v-if="message" role="status">{{ message }}</p>
-    <p class="ui-install-note">
-      Your data stays in this browser. Installation is not a backup.
-    </p>
+    <p class="ui-install-note">{{ text.note }}</p>
   </div>
 </template>
 <style scoped>

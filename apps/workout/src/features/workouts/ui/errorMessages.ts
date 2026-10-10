@@ -1,12 +1,13 @@
 import { matchError } from "@form/result";
+import type { Translate } from "../../../i18n";
 import type { DeleteError, ImportError } from "../application";
 import type { ReadError } from "../domain";
 
 /** What the interface says about a failure, and whether a reload can fix it. */
 export type Failure = { readonly message: string; readonly reload: boolean };
 
-export const conflictMessage =
-  "This workout changed in another tab. Your draft is still visible. Reload to use the latest saved values.";
+/** Shown when another tab saved first; the draft stays visible. */
+export const conflictMessage = (t: Translate) => t("errors.failures.conflict");
 
 const reloadable = (message: string): Failure => ({ message, reload: true });
 const final = (message: string): Failure => ({ message, reload: false });
@@ -16,49 +17,38 @@ const final = (message: string): Failure => ({ message, reload: false });
  * error class does not compile until it has text here. Only failures that a
  * reload can resolve (conflicts and unavailable storage) offer Reload.
  */
-export function describeFailure(error: ImportError | DeleteError): Failure {
+export function describeFailure(
+  error: ImportError | DeleteError,
+  t: Translate,
+): Failure {
   return matchError(error, {
-    Conflict: () => reloadable(conflictMessage),
+    Conflict: () => reloadable(conflictMessage(t)),
     StorageUnavailable: () =>
-      reloadable(
-        "Your browser could not access workout storage. Try reopening this app.",
-      ),
-    StorageClosed: () => reloadable("Workout storage is closed."),
-    SaveUnconfirmed: () =>
-      reloadable(
-        "Your browser could not confirm whether this change was saved. Reload before trying again.",
-      ),
-    RecoveryRequired: () =>
-      final("Stored data needs recovery. Export it before making changes."),
-    InvalidRevision: () => final("Invalid workout revision."),
-    InvalidChange: ({ message }) => final(message),
-    DraftCleanupPending: () =>
-      final(
-        "Your workouts and preferences were deleted, but input drafts could not be cleared. Retry to finish deleting your data.",
-      ),
-    BackupTooLarge: () => final("Backup is too large. The limit is 20 MB."),
-    BackupUnreadable: () => final("This file is not valid JSON."),
-    InvalidBackup: () => final("This is not a valid workout backup."),
+      reloadable(t("errors.failures.storageUnavailable")),
+    StorageClosed: () => reloadable(t("errors.failures.storageClosed")),
+    SaveUnconfirmed: () => reloadable(t("errors.failures.saveUnconfirmed")),
+    RecoveryRequired: () => final(t("errors.failures.recoveryRequired")),
+    InvalidRevision: () => final(t("errors.failures.invalidRevision")),
+    InvalidChange: ({ code, message }) =>
+      final(code ? t(`errors.rejections.${code}`) : message),
+    DraftCleanupPending: () => final(t("errors.failures.draftCleanupPending")),
+    BackupTooLarge: () => final(t("errors.failures.backupTooLarge")),
+    BackupUnreadable: () => final(t("errors.failures.backupUnreadable")),
+    InvalidBackup: () => final(t("errors.failures.invalidBackup")),
     ConflictingRecord: ({ recordId }) =>
-      final(
-        `Backup contains a conflicting record (${recordId}). No data was imported.`,
-      ),
+      final(t("errors.failures.conflictingRecord", { recordId })),
     ActiveWorkoutInProgress: () =>
-      final(
-        "Finish your current workout before importing another active workout.",
-      ),
+      final(t("errors.failures.activeWorkoutInProgress")),
     ActiveWorkoutFinished: () =>
-      final("Backup conflicts with an active workout. No data was imported."),
+      final(t("errors.failures.activeWorkoutFinished")),
   });
 }
 
 /** Why the journal cannot be shown, for the "needs attention" screen. */
-export function describeReadFailure(error: ReadError): string {
+export function describeReadFailure(error: ReadError, t: Translate): string {
   return matchError(error, {
-    StorageUnavailable: () =>
-      "Your browser could not access workout storage. Try reopening this app.",
-    StorageClosed: () => "Workout storage is closed.",
-    StoredDataUnreadable: () =>
-      "Stored workout data could not be read. Export a recovery copy before changing browser storage.",
+    StorageUnavailable: () => t("errors.failures.storageUnavailable"),
+    StorageClosed: () => t("errors.failures.storageClosed"),
+    StoredDataUnreadable: () => t("errors.failures.storedDataUnreadable"),
   });
 }

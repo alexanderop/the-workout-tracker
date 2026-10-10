@@ -7,17 +7,22 @@ import {
   monthStart,
   rollingDays,
   shiftDay,
+  weekdayStarts,
 } from "../../src/features/workouts/ui/workoutCalendar";
+import { createFormat } from "../../src/i18n/format";
+import { translator } from "../../src/i18n/testing";
 import { createWorkoutFactory } from "../support/factories";
 
 const at = (year: number, month: number, day: number) =>
   new Date(year, month - 1, day).getTime();
-const atHour = (day: number, hour: number) =>
-  new Date(day).setHours(hour);
+const atHour = (day: number, hour: number) => new Date(day).setHours(hour);
 const parts = (timestamp: number) => {
   const date = new Date(timestamp);
   return [date.getFullYear(), date.getMonth() + 1, date.getDate()];
 };
+
+const initials = (locale: "en" | "de") =>
+  weekdayStarts().map((day) => createFormat(locale).weekdayNarrow(day));
 
 describe("workout calendar", () => {
   it("ends a seven-day window on the local day across New Year", () => {
@@ -77,5 +82,37 @@ describe("workout calendar", () => {
     ]);
     expect(index.has(at(2026, 10, 6))).toBe(false);
     expect(eligibleSessionCount(sessions, atHour(at(2026, 10, 5), 18))).toBe(4);
+  });
+  it("heads the month grid with Monday-first weekday initials in each language", () => {
+    expect(initials("en")).toEqual(["M", "T", "W", "T", "F", "S", "S"]);
+    expect(initials("de")).toEqual(["M", "D", "M", "D", "F", "S", "S"]);
+  });
+  it("names each day button so that it starts with its visible weekday and number", () => {
+    const day = at(2026, 10, 5);
+    for (const locale of ["en", "de"] as const) {
+      const { t } = translator(locale);
+      const format = createFormat(locale);
+      const weekday = format.weekdayShort(day);
+      const name = t("workouts.calendar.rhythmDayLabel", {
+        weekday,
+        day: new Date(day).getDate(),
+        label: t("workouts.calendar.dayLabel", {
+          date: format.fullDate(day),
+          count: t("workouts.calendar.completedCount", 2),
+        }),
+      });
+      expect(name.startsWith(`${weekday} 5, `)).toBe(true);
+    }
+    const english = translator("en").t;
+    expect(
+      english("workouts.calendar.rhythmDayLabel", {
+        weekday: "Mon",
+        day: 5,
+        label: english("workouts.calendar.dayLabel", {
+          date: "Monday, October 5, 2026",
+          count: english("workouts.calendar.completedCount", 1),
+        }),
+      }),
+    ).toBe("Mon 5, Monday, October 5, 2026, 1 completed workout");
   });
 });

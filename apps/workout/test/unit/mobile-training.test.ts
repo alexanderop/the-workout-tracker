@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { effectScope, ref } from "vue";
 import { createWorkouts } from "../../src/features/workouts/application";
 import { useWorkoutWorkspace } from "../../src/features/workouts/ui/useWorkoutWorkspace";
+import { t } from "../../src/i18n/testing";
 import { createWorkoutFactory, FIXED_NOW } from "../support/factories";
 import {
   createMemoryJournal,
@@ -26,7 +27,7 @@ describe("mobile training", () => {
     const scope = effectScope();
     try {
       const workspace = scope.run(() =>
-        useWorkoutWorkspace(service, journal, ref(FIXED_NOW)),
+        useWorkoutWorkspace(service, journal, { now: ref(FIXED_NOW), t }),
       )!;
       await workspace.training.commit(set.id);
       const logged = storage.current();
@@ -69,7 +70,7 @@ describe("mobile training", () => {
     const scope = effectScope();
     try {
       const workspace = scope.run(() =>
-        useWorkoutWorkspace(service, journal, ref(FIXED_NOW)),
+        useWorkoutWorkspace(service, journal, { now: ref(FIXED_NOW), t }),
       )!;
       await workspace.training.commit(set.id);
       const logged = storage.current();

@@ -9,7 +9,9 @@ import {
   ArrowDownAZ,
   ArrowUpAZ,
 } from "@lucide/vue";
+import { useTranslation } from "../../../i18n";
 import type { Exercise } from "../domain";
+import { categoryLabel, equipmentLabel } from "./exerciseLabels";
 import ExerciseThumbnail from "./ExerciseThumbnail.vue";
 import ExerciseFilterSheet from "./ExerciseFilterSheet.vue";
 import {
@@ -30,6 +32,7 @@ const {
   initialSearch?: string;
 }>();
 const emit = defineEmits<{ toggle: [id: string] }>();
+const { t } = useTranslation();
 const controls = useTemplateRef<HTMLElement>("controls");
 const list = useTemplateRef<HTMLElement>("list");
 const filterButton = useTemplateRef<HTMLButtonElement>("filterButton");
@@ -53,11 +56,17 @@ const selectedExercises = computed(() =>
 const appliedFilters = computed(() => {
   const chips: { key: keyof CatalogFilters; label: string }[] = [];
   if (filters.value.equipment)
-    chips.push({ key: "equipment", label: filters.value.equipment });
+    chips.push({
+      key: "equipment",
+      label: equipmentLabel(filters.value.equipment, t),
+    });
   if (filters.value.category)
-    chips.push({ key: "category", label: filters.value.category });
+    chips.push({
+      key: "category",
+      label: categoryLabel(filters.value.category, t),
+    });
   if (filters.value.onlyCustom)
-    chips.push({ key: "onlyCustom", label: "Only custom exercises" });
+    chips.push({ key: "onlyCustom", label: t("exercises.catalog.onlyCustom") });
   return chips;
 });
 async function removeFilter(key: keyof CatalogFilters) {
@@ -87,8 +96,25 @@ const results = computed(() =>
     search: search.value,
     filters: filters.value,
     sort: sort.value,
+    labels: (exercise) =>
+      `${categoryLabel(exercise.category, t)} ${equipmentLabel(exercise.equipment, t)}`,
   }),
 );
+const summary = computed(() => {
+  const found = t("exercises.catalog.resultCount", results.value.length);
+  if (!appliedFilters.value.length) return found;
+  return t("exercises.catalog.summary", {
+    results: found,
+    filters: t("exercises.catalog.filterCount", appliedFilters.value.length),
+  });
+});
+const sortLabels = computed(() => {
+  const ascending = t("exercises.catalog.sortAscending");
+  const descending = t("exercises.catalog.sortDescending");
+  return sort.value === "ascending"
+    ? { current: ascending, next: descending }
+    : { current: descending, next: ascending };
+});
 watch([search, filters, sort], () => {
   if (list.value) list.value.scrollTop = 0;
 });
@@ -104,8 +130,8 @@ async function clearSearchAndFilters() {
     <div class="search-field picker-search">
       <Search :size="18" /><BaseInput
         v-model="search"
-        aria-label="Search exercises"
-        placeholder="Find an exercise"
+        :aria-label="t('exercises.catalog.searchLabel')"
+        :placeholder="t('exercises.catalog.searchPlaceholder')"
         @keydown.enter.prevent
       />
     </div>
@@ -115,27 +141,20 @@ async function clearSearchAndFilters() {
       type="button"
       ref="filterButton"
       class="catalog-filter-button"
-      aria-label="Filters"
+      :aria-label="t('exercises.catalog.filtersButton', { summary })"
       aria-haspopup="dialog"
       @click="filtersOpen = true"
     >
-      <span role="status"
-        >{{ results.length }}
-        {{ results.length === 1 ? "exercise" : "exercises"
-        }}<span v-if="appliedFilters.length">
-          · {{ appliedFilters.length }}
-          {{ appliedFilters.length === 1 ? "filter" : "filters" }}</span
-        ></span
-      >
+      <span role="status">{{ summary }}</span>
       <SlidersHorizontal :size="20" aria-hidden="true" />
     </button>
     <button
       type="button"
       class="catalog-sort-button"
-      :aria-label="sort === 'ascending' ? 'Sort Z to A' : 'Sort A to Z'"
+      :aria-label="t('exercises.catalog.sortButton', sortLabels)"
       @click="sort = sort === 'ascending' ? 'descending' : 'ascending'"
     >
-      {{ sort === "ascending" ? "A–Z" : "Z–A"
+      {{ sortLabels.current
       }}<ArrowDownAZ
         v-if="sort === 'ascending'"
         :size="20"
@@ -146,7 +165,7 @@ async function clearSearchAndFilters() {
   <div
     v-if="appliedFilters.length"
     class="catalog-chips"
-    aria-label="Applied filters"
+    :aria-label="t('exercises.catalog.appliedFilters')"
     role="group"
   >
     <button
@@ -154,7 +173,9 @@ async function clearSearchAndFilters() {
       :key="filter.key"
       type="button"
       class="catalog-chip"
-      :aria-label="`Remove ${filter.label} filter`"
+      :aria-label="
+        t('exercises.catalog.removeFilter', { filter: filter.label })
+      "
       @click="removeFilter(filter.key)"
     >
       {{ filter.label }}<X :size="16" aria-hidden="true" />
@@ -166,16 +187,22 @@ async function clearSearchAndFilters() {
     class="catalog-selection"
   >
     <p class="catalog-selection-count muted small" role="status">
-      {{ selectedExercises.length }} selected
+      {{ t("exercises.catalog.selectedCount", selectedExercises.length) }}
     </p>
-    <div class="catalog-chips" role="group" aria-label="Selected exercises">
+    <div
+      class="catalog-chips"
+      role="group"
+      :aria-label="t('exercises.catalog.selectedExercises')"
+    >
       <button
         v-for="exercise in selectedExercises"
         :key="exercise.id"
         type="button"
         class="catalog-chip"
         :disabled="busy"
-        :aria-label="`Remove ${exercise.name} from selection`"
+        :aria-label="
+          t('exercises.catalog.removeSelection', { name: exercise.name })
+        "
         @click="removeSelection(exercise.id)"
       >
         {{ exercise.name }}<X :size="16" aria-hidden="true" />
@@ -199,9 +226,12 @@ async function clearSearchAndFilters() {
       <span class="catalog-row-name"
         >{{ exercise.name
         }}<small
-          ><span class="sr-only">{{ exercise.category }} · </span
-          >{{ exercise.equipment
-          }}<span v-if="exercise.custom"> · Custom</span></small
+          ><span class="sr-only"
+            >{{ categoryLabel(exercise.category, t) }} · </span
+          >{{ equipmentLabel(exercise.equipment, t)
+          }}<span v-if="exercise.custom">
+            · {{ t("exercises.catalog.custom") }}</span
+          ></small
         ></span
       >
       <span v-if="selected" class="catalog-check"
@@ -209,12 +239,12 @@ async function clearSearchAndFilters() {
       /></span>
     </component>
     <div v-if="!exercises.length" class="empty-inline muted">
-      <p>No exercises yet.</p>
+      <p>{{ t("exercises.catalog.empty") }}</p>
     </div>
     <div v-else-if="!results.length" class="empty-inline muted">
-      <p>No matching exercises.</p>
+      <p>{{ t("exercises.catalog.noMatches") }}</p>
       <button type="button" class="text-button" @click="clearSearchAndFilters">
-        Clear search and filters
+        {{ t("exercises.catalog.clearAll") }}
       </button>
     </div>
   </div>

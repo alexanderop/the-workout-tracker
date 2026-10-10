@@ -1,5 +1,9 @@
 import { expect, type Page, type TestInfo } from "@playwright/test";
 
+// The Filters and Sort buttons are named after their visible text first.
+const SORTED_ASCENDING = "Sorted A–Z, switch to Z–A";
+const SORTED_DESCENDING = "Sorted Z–A, switch to A–Z";
+
 export class ExerciseCatalogPage {
   readonly page: Page;
   constructor(page: Page) {
@@ -10,6 +14,9 @@ export class ExerciseCatalogPage {
       name: "Select exercises",
       exact: true,
     });
+  }
+  filtersButton() {
+    return this.picker().getByRole("button", { name: /, Filters$/ });
   }
   filterSheet(name = "Filters") {
     return this.page.getByRole("dialog", { name, exact: true });
@@ -43,9 +50,7 @@ export class ExerciseCatalogPage {
       this.picker().getByRole("button", { name: "Start (1)", exact: true }),
     ).toBeInViewport({ ratio: 1 });
     await this.capture(info, "exercise-catalog");
-    await this.picker()
-      .getByRole("button", { name: "Filters", exact: true })
-      .click();
+    await this.filtersButton().click();
     await this.filterSheet()
       .getByRole("button", { name: "Equipment All", exact: true })
       .click();
@@ -114,15 +119,13 @@ export class ExerciseCatalogPage {
   }
   async removeNamedFilters() {
     await this.picker()
-      .getByRole("button", { name: "Sort Z to A", exact: true })
+      .getByRole("button", { name: SORTED_ASCENDING, exact: true })
       .click();
     for (const label of ["Only custom exercises", "Chest", "Barbell"]) {
       await this.picker()
         .getByRole("button", { name: `Remove ${label} filter`, exact: true })
         .click();
-      await expect(
-        this.picker().getByRole("button", { name: "Filters", exact: true }),
-      ).toBeFocused();
+      await expect(this.filtersButton()).toBeFocused();
       await expect(
         this.picker().getByRole("button", {
           name: `Remove ${label} filter`,
@@ -133,7 +136,10 @@ export class ExerciseCatalogPage {
         this.picker().getByRole("textbox", { name: "Search exercises" }),
       ).toHaveValue("press");
       await expect(
-        this.picker().getByRole("button", { name: "Sort A to Z", exact: true }),
+        this.picker().getByRole("button", {
+          name: SORTED_DESCENDING,
+          exact: true,
+        }),
       ).toBeVisible();
       await expect(
         this.picker().getByRole("button", {
@@ -174,9 +180,7 @@ export class ExerciseCatalogPage {
     ).toBeDisabled();
   }
   async resetFilters() {
-    await this.picker()
-      .getByRole("button", { name: "Filters", exact: true })
-      .click();
+    await this.filtersButton().click();
     await this.filterSheet()
       .getByRole("button", { name: "Reset filters", exact: true })
       .click();
@@ -212,27 +216,23 @@ export class ExerciseCatalogPage {
   async reverseOrder() {
     await expect(this.rows().first()).toContainText("Ab wheel rollout");
     await this.picker()
-      .getByRole("button", { name: "Sort Z to A", exact: true })
+      .getByRole("button", { name: SORTED_ASCENDING, exact: true })
       .click();
     await expect(this.rows().first()).toContainText("Walking lunge");
     await this.picker()
-      .getByRole("button", { name: "Sort A to Z", exact: true })
+      .getByRole("button", { name: SORTED_DESCENDING, exact: true })
       .click();
     await expect(this.rows().first()).toContainText("Ab wheel rollout");
   }
   async dismissNestedFilters() {
-    await this.picker()
-      .getByRole("button", { name: "Filters", exact: true })
-      .click();
+    await this.filtersButton().click();
     await this.filterSheet()
       .getByRole("button", { name: "Equipment All", exact: true })
       .click();
     await this.page.keyboard.press("Escape");
     await expect(this.filterSheet("Equipment")).toHaveCount(0);
     await expect(this.picker()).toBeVisible();
-    await expect(
-      this.picker().getByRole("button", { name: "Filters", exact: true }),
-    ).toBeFocused();
+    await expect(this.filtersButton()).toBeFocused();
   }
   async startSelected() {
     await this.picker()

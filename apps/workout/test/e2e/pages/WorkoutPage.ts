@@ -200,7 +200,7 @@ export class WorkoutPage {
     const record = this.page.getByRole("article");
     await expect(record).toHaveCount(1);
     await expect(record).toContainText("Bench press");
-    await expect(record).toContainText("1 sets");
+    await expect(record).toContainText("1 set");
     await expect(record).toContainText(`${volume} kg`);
   }
 
@@ -258,7 +258,7 @@ export class WorkoutPage {
       })
       .click();
     await dialog
-      .getByRole("button", { name: "Add 1 exercises", exact: true })
+      .getByRole("button", { name: "Add 1 exercise", exact: true })
       .click();
     await dialog
       .getByRole("button", { name: "Save template", exact: true })

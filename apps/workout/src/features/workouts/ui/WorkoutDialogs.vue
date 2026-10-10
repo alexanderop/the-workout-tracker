@@ -16,6 +16,7 @@ import {
 } from "../domain";
 import type { WorkoutWorkspace, WorkoutPage } from "./useWorkoutWorkspace";
 import type { Confirmation } from "./dialogTypes";
+import { useTranslation } from "../../../i18n";
 
 /** Hosts every workout sheet and routes requests between them. */
 const { workspace, templatesOpen = false } = defineProps<{
@@ -42,6 +43,7 @@ const emit = defineEmits<{
   "close-templates": [];
   "template-closed": [event: Event];
 }>();
+const { t } = useTranslation();
 const { snapshot, saving, error, notify, clearError, run, training, active } =
   workspace;
 const navigate = (page: WorkoutPage) => emit("navigate", page);
@@ -63,9 +65,9 @@ function removeOptionSet() {
   optionSetId.value = null;
   clearError();
   confirmation.value = {
-    title: "Remove set?",
-    description: "This removes the set and its draft from your active workout.",
-    actionLabel: "Remove set",
+    title: t("dialogs.removeSet.title"),
+    description: t("dialogs.removeSet.description"),
+    actionLabel: t("dialogs.removeSet.action"),
     command: {
       type: "remove-set",
       sessionId: active.value.id,
@@ -108,7 +110,7 @@ async function requestLeave() {
 }
 function completedSaved() {
   editingCompleted.value = null;
-  notify("Workout corrections saved");
+  notify(t("dialogs.notices.correctionsSaved"));
 }
 
 const finishSessionId = ref<string | null>(null);
@@ -145,7 +147,7 @@ async function finishWorkout() {
     finishSessionId.value = null;
     navigate("workouts");
     selectedSession.value = id;
-    notify("Workout saved. Another session in the books.");
+    notify(t("dialogs.notices.workoutSaved"));
   }
 }
 
@@ -250,7 +252,7 @@ defineExpose({
   />
   <BaseSheet
     :open="confirmation !== null"
-    :title="confirmation?.title ?? 'Confirm'"
+    :title="confirmation?.title ?? t('dialogs.confirm.fallbackTitle')"
     :description="confirmation?.description"
     @close="!saving && (confirmation = null)"
   >
@@ -262,7 +264,7 @@ defineExpose({
         :disabled="saving"
         @click="confirmation = null"
       >
-        Cancel</BaseButton
+        {{ t("dialogs.actions.cancel") }}</BaseButton
       ><BaseButton
         unstyled
         class="btn primary"

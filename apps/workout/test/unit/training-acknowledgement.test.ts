@@ -5,6 +5,7 @@ import { createWorkouts } from "../../src/features/workouts/application";
 import type { SetDraft } from "../../src/features/workouts/domain/drafts";
 import type { DraftJournal } from "../../src/features/workouts/ports";
 import { useWorkoutWorkspace } from "../../src/features/workouts/ui/useWorkoutWorkspace";
+import { t } from "../../src/i18n/testing";
 import { createWorkoutFactory, FIXED_NOW } from "../support/factories";
 import { createMemoryJournal, createMemoryStorage } from "../support/memory-ports";
 import { success } from "../support/results";
@@ -47,7 +48,7 @@ function setup() {
   });
   const scope = effectScope();
   scopes.push(scope);
-  const workspace = scope.run(() => useWorkoutWorkspace(service, journal, ref(FIXED_NOW)))!;
+  const workspace = scope.run(() => useWorkoutWorkspace(service, journal, { now: ref(FIXED_NOW), t }))!;
   return {
     workspace,
     storage,

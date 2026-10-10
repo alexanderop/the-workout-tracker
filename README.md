@@ -53,6 +53,7 @@ The preview uses the same address. Stop the development server first. Keep the s
 - Resume a workout, use the rest timer, add or remove sets and exercises, finish or explicitly discard the session.
 - Review history, completed-set volume, lifting trends and heaviest sets. Correct a completed workout name or logged set values with one explicit save.
 - Export and import JSON backups from Settings, or delete all personal data after confirmation.
+- Use the app in English or German. It follows your browser language by default; choose a language in Settings to override it. Text lives in typed catalogs under `apps/workout/src/i18n`.
 - Use the app offline after its first complete production load. Use your browser's installation option, or Share → Add to Home Screen on iOS.
 
 The installed app has no accounts, analytics, cloud sync, or demo workout history. Histoire examples use separate, temporary sample data. New installations contain exercises but no workouts or templates. New exercise weights start at zero. Repeated workouts and templates keep their own set values; previous performance is shown as a reference.

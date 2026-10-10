@@ -9,6 +9,7 @@ import {
   type RoutineValues,
 } from "../domain/routineDrafts";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
+import { useTranslation } from "../../../i18n";
 
 const { workspace, open = false } = defineProps<{
   open?: boolean;
@@ -30,6 +31,7 @@ const emit = defineEmits<{
   "close-templates": [];
   "template-closed": [event: Event];
 }>();
+const { t } = useTranslation();
 const { snapshot, saving, error, notify, clearError, run, active, catalog } =
   workspace;
 
@@ -124,7 +126,7 @@ async function saveRoutine(routine: RoutineValues) {
     closeRoutineEditor();
     templateFocus = existing?.id ?? null;
     void focusTemplateContent();
-    notify("Template saved");
+    notify(t("dialogs.notices.templateSaved"));
     emit("template-saved");
   }
 }
@@ -154,11 +156,11 @@ defineExpose({ editRoutine });
     :title="
       routineOpen
         ? editingRoutine && !templateSource
-          ? 'Edit template'
-          : 'Create template'
-        : 'Templates'
+          ? t('dialogs.templates.editTitle')
+          : t('dialogs.templates.createTitle')
+        : t('dialogs.templates.title')
     "
-    description="Set up the exercises you want to come back to."
+    :description="t('dialogs.templates.description')"
     wide
     @close="closeTemplates"
     @close-auto-focus="emit('template-closed', $event)"
@@ -178,8 +180,8 @@ defineExpose({ editRoutine });
         <p role="alert">
           {{
             routineState === "deleted"
-              ? "This template was deleted in another tab. Your input is still here, but it cannot be saved to the deleted template."
-              : "This template changed in another tab. Your input is still here. Choose which version to keep."
+              ? t("dialogs.templates.deleted")
+              : t("dialogs.templates.changed")
           }}
         </p>
         <div v-if="routineState !== 'deleted'" class="form-actions">
@@ -187,10 +189,10 @@ defineExpose({ editRoutine });
             variant="secondary"
             :disabled="saving"
             @click="useSavedRoutine"
-            >Use saved version</BaseButton
+            >{{ t("dialogs.templates.useSaved") }}</BaseButton
           >
           <BaseButton :disabled="saving" @click="keepRoutineChanges"
-            >Keep my changes</BaseButton
+            >{{ t("dialogs.templates.keepMine") }}</BaseButton
           >
         </div>
       </div>
@@ -200,17 +202,16 @@ defineExpose({ editRoutine });
           unstyled
           class="btn secondary"
           @click="editRoutine(null)"
-          ><Plus :size="17" />New template</BaseButton
+          ><Plus :size="17" />{{ t("dialogs.templates.newTemplate") }}</BaseButton
         >
         <div v-if="!routines.length" class="overview-empty">
           <BookmarkPlus :size="26" />
-          <h2>Your shortcuts to the next session</h2>
+          <h2>{{ t("dialogs.templates.emptyTitle") }}</h2>
           <p class="muted">
-            Save a past workout as a template, or create one with your favorite
-            exercises.
+            {{ t("dialogs.templates.emptyDescription") }}
           </p>
           <BaseButton unstyled class="btn secondary" @click="editRoutine(null)">
-            <Plus :size="17" />Create template
+            <Plus :size="17" />{{ t("dialogs.templates.createTemplate") }}
           </BaseButton>
         </div>
         <div v-else class="routine-grid">
@@ -224,16 +225,16 @@ defineExpose({ editRoutine });
               ><BaseButton
                 unstyled
                 class="text-button"
-                :aria-label="`Edit ${routine.name}`"
+                :aria-label="t('dialogs.templates.editAria', { name: routine.name })"
                 :data-template-id="routine.id"
                 @click="editRoutine(routine)"
               >
-                Edit
+                {{ t("dialogs.templates.edit") }}
               </BaseButton>
             </header>
             <h2>{{ routine.name }}</h2>
             <p class="muted small routine-description">
-              {{ routine.description || "A plan for your next session." }}
+              {{ routine.description || t("dialogs.templates.defaultDescription") }}
             </p>
             <ul class="exercise-preview">
               <li
@@ -242,25 +243,32 @@ defineExpose({ editRoutine });
               >
                 <span>{{ exercises[entry.exerciseId]?.name }}</span
                 ><span class="muted"
-                  >{{ entry.sets.length }}
-                  {{ entry.sets.length === 1 ? "set" : "sets" }}</span
+                  >{{
+                    t("dialogs.templates.setCount", entry.sets.length)
+                  }}</span
                 >
               </li>
               <li v-if="routine.exercises.length > 4" class="muted">
-                + {{ routine.exercises.length - 4 }} more
+                {{
+                  t("dialogs.templates.more", {
+                    count: routine.exercises.length - 4,
+                  })
+                }}
               </li>
             </ul>
             <footer>
               <span class="muted small"
-                >{{ routine.exercises.length }} exercises</span
+                >{{
+                  t("dialogs.templates.exerciseCount", routine.exercises.length)
+                }}</span
               ><BaseButton
                 unstyled
                 class="btn secondary"
                 :disabled="saving || !!active"
-                :aria-label="`Start ${routine.name}`"
+                :aria-label="t('dialogs.templates.startAria', { name: routine.name })"
                 @click="emit('start', routine.id)"
               >
-                Start<ArrowRight :size="16" />
+                {{ t("dialogs.templates.start") }}<ArrowRight :size="16" />
               </BaseButton>
             </footer>
           </article>

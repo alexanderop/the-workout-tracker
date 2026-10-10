@@ -12,8 +12,7 @@ const axeSource = readFileSync(
  * Runs axe-core against the rendered production page. Same contract as the
  * component helper in packages/ui/test/support/axe.ts: violations fail, and so
  * does an incomplete result, because a page the scanner cannot decide on has
- * not been checked. A known issue names a rule that must still occur; once the
- * app is fixed the scenario fails until the exception is removed.
+ * not been checked.
  */
 export class AccessibilityPage {
   readonly page: Page;
@@ -31,26 +30,18 @@ export class AccessibilityPage {
     ).toBeVisible();
   }
 
-  async expectNoViolations(knownIssues: readonly string[] = []) {
+  async expectNoViolations() {
     await this.page.addScriptTag({ content: axeSource });
     const results = await this.page.evaluate<AxeResults>(
       `axe.run(document, { resultTypes: ["violations", "incomplete"] })`,
     );
-    const unexpected = results.violations.filter(
-      (result) => !knownIssues.includes(result.id),
-    );
-    expect(unexpected.map(describe)).toEqual([]);
+    expect(results.violations.map(describe)).toEqual([]);
     // Where the translucent navigation overlaps scrolling artwork, axe cannot
     // compute a background color. Contrast is not established on those pages.
     const undecided = results.incomplete.filter(
       (result) => result.id !== "color-contrast",
     );
     expect(undecided.map(describe)).toEqual([]);
-    for (const id of knownIssues)
-      expect(
-        results.violations.map((result) => result.id),
-        `${id} no longer occurs; remove it from the scenario`,
-      ).toContain(id);
   }
 }
 

@@ -6,7 +6,7 @@ export const themes = ["system", "light", "dark"] as const;
 export const accents = ["blue", "teal", "violet", "pink", "sand"] as const;
 
 export type Theme = (typeof themes)[number];
-export type Accent = (typeof accents)[number];
+type Accent = (typeof accents)[number];
 export type Appearance = { readonly theme: Theme; readonly accent: Accent };
 
 /** index.html reads the same keys in an inline script to avoid a flash. */

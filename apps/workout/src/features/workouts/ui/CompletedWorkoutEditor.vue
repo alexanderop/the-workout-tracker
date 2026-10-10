@@ -6,13 +6,15 @@ import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import { useCompletedWorkoutEditor } from "./useCompletedWorkoutEditor";
 import { useUnsavedChangesWarning } from "./useUnsavedChangesWarning";
 import { useLeaveConfirmation } from "./useLeaveConfirmation";
+import { useTranslation } from "../../../i18n";
 
 const { session, workspace } = defineProps<{
   session: CompletedSession;
   workspace: Pick<WorkoutWorkspace, "snapshot" | "saving" | "error" | "run">;
 }>();
 const emit = defineEmits<{ close: []; saved: [] }>();
-const editor = useCompletedWorkoutEditor(session, workspace);
+const { t } = useTranslation();
+const editor = useCompletedWorkoutEditor(session, workspace, t);
 const { draft, baseline, dirty, pending, state, localError } = editor;
 const rows = computed(
   () => new Map(draft.value.sets.map((set) => [set.setId, set])),
@@ -79,15 +81,15 @@ defineExpose({ requestClose, requestLeave });
 <template>
   <BaseSheet
     open
-    title="Edit workout"
-    description="Correct the workout name and logged values. Changes save together."
+    :title="t('dialogs.completedEditor.title')"
+    :description="t('dialogs.completedEditor.description')"
     wide
     @close="requestClose"
   >
     <form class="form-stack" :aria-busy="pending" @submit.prevent="save">
       <fieldset class="completed-fields form-stack" :disabled="pending">
         <label class="field"
-          ><span>Workout name</span
+          ><span>{{ t("dialogs.completedEditor.nameLabel") }}</span
           ><BaseInput
             v-model="draft.name"
             name="completed-name"
@@ -106,14 +108,21 @@ defineExpose({ requestClose, requestLeave });
             :key="set.id"
             class="completed-set"
           >
-            <span class="muted">Set {{ index + 1 }}</span>
+            <span class="muted">{{
+              t("dialogs.fields.setNumber", { number: index + 1 })
+            }}</span>
             <template v-if="rows.get(set.id)">
               <label class="field"
-                ><span>Weight · kg</span
+                ><span>{{ t("dialogs.fields.weightKg") }}</span
                 ><BaseInputNumber
                   :model-value="rows.get(set.id)?.weightKg ?? ''"
-                  :label="`${exercise.name} set ${index + 1} weight`"
-                  title="Weight"
+                  :label="
+                    t('dialogs.completedEditor.weightLabel', {
+                      exercise: exercise.name,
+                      number: index + 1,
+                    })
+                  "
+                  :title="t('dialogs.fields.weight')"
                   unit="kg"
                   :min="0"
                   :max="1000"
@@ -125,11 +134,16 @@ defineExpose({ requestClose, requestLeave });
                   @update:model-value="updateSet(set.id, 'weightKg', $event)"
               /></label>
               <label class="field"
-                ><span>Reps</span
+                ><span>{{ t("dialogs.fields.reps") }}</span
                 ><BaseInputNumber
                   :model-value="rows.get(set.id)?.reps ?? ''"
-                  :label="`${exercise.name} set ${index + 1} reps`"
-                  title="Reps"
+                  :label="
+                    t('dialogs.completedEditor.repsLabel', {
+                      exercise: exercise.name,
+                      number: index + 1,
+                    })
+                  "
+                  :title="t('dialogs.fields.reps')"
                   :min="0"
                   :max="1000"
                   :disabled="pending"
@@ -139,8 +153,12 @@ defineExpose({ requestClose, requestLeave });
               /></label>
             </template>
             <p v-else class="unlogged muted">
-              {{ set.weightKg }} kg × {{ set.reps }} reps · Not logged,
-              read-only
+              {{
+                t("dialogs.completedEditor.unlogged", {
+                  weight: set.weightKg,
+                  reps: set.reps,
+                })
+              }}
             </p>
           </div>
         </section>
@@ -149,8 +167,8 @@ defineExpose({ requestClose, requestLeave });
         <p>
           {{
             state === "missing"
-              ? "This workout is no longer saved. Your input is still here to copy, but it cannot recreate the workout."
-              : "Saved data changed while you were editing. Your input is still here. Reload saved values before making corrections."
+              ? t("dialogs.completedEditor.missing")
+              : t("dialogs.completedEditor.conflict")
           }}
         </p>
         <BaseButton
@@ -159,7 +177,7 @@ defineExpose({ requestClose, requestLeave });
           variant="secondary"
           :disabled="pending"
           @click="requestReload"
-          >Reload saved values</BaseButton
+          >{{ t("dialogs.completedEditor.reload") }}</BaseButton
         >
       </div>
       <p v-else-if="localError" class="field-error" role="alert">
@@ -171,30 +189,32 @@ defineExpose({ requestClose, requestLeave });
           variant="secondary"
           :disabled="pending"
           @click="requestClose"
-          >Cancel</BaseButton
+          >{{ t("dialogs.actions.cancel") }}</BaseButton
         >
         <BaseButton type="submit" :disabled="pending || state !== 'ready'">{{
-          pending ? "Saving…" : "Save changes"
+          pending ? t("dialogs.actions.saving") : t("dialogs.completedEditor.save")
         }}</BaseButton>
       </div>
     </form>
   </BaseSheet>
   <BaseSheet
     :open="discardOpen"
-    title="Discard workout changes?"
+    :title="t('dialogs.completedEditor.discardTitle')"
     :description="
       discardIntent === 'reload'
-        ? 'Reloading replaces your input with the latest saved values.'
-        : 'Your unsaved corrections will be lost.'
+        ? t('dialogs.completedEditor.discardReloadDescription')
+        : t('dialogs.completedEditor.discardLoseDescription')
     "
     @close="keepEditing"
   >
     <div class="form-actions">
       <BaseButton variant="secondary" @click="keepEditing"
-        >Keep editing</BaseButton
+        >{{ t("dialogs.actions.keepEditing") }}</BaseButton
       >
       <BaseButton :disabled="pending" @click="discard">{{
-        discardIntent === "reload" ? "Discard and reload" : "Discard changes"
+        discardIntent === "reload"
+          ? t("dialogs.completedEditor.discardAndReload")
+          : t("dialogs.actions.discardChanges")
       }}</BaseButton>
     </div>
   </BaseSheet>

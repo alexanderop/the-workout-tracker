@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useTemplateRef, watch } from "vue";
 import { BaseButton, BaseInputNumber, BaseSheet, BaseTextarea } from "@form/ui";
-import { ArrowLeftRight, List, Plus, StickyNote, Trash2 } from "@lucide/vue";
 import { setTargetReps, type Command, type SessionExercise } from "../domain";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
-import ExerciseCatalog from "./ExerciseCatalog.vue";
-import { fmt } from "./presentation";
+import { useFormat, useTranslation } from "../../../i18n";
+import ExerciseConfigurationActions from "./ExerciseConfigurationActions.vue";
+import ExerciseConfigurationReplace from "./ExerciseConfigurationReplace.vue";
 import { useUnsavedChangesWarning } from "./useUnsavedChangesWarning";
 import { useLeaveConfirmation } from "./useLeaveConfirmation";
 const { exercise, workspace } = defineProps<{
@@ -22,6 +22,8 @@ const emit = defineEmits<{
   add: [];
   replaced: [exerciseId: string];
 }>();
+const { t } = useTranslation();
+const format = useFormat();
 type View = "actions" | "configure" | "note" | "replace";
 const view = ref<View>("actions");
 const count = ref("1"),
@@ -67,11 +69,15 @@ const sameValue = <T,>(values: T[]) =>
   new Set(values).size === 1 ? values[0] : undefined;
 const repsSummary = computed(() => {
   const shared = sameValue(targets.value.map(setTargetReps));
-  return shared === undefined ? "Mixed reps" : `${shared} reps`;
+  return shared === undefined
+    ? t("training.config.mixedReps")
+    : t("training.config.reps", { reps: shared });
 });
 const weightSummary = computed(() => {
   const shared = sameValue(targets.value.map((set) => set.weightKg));
-  return shared === undefined ? "Mixed kg" : `${fmt(shared)} kg`;
+  return shared === undefined
+    ? t("training.config.mixedKg")
+    : t("training.config.kg", { weight: format.value.number(shared) });
 });
 const catalog = computed(() =>
   Object.values(workspace.snapshot.value?.exercises ?? {}).filter(
@@ -81,10 +87,19 @@ const catalog = computed(() =>
 const replacement = computed(() =>
   catalog.value.find((item) => item.id === selection.value[0]),
 );
-const title = computed(
-  () =>
-    `${{ actions: "", configure: "Configure ", note: "Note for ", replace: "Replace " }[view.value]}${exercise?.name ?? "Exercise"}`,
+const canAdd = computed(
+  () => (workspace.active.value?.exercises.length ?? 0) < 50,
 );
+const title = computed(() => {
+  const name = exercise?.name ?? t("training.config.fallbackExercise");
+  if (view.value === "configure")
+    return t("training.config.configureTitle", { exercise: name });
+  if (view.value === "note")
+    return t("training.config.noteTitle", { exercise: name });
+  if (view.value === "replace")
+    return t("training.config.replaceTitle", { exercise: name });
+  return name;
+});
 function reset() {
   const first = remaining.value[0] ?? exercise?.sets[0];
   if (!exercise || !first) return;
@@ -108,14 +123,16 @@ watch(
     reset();
   },
 );
-async function show(next: View, field?: "Target reps" | "Working weight") {
+async function show(next: View, field?: "targetReps" | "workingWeight") {
   reset();
   view.value = next;
   if (field) replaceTargets.value = true;
   baseline.value = formState();
   await nextTick();
   const target = field
-    ? body.value?.querySelector<HTMLElement>(`[aria-label="${field}"]`)
+    ? body.value?.querySelector<HTMLElement>(
+        `[aria-label="${t(`training.config.${field}`)}"]`,
+      )
     : body.value?.querySelector<HTMLElement>("textarea, button, input");
   target?.focus();
 }
@@ -160,7 +177,7 @@ async function save(
     issue.value =
       workspace.error.value ||
       workspace.training.notice.value ||
-      "Could not save. Your input is still here.";
+      t("training.config.saveFailed");
   } finally {
     savePending.value = false;
   }
@@ -219,99 +236,52 @@ function saveReplacement() {
     @close-auto-focus="restoreFocus"
   >
     <div v-if="exercise" ref="body" class="workout-editor">
-      <template v-if="view === 'actions'">
-        <div class="exercise-option-targets">
-          <BaseButton
-            variant="secondary"
-            :disabled="workspace.saving.value"
-            @click="show('configure')"
-            >{{ exercise.sets.length }}
-            {{ exercise.sets.length === 1 ? "set" : "sets" }}</BaseButton
-          >
-          <BaseButton
-            variant="secondary"
-            :disabled="workspace.saving.value"
-            @click="show('configure', 'Target reps')"
-            >{{ repsSummary }}</BaseButton
-          >
-          <BaseButton
-            variant="secondary"
-            :disabled="workspace.saving.value"
-            @click="show('configure', 'Working weight')"
-            >{{ weightSummary }}</BaseButton
-          >
-        </div>
-        <div class="exercise-option-group">
-        <BaseButton
-          variant="secondary"
-          :disabled="workspace.saving.value"
-          @click="exercise.sets[0] && emit('edit', exercise.sets[0].id)"
-          ><List :size="18" />Edit sets</BaseButton
-        >
-        <BaseButton
-          variant="secondary"
-          :disabled="workspace.saving.value"
-          @click="show('note')"
-          ><StickyNote :size="18" />{{
-            exercise.note ? "Edit note" : "Add note"
-          }}</BaseButton
-        >
-        </div>
-        <div class="exercise-option-group">
-        <BaseButton
-          variant="secondary"
-          :disabled="workspace.saving.value"
-          @click="show('replace')"
-          ><ArrowLeftRight :size="18" />Replace exercise</BaseButton
-        >
-        <BaseButton
-          variant="secondary"
-          :disabled="workspace.saving.value"
-          @click="emit('remove', exercise)"
-          ><Trash2 :size="18" />Remove exercise</BaseButton
-        >
-        </div>
-        <BaseButton
-          variant="ghost"
-          :disabled="
-            workspace.saving.value ||
-            (workspace.active.value?.exercises.length ?? 0) >= 50
-          "
-          @click="emit('add')"
-          ><Plus :size="18" />Add exercises</BaseButton
-        >
-      </template>
+      <ExerciseConfigurationActions
+        v-if="view === 'actions'"
+        :exercise="exercise"
+        :saving="workspace.saving.value"
+        :can-add="canAdd"
+        :reps-summary="repsSummary"
+        :weight-summary="weightSummary"
+        @configure="show('configure', $event)"
+        @note="show('note')"
+        @replace="show('replace')"
+        @remove="emit('remove', $event)"
+        @edit="emit('edit', $event)"
+        @add="emit('add')"
+      />
       <template v-else-if="view === 'configure'">
-        <label class="field"><span>Number of sets</span>
-        <BaseInputNumber
-          v-model="count"
-          label="Number of sets"
-          title="Number of sets"
-          :min="minimum"
-          :max="30"
-          :disabled="workspace.saving.value"
+        <label class="field"
+          ><span>{{ t("training.config.numberOfSets") }}</span>
+          <BaseInputNumber
+            v-model="count"
+            :label="t('training.config.numberOfSets')"
+            :title="t('training.config.numberOfSets')"
+            :min="minimum"
+            :max="30"
+            :disabled="workspace.saving.value"
         /></label>
         <label class="workout-config-toggle"
           ><input
             v-model="replaceTargets"
             type="checkbox"
             :disabled="workspace.saving.value"
-          />Set weight and reps for all remaining sets</label
+          />{{ t("training.config.replaceTargets") }}</label
         >
         <template v-if="replaceTargets">
           <BaseInputNumber
             v-model="reps"
-            label="Target reps"
-            title="Target reps"
+            :label="t('training.config.targetReps')"
+            :title="t('training.config.targetReps')"
             :min="1"
             :max="1000"
             :disabled="workspace.saving.value"
           />
           <BaseInputNumber
             v-model="weight"
-            label="Working weight"
-            title="Working weight"
-            unit="kg"
+            :label="t('training.config.workingWeight')"
+            :title="t('training.config.workingWeight')"
+            :unit="t('training.setRow.kg')"
             :min="0"
             :max="1000"
             :decimals="2"
@@ -319,20 +289,16 @@ function saveReplacement() {
             :disabled="workspace.saving.value"
           />
         </template>
-        <p class="muted small">
-          Logged sets stay unchanged. Changing only the count preserves
-          different targets. Added sets copy the last set’s planned reps and
-          weight. Weight includes the bar.
-        </p>
+        <p class="muted small">{{ t("training.config.help") }}</p>
         <BaseButton
           :disabled="workspace.saving.value"
           @click="requestConfiguration"
-          >Save exercise settings</BaseButton
+          >{{ t("training.config.saveSettings") }}</BaseButton
         >
       </template>
       <template v-else-if="view === 'note'">
         <label class="field"
-          ><span>Workout note</span
+          ><span>{{ t("training.config.workoutNote") }}</span
           ><BaseTextarea
             v-model="note"
             :maxlength="2000"
@@ -340,82 +306,47 @@ function saveReplacement() {
             :disabled="workspace.saving.value"
         /></label>
         <p class="muted small">
-          {{ note.length }} / 2000 · Saved with this workout only.
+          {{ t("training.config.noteCounter", { length: note.length }) }}
         </p>
-        <BaseButton :disabled="workspace.saving.value" @click="saveNote"
-          >Save note</BaseButton
-        >
+        <BaseButton :disabled="workspace.saving.value" @click="saveNote">{{
+          t("training.config.saveNote")
+        }}</BaseButton>
       </template>
-      <template v-else>
-        <template v-if="!remaining.length">
-          <p>All sets are logged. Add another exercise to keep training.</p>
-          <BaseButton
-            :disabled="
-              workspace.saving.value ||
-              (workspace.active.value?.exercises.length ?? 0) >= 50
-            "
-            @click="emit('add')"
-            >Add exercises</BaseButton
-          >
-        </template>
-        <p
-          v-else-if="
-            logged && (workspace.active.value?.exercises.length ?? 0) >= 50
-          "
-        >
-          This workout has 50 exercises. Remove an exercise before replacing the
-          remaining sets.
-        </p>
-        <template v-else>
-          <ExerciseCatalog
-            :exercises="catalog"
-            :selected="selection"
-            :busy="workspace.saving.value"
-            @toggle="selection = selection.includes($event) ? [] : [$event]"
-          />
-          <template v-if="replacement">
-            <p class="muted small">
-              {{ remaining.length }} remaining
-              {{ remaining.length === 1 ? "set moves" : "sets move" }} to
-              {{ replacement.name }} with planned reps and 0 kg.
-            </p>
-            <p v-if="logged" class="muted small">
-              {{ logged }} logged
-              {{ logged === 1 ? "set stays" : "sets stay" }} with
-              {{ exercise.name }}.
-            </p>
-            <p v-if="exercise.note" class="muted small">
-              The note is not copied to the replacement.
-            </p>
-          </template>
-          <BaseButton
-            :disabled="!replacement || workspace.saving.value"
-            @click="saveReplacement"
-            >Replace remaining sets</BaseButton
-          >
-        </template>
-      </template>
+      <ExerciseConfigurationReplace
+        v-else
+        :exercise="exercise"
+        :remaining="remaining"
+        :logged="logged"
+        :catalog="catalog"
+        :selection="selection"
+        :replacement="replacement"
+        :busy="workspace.saving.value"
+        :can-add="canAdd"
+        @toggle="selection = selection.includes($event) ? [] : [$event]"
+        @add="emit('add')"
+        @save="saveReplacement"
+      />
       <p v-if="issue" class="field-error" role="alert">{{ issue }}</p>
       <BaseButton
         v-if="issue"
         variant="secondary"
         :disabled="workspace.saving.value"
         @click="reset"
-        >Reload saved values</BaseButton
+        >{{ t("training.config.reload") }}</BaseButton
       >
       <BaseButton
         v-if="view !== 'actions' && !dismiss"
         variant="ghost"
         :disabled="workspace.saving.value"
         @click="close"
-        >Cancel</BaseButton
+        >{{ t("training.config.cancel") }}</BaseButton
       >
     </div>
   </BaseSheet>
   <BaseSheet
     :open="dismiss"
-    title="Discard unsaved changes?"
-    description="This deletes your unsaved note or configuration changes. Saved workout values stay unchanged."
+    :title="t('training.config.discardTitle')"
+    :description="t('training.config.discardDescription')"
     @close="settleExit(false)"
   >
     <div class="form-actions">
@@ -424,68 +355,32 @@ function saveReplacement() {
         :disabled="workspace.saving.value"
         @click="settleExit(false)"
       >
-        Keep editing
+        {{ t("training.config.keepEditing") }}
       </BaseButton>
       <BaseButton
         :disabled="workspace.saving.value"
         @click="settleExit(true)"
       >
-        Discard changes
+        {{ t("training.config.discardAction") }}
       </BaseButton>
     </div>
   </BaseSheet>
   <BaseSheet
     :open="removalOpen"
-    title="Remove unfinished sets?"
-    description="Reducing the set count removes unfinished sets and their target values. Logged sets stay in your workout."
+    :title="t('training.config.removeSetsTitle')"
+    :description="t('training.config.removeSetsDescription')"
     @close="removalOpen = false"
   >
     <div class="form-actions">
       <BaseButton variant="secondary" @click="removalOpen = false">
-        Cancel
+        {{ t("training.config.cancel") }}
       </BaseButton>
       <BaseButton
         :disabled="workspace.saving.value"
         @click="saveConfiguration"
       >
-        Remove sets
+        {{ t("training.config.removeSets") }}
       </BaseButton>
     </div>
   </BaseSheet>
 </template>
-<style scoped>
-.exercise-option-targets {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-.exercise-option-targets :deep(button) {
-  padding-inline: 8px;
-}
-.exercise-option-targets :deep(button) {
-  border-radius: 12px;
-  min-height: 58px;
-}
-.exercise-option-group {
-  display: grid;
-  overflow: clip;
-  background: var(--surface);
-  border-radius: 10px;
-}
-.exercise-option-group :deep(button) {
-  justify-content: flex-start;
-  gap: 14px;
-  min-height: 52px;
-  padding-inline: 18px;
-  border: 0;
-  border-radius: 0;
-  font-size: 16px;
-  font-weight: 450;
-}
-.exercise-option-group :deep(button + button) {
-  border-block-start: 1px solid var(--background);
-}
-.exercise-option-group :deep(button svg) {
-  color: var(--muted);
-}
-</style>

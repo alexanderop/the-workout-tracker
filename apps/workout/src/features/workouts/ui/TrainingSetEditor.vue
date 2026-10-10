@@ -3,6 +3,7 @@ import { computed, ref, watch } from "vue";
 import { BaseSheet, BaseButton } from "@form/ui";
 import SetRow from "./SetRow.vue";
 import type { useTrainingSession } from "./useTrainingSession";
+import { useTranslation } from "../../../i18n";
 const { setId, training, busy } = defineProps<{
   setId: string | null;
   training: ReturnType<typeof useTrainingSession>;
@@ -14,6 +15,7 @@ const emit = defineEmits<{
   options: [id: string];
   select: [id: string];
 }>();
+const { t } = useTranslation();
 const row = computed(() => (setId ? training.rows.get(setId) : undefined));
 const confirmation = ref<"clear" | "discard" | null>(null);
 watch(
@@ -40,19 +42,26 @@ async function clear() {
 <template>
   <BaseSheet
     :open="!!row"
-    :title="row ? `${row.exercise.name} · Set ${row.index + 1}` : 'Edit set'"
-    description="Edit values without logging, or explicitly log this set. Zero reps records a failed attempt."
+    :title="
+      row
+        ? t('training.setEditor.title', {
+            exercise: row.exercise.name,
+            n: row.index + 1,
+          })
+        : t('training.setEditor.fallbackTitle')
+    "
+    :description="t('training.setEditor.description')"
     @close="emit('close')"
   >
     <div v-if="row" class="workout-editor">
-      <nav class="workout-set-nav" aria-label="Choose set to edit">
+      <nav class="workout-set-nav" :aria-label="t('training.setEditor.chooseSet')">
         <BaseButton
           v-for="(set, index) in row.exercise.sets"
           :key="set.id"
           variant="secondary"
           :aria-current="set.id === row.set.id ? 'true' : undefined"
           @click="emit('select', set.id)"
-          >Set {{ index + 1 }}</BaseButton
+          >{{ t("training.setEditor.setButton", { n: index + 1 }) }}</BaseButton
         >
       </nav>
       <SetRow
@@ -72,41 +81,44 @@ async function clear() {
       <BaseButton
         :disabled="busy || !row.touched"
         @click="training.commit(row.set.id, true)"
-        >Save values without logging</BaseButton
+        >{{ t("training.setEditor.saveValues") }}</BaseButton
       >
       <BaseButton
         v-if="row.set.completed"
         variant="secondary"
         :disabled="busy || row.touched"
         @click="training.undoSet(row.set.id)"
-        >Undo log</BaseButton
+        >{{ t("training.setEditor.undoLog") }}</BaseButton
       >
       <BaseButton
         v-if="row.set.completed"
         variant="secondary"
         :disabled="busy"
         @click="confirmation = 'clear'"
-        >Clear logged set</BaseButton
+        >{{ t("training.setEditor.clearLogged") }}</BaseButton
       >
       <BaseButton
         v-if="row.touched"
         variant="ghost"
         :disabled="busy"
         @click="confirmation = 'discard'"
-        >Discard input changes</BaseButton
+        >{{ t("training.setEditor.discardChanges") }}</BaseButton
       >
-      <BaseButton variant="ghost" @click="emit('close')">Done</BaseButton>
+      <BaseButton variant="ghost" @click="emit('close')">{{ t("training.setEditor.done") }}</BaseButton
+      >
     </div>
   </BaseSheet>
   <BaseSheet
     :open="confirmation !== null"
     :title="
-      confirmation === 'clear' ? 'Clear logged set?' : 'Discard input changes?'
+      confirmation === 'clear'
+        ? t('training.setEditor.clearTitle')
+        : t('training.discardInput.title')
     "
     :description="
       confirmation === 'clear'
-        ? 'This removes the logged result and returns the set to unfinished work.'
-        : 'This deletes the input drafts for this set and restores its saved values.'
+        ? t('training.setEditor.clearDescription')
+        : t('training.discardInput.description')
     "
     @close="confirmation = null"
   >
@@ -116,10 +128,14 @@ async function clear() {
         :disabled="busy"
         @click="confirmation = null"
       >
-        Cancel
+        {{ t("training.setEditor.cancel") }}
       </BaseButton>
       <BaseButton :disabled="busy" @click="confirm">
-        {{ confirmation === "clear" ? "Clear set" : "Discard input" }}
+        {{
+          confirmation === "clear"
+            ? t("training.setEditor.clearAction")
+            : t("training.discardInput.action")
+        }}
       </BaseButton>
     </div>
   </BaseSheet>

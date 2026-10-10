@@ -3,38 +3,45 @@ import { BaseButton } from "@form/ui";
 import { WorkoutSettings } from "../features/workouts/ui";
 import { useWorkoutRouteContext } from "../app/workoutRouteContext";
 import AppearanceSettings from "../app/AppearanceSettings.vue";
+import LanguageSettings from "../app/LanguageSettings.vue";
+import { useTranslation } from "../i18n";
 
 definePage({ name: "settings", path: "/settings" });
 const { workspace, installation } = useWorkoutRouteContext();
 const { installed, offlineReady, install } = installation;
+const { t } = useTranslation();
 </script>
 
 <template>
   <WorkoutSettings :workspace="workspace">
     <AppearanceSettings />
+    <LanguageSettings />
     <section class="settings-section">
-      <h2>Install app</h2>
+      <h2>{{ t("shell.install.settings.title") }}</h2>
       <div class="settings-row">
         <span
-          >The Workout Tracker on your home screen<small
-            >Open your journal like any other app.</small
-          ></span
+          >{{ t("shell.install.settings.home")
+          }}<small>{{ t("shell.install.settings.hint") }}</small></span
         ><BaseButton
           unstyled
           class="btn secondary"
           :disabled="installed"
           @click="install"
         >
-          {{ installed ? "Installed" : "Install app" }}
+          {{
+            installed
+              ? t("shell.install.settings.installed")
+              : t("shell.install.settings.install")
+          }}
         </BaseButton>
       </div>
       <p class="muted small">
         {{
           offlineReady
-            ? "Ready for offline use."
-            : "Offline availability starts after the first complete load."
+            ? t("shell.install.settings.offlineReady")
+            : t("shell.install.settings.offlineLater")
         }}
-        No account. No cloud sync.
+        {{ t("shell.install.settings.privacy") }}
       </p>
     </section>
   </WorkoutSettings>

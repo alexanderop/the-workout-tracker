@@ -1,38 +1,23 @@
 <script setup lang="ts">
 import type { Component } from "vue";
 import { Check, Monitor, Moon, Sun } from "@lucide/vue";
-import {
-  accents,
-  themes,
-  useAppearance,
-  type Accent,
-  type Theme,
-} from "./appearance";
+import { useTranslation } from "../i18n";
+import { accents, themes, useAppearance } from "./appearance";
 
 const { theme, accent, setTheme, setAccent } = useAppearance();
-const themeOptions: Record<Theme, { label: string; icon: Component }> = {
-  system: { label: "System", icon: Monitor },
-  light: { label: "Light", icon: Sun },
-  dark: { label: "Dark", icon: Moon },
-};
-const accentLabels: Record<Accent, string> = {
-  blue: "Blue",
-  teal: "Teal",
-  violet: "Violet",
-  pink: "Pink",
-  sand: "Sand",
-};
+const { t } = useTranslation();
+const themeIcons = { system: Monitor, light: Sun, dark: Moon } satisfies Record<
+  (typeof themes)[number],
+  Component
+>;
 </script>
 
 <template>
   <section class="settings-section" aria-labelledby="appearance-title">
-    <h2 id="appearance-title">Appearance</h2>
-    <p class="muted small">
-      Follow your device or pick a theme and an accent color. The choice stays
-      on this device.
-    </p>
+    <h2 id="appearance-title">{{ t("shell.appearance.title") }}</h2>
+    <p class="muted small">{{ t("shell.appearance.help") }}</p>
     <fieldset class="choice-group">
-      <legend class="choice-legend">Theme</legend>
+      <legend class="choice-legend">{{ t("shell.appearance.theme") }}</legend>
       <div class="theme-options">
         <label v-for="id in themes" :key="id" class="theme-option">
           <input
@@ -42,17 +27,13 @@ const accentLabels: Record<Accent, string> = {
             :checked="theme === id"
             @change="setTheme(id)"
           />
-          <component
-            :is="themeOptions[id].icon"
-            :size="20"
-            aria-hidden="true"
-          />
-          <span>{{ themeOptions[id].label }}</span>
+          <component :is="themeIcons[id]" :size="20" aria-hidden="true" />
+          <span>{{ t(`shell.appearance.themes.${id}`) }}</span>
         </label>
       </div>
     </fieldset>
     <fieldset class="choice-group">
-      <legend class="choice-legend">Accent color</legend>
+      <legend class="choice-legend">{{ t("shell.appearance.accent") }}</legend>
       <div class="accent-options">
         <label v-for="id in accents" :key="id" class="accent-option">
           <input
@@ -67,7 +48,7 @@ const accentLabels: Record<Accent, string> = {
               <Check :size="18" stroke-width="3" aria-hidden="true" />
             </span>
           </span>
-          <span>{{ accentLabels[id] }}</span>
+          <span>{{ t(`shell.appearance.accents.${id}`) }}</span>
         </label>
       </div>
     </fieldset>

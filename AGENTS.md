@@ -34,6 +34,7 @@ Write clear, maintainable production code. Keep changes focused and dependencies
 - Preserve workspace exports, feature boundaries and layer direction.
 - Validate external data at boundaries and handle failures explicitly. Expected failures are `Result` values with one `TaggedError` per failure ([Expected failures](docs/architecture.md#expected-failures)); every UI message goes through the exhaustive table in `ui/errorMessages.ts`. Programmer errors may still throw.
 - Preserve accessible native semantics, keyboard navigation and focus management.
+- Put every user-visible string in the English and German catalogs in `apps/workout/src/i18n` and read it with `t()`; see [Add or change a user-visible string](docs/workflows.md#add-or-change-a-user-visible-string). `@form/ui` stays text-free, and domain, ports, application and adapters return codes instead of text.
 - For new reusable UI components, follow the [Histoire-first component workflow](docs/workflows.md#add-a-reusable-component-and-story): iterate in the explorer, then inspect the real app flow when integrating.
 - Deliver changes directly on `main` or merge the working branch into `main`; no pull request is required. Follow [Verification and delivery](docs/workflows.md#verification-and-delivery).
 - Clean up subscriptions, event listeners and owned resources.

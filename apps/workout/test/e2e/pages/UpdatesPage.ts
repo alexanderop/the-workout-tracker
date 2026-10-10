@@ -113,6 +113,9 @@ export class UpdatesPage {
   async activateFromAnotherTab() {
     const other = await this.page.context().newPage();
     await other.goto("/");
+    // The app loads its catalog after the page's load event; message the
+    // worker only once the app runs, as a user's second tab would.
+    await expect(other.getByRole("main")).toBeVisible();
     await other.evaluate(async () => {
       const registration = await navigator.serviceWorker.ready;
       registration.waiting?.postMessage({ type: "SKIP_WAITING" });

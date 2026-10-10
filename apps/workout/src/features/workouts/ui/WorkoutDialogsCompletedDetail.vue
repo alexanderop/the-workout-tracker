@@ -2,7 +2,8 @@
 import { BaseSheet, BaseButton } from "@form/ui";
 import { Check, Repeat2, BookmarkPlus } from "@lucide/vue";
 import { sessionTotals, type CompletedSession } from "../domain";
-import { fmt, longDate, sessionMinutes } from "./presentation";
+import { sessionMinutes } from "./presentation";
+import { useFormat, useTranslation } from "../../../i18n";
 
 const { detail, open, saving, active } = defineProps<{
   detail: CompletedSession | undefined;
@@ -16,28 +17,30 @@ const emit = defineEmits<{
   repeat: [id: string];
   convert: [id: string];
 }>();
+const { t } = useTranslation();
+const format = useFormat();
 </script>
 
 <template>
   <BaseSheet
     :open="open"
-    :title="detail?.name ?? 'Workout'"
-    :description="detail ? longDate(detail.finishedAt) : ''"
+    :title="detail?.name ?? t('dialogs.completedDetail.fallbackTitle')"
+    :description="detail ? format.longDate(detail.finishedAt) : ''"
     wide
     @close="emit('close')"
     ><template v-if="detail"
       ><div class="finish-stats">
         <div>
           <strong>{{ sessionTotals(detail).completedSets }}</strong
-          ><span>sets logged</span>
+          ><span>{{ t("dialogs.stats.setsLogged") }}</span>
         </div>
         <div>
-          <strong>{{ fmt(sessionTotals(detail).volumeKg) }}</strong
-          ><span>kg volume</span>
+          <strong>{{ format.number(sessionTotals(detail).volumeKg) }}</strong
+          ><span>{{ t("dialogs.stats.kgVolume") }}</span>
         </div>
         <div>
           <strong>{{ sessionMinutes(detail) }}</strong
-          ><span>minutes</span>
+          ><span>{{ t("dialogs.stats.minutes") }}</span>
         </div>
       </div>
       <section
@@ -54,11 +57,20 @@ const emit = defineEmits<{
           :key="set.id"
           class="detail-set"
         >
-          <span class="muted">Set {{ index + 1 }}</span
-          ><span>{{ fmt(set.weightKg) }} kg × {{ set.reps }} reps</span
+          <span class="muted">{{
+            t("dialogs.fields.setNumber", { number: index + 1 })
+          }}</span
+          ><span>{{
+            t("dialogs.completedDetail.setLine", {
+              weight: format.number(set.weightKg),
+              reps: set.reps,
+            })
+          }}</span
           ><span class="detail-status"
             ><Check v-if="set.completed" :size="15" />{{
-              set.completed ? "Logged" : "Not logged"
+              set.completed
+                ? t("dialogs.completedDetail.logged")
+                : t("dialogs.completedDetail.notLogged")
             }}</span
           >
         </div>
@@ -68,7 +80,7 @@ const emit = defineEmits<{
           variant="secondary"
           :disabled="saving"
           @click="emit('edit', detail)"
-          >Edit workout</BaseButton
+          >{{ t("dialogs.completedDetail.edit") }}</BaseButton
         >
         <BaseButton
           unstyled
@@ -76,13 +88,13 @@ const emit = defineEmits<{
           :disabled="saving || active"
           @click="emit('repeat', detail.id)"
         >
-          <Repeat2 :size="17" />Repeat workout</BaseButton
+          <Repeat2 :size="17" />{{ t("dialogs.completedDetail.repeat") }}</BaseButton
         ><BaseButton
           unstyled
           class="btn secondary"
           @click="emit('convert', detail.id)"
         >
-          <BookmarkPlus :size="17" />Save as template
+          <BookmarkPlus :size="17" />{{ t("dialogs.completedDetail.saveAsTemplate") }}
         </BaseButton>
       </div>
     </template></BaseSheet

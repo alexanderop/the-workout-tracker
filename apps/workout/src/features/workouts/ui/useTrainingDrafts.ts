@@ -1,5 +1,6 @@
 import { matchError } from "@form/result";
 import { computed, reactive, type Ref } from "vue";
+import type { Translate } from "../../../i18n";
 import type { DraftJournal } from "../application";
 import type { Command, SessionExercise, Snapshot, WorkoutSet } from "../domain";
 import type { RawValues, SetDraft } from "../domain/drafts";
@@ -25,13 +26,6 @@ export type TrainingRow = TrainingDraftState & {
 export type DraftCheck =
   | { readonly kind: "ready" }
   | { readonly kind: "unavailable"; readonly row: TrainingRow };
-const deletedIssue =
-  "This workout's data was deleted in another tab. Reload before editing.";
-const unsavedIssue =
-  "Draft not saved on this device. Keep this page open and try again.";
-const uncleanedIssue =
-  "Draft saved, but older input could not be cleared on this device.";
-
 /**
  * Owns one editable row per set of the active workout and keeps it in step
  * with the injected draft journal. Selection and commands live in
@@ -41,7 +35,9 @@ export function useTrainingDrafts(options: {
   snapshot: Ref<Snapshot | null>;
   saving: Readonly<Ref<boolean>>;
   journal: DraftJournal;
+  t: Translate;
 }) {
+  const { t } = options;
   const rows = reactive(new Map<string, TrainingRow>());
   const detached = useDetachedDrafts(options.journal);
   const active = computed(() => options.snapshot.value?.active ?? null);
@@ -50,8 +46,7 @@ export function useTrainingDrafts(options: {
   let stranded: SetDraft[] = [];
   function consume(row: TrainingRow, records = row.records) {
     if (options.journal.consume(records).isErr()) {
-      row.storageIssue =
-        "Draft recovery could not be cleared. Keep this page open and try again.";
+      row.storageIssue = t("training.notices.recoveryNotCleared");
       return false;
     }
     const acknowledged = new Set(records.map((record) => record.id));
@@ -121,8 +116,7 @@ export function useTrainingDrafts(options: {
       for (const record of row.records) consumed.add(record.id);
       if (consume(row)) continue;
       stranded = union(stranded, row.records);
-      issue =
-        "Saved, but input drafts of a removed set could not be cleared on this device. They are retried automatically.";
+      issue = t("training.notices.removedSetStranded");
     }
     return { consumed, issue };
   }
@@ -142,8 +136,7 @@ export function useTrainingDrafts(options: {
     if (recovered.isErr())
       return {
         records: [],
-        storageIssue:
-          "Draft recovery is unavailable. New edits may not survive closing this page.",
+        storageIssue: t("training.notices.recoveryUnavailable"),
       };
     return { records: [...recovered.value], storageIssue: "" };
   }
@@ -194,8 +187,8 @@ export function useTrainingDrafts(options: {
       });
     if (written.isErr()) {
       row.storageIssue = matchError(written.error, {
-        DraftsDeleted: () => deletedIssue,
-        DraftStorageFailed: () => unsavedIssue,
+        DraftsDeleted: () => t("training.notices.deleted"),
+        DraftStorageFailed: () => t("training.notices.unsaved"),
       });
       return;
     }
@@ -212,7 +205,7 @@ export function useTrainingDrafts(options: {
     if (options.journal.consume(predecessors).isOk()) return "";
     // Keep them so the next acknowledgement retries.
     row.records.push(...predecessors);
-    return uncleanedIssue;
+    return t("training.notices.uncleaned");
   }
   /** Returns whether the row accepted the input. */
   function edit(setId: string, values: Partial<RawValues>): boolean {
@@ -262,16 +255,14 @@ export function useTrainingDrafts(options: {
     for (const row of rows.values()) {
       const recovery = options.journal.recover(session, row.set.id);
       if (recovery.isErr()) {
-        row.storageIssue =
-          "Could not check saved drafts. Try again before saving.";
+        row.storageIssue = t("training.notices.checkFailed");
         return { kind: "unavailable", row };
       }
       const known = new Set(row.records.map((record) => record.id));
       const unseen = recovery.value.filter((record) => !known.has(record.id));
       if (!unseen.length) continue;
       Object.assign(row, mergeUnseenDrafts(row, unseen));
-      row.issue =
-        "Another tab has input drafts for this set. Review them before saving.";
+      row.issue = t("training.notices.otherTab");
     }
     return { kind: "ready" };
   }

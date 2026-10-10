@@ -4,6 +4,7 @@ import {
   type Inputs,
   type Transition,
 } from "./commands";
+import type { RejectionCode } from "./errors";
 import { ownRecord } from "./schemas";
 import type {
   ActiveSession,
@@ -18,12 +19,12 @@ import { sessionTotals } from "./session";
 export type ReducerContext = {
   readonly snapshot: Snapshot;
   readonly inputs: Inputs;
-  readonly reject: (message: string) => Transition;
+  readonly reject: (code: RejectionCode) => Transition;
   readonly unchanged: () => Transition;
   readonly changed: (next: Snapshot) => Transition;
   readonly selectedExercises: (
     ids: readonly string[],
-  ) => SessionExercise[] | string;
+  ) => SessionExercise[] | RejectionCode;
 };
 
 export function reduceActive(
@@ -39,7 +40,7 @@ export function reduceActive(
     return unchanged();
   const candidate = snapshot.active;
   if (!candidate || candidate.id !== command.sessionId)
-    return reject("This workout is no longer active.");
+    return reject("noLongerActive");
   const active = candidate;
   const saveActive = (next: ActiveSession): Transition =>
     changed({ ...snapshot, active: next });
@@ -68,7 +69,7 @@ export function reduceActive(
   }
   function finishWorkout(): Transition {
     if (!sessionTotals(active).completedSets)
-      return reject("Complete at least one set before finishing.");
+      return reject("finishNeedsLoggedSet");
     const completed: CompletedSession = {
       id: active.id,
       status: "completed",
@@ -91,7 +92,7 @@ export function reduceActive(
         ? [request.exerciseId]
         : request.exerciseIds;
     if (active.exercises.length + ids.length > 50)
-      return reject("A workout can contain up to 50 exercises.");
+      return reject("tooManyExercises");
     const additions = selectedExercises(ids);
     if (typeof additions === "string") return reject(additions);
     return saveActive({
@@ -122,12 +123,12 @@ export function reduceActive(
             row.sets.some((set) => set.id === request.setId),
           )
         : active.exercises.find((row) => row.id === request.exerciseId);
-    if (!candidateExercise) return reject("Workout exercise was not found.");
+    if (!candidateExercise) return reject("workoutExerciseNotFound");
     const exercise = candidateExercise;
     if (request.type === "remove-exercise") {
       if (active.exercises.length === 1)
         return reject(
-          "A workout needs at least one exercise. Discard the workout instead.",
+          "needsOneExercise",
         );
       return saveActive({
         ...active,
@@ -164,15 +165,15 @@ export function reduceActive(
     }
     function replaceExercise(replacementId: string): Transition {
       const replacement = ownRecord(snapshot.exercises, replacementId);
-      if (!replacement) return reject("Exercise was not found.");
+      if (!replacement) return reject("exerciseNotFound");
       if (replacement.id === exercise.exerciseId)
-        return reject("Choose a different exercise.");
+        return reject("chooseDifferentExercise");
       const remaining = exercise.sets.filter((set) => !set.completed);
       const logged = exercise.sets.filter((set) => set.completed);
       if (!remaining.length)
-        return reject("All sets are logged. Add another exercise instead.");
+        return reject("allSetsLogged");
       if (logged.length && active.exercises.length >= 50)
-        return reject("A workout can contain up to 50 exercises.");
+        return reject("tooManyExercises");
       const next: SessionExercise = {
         id: inputs.id(),
         exerciseId: replacement.id,
@@ -205,7 +206,7 @@ export function reduceActive(
       const logged = exercise.sets.filter((set) => set.completed).length;
       if (configuration.setCount < logged)
         return reject(
-          "The set count cannot remove logged work. Clear a set explicitly first.",
+          "setCountRemovesLogged",
         );
       let remaining = configuration.setCount - logged;
       const retained = exercise.sets
@@ -222,7 +223,7 @@ export function reduceActive(
           };
         });
       const previous = exercise.sets.at(-1);
-      if (!previous) return reject("Exercise has no sets.");
+      if (!previous) return reject("exerciseHasNoSets");
       const values = configuration.values ?? {
         weightKg: previous.weightKg,
         reps: setTargetReps(previous),
@@ -240,7 +241,7 @@ export function reduceActive(
       addition: Extract<Command, { type: "add-set" }>,
     ): Transition {
       const previous = exercise.sets.at(-1);
-      if (!previous) return reject("Exercise has no sets.");
+      if (!previous) return reject("exerciseHasNoSets");
       const reps = addition.values?.reps ?? setTargetReps(previous);
       return saveExercise({
         ...exercise,
@@ -263,10 +264,10 @@ export function reduceActive(
       >,
     ): Transition {
       const set = exercise.sets.find((row) => row.id === update.setId);
-      if (!set) return reject("Set was not found.");
+      if (!set) return reject("setNotFound");
       if (update.type === "remove-set") {
         if (exercise.sets.length === 1)
-          return reject("Keep at least one set per exercise.");
+          return reject("keepOneSet");
         return saveExercise(
           {
             ...exercise,
@@ -277,7 +278,7 @@ export function reduceActive(
       }
       const nextSet = changedSet(set, update);
       if (!nextSet.completed && nextSet.reps === 0)
-        return reject("Planned sets need at least one target repetition.");
+        return reject("plannedSetNeedsReps");
       const rest = nextRest(set, nextSet);
       return saveExercise(
         {

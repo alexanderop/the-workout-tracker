@@ -122,6 +122,7 @@ describe("workout transitions", () => {
       reduceWorkout(snapshot, command, { at: FIXED_NOW, id: factory.id }),
     ).toEqual({
       kind: "rejected",
+      code: "finishNeedsLoggedSet",
       message: "Complete at least one set before finishing.",
     });
     const logged = apply(snapshot, {

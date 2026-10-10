@@ -3,6 +3,11 @@ import {
   emptyCatalogFilters,
   filterCatalog,
 } from "../../src/features/workouts/ui/catalogFilters";
+import {
+  categoryLabel,
+  equipmentLabel,
+} from "../../src/features/workouts/ui/exerciseLabels";
+import { translator } from "../../src/i18n/testing";
 import { createWorkoutFactory } from "../support/factories";
 
 const factory = createWorkoutFactory("catalog");
@@ -64,6 +69,27 @@ describe("catalog browsing", () => {
       filterCatalog(exercises, {
         search: "",
         filters: { ...emptyCatalogFilters, equipment: "Towel" },
+        sort: "ascending",
+      }),
+    ).toEqual([]);
+  });
+  it("finds exercises by a translated muscle group or equipment name", () => {
+    const { t } = translator("de");
+    const search = (text: string) =>
+      filterCatalog(exercises, {
+        search: text,
+        filters: emptyCatalogFilters,
+        sort: "ascending",
+        labels: (exercise) =>
+          `${categoryLabel(exercise.category, t)} ${equipmentLabel(exercise.equipment, t)}`,
+      }).map((exercise) => exercise.id);
+    expect(search("brust")).toEqual(["built-in", "dumbbell", "custom"]);
+    expect(search("langhantel")).toEqual(["arms", "built-in", "custom"]);
+    expect(search("chest")).toEqual(["built-in", "dumbbell", "custom"]);
+    expect(
+      filterCatalog(exercises, {
+        search: "brust",
+        filters: emptyCatalogFilters,
         sort: "ascending",
       }),
     ).toEqual([]);

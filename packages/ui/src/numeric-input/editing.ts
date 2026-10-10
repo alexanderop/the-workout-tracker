@@ -1,3 +1,6 @@
+import { defaultUiText } from "../ui-text";
+import type { NumericText } from "../ui-text";
+
 /**
  * Calculator-style editing adapted from our workoutTracker numeric keypad.
  *
@@ -63,27 +66,26 @@ export function validNumber(
 }
 
 /** Explains why a draft cannot be confirmed, or invites a replacement. */
-export function numericHint(
-  draft: NumericDraft,
-  limits: NumericLimits,
-  unit: string,
-): string {
-  const range = `from ${limits.min} to ${limits.max}${unit ? ` ${unit}` : ""}`;
-  if (validNumber(draft.text, limits) !== null)
-    return draft.fresh
-      ? "Type a new value to replace this one."
-      : "Ready when you are.";
-  if (!limits.decimals) return `Enter a whole number ${range}.`;
-  if (exceedsPrecision(draft.text, limits.decimals))
-    return `Enter a value with up to ${limits.decimals} decimal ${limits.decimals === 1 ? "place" : "places"} ${range}.`;
-  return `Enter a value ${range}.`;
+export function createNumericHint(text: NumericText) {
+  return (draft: NumericDraft, limits: NumericLimits, unit: string): string => {
+    const range = { ...limits, unit };
+    if (validNumber(draft.text, limits) !== null)
+      return draft.fresh ? text.replace : text.ready;
+    if (!limits.decimals) return text.wholeNumber(range);
+    if (exceedsPrecision(draft.text, limits.decimals))
+      return text.fewerDecimals(range);
+    return text.value(range);
+  };
 }
 
-export function pasteHint(limits: NumericLimits): string {
-  const kind = limits.decimals
-    ? `a number with up to ${limits.decimals} decimal places`
-    : "a whole number";
-  return `Paste ${kind} from ${limits.min} to ${limits.max}.`;
+export const numericHint = createNumericHint(defaultUiText.numeric);
+
+export function pasteHint(
+  limits: NumericLimits,
+  text: NumericText = defaultUiText.numeric,
+): string {
+  const range = { ...limits, unit: "" };
+  return limits.decimals ? text.pasteDecimal(range) : text.pasteWhole(range);
 }
 
 const maxStepDecimals = 10;

@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { BaseButton } from "@form/ui";
+import { useTranslation } from "../../../i18n";
 import type { Exercise } from "../domain";
 import ExerciseCatalog from "./ExerciseCatalog.vue";
 defineProps<{ exercises: readonly Exercise[]; initialSearch?: string }>();
 const emit = defineEmits<{ create: [] }>();
+const { t } = useTranslation();
 </script>
 <template>
   <div class="page-heading exercise-library-heading">
     <div>
-      <h1>Exercises</h1>
+      <h1>{{ t("exercises.page.title") }}</h1>
     </div>
     <BaseButton
       type="button"
@@ -16,7 +18,7 @@ const emit = defineEmits<{ create: [] }>();
       class="text-button"
       @click="emit('create')"
     >
-      Create
+      {{ t("exercises.page.create") }}
     </BaseButton>
   </div>
   <section class="catalog-panel">

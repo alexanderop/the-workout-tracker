@@ -29,7 +29,7 @@ function destination(next: WorkoutPage) {
 
 export function useWorkoutNavigation(
   clearMessage: () => void,
-  reportError: (message: string) => void,
+  reportError: () => void,
   focusMain: () => void,
 ) {
   const route = useRoute();
@@ -75,7 +75,7 @@ export function useWorkoutNavigation(
   );
 
   function reportNavigationError() {
-    reportError("This page could not be opened. Please try again or reload.");
+    reportError();
   }
   onScopeDispose(router.onError(reportNavigationError));
 

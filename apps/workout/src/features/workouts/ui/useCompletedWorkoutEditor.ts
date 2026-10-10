@@ -2,10 +2,12 @@ import { computed, ref, shallowRef } from "vue";
 import type { CompletedSession, Snapshot } from "../domain";
 import { completedCorrection, completedDraft } from "../domain/completedDrafts";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
+import type { Translate } from "../../../i18n";
 
 export function useCompletedWorkoutEditor(
   session: CompletedSession,
   workspace: Pick<WorkoutWorkspace, "snapshot" | "saving" | "error" | "run">,
+  t: Translate,
 ) {
   const baseline = shallowRef(session);
   const revision = ref(workspace.snapshot.value?.revision ?? 0);
@@ -30,8 +32,7 @@ export function useCompletedWorkoutEditor(
     if (pending.value || state.value !== "ready") return false;
     const command = completedCorrection(baseline.value, draft.value);
     if (!command) {
-      localError.value =
-        "Enter a workout name, 0–1,000 kg and 0–1,000 whole reps for each logged set.";
+      localError.value = t("dialogs.completedEditor.invalid");
       return false;
     }
     busy.value = true;
@@ -40,8 +41,7 @@ export function useCompletedWorkoutEditor(
       const result = await workspace.run(command, revision.value);
       if (!result) {
         localError.value =
-          workspace.error.value ||
-          "Could not save. Your input is still here. Try again.";
+          workspace.error.value || t("dialogs.completedEditor.saveFailed");
         return false;
       }
       adopt(result);
