@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, useAttrs, useId, useTemplateRef, watch } from "vue";
 import { DialogRoot } from "reka-ui";
-import { Check, Delete } from "@lucide/vue";
+import { Check } from "@lucide/vue";
 import BaseButton from "../button/BaseButton.vue";
+import NumericKeypad from "./NumericKeypad.vue";
+import NumericPresets from "./NumericPresets.vue";
 import BaseDialogTrigger from "../dialog/BaseDialogTrigger.vue";
 import BaseDialogContent from "../dialog/BaseDialogContent.vue";
 import BaseDialogTitle from "../dialog/BaseDialogTitle.vue";
@@ -58,7 +60,6 @@ const hintId = useId();
 const limits = computed(() => ({ min, max, decimals, presetStep }));
 const presets = ref<number[]>([]);
 const value = computed(() => validNumber(draft.value.text, limits.value));
-const digits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 watch(
   open,
   (isOpen) => {
@@ -167,21 +168,11 @@ function focusDisplay(event: Event) {
         </BaseDialogClose>
       </header>
       <div class="ui-numeric-body">
-        <section class="ui-numeric-suggestions" :aria-label="text.suggestions">
-          <p>{{ text.quickPick }} <span>{{ text.tapToUse }}</span></p>
-          <div class="ui-numeric-presets">
-            <BaseButton
-              v-for="preset in presets"
-              :key="preset"
-              type="button"
-              variant="secondary"
-              class="ui-numeric-preset"
-              :aria-label="text.usePreset({ value: preset, unit })"
-              @click="confirm(preset)"
-              >{{ preset }}<small v-if="unit">{{ unit }}</small></BaseButton
-            >
-          </div>
-        </section>
+        <NumericPresets
+          :presets="presets"
+          :unit="unit"
+          @pick="confirm"
+        />
         <div
           ref="display"
           tabindex="-1"
@@ -201,42 +192,7 @@ function focusDisplay(event: Event) {
             {{ pasteIssue || hint(draft, limits, unit) }}
           </p>
         </div>
-        <div class="ui-numeric-keypad" role="group" :aria-label="text.keypad">
-          <BaseButton
-            v-for="digit in digits"
-            :key="digit"
-            type="button"
-            variant="secondary"
-            class="ui-numeric-key"
-            @click="press(digit)"
-            >{{ digit }}</BaseButton
-          >
-          <BaseButton
-            v-if="decimals"
-            type="button"
-            variant="secondary"
-            class="ui-numeric-key"
-            :aria-label="text.decimalPoint"
-            @click="press('.')"
-            >.</BaseButton
-          >
-          <span v-else />
-          <BaseButton
-            type="button"
-            variant="secondary"
-            class="ui-numeric-key"
-            @click="press('0')"
-            >0</BaseButton
-          >
-          <BaseButton
-            type="button"
-            variant="secondary"
-            class="ui-numeric-key"
-            :aria-label="text.backspace"
-            @click="press('Backspace')"
-            ><Delete :size="22"
-          /></BaseButton>
-        </div>
+        <NumericKeypad :decimals="decimals" @press="press" />
       </div>
       <BaseButton
         type="button"
@@ -309,33 +265,6 @@ function focusDisplay(event: Event) {
   color: var(--ui-muted-foreground);
   font-size: 12px;
 }
-.ui-numeric-suggestions > p {
-  margin: 0 0 10px;
-  font-size: 12px;
-}
-.ui-numeric-suggestions > p > span {
-  float: right;
-  color: var(--ui-muted-foreground);
-  font-size: 11px;
-}
-.ui-numeric-presets {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-}
-.ui-numeric-preset {
-  min-height: 44px;
-  padding: 8px 4px;
-  border-radius: 7px;
-  background: var(--ui-secondary);
-  color: var(--ui-foreground);
-  font-size: 14px;
-}
-.ui-numeric-preset small {
-  margin-inline-start: 4px;
-  font-size: 10px;
-  color: var(--ui-muted-foreground);
-}
 .ui-numeric-display {
   padding: 16px 0;
   text-align: center;
@@ -368,34 +297,6 @@ function focusDisplay(event: Event) {
 }
 .ui-numeric-display .ui-numeric-error {
   color: var(--ui-destructive);
-}
-.ui-numeric-keypad {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-.ui-numeric-key {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 54px;
-  padding: 8px;
-  border-radius: 8px;
-  background: var(--ui-secondary);
-  color: var(--ui-foreground);
-  font-size: 22px;
-  font-weight: 500;
-  touch-action: manipulation;
-}
-@media (hover: hover) and (pointer: fine) {
-  .ui-numeric-key:hover,
-  .ui-numeric-preset:hover {
-    background: color-mix(
-      in oklch,
-      var(--ui-secondary) 85%,
-      var(--ui-foreground)
-    );
-  }
 }
 .ui-numeric-confirm {
   display: flex;
@@ -433,9 +334,6 @@ function focusDisplay(event: Event) {
   .ui-numeric-display {
     padding-block: 4px;
   }
-  .ui-numeric-key {
-    min-height: 46px;
-  }
 }
 @media (max-height: 600px) and (max-width: 650px) {
   :global(.ui-numeric-dialog) {
@@ -444,14 +342,8 @@ function focusDisplay(event: Event) {
   .ui-numeric-description {
     margin-block-start: 4px;
   }
-  .ui-numeric-suggestions > p {
-    margin-block-end: 6px;
-  }
   .ui-numeric-display span {
     font-size: 30px;
-  }
-  .ui-numeric-key {
-    min-height: 44px;
   }
 }
 </style>
