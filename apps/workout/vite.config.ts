@@ -14,6 +14,33 @@ function previewBase(command: string) {
   return command === "serve" ? "/product-preview/" : "./";
 }
 
+// The route chunk is a dynamic import, so the browser finds it only after the
+// entry has run. index.html starts that download from the address hash
+// instead; this lists the chunk URLs by route name for it.
+function routeChunkFiles(): Plugin {
+  let publicBase = "/";
+  return {
+    name: "route-chunk-files",
+    configResolved(config) {
+      publicBase = config.base;
+    },
+    transformIndexHtml: {
+      order: "post",
+      handler(html, context) {
+        if (!context.bundle) return html;
+        const files = Object.fromEntries(
+          Object.keys(context.bundle).flatMap((name) => {
+            const route = /\/(\w+)Route-[^/]+\.js$/.exec(name)?.[1];
+            return route ? [[route.toLowerCase(), publicBase + name]] : [];
+          }),
+        );
+        const script = `<script>window.__routeFiles=${JSON.stringify(files)};</script>`;
+        return html.replace("</head>", `${script}</head>`);
+      },
+    },
+  };
+}
+
 export default defineConfig(({ mode, command }) => {
   const preview = mode === "design-preview";
   return {
@@ -32,13 +59,17 @@ export default defineConfig(({ mode, command }) => {
             if (filePath.endsWith(".webp")) return false;
             return undefined;
           },
+          // The startup file is deliberately one large chunk (see below).
+          chunkSizeWarningLimit: 600,
           rolldownOptions: {
             output: {
-              // Code that several lazy routes and the entry use lives in one
-              // shared chunk instead of a chain of small ones. Each chunk is
-              // compressed on its own, so fewer chunks ship fewer bytes. Routes
-              // such as Settings stay lazy.
-              codeSplitting: { groups: [{ name: "shared", minShareCount: 2 }] },
+              codeSplitting: {
+                // Everything the entry needs to start goes into one file.
+                // Automatic splitting spread it over seven small files that
+                // were all requested at once, which cost more round trips on
+                // a slow connection and compressed worse than one file.
+                groups: [{ name: "app", tags: ["$initial"] }],
+              },
             },
           },
         },
@@ -77,6 +108,7 @@ export default defineConfig(({ mode, command }) => {
       vue(),
       tailwindcss(),
       catalogs(),
+      routeChunkFiles(),
       {
         name: "build-version-meta",
         transformIndexHtml: () => [

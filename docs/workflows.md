@@ -137,6 +137,14 @@ The last three commands require a fresh `pnpm performance:build` with the same b
 
 [Lighthouse configuration](../lighthouserc.cjs) runs three fresh-storage mobile audits per route with simulated throttling and median assertions. Required thresholds are performance score at least 90, Largest Contentful Paint at most 2,750ms, Total Blocking Time at most 300ms, and Cumulative Layout Shift at most 0.1. The audit URLs include a route-specific query parameter because Lighthouse CI groups URLs without their hash; this keeps the two hash routes independently gated. Reports stay local in `.lighthouseci`; there is no public report upload. Lighthouse is a lab measurement, not a measurement of real users' INP or installed-device startup.
 
+Largest Contentful Paint is simulated: Lighthouse replays the recorded requests on a 1.6 Mbps link with 150ms round trips and counts every request that started or finished before the measured paint. In this app that is almost all startup requests, so the number follows bytes and round trips before the first screen, not main-thread work. The startup path is arranged around that:
+
+- `build.rolldownOptions.output.codeSplitting` in `vite.config.ts` puts every module the entry needs into one `app` chunk (the built-in `$initial` tag). Seven small files requested at once cost extra round trips and compressed worse. Lazy route chunks stay separate.
+- `index.html` starts the downloads that would otherwise wait for the entry to run: the language catalog and the route chunk the address hash names (Home for a missing hash). The build lists their URLs in `window.__catalogFiles` and `window.__routeFiles`.
+- `usePwa` registers the service worker one second after mount, so `workbox-window` and the precache download stay out of the startup chain.
+- `ExerciseThumbnail` sets its `src` one frame after the first mounted thumbnail, so the artwork requests start after the screen's first paint.
+- When timing regresses, inspect `.lighthouseci/lhr-*.json` (`network-requests`, `largest-contentful-paint-element`) and compare which requests fall before the observed LCP. A single run can move by one 150ms round trip when a font or image request lands on the other side of the paint, which is why the assertion uses the median of three.
+
 The separate Chrome regression installs the service worker from Workouts, switches offline, closes the page and opens Exercises in a new page, then fetches and decodes every emitted WebP plus the rendered catalog images, including offscreen artwork. Exercises without matched illustrations may still use their intentional icon fallback. This verifies the first offline visit to the catalog rather than warming its images online first. It does not simulate browser cache eviction, an OS process restart, or iOS installation.
 
 Recorded results and the performance baseline live in [Verification](verification.md#performance-baseline). Keep that baseline distinct from later changes to limits.
