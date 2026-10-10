@@ -1,9 +1,9 @@
 import { Result } from "@form/result";
 import { describe, expect, it } from "vitest";
 import { createWorkouts } from "../../src/features/workouts/application";
-import { StorageUnavailable, type Snapshot } from "../../src/features/workouts/domain";
+import { DraftStorageFailed, StorageUnavailable, type Snapshot } from "../../src/features/workouts/domain";
 import { createWorkoutFactory, FIXED_NOW } from "../support/factories";
-import { errorTag, failure } from "../support/results";
+import { errorTag, failure, success } from "../support/results";
 import {
   createMemoryJournal,
   createMemoryStorage,
@@ -255,22 +255,22 @@ describe("workout application", () => {
     const { dependencies, memory, drafts } = setup(
       factory.snapshot({ active, revision: 4 }),
     );
-    const retainedDraft = dependencies.journal.write({
+    const retainedDraft = success(dependencies.journal.write({
       sessionId: active.id,
       setId: active.exercises[0]!.sets[0]!.id,
       weight: "60",
       reps: "8",
       revision: 4,
       base: { weightKg: 40, reps: 8, targetReps: 8, completed: false },
-    });
+    }));
     let cleanupAvailable = false;
     const app = createWorkouts({
       ...dependencies,
       journal: {
         ...dependencies.journal,
         clearBefore(revision) {
-          if (!cleanupAvailable) throw new Error("Draft storage unavailable");
-          dependencies.journal.clearBefore(revision);
+          if (!cleanupAvailable) return Result.err(new DraftStorageFailed({ cause: new Error("Draft storage unavailable") }));
+          return dependencies.journal.clearBefore(revision);
         },
       },
     });

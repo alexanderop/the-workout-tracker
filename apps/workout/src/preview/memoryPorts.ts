@@ -3,6 +3,7 @@ import {
   snapshotSchema,
   draftSchema,
   Conflict,
+  DraftsDeleted,
   InvalidChange,
   InvalidRevision,
   loadState,
@@ -67,13 +68,6 @@ export function createMemoryStorage(initial: Snapshot): WorkoutStorage {
   };
 }
 
-/** Same signal as the browser journal: a newer deletion obsoleted the draft. */
-export function draftsDeletedError() {
-  const error = new Error("This workout was deleted. Reload before editing.");
-  error.name = "DraftsDeletedError";
-  return error;
-}
-
 /** Drafts of a finished workout's set wait for explicit recovery. */
 export function finishedDraft(draft: SetDraft, snapshot: Snapshot): boolean {
   return (
@@ -92,6 +86,7 @@ export function createMemoryDraftJournal(id: () => string): DraftJournal {
       minimumRevision = Math.max(minimumRevision, revision);
       drafts = drafts.filter((draft) => draft.revision >= minimumRevision);
       owned.clear();
+      return Result.ok(undefined);
     },
     prune(snapshot) {
       const finished = drafts.filter((draft) => finishedDraft(draft, snapshot));
@@ -104,17 +99,20 @@ export function createMemoryDraftJournal(id: () => string): DraftJournal {
               exercise.sets.some((set) => set.id === draft.setId),
             )),
       );
-      return finished.map((draft) => draftSchema.parse(draft));
+      return Result.ok(finished.map((draft) => draftSchema.parse(draft)));
     },
     recover(sessionId, setId) {
-      return drafts
-        .filter(
-          (draft) => draft.sessionId === sessionId && draft.setId === setId,
-        )
-        .map((draft) => draftSchema.parse(draft));
+      return Result.ok(
+        drafts
+          .filter(
+            (draft) => draft.sessionId === sessionId && draft.setId === setId,
+          )
+          .map((draft) => draftSchema.parse(draft)),
+      );
     },
     write(input) {
-      if (input.revision < minimumRevision) throw draftsDeletedError();
+      if (input.revision < minimumRevision)
+        return Result.err(new DraftsDeleted());
       const draft = draftSchema.parse({
         ...input,
         id: id(),
@@ -125,11 +123,12 @@ export function createMemoryDraftJournal(id: () => string): DraftJournal {
       drafts = drafts.filter((entry) => entry.id !== previous);
       owned.set(key, draft.id);
       drafts.push(draft);
-      return draftSchema.parse(draft);
+      return Result.ok(draftSchema.parse(draft));
     },
     consume(consumed) {
       const ids = new Set(consumed.map((draft) => draft.id));
       drafts = drafts.filter((draft) => !ids.has(draft.id));
+      return Result.ok(undefined);
     },
   };
 }

@@ -1,6 +1,7 @@
+import { Result } from "@form/result";
 import { draftSchema, type DraftInput, type SetDraft } from "../domain/drafts";
-import type { Snapshot } from "../domain";
-import type { DraftJournal, DraftsDeletedErrorName } from "../ports";
+import { DraftsDeleted, DraftStorageFailed, type Snapshot } from "../domain";
+import type { DraftJournal } from "../ports";
 
 type KeyValueStorage = Pick<
   Storage,
@@ -11,11 +12,13 @@ const deletedBeforeKey = "form-workout:drafts-deleted-before";
 /** Earlier versions wrote one immutable key per deletion. Still honored. */
 const legacyDeletedBeforePrefix = "form-workout:drafts-deleted-before:";
 const prefix = "form-workout:draft:v1:";
-const deletedName: DraftsDeletedErrorName = "DraftsDeletedError";
-function draftsDeletedError() {
-  const error = new Error("This workout was deleted. Reload before editing.");
-  error.name = deletedName;
-  return error;
+/** Browser storage throws on blocked site data and on a full quota. */
+function attempt<T>(effect: () => T): Result<T, DraftStorageFailed> {
+  try {
+    return Result.ok(effect());
+  } catch (cause) {
+    return Result.err(new DraftStorageFailed({ cause }));
+  }
 }
 
 /** Returns a non-negative revision, or null for malformed marker text. */
@@ -90,72 +93,82 @@ export function createDraftJournal(deps: {
   const preferredFirst = (a: SetDraft, b: SetDraft) =>
     Number(b.writer === deps.preferredWriter) -
     Number(a.writer === deps.preferredWriter);
+  const clearBefore = (revision: number) => {
+    const storage = deps.storage();
+    const minimum = Math.max(revision, minimumRevision(storage));
+    storage.setItem(deletedBeforeKey, String(minimum));
+    // The single marker now covers every legacy marker.
+    for (const name of appKeys(storage, legacyDeletedBeforePrefix))
+      storage.removeItem(name);
+    for (const name of appKeys(storage, prefix)) {
+      const record = parseRecord(storage.getItem(name));
+      if (!record || record.revision < minimum) storage.removeItem(name);
+    }
+    owned.clear();
+  };
+  const recover = (sessionId: string, setId: string) => {
+    const storage = deps.storage();
+    const minimum = minimumRevision(storage);
+    return records(storage)
+      .map(({ record }) => record)
+      .filter(
+        (record) =>
+          record.sessionId === sessionId &&
+          record.setId === setId &&
+          record.revision >= minimum,
+      )
+      .sort(preferredFirst);
+  };
+  const prune = (snapshot: Snapshot) => {
+    const storage = deps.storage();
+    const minimum = minimumRevision(storage);
+    const retained = new Set(
+      snapshot.active?.exercises.flatMap((exercise) =>
+        exercise.sets.map((set) => set.id),
+      ) ?? [],
+    );
+    const finished: SetDraft[] = [];
+    for (const { name, record } of records(storage)) {
+      if (finishedDraft(record, snapshot)) {
+        if (record.revision >= minimum) finished.push(record);
+        continue;
+      }
+      if (obsoleteDraft(record, snapshot, retained)) storage.removeItem(name);
+    }
+    return finished.sort(preferredFirst);
+  };
+  const consume = (drafts: readonly SetDraft[]) => {
+    const storage = deps.storage();
+    for (const draft of drafts) storage.removeItem(key(draft));
+  };
   return {
-    clearBefore(revision) {
-      const storage = deps.storage();
-      const minimum = Math.max(revision, minimumRevision(storage));
-      storage.setItem(deletedBeforeKey, String(minimum));
-      // The single marker now covers every legacy marker.
-      for (const name of appKeys(storage, legacyDeletedBeforePrefix))
-        storage.removeItem(name);
-      for (const name of appKeys(storage, prefix)) {
-        const record = parseRecord(storage.getItem(name));
-        if (!record || record.revision < minimum) storage.removeItem(name);
-      }
-      owned.clear();
-    },
-    recover(sessionId, setId) {
-      const storage = deps.storage();
-      const minimum = minimumRevision(storage);
-      return records(storage)
-        .map(({ record }) => record)
-        .filter(
-          (record) =>
-            record.sessionId === sessionId &&
-            record.setId === setId &&
-            record.revision >= minimum,
-        )
-        .sort(preferredFirst);
-    },
+    clearBefore: (revision) => attempt(() => clearBefore(revision)),
+    recover: (sessionId, setId) => attempt(() => recover(sessionId, setId)),
+    prune: (snapshot) => attempt(() => prune(snapshot)),
+    consume: (drafts) => attempt(() => consume(drafts)),
     write(input: DraftInput) {
-      const draft = draftSchema.parse({ ...input, writer, id: deps.id() });
-      const storage = deps.storage();
-      if (draft.revision < minimumRevision(storage)) throw draftsDeletedError();
-      storage.setItem(key(draft), JSON.stringify(draft));
-      if (draft.revision < minimumRevision(storage)) {
-        storage.removeItem(key(draft));
-        throw draftsDeletedError();
-      }
-      const identity = JSON.stringify([draft.sessionId, draft.setId]);
-      const previous = owned.get(identity);
-      owned.set(identity, draft);
-      if (previous) storage.removeItem(key(previous));
-      try {
-        deps.rememberWriter?.(writer);
-      } catch {}
-      return draft;
-    },
-    prune(snapshot) {
-      const storage = deps.storage();
-      const minimum = minimumRevision(storage);
-      const retained = new Set(
-        snapshot.active?.exercises.flatMap((exercise) =>
-          exercise.sets.map((set) => set.id),
-        ) ?? [],
-      );
-      const finished: SetDraft[] = [];
-      for (const { name, record } of records(storage)) {
-        if (finishedDraft(record, snapshot)) {
-          if (record.revision >= minimum) finished.push(record);
-          continue;
+      return Result.gen(function* () {
+        const draft = yield* attempt(() =>
+          draftSchema.parse({ ...input, writer, id: deps.id() }),
+        );
+        const storage = yield* attempt(() => deps.storage());
+        const before = yield* attempt(() => minimumRevision(storage));
+        if (draft.revision < before) return yield* new DraftsDeleted();
+        yield* attempt(() => storage.setItem(key(draft), JSON.stringify(draft)));
+        const after = yield* attempt(() => minimumRevision(storage));
+        if (draft.revision < after) {
+          yield* attempt(() => storage.removeItem(key(draft)));
+          return yield* new DraftsDeleted();
         }
-        if (obsoleteDraft(record, snapshot, retained)) storage.removeItem(name);
-      }
-      return finished.sort(preferredFirst);
-    },
-    consume(drafts) {
-      const storage = deps.storage();
-      for (const draft of drafts) storage.removeItem(key(draft));
+        const identity = JSON.stringify([draft.sessionId, draft.setId]);
+        const previous = owned.get(identity);
+        owned.set(identity, draft);
+        if (previous) yield* attempt(() => storage.removeItem(key(previous)));
+        try {
+          deps.rememberWriter?.(writer);
+        } catch {}
+        return Result.ok(draft);
+      });
     },
   };
 }

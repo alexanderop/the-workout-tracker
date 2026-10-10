@@ -1,5 +1,13 @@
 import type { Result } from "@form/result";
-import type { LoadState, ReadError, SaveError, Snapshot } from "./domain";
+import type {
+  DraftStorageFailed,
+  DraftWriteError,
+  LoadState,
+  ReadError,
+  SaveError,
+  Snapshot,
+} from "./domain";
+import type { DraftInput, SetDraft } from "./domain/drafts";
 
 export type { LoadState } from "./domain";
 
@@ -20,13 +28,14 @@ export type WorkoutStorage = {
 };
 
 /**
- * `DraftJournal.write` throws an error with this `name` when a newer data
- * deletion made the draft's revision obsolete. Only a reload recovers.
+ * The synchronous journal of unconfirmed weight and repetition input. Every
+ * operation reports an expected browser storage failure as `DraftStorageFailed`
+ * instead of throwing; the UI decides how much that matters.
  */
-export type DraftsDeletedErrorName = "DraftsDeletedError";
-
 export type DraftJournal = {
-  readonly clearBefore: (revision: number) => void;
+  readonly clearBefore: (
+    revision: number,
+  ) => Result<void, DraftStorageFailed>;
   /**
    * Removes obsolete drafts and returns, without removing them, the drafts
    * that belong to a set of a finished workout. Such input arrived too late
@@ -34,15 +43,14 @@ export type DraftJournal = {
    */
   readonly prune: (
     snapshot: Snapshot,
-  ) => readonly import("./domain/drafts").SetDraft[];
+  ) => Result<readonly SetDraft[], DraftStorageFailed>;
   readonly recover: (
     sessionId: string,
     setId: string,
-  ) => readonly import("./domain/drafts").SetDraft[];
-  readonly write: (
-    input: import("./domain/drafts").DraftInput,
-  ) => import("./domain/drafts").SetDraft;
+  ) => Result<readonly SetDraft[], DraftStorageFailed>;
+  /** Fails with `DraftsDeleted` when a newer data deletion obsoleted the draft. */
+  readonly write: (input: DraftInput) => Result<SetDraft, DraftWriteError>;
   readonly consume: (
-    drafts: readonly import("./domain/drafts").SetDraft[],
-  ) => void;
+    drafts: readonly SetDraft[],
+  ) => Result<void, DraftStorageFailed>;
 };

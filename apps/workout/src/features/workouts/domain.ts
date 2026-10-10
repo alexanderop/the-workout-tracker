@@ -49,6 +49,8 @@ export {
 export {
   Conflict,
   DraftCleanupPending,
+  DraftsDeleted,
+  DraftStorageFailed,
   InvalidChange,
   InvalidRevision,
   RecoveryRequired,
@@ -56,6 +58,7 @@ export {
   StorageClosed,
   StorageUnavailable,
   StoredDataUnreadable,
+  type DraftWriteError,
   type Invalid,
   type ReadError,
   type SaveError,

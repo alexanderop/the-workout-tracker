@@ -6,10 +6,11 @@ A quiet, local-first workout journal. Dark mode, five colors, purple as the prim
 
 ## Workspace
 
-This pnpm monorepo contains three independently owned workspaces:
+This pnpm monorepo contains independently owned workspaces:
 
 - `apps/workout` (`@form/workout`): the PWA, workout domain, IndexedDB storage, application styles.
 - `packages/ui` (`@form/ui`): reusable Vue components, design tokens. It has no workout or persistence dependencies.
+- `packages/result` (`@form/result`): a vendored copy of [better-result](https://github.com/dmmulroy/better-result) (MIT) for `Result` and `TaggedError`. Expected failures in the workout feature are return values.
 - `apps/design-system` (`@form/design-system`): the Histoire product design workspace, with foundations, components, patterns, complete product pages, flows and explorations. Run `pnpm dev:ui` and open http://127.0.0.1:4186.
 
 The app imports its buttons, form controls, dialogs and mobile numeric editor from `@form/ui`, with shared colors from `@form/ui/tokens.css`. The dependency uses `workspace:*`. Each workspace declares its own dependencies and uses strict TypeScript settings from `tsconfig.base.json`.

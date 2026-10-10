@@ -1,10 +1,12 @@
+import { Result } from "@form/result";
 import { afterEach, describe, expect, it } from "vitest";
 import { effectScope, nextTick, ref, type EffectScope } from "vue";
 import { createWorkouts } from "../../src/features/workouts/application";
-import type { Snapshot } from "../../src/features/workouts/domain";
+import { DraftStorageFailed, type Snapshot } from "../../src/features/workouts/domain";
 import type { DraftJournal } from "../../src/features/workouts/ports";
 import { useTrainingSession } from "../../src/features/workouts/ui/useTrainingSession";
 import { createWorkoutFactory, FIXED_NOW } from "../support/factories";
+import { success } from "../support/results";
 import {
   createMemoryJournal,
   createMemoryStorage,
@@ -39,8 +41,8 @@ function setup(recoveredWeight?: string) {
   const journal: DraftJournal = {
     ...memory.journal,
     consume(records) {
-      if (faults.consume) throw new Error("The quota was exceeded.");
-      memory.journal.consume(records);
+      if (faults.consume) return Result.err(new DraftStorageFailed({ cause: new Error("The quota was exceeded.") }));
+      return memory.journal.consume(records);
     },
   };
   const storage = createMemoryStorage(initial);
@@ -99,14 +101,14 @@ describe("given a set with input while another save is running", () => {
 
   it("should not choose a recovered draft", () => {
     const { training, saving, memory, active, set, row } = setup();
-    const other = memory.journal.write({
+    const other = success(memory.journal.write({
       sessionId: active.id,
       setId: set.id,
       weight: "70",
       reps: "8",
       revision: 0,
       base: set,
-    });
+    }));
     saving.value = true;
     training.chooseDraft(set.id, other);
     expect(row().weight).toBe("40");

@@ -1,3 +1,4 @@
+import { Result } from "@form/result";
 import { afterEach, describe, expect, it } from "vitest";
 import { effectScope, ref, type EffectScope } from "vue";
 import { createWorkouts } from "../../src/features/workouts/application";
@@ -6,6 +7,7 @@ import type { DraftJournal } from "../../src/features/workouts/ports";
 import { useWorkoutWorkspace } from "../../src/features/workouts/ui/useWorkoutWorkspace";
 import { createWorkoutFactory, FIXED_NOW } from "../support/factories";
 import { createMemoryJournal, createMemoryStorage } from "../support/memory-ports";
+import { success } from "../support/results";
 
 const scopes: EffectScope[] = [];
 afterEach(() => {
@@ -20,10 +22,16 @@ function setup() {
   const writers = [createMemoryJournal(factory.id), createMemoryJournal(factory.id)];
   const journal: DraftJournal = {
     write: writers[0]!.journal.write,
-    recover: (sessionId, setId) => writers.flatMap(({ journal }) => journal.recover(sessionId, setId)),
-    consume: (records) => writers.forEach(({ journal }) => journal.consume(records)),
-    prune: (snapshot) => writers.flatMap(({ journal }) => journal.prune(snapshot)),
-    clearBefore: (revision) => writers.forEach(({ journal }) => journal.clearBefore(revision)),
+    recover: (sessionId, setId) => Result.ok(writers.flatMap(({ journal }) => success(journal.recover(sessionId, setId)))),
+    consume: (records) => {
+      writers.forEach(({ journal }) => journal.consume(records));
+      return Result.ok(undefined);
+    },
+    prune: (snapshot) => Result.ok(writers.flatMap(({ journal }) => success(journal.prune(snapshot)))),
+    clearBefore: (revision) => {
+      writers.forEach(({ journal }) => journal.clearBefore(revision));
+      return Result.ok(undefined);
+    },
   };
   let pendingWrite: Promise<void> | undefined;
   const service = createWorkouts({
@@ -48,7 +56,7 @@ function setup() {
     set,
     journal,
     writeElsewhere: (weight: string): SetDraft => {
-      return writers[1]!.journal.write({ sessionId: active.id, setId: set.id, weight, reps: "8", revision: 0, base: set });
+      return success(writers[1]!.journal.write({ sessionId: active.id, setId: set.id, weight, reps: "8", revision: 0, base: set }));
     },
     holdWrite: () => {
       const deferred = Promise.withResolvers<void>();
@@ -66,14 +74,14 @@ describe("set draft acknowledgement", () => {
 
     await workspace.training.commit(set.id);
 
-    expect(journal.recover(active.id, set.id).map((record) => record.weight)).toEqual(["60", "70"]);
+    expect(success(journal.recover(active.id, set.id)).map((record) => record.weight)).toEqual(["60", "70"]);
     expect(storage.current().active?.exercises[0]?.sets[0]).toMatchObject({ weightKg: 40, completed: false });
     expect(workspace.training.pending.value[0]?.alternatives.map((record) => record.weight)).toEqual(["60", "70"]);
 
     workspace.training.keepInput(set.id);
     await workspace.training.commit(set.id);
     expect(storage.current().active?.exercises[0]?.sets[0]).toMatchObject({ weightKg: 60, completed: true });
-    expect(journal.recover(active.id, set.id)).toEqual([]);
+    expect(success(journal.recover(active.id, set.id))).toEqual([]);
   });
 
   it("keeps records discovered during a pending save available for recovery", async () => {
@@ -87,7 +95,7 @@ describe("set draft acknowledgement", () => {
     await saving;
 
     expect(storage.current().active?.exercises[0]?.sets[0]).toMatchObject({ weightKg: 60, completed: true });
-    expect(journal.recover(active.id, set.id).map((record) => record.weight)).toEqual(["70"]);
+    expect(success(journal.recover(active.id, set.id)).map((record) => record.weight)).toEqual(["70"]);
     expect(await workspace.training.run({ type: "finish", sessionId: active.id })).toBeNull();
     expect(workspace.training.pending.value[0]?.weight).toBe("70");
     expect(workspace.training.pending.value[0]?.recoveredStale).toBe(true);
@@ -103,7 +111,7 @@ describe("set draft acknowledgement", () => {
     await saving;
 
     expect(storage.current().active?.exercises[0]?.sets[0]).toMatchObject({ weightKg: 60, completed: true });
-    expect(journal.recover(active.id, set.id).map((record) => record.weight)).toEqual(["70"]);
+    expect(success(journal.recover(active.id, set.id)).map((record) => record.weight)).toEqual(["70"]);
     expect(workspace.training.pending.value[0]?.weight).toBe("70");
     expect(workspace.training.pending.value[0]?.recoveredStale).toBe(true);
   });

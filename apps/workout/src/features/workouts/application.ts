@@ -178,11 +178,9 @@ export function createWorkouts({
         Result.ok({ ...initialSnapshot(), revision: snapshot.revision + 1 }),
       );
       if (saved.isErr()) return saved;
-      const cleared = Result.try({
-        try: () => journal.clearBefore(saved.value.revision),
-        catch: () => new DraftCleanupPending({ snapshot: saved.value }),
-      });
-      return cleared.isOk() ? saved : Result.err(cleared.error);
+      if (journal.clearBefore(saved.value.revision).isErr())
+        return Result.err(new DraftCleanupPending({ snapshot: saved.value }));
+      return saved;
     },
     execute(
       command: ApplicationCommand,

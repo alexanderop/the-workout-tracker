@@ -31,7 +31,7 @@ Write clear, maintainable production code. Keep changes focused and dependencies
 - Maintain behavior tests at the smallest layer that can expose a failure. Follow [Testing](docs/workflows.md#testing) for pure unit tests, injected dependencies, browser storage tests, and seeded application journeys.
 - Use strict types, small cohesive modules and explicit dependencies.
 - Preserve workspace exports, feature boundaries and layer direction.
-- Validate external data at boundaries and handle failures explicitly.
+- Validate external data at boundaries and handle failures explicitly. Expected failures are `Result` values with one `TaggedError` per failure ([Expected failures](docs/architecture.md#expected-failures)); every UI message goes through the exhaustive table in `ui/errorMessages.ts`. Programmer errors may still throw.
 - Preserve accessible native semantics, keyboard navigation and focus management.
 - For new reusable UI components, follow the [Histoire-first component workflow](docs/workflows.md#add-a-reusable-component-and-story): iterate in the explorer, then inspect the real app flow when integrating.
 - Deliver changes directly on `main` or merge the working branch into `main`; no pull request is required. Follow [Verification and delivery](docs/workflows.md#verification-and-delivery).

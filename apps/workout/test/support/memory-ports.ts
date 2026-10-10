@@ -1,10 +1,11 @@
+import { Result } from "@form/result";
 import {
+  DraftsDeleted,
   snapshotSchema,
   type Snapshot,
 } from "../../src/features/workouts/domain";
 import {
   createMemoryStorage as createPreviewStorage,
-  draftsDeletedError,
   finishedDraft,
 } from "../../src/preview/memoryPorts";
 import type {
@@ -47,6 +48,7 @@ export function createMemoryJournal(
       minimumRevision = Math.max(minimumRevision, revision);
       drafts = drafts.filter((draft) => draft.revision >= minimumRevision);
       owned.clear();
+      return Result.ok(undefined);
     },
     prune(snapshot) {
       const active = snapshot.active;
@@ -60,26 +62,30 @@ export function createMemoryJournal(
               exercise.sets.some((set) => set.id === draft.setId),
             )),
       );
-      return finished;
+      return Result.ok(finished);
     },
     recover(sessionId, setId) {
-      return drafts.filter(
-        (draft) => draft.sessionId === sessionId && draft.setId === setId,
+      return Result.ok(
+        drafts.filter(
+          (draft) => draft.sessionId === sessionId && draft.setId === setId,
+        ),
       );
     },
     write(input: DraftInput) {
-      if (input.revision < minimumRevision) throw draftsDeletedError();
+      if (input.revision < minimumRevision)
+        return Result.err(new DraftsDeleted());
       const draft = { ...input, id: id(), writer: "memory-writer" };
       const key = JSON.stringify([input.sessionId, input.setId]);
       const previous = owned.get(key);
       drafts = drafts.filter((entry) => entry.id !== previous);
       owned.set(key, draft.id);
       drafts.push(draft);
-      return draft;
+      return Result.ok(draft);
     },
     consume(consumed) {
       const ids = new Set(consumed.map((draft) => draft.id));
       drafts = drafts.filter((draft) => !ids.has(draft.id));
+      return Result.ok(undefined);
     },
   };
   return { journal, current: () => drafts };

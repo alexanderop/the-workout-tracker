@@ -98,20 +98,17 @@ export function useDetachedDrafts(journal: DraftJournal) {
         );
         continue;
       }
-      try {
-        journal.consume(group);
-      } catch {
-        // Matching input is harmless; the next prune offers it again.
-      }
+      // Matching input is harmless; the next prune offers it again if this
+      // acknowledgement fails.
+      journal.consume(group);
     }
   }
   /** Acknowledges every detached draft. False when the journal refused. */
   function dismiss(): boolean {
-    try {
-      journal.consume([...detached.values()].flatMap((entry) => entry.records));
-    } catch {
-      return false;
-    }
+    const acknowledged = journal.consume(
+      [...detached.values()].flatMap((entry) => entry.records),
+    );
+    if (acknowledged.isErr()) return false;
     detached.clear();
     return true;
   }

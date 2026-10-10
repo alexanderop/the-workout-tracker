@@ -10,7 +10,7 @@ import {
 } from "../../src/preview/memoryPorts";
 import { scenarios, parseScenarioId } from "../../src/preview/scenarios";
 import catalog from "../../src/preview/catalog.json";
-import { errorTag } from "../support/results";
+import { errorTag, success } from "../support/results";
 
 describe("design examples", () => {
   it("publishes only runnable examples with valid independent snapshots", () => {
@@ -81,19 +81,19 @@ describe("design examples", () => {
       revision: 0,
       base: { weightKg: 60, reps: 8, completed: false },
     };
-    const first = journal.write(input);
-    const second = journal.write({ ...input, weight: "65" });
+    const first = success(journal.write(input));
+    const second = success(journal.write({ ...input, weight: "65" }));
     journal.consume([first]);
-    expect(journal.recover("session", "set")).toEqual([second]);
+    expect(success(journal.recover("session", "set"))).toEqual([second]);
     second.base.weightKg = 999;
-    expect(journal.recover("session", "set")[0]?.base.weightKg).toBe(60);
+    expect(success(journal.recover("session", "set"))[0]?.base.weightKg).toBe(60);
     journal.clearBefore(1);
-    expect(journal.recover("session", "set")).toEqual([]);
-    expect(() => journal.write(input)).toThrow("deleted");
+    expect(success(journal.recover("session", "set"))).toEqual([]);
+    expect(errorTag(journal.write(input))).toBe("DraftsDeleted");
     journal.write({ ...input, revision: 2 });
     journal.prune({ ...initialSnapshot(), revision: 1 });
-    expect(journal.recover("session", "set")).toHaveLength(1);
+    expect(success(journal.recover("session", "set"))).toHaveLength(1);
     journal.prune({ ...initialSnapshot(), revision: 3 });
-    expect(journal.recover("session", "set")).toEqual([]);
+    expect(success(journal.recover("session", "set"))).toEqual([]);
   });
 });
