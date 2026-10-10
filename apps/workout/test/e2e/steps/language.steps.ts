@@ -3,6 +3,8 @@ import { createBdd } from "playwright-bdd";
 import { t, translator } from "../../../src/i18n/testing";
 import { languageStorageKey } from "../../../src/app/language";
 import { test } from "../fixtures";
+import { readFirstLoggedWeight, seedWorkoutStorage } from "../seed";
+import { createWorkoutFactory } from "../../support/factories";
 
 const { Given, When, Then } = createBdd(test);
 const { t: de } = translator("de");
@@ -85,5 +87,87 @@ Then(
       }),
     ).toBeVisible();
     await context.close();
+  },
+);
+
+const weightEditor = (page: Page) =>
+  page.getByRole("dialog", { name: de("training.setRow.weight"), exact: true });
+const weightButton = (page: Page) =>
+  page.getByRole("button", {
+    name: de("training.setRow.weightLabel", { n: 1, exercise: "Bench press" }),
+  });
+
+Given(
+  "my active workout is open in German",
+  async ({ workout, page }) => {
+    await workout.open();
+    await page.goto("/#/settings");
+    await page.getByRole("radio", { name: "Deutsch", exact: true }).check();
+    const factory = createWorkoutFactory("german-decimal");
+    await seedWorkoutStorage(
+      page,
+      factory.snapshot({ active: factory.activeSession() }),
+    );
+    await page.goto("/#/");
+    await page
+      .getByRole("button", {
+        name: de("workouts.home.continueWorkout"),
+        exact: true,
+      })
+      .click();
+    await expect(page).toHaveURL(/#\/session$/);
+    await expect(weightButton(page)).toBeVisible();
+  },
+);
+
+When(
+  "I type the weight {string} in the number editor",
+  async ({ page }, text: string) => {
+    await weightButton(page).click();
+    const editor = page
+      .getByRole("dialog", { name: de("training.setRow.weight"), exact: true })
+      .getByRole("group", { name: de("common.ui.numeric.editor") });
+    for (const key of text) await editor.press(key);
+  },
+);
+
+Then("the number editor shows {string}", async ({ page }, text: string) => {
+  await expect(
+    weightEditor(page).getByRole("group", {
+      name: de("common.ui.numeric.editor"),
+    }),
+  ).toContainText(text);
+});
+
+When("I confirm the weight", async ({ page }) => {
+  await weightEditor(page)
+    .getByRole("button", {
+      name: de("common.ui.numeric.confirm", {
+        title: de("training.setRow.weight"),
+      }),
+      exact: true,
+    })
+    .click();
+});
+
+Then("the weight reads {string}", async ({ page }, text: string) => {
+  await expect(weightButton(page)).toHaveText(text);
+});
+
+When("I log the German first set", async ({ page }) => {
+  await page
+    .getByRole("button", {
+      name: de("training.setRow.logSet", { n: 1, exercise: "Bench press" }),
+      exact: true,
+    })
+    .click();
+});
+
+Then(
+  "the journal stores a weight of {float} kilograms",
+  async ({ page }, kilograms: number) => {
+    await expect
+      .poll(() => readFirstLoggedWeight(page))
+      .toBe(kilograms);
   },
 );

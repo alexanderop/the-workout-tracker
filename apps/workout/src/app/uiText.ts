@@ -9,11 +9,19 @@ import type { Locale, Translate } from "../i18n";
 const midSentence = (locale: Locale, word: string) =>
   locale === "en" ? word.toLowerCase() : word;
 
+// Messages place the unit right after a number, so a missing unit adds nothing.
+const spaced = (unit: string) => (unit ? ` ${unit}` : "");
+
 function numericText(t: Translate, locale: Locale): UiText["numeric"] {
+  // 1.1 in English, 1,1 in German: every number the editor speaks follows suit.
+  const decimalSeparator = new Intl.NumberFormat(locale).format(1.1)[1] ?? ".";
+  const num = (value: number) => String(value).replace(".", decimalSeparator);
   const range = ({ min, max, unit }: NumericRange) =>
-    unit
-      ? t("common.ui.numeric.rangeUnit", { min, max, unit })
-      : t("common.ui.numeric.range", { min, max });
+    t("common.ui.numeric.range", {
+      min: num(min),
+      max: num(max),
+      unit: spaced(unit),
+    });
   return {
     cancel: t("common.ui.numeric.cancel"),
     suggestions: t("common.ui.numeric.suggestions"),
@@ -22,23 +30,27 @@ function numericText(t: Translate, locale: Locale): UiText["numeric"] {
     editor: t("common.ui.numeric.editor"),
     keypad: t("common.ui.numeric.keypad"),
     decimalPoint: t("common.ui.numeric.decimalPoint"),
+    decimalSeparator,
     backspace: t("common.ui.numeric.backspace"),
     confirm: (title) =>
       t("common.ui.numeric.confirm", { title: midSentence(locale, title) }),
     announce: ({ title, value, unit }) =>
-      unit
-        ? t("common.ui.numeric.announceUnit", { title, value, unit })
-        : t("common.ui.numeric.announce", { title, value }),
-    trigger: ({ label, value, unit }) => {
-      const shown = value === "" ? t("common.ui.numeric.empty") : value;
-      return unit
-        ? t("common.ui.numeric.triggerUnit", { label, value: shown, unit })
-        : t("common.ui.numeric.trigger", { label, value: shown });
-    },
+      t("common.ui.numeric.announce", {
+        title,
+        value: num(value),
+        unit: spaced(unit),
+      }),
+    trigger: ({ label, value, unit }) =>
+      t("common.ui.numeric.trigger", {
+        label,
+        value: value === "" ? t("common.ui.numeric.empty") : value,
+        unit: spaced(unit),
+      }),
     usePreset: ({ value, unit }) =>
-      unit
-        ? t("common.ui.numeric.usePresetUnit", { value, unit })
-        : t("common.ui.numeric.usePreset", { value }),
+      t("common.ui.numeric.usePreset", {
+        value: num(value),
+        unit: spaced(unit),
+      }),
     replace: t("common.ui.numeric.replace"),
     ready: t("common.ui.numeric.ready"),
     wholeNumber: (r) => t("common.ui.numeric.wholeNumber", { range: range(r) }),
@@ -46,9 +58,13 @@ function numericText(t: Translate, locale: Locale): UiText["numeric"] {
       t("common.ui.numeric.fewerDecimals", { range: range(r) }, r.decimals),
     value: (r) => t("common.ui.numeric.value", { range: range(r) }),
     pasteWhole: ({ min, max }) =>
-      t("common.ui.numeric.pasteWhole", { min, max }),
+      t("common.ui.numeric.pasteWhole", { min: num(min), max: num(max) }),
     pasteDecimal: ({ min, max, decimals }) =>
-      t("common.ui.numeric.pasteDecimal", { min, max, decimals }),
+      t("common.ui.numeric.pasteDecimal", {
+        min: num(min),
+        max: num(max),
+        decimals,
+      }),
   };
 }
 
