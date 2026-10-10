@@ -10,6 +10,7 @@ import {
 } from "../../src/preview/memoryPorts";
 import { scenarios, parseScenarioId } from "../../src/preview/scenarios";
 import catalog from "../../src/preview/catalog.json";
+import { errorTag } from "../support/results";
 
 describe("design examples", () => {
   it("publishes only runnable examples with valid independent snapshots", () => {
@@ -34,43 +35,39 @@ describe("design examples", () => {
     const other = createMemoryStorage(seed);
     const states: string[] = [];
     storage.subscribe((state) => states.push(state.kind));
-    expect(await storage.compareAndSave(0, seed)).toMatchObject({
-      kind: "saved",
-    });
+    expect((await storage.compareAndSave(0, seed)).isOk()).toBe(true);
     expect(states).toEqual(["ready"]);
     expect(
-      await storage.compareAndSave(0, {
-        ...seed,
-        settings: { autoRest: false, restSeconds: 30 },
-      }),
-    ).toMatchObject({ kind: "invalid" });
-    expect(await storage.compareAndSave(-1, seed)).toMatchObject({
-      kind: "invalid",
-    });
+      errorTag(
+        await storage.compareAndSave(0, {
+          ...seed,
+          settings: { autoRest: false, restSeconds: 30 },
+        }),
+      ),
+    ).toBe("InvalidChange");
+    expect(errorTag(await storage.compareAndSave(-1, seed))).toBe(
+      "InvalidRevision",
+    );
     const changed = {
       ...seed,
       revision: 1,
       settings: { autoRest: false, restSeconds: 30 },
     };
-    expect(await storage.compareAndSave(0, changed)).toMatchObject({
-      kind: "saved",
-    });
+    expect((await storage.compareAndSave(0, changed)).isOk()).toBe(true);
     expect(states).toEqual(["ready", "ready"]);
-    expect(await storage.compareAndSave(0, seed)).toMatchObject({
-      kind: "conflict",
-    });
+    expect(errorTag(await storage.compareAndSave(0, seed))).toBe("Conflict");
     expect(
-      await storage.compareAndSave(1, { ...changed, revision: 3 }),
-    ).toMatchObject({ kind: "invalid" });
+      errorTag(await storage.compareAndSave(1, { ...changed, revision: 3 })),
+    ).toBe("InvalidChange");
     expect(await other.read()).toMatchObject({
-      kind: "ready",
-      snapshot: { revision: 0 },
+      status: "ok",
+      value: { revision: 0 },
     });
     storage.close();
-    expect(await storage.read()).toMatchObject({ kind: "unavailable" });
+    expect(errorTag(await storage.read())).toBe("StorageClosed");
     expect(
-      await storage.compareAndSave(1, { ...changed, revision: 2 }),
-    ).toMatchObject({ kind: "unavailable" });
+      errorTag(await storage.compareAndSave(1, { ...changed, revision: 2 })),
+    ).toBe("StorageClosed");
   });
 
   it("keeps later drafts when acknowledging an earlier edit and rejects deleted revisions", () => {

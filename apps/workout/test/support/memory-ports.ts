@@ -13,7 +13,6 @@ import type {
 } from "../../src/features/workouts/domain/drafts";
 import type {
   DraftJournal,
-  Result,
   WorkoutStorage,
 } from "../../src/features/workouts/ports";
 
@@ -27,9 +26,9 @@ export function createMemoryStorage(initial: Snapshot) {
   let snapshot = snapshotSchema.parse(initial);
   const storage: WorkoutStorage = {
     ...base,
-    async compareAndSave(expectedRevision, next): Promise<Result> {
+    async compareAndSave(expectedRevision, next) {
       const result = await base.compareAndSave(expectedRevision, next);
-      if (result.kind === "saved") snapshot = result.snapshot;
+      if (result.isOk()) snapshot = result.value;
       return result;
     },
   };

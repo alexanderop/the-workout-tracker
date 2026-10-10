@@ -1,22 +1,40 @@
+import { Result } from "@form/result";
 import { z } from "zod";
 import {
+  canonical,
   commandSchema,
+  Conflict,
+  DraftCleanupPending,
   exerciseSchema,
-  type Exercise,
   initialSnapshot,
+  InvalidChange,
+  InvalidRevision,
+  mergeSnapshots,
+  parseBackup,
+  RecoveryRequired,
   reduceWorkout,
+  SaveUnconfirmed,
+  serializeBackup,
   snapshotSchema,
+  StorageClosed,
+  StorageUnavailable,
+  StoredDataUnreadable,
+  type BackupError,
   type Command,
+  type Exercise,
+  type ReadError,
+  type SaveError,
   type Snapshot,
 } from "./domain";
-import type {
-  DraftJournal,
-  Result,
-  StorageState,
-  WorkoutStorage,
-} from "./ports";
+import type { DraftJournal, WorkoutStorage } from "./ports";
 import { routineValuesSchema, type RoutineValues } from "./domain/routineDrafts";
-export type { LoadState, Result, WorkoutStorage } from "./ports";
+export type { LoadState, WorkoutStorage } from "./ports";
+
+/** Why a revision-checked command did not save. */
+export type CommandError = SaveError | SaveUnconfirmed;
+export type ImportError = CommandError | BackupError;
+export type DeleteError = CommandError | DraftCleanupPending;
+export type ExportError = StorageUnavailable | StorageClosed;
 
 export type ApplicationCommand =
   | Command
@@ -55,109 +73,21 @@ export type WorkoutDependencies = {
   /** Receives unexpected failures for diagnostics; results stay the same. */
   readonly reportError?: (context: string, error: unknown) => void;
 };
-const backupSchema = z
-  .object({
-    format: z.literal("form-workout"),
-    version: z.literal(2),
-    snapshot: snapshotSchema,
-  })
-  .strict();
 const expectedSchema = z
   .number()
   .int()
   .nonnegative()
   .max(Number.MAX_SAFE_INTEGER);
-const unavailable = {
-  kind: "unavailable",
-  message:
-    "Your browser could not access workout storage. Try reopening this app.",
-} as const;
-const unconfirmed: Result = {
-  kind: "unavailable",
-  message:
-    "Your browser could not confirm whether this change was saved. Reload before trying again.",
-};
 
-function canonical(value: unknown): string {
-  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
-  if (value !== null && typeof value === "object")
-    return `{${Object.entries(value)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, entry]) => `${JSON.stringify(key)}:${canonical(entry)}`)
-      .join(",")}}`;
-  return JSON.stringify(value) ?? "null";
-}
-
-function mergeSnapshots(
-  local: Snapshot,
-  incoming: Snapshot,
-): Snapshot | string {
-  if (canonical({ ...local, revision: 0 }) === canonical(initialSnapshot())) {
-    const restored = {
-      ...incoming,
-      revision: local.revision,
-      settings: local.settings,
-    };
-    return canonical(restored) === canonical(local)
-      ? local
-      : { ...restored, revision: local.revision + 1 };
-  }
-  const merge = <T>(
-    existing: Readonly<Record<string, T>>,
-    imported: Readonly<Record<string, T>>,
-  ): Record<string, T> | string => {
-    const records = { ...existing };
-    for (const [id, record] of Object.entries(imported)) {
-      if (
-        Object.hasOwn(existing, id) &&
-        canonical(existing[id]) !== canonical(record)
-      )
-        return `Backup contains a conflicting record (${id}). No data was imported.`;
-      records[id] = record;
-    }
-    return records;
-  };
-  const exercises = merge(local.exercises, incoming.exercises);
-  if (typeof exercises === "string") return exercises;
-  const routines = merge(local.routines, incoming.routines);
-  if (typeof routines === "string") return routines;
-  const completed = merge(local.completed, incoming.completed);
-  if (typeof completed === "string") return completed;
-  const active = mergeActive(local, incoming, completed);
-  if (typeof active === "string") return active;
-  const next = { ...local, exercises, routines, completed, active };
-  return canonical(next) === canonical(local)
-    ? local
-    : { ...next, revision: local.revision + 1 };
-}
-
-function mergeActive(
-  local: Snapshot,
-  incoming: Snapshot,
-  completed: Snapshot["completed"],
-): Snapshot["active"] | string {
-  if (
-    local.active &&
-    incoming.active &&
-    canonical(local.active) !== canonical(incoming.active)
-  )
-    return "Finish your current workout before importing another active workout.";
-  const active = local.active ?? incoming.active;
-  if (active && Object.hasOwn(completed, active.id))
-    return "Backup conflicts with an active workout. No data was imported.";
-  return active;
-}
-
-function validateWrite(
-  next: Snapshot,
-): { kind: "valid"; data: Snapshot } | Extract<Result, { kind: "invalid" }> {
+function validateWrite(next: Snapshot): Result<Snapshot, InvalidChange> {
   const validated = snapshotSchema.safeParse(next);
-  if (!validated.success)
-    return {
-      kind: "invalid",
-      message: validated.error.issues[0]?.message ?? "Invalid workout data.",
-    };
-  return { kind: "valid", data: validated.data };
+  return validated.success
+    ? Result.ok(validated.data)
+    : Result.err(
+        new InvalidChange({
+          message: validated.error.issues[0]?.message ?? "Invalid workout data.",
+        }),
+      );
 }
 
 export function createWorkouts({
@@ -168,157 +98,147 @@ export function createWorkouts({
   reportError = () => undefined,
 }: WorkoutDependencies) {
   let closed = false;
-  const closedResult: Result = {
-    kind: "unavailable",
-    message: "Workout storage is closed.",
-  };
-  const readCurrent = async (): Promise<StorageState> => {
-    try {
-      return await storage.read();
-    } catch (error) {
-      reportError("Workout storage read failed.", error);
-      return unavailable;
-    }
-  };
-  const applyTransform = (
+  const readCurrent = async (): Promise<Result<Snapshot, ReadError>> =>
+    Result.flatten(
+      await Result.tryPromise({
+        try: () => storage.read(),
+        catch: (error) => {
+          reportError("Workout storage read failed.", error);
+          return new StorageUnavailable();
+        },
+      }),
+    );
+  /** Like `readCurrent`, but unreadable data blocks the change. */
+  const readWritable = async () =>
+    (await readCurrent()).mapError((error) =>
+      StoredDataUnreadable.is(error) ? new RecoveryRequired() : error,
+    );
+  const applyTransform = <E>(
     snapshot: Snapshot,
-    transform: (snapshot: Snapshot) => Snapshot | string,
-  ): Snapshot | string => {
-    try {
-      return transform(snapshot);
-    } catch (error) {
-      reportError("Workout change failed unexpectedly.", error);
-      return "This change failed unexpectedly. Nothing was saved.";
-    }
-  };
+    transform: (snapshot: Snapshot) => Result<Snapshot, E>,
+  ): Result<Snapshot, E | InvalidChange> =>
+    Result.flatten(
+      Result.try({
+        try: () => transform(snapshot),
+        catch: (error) => {
+          reportError("Workout change failed unexpectedly.", error);
+          return new InvalidChange({
+            message: "This change failed unexpectedly. Nothing was saved.",
+          });
+        },
+      }),
+    );
   // A throwing save may still have committed, so re-read before reporting.
   const confirmSave = async (
     expectedRevision: number,
     next: Snapshot,
-  ): Promise<Result> => {
+  ): Promise<Result<Snapshot, CommandError>> => {
     const after = await readCurrent();
-    if (after.kind !== "ready") return unconfirmed;
-    if (after.snapshot.revision === expectedRevision) return unavailable;
-    if (canonical(after.snapshot) === canonical(next))
-      return { kind: "saved", snapshot: after.snapshot };
-    return { kind: "conflict", snapshot: after.snapshot };
+    if (after.isErr()) return Result.err(new SaveUnconfirmed());
+    if (after.value.revision === expectedRevision)
+      return Result.err(new StorageUnavailable());
+    if (canonical(after.value) === canonical(next)) return Result.ok(after.value);
+    return Result.err(new Conflict({ snapshot: after.value }));
   };
   const save = async (
     expectedRevision: number,
     next: Snapshot,
-  ): Promise<Result> => {
-    try {
-      return await storage.compareAndSave(expectedRevision, next);
-    } catch (error) {
-      reportError("Workout storage write failed.", error);
-      return confirmSave(expectedRevision, next);
-    }
+  ): Promise<Result<Snapshot, CommandError>> => {
+    const attempt = await Result.tryPromise({
+      try: () => storage.compareAndSave(expectedRevision, next),
+      catch: (error) => {
+        reportError("Workout storage write failed.", error);
+        return error;
+      },
+    });
+    if (attempt.isErr()) return confirmSave(expectedRevision, next);
+    return attempt.value;
   };
-  const write = async (
+  const write = <E>(
     expectedRevision: number,
-    transform: (snapshot: Snapshot) => Snapshot | string,
-  ): Promise<Result> => {
-    if (closed) return closedResult;
-    if (!expectedSchema.safeParse(expectedRevision).success)
-      return { kind: "invalid", message: "Invalid workout revision." };
-    const current = await readCurrent();
-    if (current.kind === "unavailable") return current;
-    if (current.kind === "recovery")
-      return {
-        kind: "invalid",
-        message: "Stored data needs recovery. Export it before making changes.",
-      };
-    if (current.snapshot.revision !== expectedRevision)
-      return { kind: "conflict", snapshot: current.snapshot };
-    const next = applyTransform(current.snapshot, transform);
-    if (typeof next === "string") return { kind: "invalid", message: next };
-    const validated = validateWrite(next);
-    if (validated.kind === "invalid") return validated;
-    if (closed) return closedResult;
-    return save(expectedRevision, validated.data);
-  };
+    transform: (snapshot: Snapshot) => Result<Snapshot, E>,
+  ): Promise<Result<Snapshot, CommandError | E>> =>
+    Result.gen(async function* () {
+      if (closed) return yield* new StorageClosed();
+      if (!expectedSchema.safeParse(expectedRevision).success)
+        return yield* new InvalidRevision();
+      const current = yield* Result.await(readWritable());
+      if (current.revision !== expectedRevision)
+        return yield* new Conflict({ snapshot: current });
+      const next = yield* applyTransform(current, transform);
+      const valid = yield* validateWrite(next);
+      if (closed) return yield* new StorageClosed();
+      return Result.ok(yield* Result.await(save(expectedRevision, valid)));
+    });
   return {
-    async deleteAllData(expectedRevision: number): Promise<
-      | Result
-      | {
-          readonly kind: "cleanup-pending";
-          readonly snapshot: Snapshot;
-          readonly message: string;
-        }
-    > {
-      const result = await write(expectedRevision, (snapshot) => ({
-        ...initialSnapshot(),
-        revision: snapshot.revision + 1,
-      }));
-      if (result.kind !== "saved") return result;
-      try {
-        journal.clearBefore(result.snapshot.revision);
-        return result;
-      } catch {
-        return {
-          kind: "cleanup-pending",
-          snapshot: result.snapshot,
-          message:
-            "Your workouts and preferences were deleted, but input drafts could not be cleared. Retry to finish deleting your data.",
-        };
-      }
+    async deleteAllData(
+      expectedRevision: number,
+    ): Promise<Result<Snapshot, DeleteError>> {
+      const saved = await write(expectedRevision, (snapshot) =>
+        Result.ok({ ...initialSnapshot(), revision: snapshot.revision + 1 }),
+      );
+      if (saved.isErr()) return saved;
+      const cleared = Result.try({
+        try: () => journal.clearBefore(saved.value.revision),
+        catch: () => new DraftCleanupPending({ snapshot: saved.value }),
+      });
+      return cleared.isOk() ? saved : Result.err(cleared.error);
     },
-    async execute(
+    execute(
       command: ApplicationCommand,
       expectedRevision: number,
-    ): Promise<Result> {
+    ): Promise<Result<Snapshot, CommandError>> {
       const parsed = applicationCommandSchema.safeParse(command);
       if (!parsed.success)
-        return {
-          kind: "invalid",
-          message:
-            parsed.error.issues[0]?.message ?? "Invalid workout command.",
-        };
+        return Promise.resolve(
+          Result.err(
+            new InvalidChange({
+              message:
+                parsed.error.issues[0]?.message ?? "Invalid workout command.",
+            }),
+          ),
+        );
       return write(expectedRevision, (snapshot) => {
         const resolved = resolveCommand(parsed.data, id);
         const validated = commandSchema.safeParse(resolved);
         if (!validated.success)
-          return validated.error.issues[0]?.message ?? "Invalid workout command.";
-        const result = reduceWorkout(snapshot, validated.data, { at: now(), id });
-        return result.kind === "rejected" ? result.message : result.snapshot;
+          return Result.err(
+            new InvalidChange({
+              message:
+                validated.error.issues[0]?.message ?? "Invalid workout command.",
+            }),
+          );
+        const result = reduceWorkout(snapshot, validated.data, {
+          at: now(),
+          id,
+        });
+        return result.kind === "rejected"
+          ? Result.err(new InvalidChange({ message: result.message }))
+          : Result.ok(result.snapshot);
       });
     },
     subscribe: storage.subscribe,
-    async exportBackup(): Promise<string> {
-      if (closed) throw new Error("Workout storage is closed.");
-      const current = await storage.read();
-      if (current.kind === "unavailable") throw new Error(current.message);
-      if (current.kind === "recovery") return current.rawExport;
-      return JSON.stringify(
-        { format: "form-workout", version: 2, snapshot: current.snapshot },
-        null,
-        2,
-      );
+    async exportBackup(): Promise<Result<string, ExportError>> {
+      if (closed) return Result.err(new StorageClosed());
+      const current = await readCurrent();
+      if (current.isOk()) return Result.ok(serializeBackup(current.value));
+      if (StoredDataUnreadable.is(current.error))
+        return Result.ok(current.error.rawExport);
+      return Result.err(current.error);
     },
-    async importBackup(
+    importBackup(
       json: string,
       expectedRevision: number,
-    ): Promise<Result> {
-      if (json.length > 20_000_000)
-        return {
-          kind: "invalid",
-          message: "Backup is too large. The limit is 20 MB.",
-        };
-      let raw: unknown;
-      try {
-        raw = JSON.parse(json);
-      } catch {
-        return { kind: "invalid", message: "This file is not valid JSON." };
-      }
-      const parsed = backupSchema.safeParse(raw);
-      if (!parsed.success)
-        return {
-          kind: "invalid",
-          message: "This is not a valid workout backup.",
-        };
-      return write(expectedRevision, (snapshot) =>
-        mergeSnapshots(snapshot, parsed.data.snapshot),
-      );
+    ): Promise<Result<Snapshot, ImportError>> {
+      return Result.gen(async function* () {
+        const incoming = yield* parseBackup(json);
+        const merged = yield* Result.await(
+          write(expectedRevision, (snapshot) =>
+            mergeSnapshots(snapshot, incoming),
+          ),
+        );
+        return Result.ok(merged);
+      });
     },
     close(): void {
       if (closed) return;

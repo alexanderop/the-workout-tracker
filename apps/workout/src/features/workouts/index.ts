@@ -2,9 +2,11 @@ export { createWorkouts } from "./application";
 export type {
   Workouts,
   ApplicationCommand,
+  CommandError,
+  DeleteError,
+  ExportError,
+  ImportError,
   WorkoutDependencies,
-  LoadState,
-  Result,
 } from "./application";
 export * from "./domain";
 export type { DraftJournal } from "./application";

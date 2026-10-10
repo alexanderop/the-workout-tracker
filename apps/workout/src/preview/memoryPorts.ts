@@ -1,6 +1,12 @@
+import { Result } from "@form/result";
 import {
   snapshotSchema,
   draftSchema,
+  Conflict,
+  InvalidChange,
+  InvalidRevision,
+  loadState,
+  StorageClosed,
   type Snapshot,
   type WorkoutStorage,
   type DraftJournal,
@@ -13,42 +19,43 @@ export function createMemoryStorage(initial: Snapshot): WorkoutStorage {
   let snapshot = snapshotSchema.parse(initial);
   let closed = false;
   const listeners = new Set<(state: LoadState) => void>();
-  const unavailable = {
-    kind: "unavailable",
-    message: "Preview storage is closed.",
-  } as const;
+  const closedState = loadState(Result.err(new StorageClosed()));
+  const ready = () => loadState(Result.ok(snapshot));
   return {
     async read() {
-      return closed ? unavailable : { kind: "ready", snapshot };
+      return closed ? Result.err(new StorageClosed()) : Result.ok(snapshot);
     },
     async compareAndSave(expectedRevision, next) {
-      if (closed) return unavailable;
+      if (closed) return Result.err(new StorageClosed());
       if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 0)
-        return { kind: "invalid", message: "Invalid preview revision." };
+        return Result.err(new InvalidRevision());
       const parsed = snapshotSchema.safeParse(next);
       if (!parsed.success)
-        return { kind: "invalid", message: "Invalid preview snapshot." };
+        return Result.err(
+          new InvalidChange({ message: "Invalid preview snapshot." }),
+        );
       if (expectedRevision !== snapshot.revision)
-        return { kind: "conflict", snapshot };
+        return Result.err(new Conflict({ snapshot }));
       const unchanged = parsed.data.revision === snapshot.revision;
       if (unchanged && JSON.stringify(parsed.data) === JSON.stringify(snapshot))
-        return { kind: "saved", snapshot };
+        return Result.ok(snapshot);
       if (parsed.data.revision !== snapshot.revision + 1)
-        return {
-          kind: "invalid",
-          message: "Snapshot revisions must advance by one.",
-        };
+        return Result.err(
+          new InvalidChange({
+            message: "Snapshot revisions must advance by one.",
+          }),
+        );
       snapshot = parsed.data;
-      for (const listener of listeners) listener({ kind: "ready", snapshot });
-      return { kind: "saved", snapshot };
+      for (const listener of listeners) listener(ready());
+      return Result.ok(snapshot);
     },
     subscribe(listener) {
       if (closed) {
-        listener(unavailable);
+        listener(closedState);
         return () => {};
       }
       listeners.add(listener);
-      listener({ kind: "ready", snapshot });
+      listener(ready());
       return () => {
         listeners.delete(listener);
       };

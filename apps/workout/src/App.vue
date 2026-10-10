@@ -45,7 +45,7 @@ const {
 const clock = useWorkoutClock(environment.now);
 const workspace = useWorkoutWorkspace(workouts, drafts, clock.now);
 watch(() => workspace.active.value?.rest?.endsAt, clock.refresh);
-const { state, snapshot, saving, message, error, notice, history, active } = workspace;
+const { state, loadFailure, snapshot, saving, message, error, notice, history, active } = workspace;
 const dialogs = useTemplateRef<InstanceType<typeof WorkoutDialogs>>("dialogs");
 const router = useRouter();
 onScopeDispose(router.beforeEach(() => dialogs.value?.requestLeave() ?? true));
@@ -219,18 +219,18 @@ const title = computed(() => {
       >
         <BaseLoading v-if="state.kind === 'loading'" />
         <div
-          v-else-if="state.kind === 'unavailable' || state.kind === 'recovery'"
+          v-else-if="loadFailure"
           class="empty-state"
         >
           <ShieldCheck :size="32" />
           <h1>Your data needs attention</h1>
-          <p>{{ state.message }}</p>
+          <p>{{ loadFailure.message }}</p>
           <BaseButton
             unstyled
-            v-if="state.kind === 'recovery'"
+            v-if="loadFailure.recoveryExport"
             class="btn secondary"
             @click="
-              download(state.rawExport, 'the-workout-tracker-recovery.json')
+              download(loadFailure.recoveryExport, 'the-workout-tracker-recovery.json')
             "
           >
             Export recovery data</BaseButton

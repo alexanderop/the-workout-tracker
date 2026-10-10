@@ -1,25 +1,20 @@
-import type { Snapshot } from "./domain";
+import type { Result } from "@form/result";
+import type { LoadState, ReadError, SaveError, Snapshot } from "./domain";
 
-export type StorageState =
-  | { readonly kind: "ready"; readonly snapshot: Snapshot }
-  | {
-      readonly kind: "recovery";
-      readonly message: string;
-      readonly rawExport: string;
-    }
-  | { readonly kind: "unavailable"; readonly message: string };
-export type LoadState = { readonly kind: "loading" } | StorageState;
-export type Result =
-  | { readonly kind: "saved"; readonly snapshot: Snapshot }
-  | { readonly kind: "conflict"; readonly snapshot: Snapshot }
-  | { readonly kind: "invalid"; readonly message: string }
-  | { readonly kind: "unavailable"; readonly message: string };
+export type { LoadState } from "./domain";
+
 export type WorkoutStorage = {
-  readonly read: () => Promise<StorageState>;
+  /**
+   * The confirmed snapshot, or why there is none: unavailable or closed
+   * storage, or stored data that failed validation and needs a recovery
+   * export.
+   */
+  readonly read: () => Promise<Result<Snapshot, ReadError>>;
+  /** Saves `next` only while `expectedRevision` is still the stored one. */
   readonly compareAndSave: (
     expectedRevision: number,
     next: Snapshot,
-  ) => Promise<Result>;
+  ) => Promise<Result<Snapshot, SaveError>>;
   readonly subscribe: (listener: (state: LoadState) => void) => () => void;
   readonly close: () => void;
 };

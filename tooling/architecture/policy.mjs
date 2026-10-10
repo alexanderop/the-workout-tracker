@@ -10,6 +10,8 @@ import ts from "typescript";
 import { parse } from "@vue/compiler-sfc";
 
 export const featureDependencies = {};
+// Pure ECMAScript packages that every layer except the entry points may use.
+const pureLayers = new Set(["domain", "ports", "application", "adapters", "ui"]);
 const layers = {
   domain: ["domain"],
   ports: ["domain"],
@@ -141,6 +143,7 @@ export function importViolation(
   }
   if (!Object.hasOwn(layers, source.layer))
     return "Unknown feature layer; declare its architectural role.";
+  if (specifier === "@form/result" && pureLayers.has(source.layer)) return null;
   if (["domain", "application"].includes(source.layer) && specifier === "zod")
     return null;
   if (source.layer === "adapters") {
