@@ -32,6 +32,19 @@ export default defineConfig(({ mode, command }) => {
             if (filePath.endsWith(".webp")) return false;
             return undefined;
           },
+          // The startup file is deliberately one large chunk (see below).
+          chunkSizeWarningLimit: 600,
+          rolldownOptions: {
+            output: {
+              codeSplitting: {
+                // Everything the entry needs to start goes into one file.
+                // Automatic splitting spread it over seven small files that
+                // were all requested at once, which cost more round trips on
+                // a slow connection and compressed worse than one file.
+                groups: [{ name: "app", tags: ["$initial"] }],
+              },
+            },
+          },
         },
     plugins: [
       ...(preview
