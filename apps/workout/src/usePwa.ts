@@ -1,4 +1,9 @@
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import {
+  useEventListener,
+  useMediaQuery,
+  useOnline,
+} from "@form/composables";
+import { ref, computed, onScopeDispose, watch } from "vue";
 import { useRegisterSW } from "virtual:pwa-register/vue";
 import { watchServiceWorkerUpdates } from "./serviceWorkerUpdates";
 
@@ -14,11 +19,11 @@ function isInstallEvent(event: Event): event is InstallEvent {
   );
 }
 export function usePwa() {
-  const online = ref(navigator.onLine);
+  const online = useOnline();
   const installEvent = ref<InstallEvent | null>(null);
-  const displayMode = window.matchMedia("(display-mode: standalone)");
+  const displayMode = useMediaQuery("(display-mode: standalone)");
   const isStandalone = () =>
-    displayMode.matches ||
+    displayMode.value ||
     ("standalone" in navigator && navigator.standalone === true);
   const installed = ref(isStandalone());
   const installOpen = ref(false);
@@ -27,10 +32,14 @@ export function usePwa() {
     () => installEvent.value !== null && !installed.value,
   );
   const platform = detectInstallPlatform();
-  const updateDisplayMode = () => {
-    installed.value = isStandalone();
-    if (installed.value) installEvent.value = null;
-  };
+  watch(
+    displayMode,
+    () => {
+      installed.value = isStandalone();
+      if (installed.value) installEvent.value = null;
+    },
+    { flush: "sync" },
+  );
   const installMessage = ref("");
   let unmounted = false;
   let stopUpdateChecks: (() => void) | undefined;
@@ -40,9 +49,6 @@ export function usePwa() {
       stopUpdateChecks = watchServiceWorkerUpdates(swUrl, registration);
     },
   });
-  const updateNetwork = () => {
-    online.value = navigator.onLine;
-  };
   const captureInstall = (event: Event) => {
     if (isInstallEvent(event) && !installed.value) {
       installEvent.value = event;
@@ -52,21 +58,11 @@ export function usePwa() {
     installed.value = true;
     installEvent.value = null;
   };
-  onMounted(() => {
-    displayMode.addEventListener("change", updateDisplayMode);
-    window.addEventListener("online", updateNetwork);
-    window.addEventListener("offline", updateNetwork);
-    window.addEventListener("beforeinstallprompt", captureInstall);
-    window.addEventListener("appinstalled", markInstalled);
-  });
-  onUnmounted(() => {
+  useEventListener(window, "beforeinstallprompt", captureInstall);
+  useEventListener(window, "appinstalled", markInstalled);
+  onScopeDispose(() => {
     unmounted = true;
     stopUpdateChecks?.();
-    displayMode.removeEventListener("change", updateDisplayMode);
-    window.removeEventListener("online", updateNetwork);
-    window.removeEventListener("offline", updateNetwork);
-    window.removeEventListener("beforeinstallprompt", captureInstall);
-    window.removeEventListener("appinstalled", markInstalled);
   });
   async function install() {
     installMessage.value = "";

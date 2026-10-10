@@ -24,7 +24,7 @@
     "typecheck:pure": "node node_modules/@typescript/native/bin/tsc --noEmit -p tsconfig.pure.json",
     "typecheck:native": "node node_modules/@typescript/native/bin/tsc --noEmit -p tsconfig.native.json",
     "test:unit": "pnpm --filter @form/result test:unit && pnpm --filter @form/ui test:unit && pnpm --filter @form/workout test:unit",
-    "test:browser": "pnpm --filter @form/ui test:browser && pnpm --filter @form/workout test:browser",
+    "test:browser": "pnpm --filter @form/composables test:browser && pnpm --filter @form/ui test:browser && pnpm --filter @form/workout test:browser",
     "test:e2e": "pnpm --filter @form/workout test:e2e",
     "test": "pnpm test:unit && pnpm test:browser && pnpm test:e2e",
     "performance:build": "node scripts/performance-vite.mjs build",

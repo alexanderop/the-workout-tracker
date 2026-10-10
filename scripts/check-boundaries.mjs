@@ -15,6 +15,22 @@ const inside = (parent, file) => {
   );
 };
 
+// Workspace dependencies that are forbidden even when declared. The UI package
+// stays presentational, and the composables depend only on Vue and the result.
+const forbiddenDependencies = {
+  "@form/ui": {
+    "@form/composables":
+      "Generic UI components take state through props; browser composables belong to applications and feature UI",
+  },
+  "@form/composables": {
+    "@form/ui": "Composables cannot depend on UI components",
+  },
+  "@form/result": {
+    "@form/composables": "The result package has no workspace dependencies",
+    "@form/ui": "The result package has no workspace dependencies",
+  },
+};
+
 export function checkImport(specifier, file, owner, workspaces) {
   const localTarget = resolveImport(specifier, file);
   if (localTarget) {
@@ -30,6 +46,8 @@ export function checkImport(specifier, file, owner, workspaces) {
   const name = specifier.startsWith("@")
     ? specifier.split("/").slice(0, 2).join("/")
     : specifier.split("/")[0];
+  const forbidden = forbiddenDependencies[owner.manifest.name]?.[name];
+  if (forbidden) return forbidden;
   const target = workspaces.find(
     (workspace) => workspace.manifest.name === name,
   );

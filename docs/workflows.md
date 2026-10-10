@@ -96,7 +96,7 @@ Choose a test by the failure it must expose. Keep `pnpm verify` as type checking
 | Command | Proof |
 | --- | --- |
 | `pnpm test:unit` | Pure rules, application orchestration and the vendored `@form/result` suite in Node |
-| `pnpm test:browser` | Shared UI components and real browser storage adapters in Chrome |
+| `pnpm test:browser` | Shared UI components, `@form/composables` and real browser storage adapters in Chrome |
 | `pnpm test:e2e` | Executable Gherkin journeys against the production app build in Chrome |
 
 `test:unit` measures coverage. The workout logic layers (`domain/`, `application.ts`, `ui/*.ts`) and the pure `@form/ui` modules must stay at or above the thresholds in `apps/workout/coverage-thresholds.json` and `packages/ui/coverage-thresholds.json`. Raise a threshold when coverage rises; never lower one. Skipped or focused tests (`.skip`, `.only`, `.fixme`, `.todo`, `@skip`/`@only` tags) fail lint: fix or delete a test explicitly.

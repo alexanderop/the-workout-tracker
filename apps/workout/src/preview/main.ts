@@ -1,3 +1,4 @@
+import { useEventListener } from "@form/composables";
 import { createApp, ref } from "vue";
 import { createMemoryHistory } from "vue-router";
 import "@fontsource-variable/inter";
@@ -62,7 +63,7 @@ async function mountScenario(
   function dispose() {
     if (disposed) return;
     disposed = true;
-    window.removeEventListener("pagehide", onPageHide);
+    stopPageHide();
     try {
       if (mountStarted) app.unmount();
     } finally {
@@ -73,7 +74,7 @@ async function mountScenario(
     // A cached document resumes with its existing app when navigating back.
     if (!event.persisted) dispose();
   }
-  window.addEventListener("pagehide", onPageHide);
+  const stopPageHide = useEventListener(window, "pagehide", onPageHide);
   if (import.meta.hot) import.meta.hot.dispose(dispose);
   try {
     await router.push(

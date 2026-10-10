@@ -1,3 +1,6 @@
+import { useDocumentVisibility, useOnline } from "@form/composables";
+import { effectScope, onScopeDispose, watch } from "vue";
+
 const CHECK_INTERVAL_MS = 60 * 60 * 1000;
 
 /**
@@ -9,30 +12,36 @@ export function watchServiceWorkerUpdates(
   swUrl: string,
   registration: ServiceWorkerRegistration,
 ): () => void {
-  let checking = false;
-  async function check() {
-    if (checking || registration.installing || !navigator.onLine) return;
-    checking = true;
-    try {
-      // Skip update() when the server is unreachable; it would reject noisily.
-      const response = await fetch(swUrl, {
-        cache: "no-store",
-        headers: { cache: "no-store", "cache-control": "no-cache" },
-      });
-      if (response.status === 200) await registration.update();
-    } catch {
-      // Offline or server unavailable: try again on the next check.
-    } finally {
-      checking = false;
+  const scope = effectScope();
+  scope.run(() => {
+    const online = useOnline();
+    const visibility = useDocumentVisibility();
+    let checking = false;
+    async function check() {
+      if (checking || registration.installing || !online.value) return;
+      checking = true;
+      try {
+        // Skip update() when the server is unreachable; it would reject noisily.
+        const response = await fetch(swUrl, {
+          cache: "no-store",
+          headers: { cache: "no-store", "cache-control": "no-cache" },
+        });
+        if (response.status === 200) await registration.update();
+      } catch {
+        // Offline or server unavailable: try again on the next check.
+      } finally {
+        checking = false;
+      }
     }
-  }
-  const checkWhenVisible = () => {
-    if (document.visibilityState === "visible") void check();
-  };
-  const timer = window.setInterval(() => void check(), CHECK_INTERVAL_MS);
-  document.addEventListener("visibilitychange", checkWhenVisible);
-  return () => {
-    window.clearInterval(timer);
-    document.removeEventListener("visibilitychange", checkWhenVisible);
-  };
+    watch(
+      visibility,
+      (state) => {
+        if (state === "visible") void check();
+      },
+      { flush: "sync" },
+    );
+    const timer = window.setInterval(() => void check(), CHECK_INTERVAL_MS);
+    onScopeDispose(() => window.clearInterval(timer));
+  });
+  return () => scope.stop();
 }

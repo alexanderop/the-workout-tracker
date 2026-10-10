@@ -144,6 +144,8 @@ export function importViolation(
   if (!Object.hasOwn(layers, source.layer))
     return "Unknown feature layer; declare its architectural role.";
   if (specifier === "@form/result" && pureLayers.has(source.layer)) return null;
+  if (specifier === "@form/composables" && source.layer !== "ui")
+    return "Browser composables belong in the feature UI layer; inject browser capabilities elsewhere.";
   if (["domain", "application"].includes(source.layer) && specifier === "zod")
     return null;
   if (source.layer === "adapters") {
@@ -157,7 +159,7 @@ export function importViolation(
   }
   if (
     source.layer === "ui" &&
-    /^(?:vue|@vueuse\/core|@form\/ui(?:\/muscle-map-types)?|@lucide\/vue|lucide-vue-next|reka-ui)$/.test(
+    /^(?:vue|@vueuse\/core|@form\/composables|@form\/ui(?:\/muscle-map-types)?|@lucide\/vue|lucide-vue-next|reka-ui)$/.test(
       specifier,
     )
   )
