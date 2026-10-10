@@ -84,6 +84,7 @@ const {
   installed,
   offlineReady,
   needRefresh,
+  reloadReady,
   installMessage,
   install,
   updateServiceWorker,
@@ -259,6 +260,12 @@ const title = computed(() => {
               @click="updateServiceWorker(true)"
             >
               Update app
+            </BaseButton>
+          </div>
+          <div v-if="reloadReady && !active" class="notice" role="status">
+            <span>Updated — reload when ready.</span
+            ><BaseButton unstyled class="text-button" @click="reload">
+              Reload app
             </BaseButton>
           </div>
           <RouterView />
