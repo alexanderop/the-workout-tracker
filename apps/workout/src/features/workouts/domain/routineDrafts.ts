@@ -41,7 +41,7 @@ export function compareRoutineBaseline(
         entry.sets.length === current.sets.length &&
         entry.sets.every((set, setIndex) =>
           set.weightKg === current.sets[setIndex]?.weightKg &&
-          set.reps === current.sets[setIndex]?.reps,
+          set.reps === current.sets[setIndex].reps,
         );
     });
   return unchanged ? "unchanged" : "changed";

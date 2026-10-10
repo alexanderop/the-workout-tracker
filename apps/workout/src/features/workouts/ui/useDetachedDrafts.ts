@@ -54,10 +54,8 @@ export function useDetachedDrafts(journal: DraftJournal) {
   /** Keeps input for a finished workout's set; false when there is no such set. */
   function detach(
     snapshot: Snapshot,
-    sessionId: string,
-    setId: string,
-    values: RawValues,
-    records: readonly SetDraft[],
+    { sessionId, setId }: { sessionId: string; setId: string },
+    { values, records }: { values: RawValues; records: readonly SetDraft[] },
   ): boolean {
     const located = finishedSet(snapshot, sessionId, setId);
     if (!located) return false;
@@ -91,10 +89,8 @@ export function useDetachedDrafts(journal: DraftJournal) {
       if (differing || detached.has(key)) {
         detach(
           snapshot,
-          first.sessionId,
-          first.setId,
-          differing ?? first,
-          group,
+          { sessionId: first.sessionId, setId: first.setId },
+          { values: differing ?? first, records: group },
         );
         continue;
       }

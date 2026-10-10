@@ -1,7 +1,7 @@
 <script setup lang="ts">
+defineSlots<{ default?: () => unknown }>();
 // Adapted from shadcn-vue; native arrow and a single root preserve form layout.
 const model = defineModel<string | number>();
-defineSlots<{ default?: () => unknown }>();
 </script>
 
 <template>

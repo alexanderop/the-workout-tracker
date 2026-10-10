@@ -6,7 +6,7 @@ export default defineConfig({
   setupFile: "./src/histoire.setup.ts",
   theme: {
     title: "The Workout Tracker · Product design",
-    defaultColorScheme: "dark",
+    defaultColorScheme: "auto",
   },
   defaultStoryProps: {
     autoPropsDisabled: true,

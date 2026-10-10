@@ -57,6 +57,18 @@ export default [
       "vue/no-unused-emit-declarations": "error",
       "vue/require-explicit-slots": "error",
       "vue/max-template-depth": ["error", { maxDepth: 8 }],
+      "vue/block-order": ["error", { order: ["script", "template", "style"] }],
+      "vue/define-macros-order": [
+        "error",
+        { order: ["defineOptions", "defineProps", "defineEmits", "defineSlots"] },
+      ],
+      "vue/no-undef-components": [
+        "error",
+        // Histoire registers its story components globally.
+        { ignorePatterns: ["^Story$", "^Variant$", "^Hst[A-Z]"] },
+      ],
+      "vue/no-useless-v-bind": "error",
+      "vue/prefer-true-attribute-shorthand": "error",
     },
   },
   {

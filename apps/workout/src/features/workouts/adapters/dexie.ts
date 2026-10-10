@@ -1,5 +1,5 @@
 import { Result } from "@form/result";
-import Dexie, { liveQuery, type Table } from "dexie";
+import { Dexie, liveQuery, type Table } from "dexie";
 import {
   Conflict,
   InvalidChange,
@@ -41,6 +41,8 @@ export function openDexieWorkoutStorage(
   database.version(1).stores({ state: "" });
   const table: Table<unknown, string> = database.table("state");
   let closed = false;
+  // Reads the flag fresh: it changes while awaits are pending, which control-flow narrowing cannot see.
+  const isClosed = () => closed;
   let initialized: Promise<void> | undefined;
   let generation = 0;
   let observation: { unsubscribe: () => void } | undefined;
@@ -105,7 +107,7 @@ export function openDexieWorkoutStorage(
     return Result.ok(candidate);
   };
   /** A failed effect is `closed` when the handle was closed meanwhile. */
-  const failure = () => (closed ? new StorageClosed() : new StorageUnavailable());
+  const failure = () => (isClosed() ? new StorageClosed() : new StorageUnavailable());
   const rawRead = async () => {
     await initialize();
     return table.get("snapshot");
@@ -114,7 +116,7 @@ export function openDexieWorkoutStorage(
     async read(): Promise<Result<Snapshot, ReadError>> {
       if (closed) return Result.err(new StorageClosed());
       const raw = await Result.tryPromise({ try: rawRead, catch: failure });
-      if (closed) return Result.err(new StorageClosed());
+      if (isClosed()) return Result.err(new StorageClosed());
       return raw.isOk() ? decode(raw.value) : Result.err(raw.error);
     },
     async compareAndSave(
@@ -129,7 +131,7 @@ export function openDexieWorkoutStorage(
         return Result.err(new InvalidChange({ message: "Invalid workout data." }));
       const opened = await Result.tryPromise({ try: initialize, catch: failure });
       if (opened.isErr()) return Result.err(opened.error);
-      if (closed) return Result.err(new StorageClosed());
+      if (isClosed()) return Result.err(new StorageClosed());
       return Result.flatten(
         await Result.tryPromise({
           try: () =>

@@ -26,8 +26,8 @@ const {
   }
 >();
 const emits = defineEmits<DialogContentEmits>();
-const forwarded = useForwardPropsEmits(contentProps, emits);
 defineSlots<{ default?: () => unknown }>();
+const forwarded = useForwardPropsEmits(contentProps, emits);
 </script>
 <template>
   <DialogPortal :to="portalTo" :disabled="portalDisabled"

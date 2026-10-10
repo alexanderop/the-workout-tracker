@@ -82,7 +82,7 @@ describe("backup merging", () => {
     const incoming = factory.snapshot({
       completed: { [active.id]: factory.completedSession({ id: active.id }) },
     });
-    expect(failure(mergeSnapshots(local, incoming))._tag).toBe(
+    expect(errorTag(mergeSnapshots(local, incoming))).toBe(
       "ActiveWorkoutFinished",
     );
   });

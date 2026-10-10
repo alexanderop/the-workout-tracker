@@ -3,7 +3,10 @@ import { WorkoutPage } from "./WorkoutPage";
 import { EditSafetyPage } from "./EditSafetyPage";
 
 export class QaRegressionsPage {
-  constructor(readonly page: Page) {}
+  readonly page: Page;
+  constructor(page: Page) {
+    this.page = page;
+  }
 
   async otherTab() {
     const other = await this.page.context().newPage();

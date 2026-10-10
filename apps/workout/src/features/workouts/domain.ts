@@ -2,14 +2,12 @@
 export {
   exerciseSchema,
   routineSchema,
-  settingsSchema,
   snapshotSchema,
   type ActiveSession,
   type CompletedSession,
   type Exercise,
   type Routine,
   type SessionExercise,
-  type Settings,
   type Snapshot,
   type WorkoutSet,
 } from "./domain/schemas";
@@ -17,7 +15,6 @@ export {
   commandSchema,
   setTargetReps,
   type Command,
-  type Inputs,
   type Transition,
 } from "./domain/commands";
 export {
@@ -43,8 +40,6 @@ export {
   parseBackup,
   serializeBackup,
   type BackupError,
-  type BackupMergeError,
-  type BackupParseError,
 } from "./domain/backup";
 export {
   Conflict,
@@ -59,9 +54,7 @@ export {
   StorageUnavailable,
   StoredDataUnreadable,
   type DraftWriteError,
-  type Invalid,
   type ReadError,
   type SaveError,
-  type Unavailable,
 } from "./domain/errors";
 export { loadState, type LoadState } from "./domain/loadState";

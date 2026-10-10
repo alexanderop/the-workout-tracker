@@ -3,19 +3,23 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.28.2",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "prepare": "husky",
     "dev": "pnpm --filter @form/workout dev",
     "build": "pnpm typecheck && pnpm --filter @form/workout build",
     "preview": "pnpm --filter @form/workout preview",
     "typecheck": "pnpm typecheck:pure && pnpm typecheck:native && pnpm -r typecheck",
-    "lint": "pnpm lint:oxlint && pnpm lint:vue && pnpm lint:guards",
+    "lint": "pnpm lint:oxlint && pnpm lint:vue && pnpm lint:guards && pnpm check:architecture && pnpm check:boundaries && pnpm check:dead-code",
     "lint:guards": "node tooling/lint/no-suppressions.mjs",
     "check:ratchet": "node tooling/lint/ratchet.mjs",
     "check:boundaries": "node scripts/check-boundaries.mjs",
     "verify": "pnpm typecheck && pnpm lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "check:dead-code": "knip --no-progress --no-config-hints",
     "check:architecture": "node scripts/check-architecture.mjs",
     "dev:ui": "node scripts/design-workspace.mjs dev",
     "build:ui": "node scripts/design-workspace.mjs build",
@@ -35,20 +39,21 @@
     "performance:check": "pnpm performance:build && pnpm performance:budget && pnpm performance:offline && pnpm performance:lighthouse"
   },
   "devDependencies": {
-    "@eslint/css": "^2.0.0",
+    "@eslint/css": "2.0.0",
     "@lhci/cli": "0.15.1",
-    "@shadcn/lint": "^0.2.0",
+    "@shadcn/lint": "0.2.0",
     "@typescript/native": "npm:typescript@7.0.2",
-    "@vue/compiler-sfc": "^3.5.43",
-    "eslint": "^10.12.0",
-    "eslint-plugin-oxlint": "^1.86.0",
-    "eslint-plugin-vue": "^10.11.1",
-    "husky": "^9.1.7",
-    "oxlint": "^1.86.0",
+    "@vue/compiler-sfc": "3.5.43",
+    "eslint": "10.12.0",
+    "eslint-plugin-oxlint": "1.86.0",
+    "eslint-plugin-vue": "10.11.1",
+    "husky": "9.1.7",
+    "knip": "6.41.0",
+    "oxlint": "1.86.0",
     "oxlint-tsgolint": "7.0.2003",
-    "prettier": "^3.9.9",
-    "typescript": "^6.0.3",
-    "typescript-eslint": "^8.71.0",
-    "vue-eslint-parser": "^10.4.1"
+    "prettier": "3.9.9",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.0",
+    "vue-eslint-parser": "10.4.1"
   }
 }

@@ -56,14 +56,104 @@
     "typescript/no-non-null-assertion": "error",
     "typescript/ban-ts-comment": "error",
     "vitest/no-focused-tests": "error",
-    "vitest/no-disabled-tests": "error"
+    "vitest/no-disabled-tests": "error",
+    "import/no-cycle": "error",
+    "import/no-unassigned-import": [
+      "error",
+      {
+        "allow": [
+          "**/*.css",
+          "@fontsource/*",
+          "@fontsource-variable/*"
+        ]
+      }
+    ],
+    "typescript/await-thenable": "error",
+    "typescript/require-await": "error",
+    "typescript/return-await": [
+      "error",
+      "in-try-catch"
+    ],
+    "typescript/no-unnecessary-condition": "error",
+    "typescript/no-unnecessary-type-assertion": "error",
+    "typescript/no-unsafe-argument": "error",
+    "typescript/no-unsafe-assignment": "error",
+    "typescript/no-unsafe-call": "error",
+    "typescript/no-unsafe-member-access": "error",
+    "typescript/no-unsafe-return": "error",
+    "typescript/only-throw-error": "error",
+    "typescript/prefer-promise-reject-errors": "error",
+    "typescript/restrict-template-expressions": "error",
+    "typescript/no-base-to-string": "error",
+    "typescript/prefer-nullish-coalescing": "error",
+    "typescript/prefer-optional-chain": "error",
+    "typescript/no-deprecated": "error",
+    "typescript/consistent-type-definitions": "off",
+    "eslint/max-depth": [
+      "error",
+      {
+        "max": 3
+      }
+    ],
+    "eslint/max-params": [
+      "error",
+      {
+        "max": 3
+      }
+    ],
+    "vue/max-props": "off",
+    "vue/define-props-declaration": "error",
+    "vue/define-emits-declaration": "error",
+    "vue/require-typed-ref": "error",
+    "vue/prefer-import-from-vue": "error",
+    "vitest/no-commented-out-tests": "error",
+    "vitest/consistent-test-it": [
+      "error",
+      {
+        "fn": "it"
+      }
+    ],
+    "vitest/require-top-level-describe": "error",
+    "vitest/max-nested-describe": [
+      "error",
+      {
+        "max": 2
+      }
+    ],
+    "vitest/no-conditional-in-test": "off",
+    "vitest/no-standalone-expect": "error",
+    "vitest/prefer-to-be": "error",
+    "vitest/prefer-to-have-length": "error",
+    "vitest/prefer-to-contain": "error",
+    "vitest/prefer-hooks-on-top": "error",
+    "vitest/prefer-hooks-in-order": "error",
+    "vitest/no-duplicate-hooks": "error",
+    "oxc/no-map-spread": "off",
+    "unicorn/require-post-message-target-origin": "off",
+    "unicorn/no-array-sort": "off",
+    "unicorn/no-array-reverse": "off",
+    "eslint/no-await-in-loop": "off",
+    "typescript/consistent-return": "off",
+    "vitest/expect-expect": [
+      "error",
+      {
+        "assertFunctionNames": [
+          "expect",
+          "expectNoAxeViolations",
+          "fc.assert"
+        ]
+      }
+    ]
   },
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": [
+    "eslint",
     "typescript",
     "unicorn",
     "oxc",
-    "vue"
+    "import",
+    "vue",
+    "vitest"
   ],
   "options": {
     "typeAware": true,
@@ -138,5 +228,10 @@
         "code-policy/one-effect-per-try": "error"
       }
     }
-  ]
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "error"
+  }
 }

@@ -5,7 +5,10 @@ import { WorkoutPage } from "./pages/WorkoutPage";
 /** Keeps the handle of a second tab a scenario opens for later steps. */
 export class ScenarioTabs {
   #second: Page | undefined;
-  constructor(readonly context: BrowserContext) {}
+  readonly context: BrowserContext;
+  constructor(context: BrowserContext) {
+    this.context = context;
+  }
 
   remember(page: Page) {
     if (page.context() !== this.context)

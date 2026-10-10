@@ -35,7 +35,7 @@ const disabled = ref(false);
       ><div class="stack">
         <BaseField orientation="horizontal"
           ><BaseFieldLabel for="switch-on">On</BaseFieldLabel
-          ><BaseSwitch id="switch-on" :model-value="true" disabled /></BaseField
+          ><BaseSwitch id="switch-on" model-value disabled /></BaseField
         ><BaseField orientation="horizontal"
           ><BaseFieldLabel for="switch-off">Off</BaseFieldLabel
           ><BaseSwitch id="switch-off" :model-value="false" disabled

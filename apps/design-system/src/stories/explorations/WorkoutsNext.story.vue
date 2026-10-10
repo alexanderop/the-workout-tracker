@@ -28,19 +28,19 @@ const concepts = [
 <style scoped>
 .direction-board { padding: 40px 28px 56px; background: var(--background); color: var(--text); }
 .board-heading { max-width: 1200px; margin: 0 auto 38px; }
-.board-heading p { color: var(--purple); font-size: 10px; letter-spacing: 2px; margin: 0 0 12px; }
+.board-heading p { color: var(--accent); font-size: 10px; letter-spacing: 2px; margin: 0 0 12px; }
 .board-heading h1 { font-size: 34px; font-weight: 550; letter-spacing: -1.3px; line-height: 1.2; margin: 0 0 13px; }
 .board-heading > span { font-size: 13px; color: var(--muted); line-height: 1.6; }
 .board-controls { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 18px; }
 .board-controls label { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 12px; color: var(--muted); cursor: pointer; }
-.board-controls input { accent-color: var(--purple); }
+.board-controls input { accent-color: var(--accent); }
 .direction-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; max-width: 1200px; margin: auto; }
 .direction-caption { min-height: 84px; }
 .direction-caption > div { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .direction-caption h2 { font-size: 15px; font-weight: 500; margin: 0; }
-.direction-caption span { font-size: 9px; color: var(--purple); }
+.direction-caption span { font-size: 9px; color: var(--accent); }
 .direction-caption p { color: var(--muted); font-size: 11px; line-height: 1.6; max-width: 270px; margin: 10px 0 18px; }
-.phone-frame { overflow: hidden; border: 1px solid var(--surface); border-radius: 25px; }
+.phone-frame { overflow: hidden; border: 1px solid var(--border); border-radius: 25px; }
 @media (max-width: 1000px) { .direction-grid { grid-template-columns: 1fr; max-width: 390px; gap: 40px; } .board-heading { max-width: 390px; } }
 </style>
 

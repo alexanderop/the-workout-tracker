@@ -35,7 +35,8 @@ export function useLocalStorage<S extends StandardSchemaV1>(
     readStorage(storage, key, schema).match({
       ok: (value) => {
         readError.value = null;
-        state.value = value === undefined ? fallback : value;
+        state.value = fallback;
+        if (value !== undefined) state.value = value;
       },
       err: (error) => {
         readError.value = error;

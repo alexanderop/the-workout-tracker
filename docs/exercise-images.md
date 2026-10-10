@@ -13,7 +13,7 @@ Use this workflow to add or replace the workout app's offline thumbnails. Follow
    The command regenerates a sibling `.webp` for every PNG and reports source and thumbnail bytes. It preserves the PNGs and overwrites the WebPs. Paths resolve relative to the script, so its behavior does not depend on the working directory. A conversion failure names the source and exits with an error. Earlier thumbnails may already have been updated.
 
 4. Import the `.webp` in `apps/workout/src/features/workouts/ui/exerciseArtwork.ts`. Add an explicit catalog ID, name, and equipment match to the existing map.
-5. Inspect the thumbnail against the app's dark background. The converter preserves aspect ratio and transparency, with a maximum size of 192 × 192 pixels. That provides up to three image pixels per CSS pixel at the current 64-pixel display size. It does not enlarge smaller sources. WebP uses quality 85 and effort 6.
+5. Inspect the thumbnail against the app's light and dark backgrounds. The converter preserves aspect ratio and transparency, with a maximum size of 192 × 192 pixels. That provides up to three image pixels per CSS pixel at the current 64-pixel display size. It does not enlarge smaller sources. WebP uses quality 85 and effort 6.
 6. Commit both the source PNG and generated WebP with the artwork map change. Conversion runs only when you invoke the script. Builds use the committed WebPs.
 7. Run `pnpm verify` for type checking and linting. Use the [production preview](../README.md#run) to inspect the artwork after a complete online load and an offline reload.
 

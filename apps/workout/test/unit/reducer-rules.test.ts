@@ -55,9 +55,10 @@ describe("given an active workout", () => {
       { type: "start-selected", exerciseIds: [OTHER_EXERCISE_ID] },
       { type: "repeat", completedId: completed.id },
     ] satisfies Command[])
-      expect(rejection(run(snapshot, command)), command.type).toBe(
+      expect([command.type, rejection(run(snapshot, command))]).toEqual([
+        command.type,
         "Finish your current workout first.",
-      );
+      ]);
   });
 
   it("should keep at least one set per exercise", () => {
@@ -148,15 +149,15 @@ describe("given an active workout", () => {
   });
 });
 
-describe("given the 50-exercise limit", () => {
-  const full = (count: number) =>
-    journal((factory) => [
-      factory.sessionExercise({
-        sets: [factory.set({ completed: true }), factory.set()],
-      }),
-      ...Array.from({ length: count - 1 }, () => factory.sessionExercise()),
-    ]);
+const full = (count: number) =>
+  journal((factory) => [
+    factory.sessionExercise({
+      sets: [factory.set({ completed: true }), factory.set()],
+    }),
+    ...Array.from({ length: count - 1 }, () => factory.sessionExercise()),
+  ]);
 
+describe("given the 50-exercise limit", () => {
   it("should refuse additions beyond 50 exercises", () => {
     const { snapshot, active, run } = full(49);
     const message = "A workout can contain up to 50 exercises.";

@@ -9,6 +9,9 @@ import { useLocalStorage } from "../src/useLocalStorage";
 import { scoped } from "./scoped";
 
 const schema = z.enum(["system", "light", "dark"]);
+const blocked = (): Storage => {
+  throw new DOMException("blocked", "SecurityError");
+};
 const open = (storage: () => Storage = () => window.localStorage) =>
   scoped(() =>
     useLocalStorage("theme", schema, { fallback: "system", storage }),
@@ -59,9 +62,6 @@ describe("useLocalStorage", () => {
     });
 
     it("should update state even when storage is blocked", () => {
-      const blocked = (): Storage => {
-        throw new DOMException("blocked", "SecurityError");
-      };
       const { value, stop } = open(blocked);
       expect(value.readError.value).toBeInstanceOf(StorageUnavailable);
       const result = value.set("dark");

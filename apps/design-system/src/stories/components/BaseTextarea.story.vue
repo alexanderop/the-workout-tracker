@@ -34,12 +34,12 @@ const disabled = ref(false);
       ><div class="stack">
         <BaseTextarea
           aria-label="Filled note"
-          :model-value="'Train at a deliberately slower pace today.'"
+          model-value="Train at a deliberately slower pace today."
           readonly
         /><BaseTextarea
           aria-label="Disabled note"
           disabled
-          :model-value="'Editing unavailable'"
+          model-value="Editing unavailable"
         /><BaseField data-invalid="true"
           ><BaseFieldLabel for="notes-error">Note too long</BaseFieldLabel
           ><BaseTextarea

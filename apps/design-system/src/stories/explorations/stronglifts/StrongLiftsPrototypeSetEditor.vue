@@ -8,7 +8,7 @@ const weight = ref(String(set.weight));
 const reps = ref(String(set.reps ?? set.target));
 </script>
 <template>
-  <BaseSheet :open="true" :title="title" description="Correct this individual set." @close="emit('close')">
+  <BaseSheet open :title="title" description="Correct this individual set." @close="emit('close')">
     <div class="sl-editor">
       <BaseInputNumber v-model="weight" label="Set weight" title="Set weight" unit="kg" :decimals="2" :preset-step="2.5" />
       <BaseInputNumber v-model="reps" :label="set.reps === null ? 'Target reps' : 'Completed reps'" title="Reps" :max="100" />

@@ -48,11 +48,15 @@ export class DraftStorageFailed extends TaggedError("DraftStorageFailed")<{
   cause: unknown;
 }> {}
 
-export type Unavailable = StorageUnavailable | StorageClosed | SaveUnconfirmed;
-export type Invalid = RecoveryRequired | InvalidRevision | InvalidChange;
 /** Why reading the confirmed snapshot failed. */
 export type ReadError = StorageUnavailable | StorageClosed | StoredDataUnreadable;
 /** Why the draft journal could not write a draft. */
 export type DraftWriteError = DraftsDeleted | DraftStorageFailed;
 /** Why a revision-checked write did not save. */
-export type SaveError = Conflict | Invalid | StorageUnavailable | StorageClosed;
+export type SaveError =
+  | Conflict
+  | RecoveryRequired
+  | InvalidRevision
+  | InvalidChange
+  | StorageUnavailable
+  | StorageClosed;

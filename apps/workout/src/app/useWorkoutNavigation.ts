@@ -17,6 +17,16 @@ export function useLinkNavigation(): PrepareLinkNavigation {
   return prepare;
 }
 
+function destination(next: WorkoutPage) {
+  if (next === "today" || next === "history" || next === "workouts") {
+    return {
+      name: "workouts",
+      params: { view: "home" },
+    } as const;
+  }
+  return { name: next };
+}
+
 export function useWorkoutNavigation(
   clearMessage: () => void,
   reportError: (message: string) => void,
@@ -68,16 +78,6 @@ export function useWorkoutNavigation(
     reportError("This page could not be opened. Please try again or reload.");
   }
   onScopeDispose(router.onError(reportNavigationError));
-
-  function destination(next: WorkoutPage) {
-    if (next === "today" || next === "history" || next === "workouts") {
-      return {
-        name: "workouts",
-        params: { view: "home" },
-      } as const;
-    }
-    return { name: next };
-  }
 
   const workoutsHref = computed(
     () => router.resolve(destination("workouts")).href,

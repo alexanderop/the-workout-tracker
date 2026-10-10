@@ -1,8 +1,8 @@
 <script setup lang="ts">
 // Adapted from shadcn-vue; see THIRD_PARTY_NOTICES.md.
 import { SwitchRoot, SwitchThumb } from "reka-ui";
-const model = defineModel<boolean>({ default: false });
 defineProps<{ disabled?: boolean; required?: boolean; name?: string }>();
+const model = defineModel<boolean>({ default: false });
 </script>
 
 <template>

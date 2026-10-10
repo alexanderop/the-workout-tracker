@@ -5,8 +5,8 @@ import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 const { workspace } = defineProps<{
   workspace: WorkoutWorkspace;
 }>();
-const { active, saving, training, run, trainingMode, canFinish } = workspace;
 const emit = defineEmits<{ finish: []; pick: [] }>();
+const { active, saving, training, run, trainingMode, canFinish } = workspace;
 function showNext() {
   const next = training.next.value;
   if (!next || saving.value) return;

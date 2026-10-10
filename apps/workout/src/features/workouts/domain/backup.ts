@@ -22,8 +22,8 @@ export class ActiveWorkoutFinished extends TaggedError(
   "ActiveWorkoutFinished",
 ) {}
 
-export type BackupParseError = BackupTooLarge | BackupUnreadable | InvalidBackup;
-export type BackupMergeError =
+type BackupParseError = BackupTooLarge | BackupUnreadable | InvalidBackup;
+type BackupMergeError =
   | ConflictingRecord
   | ActiveWorkoutInProgress
   | ActiveWorkoutFinished;

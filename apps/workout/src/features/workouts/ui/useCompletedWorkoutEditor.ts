@@ -64,6 +64,3 @@ export function useCompletedWorkoutEditor(
   }
   return { baseline, draft, dirty, pending, state, localError, save, reload };
 }
-export type CompletedWorkoutEditor = ReturnType<
-  typeof useCompletedWorkoutEditor
->;

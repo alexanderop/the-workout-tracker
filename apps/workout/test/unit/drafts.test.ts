@@ -34,7 +34,7 @@ describe("raw numeric drafts", () => {
       { weight: "4,0,0", reps: "8" },
       { weight: "40", reps: "8.0" },
     ])
-      expect(parseSetValues(values), JSON.stringify(values)).toBeNull();
+      expect([values, parseSetValues(values)]).toEqual([values, null]);
   });
 
   it("accepts the inclusive 0 and 1000 limits but nothing beyond them", () => {

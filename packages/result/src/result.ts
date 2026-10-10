@@ -23,7 +23,7 @@ import {
  * package compiles with the ECMAScript library only; a real `AbortSignal`
  * satisfies it.
  */
-export interface AbortSignalLike {
+interface AbortSignalLike {
   readonly aborted: boolean;
   addEventListener(type: "abort", listener: () => void, options?: { once?: boolean }): void;
   removeEventListener(type: "abort", listener: () => void): void;

@@ -100,42 +100,42 @@ describe("given a weight input", () => {
       expect(dialog().getByRole("status").query()).toBeNull();
       expect(document.querySelector('[role="status"]')).toBeNull();
     });
+  });
 
-    describe("when pressing Enter", () => {
-      it("should confirm the draft, close and return focus to the trigger", async () => {
-        await openEditor();
-        await userEvent.keyboard("55{Enter}");
-        await expect.element(confirmed()).toHaveTextContent("55");
-        await expect.element(dialog()).not.toBeInTheDocument();
-        await expect.element(trigger()).toHaveFocus();
-      });
-
-      it("should announce the confirmed value", async () => {
-        await openEditor();
-        await userEvent.keyboard("55{Enter}");
-        await expect.element(dialog()).not.toBeInTheDocument();
-        await expect
-          .element(announcement())
-          .toHaveTextContent("Weight set to 55 kg");
-      });
-
-      it("should drop the announcement once focus leaves the trigger", async () => {
-        await openEditor();
-        await userEvent.keyboard("55{Enter}");
-        await expect.element(announcement()).toBeInTheDocument();
-        await userEvent.tab();
-        await expect.element(announcement()).not.toBeInTheDocument();
-      });
+  describe("when typing digits and pressing Enter", () => {
+    it("should confirm the draft, close and return focus to the trigger", async () => {
+      await openEditor();
+      await userEvent.keyboard("55{Enter}");
+      await expect.element(confirmed()).toHaveTextContent("55");
+      await expect.element(dialog()).not.toBeInTheDocument();
+      await expect.element(trigger()).toHaveFocus();
     });
 
-    describe("when pressing Escape", () => {
-      it("should discard the draft and return focus to the trigger", async () => {
-        await openEditor();
-        await userEvent.keyboard("55{Escape}");
-        await expect.element(dialog()).not.toBeInTheDocument();
-        await expect.element(confirmed()).toHaveTextContent("70.25");
-        await expect.element(trigger()).toHaveFocus();
-      });
+    it("should announce the confirmed value", async () => {
+      await openEditor();
+      await userEvent.keyboard("55{Enter}");
+      await expect.element(dialog()).not.toBeInTheDocument();
+      await expect
+        .element(announcement())
+        .toHaveTextContent("Weight set to 55 kg");
+    });
+
+    it("should drop the announcement once focus leaves the trigger", async () => {
+      await openEditor();
+      await userEvent.keyboard("55{Enter}");
+      await expect.element(announcement()).toBeInTheDocument();
+      await userEvent.tab();
+      await expect.element(announcement()).not.toBeInTheDocument();
+    });
+  });
+
+  describe("when typing digits and pressing Escape", () => {
+    it("should discard the draft and return focus to the trigger", async () => {
+      await openEditor();
+      await userEvent.keyboard("55{Escape}");
+      await expect.element(dialog()).not.toBeInTheDocument();
+      await expect.element(confirmed()).toHaveTextContent("70.25");
+      await expect.element(trigger()).toHaveFocus();
     });
   });
 

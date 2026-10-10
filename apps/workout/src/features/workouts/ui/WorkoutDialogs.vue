@@ -36,14 +36,14 @@ const { workspace, templatesOpen = false } = defineProps<{
     | "elapsed"
   >;
 }>();
-const { snapshot, saving, error, notify, clearError, run, training, active } =
-  workspace;
 const emit = defineEmits<{
   navigate: [page: WorkoutPage];
   "template-saved": [];
   "close-templates": [];
   "template-closed": [event: Event];
 }>();
+const { snapshot, saving, error, notify, clearError, run, training, active } =
+  workspace;
 const navigate = (page: WorkoutPage) => emit("navigate", page);
 const templates =
   useTemplateRef<InstanceType<typeof WorkoutDialogsTemplates>>("templates");

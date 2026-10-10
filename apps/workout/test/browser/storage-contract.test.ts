@@ -1,4 +1,4 @@
-import Dexie from "dexie";
+import { Dexie } from "dexie";
 import { openDexieWorkoutStorage } from "../../src/features/workouts/adapters/dexie";
 import { describeWorkoutStorageContract } from "../support/storage-contract";
 

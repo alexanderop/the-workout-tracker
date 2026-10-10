@@ -2,9 +2,9 @@ import type { Result } from "@form/result";
 
 /** The tag of the error, or undefined for a success. */
 export function errorTag(
-  result: Result<unknown, { readonly _tag: string }>,
+  result: Result<unknown, { readonly name: string }>,
 ): string | undefined {
-  return result.isErr() ? result.error._tag : undefined;
+  return result.isErr() ? result.error.name : undefined;
 }
 
 /** The error of a result that must have failed. */

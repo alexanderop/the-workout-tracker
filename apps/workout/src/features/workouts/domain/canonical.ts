@@ -6,5 +6,10 @@ export function canonical(value: unknown): string {
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([key, entry]) => `${JSON.stringify(key)}:${canonical(entry)}`)
       .join(",")}}`;
-  return JSON.stringify(value) ?? "null";
+  return stringifyJson(value) ?? "null";
+}
+
+/** JSON.stringify yields undefined for values JSON cannot express. */
+function stringifyJson(value: unknown): string | undefined {
+  return JSON.stringify(value);
 }

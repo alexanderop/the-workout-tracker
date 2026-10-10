@@ -10,8 +10,10 @@ import {
 } from "../../src/features/workouts/ui/workoutCalendar";
 import { createWorkoutFactory } from "../support/factories";
 
-const at = (year: number, month: number, day: number, hour = 0) =>
-  new Date(year, month - 1, day, hour).getTime();
+const at = (year: number, month: number, day: number) =>
+  new Date(year, month - 1, day).getTime();
+const atHour = (day: number, hour: number) =>
+  new Date(day).setHours(hour);
 const parts = (timestamp: number) => {
   const date = new Date(timestamp);
   return [date.getFullYear(), date.getMonth() + 1, date.getDate()];
@@ -19,7 +21,7 @@ const parts = (timestamp: number) => {
 
 describe("workout calendar", () => {
   it("ends a seven-day window on the local day across New Year", () => {
-    const days = rollingDays(localDay(at(2027, 1, 5, 23)));
+    const days = rollingDays(localDay(atHour(at(2027, 1, 5), 23)));
     expect(days).toHaveLength(7);
     expect(parts(days[0] ?? 0)).toEqual([2026, 12, 30]);
     expect(parts(days[6] ?? 0)).toEqual([2027, 1, 5]);
@@ -44,26 +46,26 @@ describe("workout calendar", () => {
     const sessions = [
       factory.completedSession({
         name: "Yesterday",
-        finishedAt: at(2026, 10, 4, 23),
+        finishedAt: atHour(at(2026, 10, 4), 23),
       }),
       factory.completedSession({
         name: "Morning",
-        finishedAt: at(2026, 10, 5, 8),
+        finishedAt: atHour(at(2026, 10, 5), 8),
       }),
       factory.completedSession({
         name: "Lunch",
-        finishedAt: at(2026, 10, 5, 12),
+        finishedAt: atHour(at(2026, 10, 5), 12),
       }),
       factory.completedSession({
         name: "Future today",
-        finishedAt: at(2026, 10, 5, 18),
+        finishedAt: atHour(at(2026, 10, 5), 18),
       }),
       factory.completedSession({
         name: "Tomorrow",
-        finishedAt: at(2026, 10, 6, 8),
+        finishedAt: atHour(at(2026, 10, 6), 8),
       }),
     ];
-    const count = eligibleSessionCount(sessions, at(2026, 10, 5, 12));
+    const count = eligibleSessionCount(sessions, atHour(at(2026, 10, 5), 12));
     expect(count).toBe(3);
     const index = indexCompletedSessions(sessions.slice(0, count));
     expect(index.get(at(2026, 10, 5))?.map((session) => session.name)).toEqual([
@@ -74,6 +76,6 @@ describe("workout calendar", () => {
       "Yesterday",
     ]);
     expect(index.has(at(2026, 10, 6))).toBe(false);
-    expect(eligibleSessionCount(sessions, at(2026, 10, 5, 18))).toBe(4);
+    expect(eligibleSessionCount(sessions, atHour(at(2026, 10, 5), 18))).toBe(4);
   });
 });

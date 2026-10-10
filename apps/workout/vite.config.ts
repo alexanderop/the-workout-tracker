@@ -18,13 +18,14 @@ export default defineConfig(({ mode, command }) => {
     build: preview
       ? {
           outDir: "dist-preview",
-          rollupOptions: {
+          rolldownOptions: {
             input: fileURLToPath(new URL("./preview.html", import.meta.url)),
           },
         }
       : {
           assetsInlineLimit(filePath) {
             if (filePath.endsWith(".webp")) return false;
+            return undefined;
           },
         },
     plugins: [
@@ -72,8 +73,8 @@ export default defineConfig(({ mode, command }) => {
                 short_name: "Workout Tracker",
                 description:
                   "Plan workouts, log sets, and track your progress offline.",
-                theme_color: "#141414",
-                background_color: "#141414",
+                theme_color: "#f2f1ec",
+                background_color: "#f2f1ec",
                 display: "standalone",
                 start_url: base,
                 scope: base,
@@ -90,6 +91,7 @@ export default defineConfig(({ mode, command }) => {
               },
               workbox: {
                 clientsClaim: true,
+                skipWaiting: false,
                 globPatterns: ["**/*.{js,css,html,ico,png,webp,svg,woff2}"],
                 navigateFallback: `${base}index.html`,
                 cleanupOutdatedCaches: true,

@@ -8,6 +8,7 @@ import {
   InvalidRevision,
   loadState,
   StorageClosed,
+  type SaveError,
   type Snapshot,
   type WorkoutStorage,
   type DraftJournal,
@@ -22,34 +23,40 @@ export function createMemoryStorage(initial: Snapshot): WorkoutStorage {
   const listeners = new Set<(state: LoadState) => void>();
   const closedState = loadState(Result.err(new StorageClosed()));
   const ready = () => loadState(Result.ok(snapshot));
-  return {
-    async read() {
-      return closed ? Result.err(new StorageClosed()) : Result.ok(snapshot);
-    },
-    async compareAndSave(expectedRevision, next) {
-      if (closed) return Result.err(new StorageClosed());
-      if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 0)
-        return Result.err(new InvalidRevision());
-      const parsed = snapshotSchema.safeParse(next);
-      if (!parsed.success)
-        return Result.err(
-          new InvalidChange({ message: "Invalid preview snapshot." }),
-        );
-      if (expectedRevision !== snapshot.revision)
-        return Result.err(new Conflict({ snapshot }));
-      const unchanged = parsed.data.revision === snapshot.revision;
-      if (unchanged && JSON.stringify(parsed.data) === JSON.stringify(snapshot))
-        return Result.ok(snapshot);
-      if (parsed.data.revision !== snapshot.revision + 1)
-        return Result.err(
-          new InvalidChange({
-            message: "Snapshot revisions must advance by one.",
-          }),
-        );
-      snapshot = parsed.data;
-      for (const listener of listeners) listener(ready());
+  function save(
+    expectedRevision: number,
+    next: unknown,
+  ): Result<Snapshot, SaveError> {
+    if (closed) return Result.err(new StorageClosed());
+    if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 0)
+      return Result.err(new InvalidRevision());
+    const parsed = snapshotSchema.safeParse(next);
+    if (!parsed.success)
+      return Result.err(
+        new InvalidChange({ message: "Invalid preview snapshot." }),
+      );
+    if (expectedRevision !== snapshot.revision)
+      return Result.err(new Conflict({ snapshot }));
+    const unchanged = parsed.data.revision === snapshot.revision;
+    if (unchanged && JSON.stringify(parsed.data) === JSON.stringify(snapshot))
       return Result.ok(snapshot);
-    },
+    if (parsed.data.revision !== snapshot.revision + 1)
+      return Result.err(
+        new InvalidChange({
+          message: "Snapshot revisions must advance by one.",
+        }),
+      );
+    snapshot = parsed.data;
+    for (const listener of listeners) listener(ready());
+    return Result.ok(snapshot);
+  }
+  return {
+    read: () =>
+      Promise.resolve(
+        closed ? Result.err(new StorageClosed()) : Result.ok(snapshot),
+      ),
+    compareAndSave: (expectedRevision, next) =>
+      Promise.resolve(save(expectedRevision, next)),
     subscribe(listener) {
       if (closed) {
         listener(closedState);

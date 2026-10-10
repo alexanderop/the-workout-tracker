@@ -36,7 +36,7 @@ Write clear, maintainable production code. Keep changes focused and dependencies
 - For new reusable UI components, follow the [Histoire-first component workflow](docs/workflows.md#add-a-reusable-component-and-story): iterate in the explorer, then inspect the real app flow when integrating.
 - Deliver changes directly on `main` or merge the working branch into `main`; no pull request is required. Follow [Verification and delivery](docs/workflows.md#verification-and-delivery).
 - Clean up subscriptions, event listeners and owned resources.
-- Use `pnpm verify` for type checking and linting only. Do not add tests, formatting checks, standalone architecture checks or production builds to this verification command. Build only when needed to run or deploy the application.
+- Use `pnpm verify` for type checking and linting only. Do not add tests, formatting checks or production builds to this verification command. Linting includes the architecture and workspace-boundary checks. Build only when needed to run or deploy the application.
 - Never weaken a guardrail to make a change pass: do not edit lint configs, `tooling/`, hooks, CI, budgets, baselines or coverage thresholds to loosen them. Fix the code, or stop and ask the owner.
 
 ## Enforced correction rules
@@ -53,6 +53,6 @@ Write clear, maintainable production code. Keep changes focused and dependencies
 
 - `pnpm dev`: run the workout app.
 - `pnpm dev:ui`: run the Histoire component explorer.
-- `pnpm verify`: type checking and linting only.
+- `pnpm verify`: type checking and linting only (includes architecture, boundary and dead-code checks).
 
 See [README.md](README.md) for installation, preview, and deployment commands. Run only the checks appropriate to the change; documentation-only edits need link, path, and consistency review.

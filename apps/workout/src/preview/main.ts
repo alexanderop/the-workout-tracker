@@ -1,9 +1,13 @@
 import { useEventListener } from "@form/composables";
 import { createApp, ref } from "vue";
 import { createMemoryHistory } from "vue-router";
-import "@fontsource-variable/inter";
 import "@form/ui/tokens.css";
 import "../style.css";
+import {
+  appearanceKey,
+  browserAppearanceEnvironment,
+  createAppearance,
+} from "../app/appearance";
 import App from "../App.vue";
 import { createWorkoutRouter } from "../app/router";
 import type { Installation } from "../app/environment";
@@ -28,13 +32,15 @@ function usePreviewInstallation(): Installation {
     offlineReady: ref(false),
     needRefresh: ref(false),
     installMessage: ref("Installation is unavailable in this design example."),
-    async install() {
+    install() {
       installOpen.value = true;
+      return Promise.resolve();
     },
     async requestInstall() {},
     async updateServiceWorker() {},
   };
 }
+const nextId = () => `preview-new-${crypto.randomUUID()}`;
 async function mountScenario(
   host: HTMLElement,
   id: ScenarioId,
@@ -43,7 +49,6 @@ async function mountScenario(
   const snapshot = snapshotSchema.parse(scenario.seed());
   const started = performance.now();
   const now = () => previewEpoch + Math.floor(performance.now() - started);
-  const nextId = () => `preview-new-${crypto.randomUUID()}`;
   const drafts = createMemoryDraftJournal(nextId);
   const workouts = createWorkouts({
     storage: createMemoryStorage(snapshot),
@@ -51,6 +56,7 @@ async function mountScenario(
     now,
     id: nextId,
   });
+  const appearance = createAppearance(browserAppearanceEnvironment());
   const router = createWorkoutRouter(createMemoryHistory());
   const app = createApp(App, {
     workouts,
@@ -58,7 +64,10 @@ async function mountScenario(
     initialExerciseSearch: scenario.initialExerciseSearch,
     environment: { now, useInstallation: usePreviewInstallation },
   });
+  app.provide(appearanceKey, appearance);
   let disposed = false;
+  // Reads the flag fresh: it changes while awaits are pending, which control-flow narrowing cannot see.
+  const isDisposed = () => disposed;
   let mountStarted = false;
   function dispose() {
     if (disposed) return;
@@ -67,6 +76,7 @@ async function mountScenario(
     try {
       if (mountStarted) app.unmount();
     } finally {
+      appearance.stop();
       workouts.close();
     }
   }
@@ -82,14 +92,14 @@ async function mountScenario(
         ? { name: "workouts", params: { view: scenario.view } }
         : scenario.route,
     );
-    if (disposed) return;
+    if (isDisposed()) return;
     app.use(router);
     await router.isReady();
-    if (disposed) return;
+    if (isDisposed()) return;
     mountStarted = true;
     app.mount(host);
   } catch (error) {
-    if (disposed) return;
+    if (isDisposed()) return;
     dispose();
     throw error;
   }

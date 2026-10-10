@@ -7,6 +7,7 @@ import {
 } from "../features/workouts/infrastructure";
 
 const writerKey = "form-workout:draft-writer";
+const sessionStorageOfTab = () => sessionStorage;
 
 export function createWorkoutApp(journal: DraftJournal) {
   return createWorkouts({
@@ -19,7 +20,6 @@ export function createWorkoutApp(journal: DraftJournal) {
 }
 
 export function createWorkoutDrafts() {
-  const sessionStorageOfTab = () => sessionStorage;
   // This tab's previous writer, so reloads keep the same input first.
   const remembered = readStorage(sessionStorageOfTab, writerKey, z.string());
   return createDraftJournal({

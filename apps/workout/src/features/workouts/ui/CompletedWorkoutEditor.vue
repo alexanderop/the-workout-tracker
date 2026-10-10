@@ -30,8 +30,8 @@ async function confirmDiscard(
   intent: "close" | "reload" | "navigate",
 ): Promise<boolean> {
   discardIntent.value = intent;
-  const discard = await discardConfirmation.request();
-  if (!discard) return false;
+  const confirmed = await discardConfirmation.request();
+  if (!confirmed) return false;
   if (intent === "reload") {
     editor.reload();
     return true;

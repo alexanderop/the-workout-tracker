@@ -1,7 +1,10 @@
 import { expect, type Page, type TestInfo } from "@playwright/test";
 
 export class ExerciseCatalogPage {
-  constructor(readonly page: Page) {}
+  readonly page: Page;
+  constructor(page: Page) {
+    this.page = page;
+  }
   picker() {
     return this.page.getByRole("dialog", {
       name: "Select exercises",

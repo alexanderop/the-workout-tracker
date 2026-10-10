@@ -64,9 +64,10 @@ export function usePwa() {
     unmounted = true;
     stopUpdateChecks?.();
   });
-  async function install() {
+  function install() {
     installMessage.value = "";
     installOpen.value = true;
+    return Promise.resolve();
   }
   async function requestInstall() {
     const event = installEvent.value;

@@ -19,6 +19,13 @@ export type SaveNotice =
   | { kind: "saved"; message: string }
   | { kind: "failed"; message: string; reload: boolean };
 
+/** The newer snapshot a conflict or a partial deletion carries, if any. */
+function reportedSnapshot(failure: Error): Snapshot | undefined {
+  return Conflict.is(failure) || DraftCleanupPending.is(failure)
+    ? failure.snapshot
+    : undefined;
+}
+
 export function useWorkouts(service: Workouts) {
   const state = shallowRef<LoadState>({ kind: "loading" });
   const saving = ref(false);
@@ -113,11 +120,6 @@ export function useWorkouts(service: Workouts) {
     } finally {
       saving.value = false;
     }
-  }
-  function reportedSnapshot(error: Error): Snapshot | undefined {
-    return Conflict.is(error) || DraftCleanupPending.is(error)
-      ? error.snapshot
-      : undefined;
   }
   return {
     service: { exportBackup: () => service.exportBackup() },

@@ -28,7 +28,6 @@ import {
 } from "./domain";
 import type { DraftJournal, WorkoutStorage } from "./ports";
 import { routineValuesSchema, type RoutineValues } from "./domain/routineDrafts";
-export type { LoadState, WorkoutStorage } from "./ports";
 
 /** Why a revision-checked command did not save. */
 export type CommandError = SaveError | SaveUnconfirmed;
@@ -98,6 +97,8 @@ export function createWorkouts({
   reportError = () => undefined,
 }: WorkoutDependencies) {
   let closed = false;
+  // Reads the flag fresh: it changes while awaits are pending, which control-flow narrowing cannot see.
+  const isClosed = () => closed;
   const readCurrent = async (): Promise<Result<Snapshot, ReadError>> =>
     Result.flatten(
       await Result.tryPromise({
@@ -167,7 +168,7 @@ export function createWorkouts({
         return yield* new Conflict({ snapshot: current });
       const next = yield* applyTransform(current, transform);
       const valid = yield* validateWrite(next);
-      if (closed) return yield* new StorageClosed();
+      if (isClosed()) return yield* new StorageClosed();
       return Result.ok(yield* Result.await(save(expectedRevision, valid)));
     });
   return {
@@ -246,4 +247,4 @@ export function createWorkouts({
   };
 }
 export type Workouts = ReturnType<typeof createWorkouts>;
-export type { DraftJournal } from "./ports";
+export type { DraftJournal, WorkoutStorage } from "./ports";
