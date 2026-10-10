@@ -1,4 +1,4 @@
-.research-page { background: var(--ui-background); color: var(--ui-foreground); min-height: 100dvh; padding: 32px; box-sizing: border-box; font-family: Inter, sans-serif; }
+.research-page { background: var(--ui-background); color: var(--ui-foreground); min-height: 100dvh; padding: 32px; box-sizing: border-box; font-family: "Geist Variable", system-ui, sans-serif; }
 .research-page * { box-sizing: border-box; }
 .research-page button, .research-page a, .research-page summary { -webkit-tap-highlight-color: transparent; }
 .research-page button:focus-visible, .research-page a:focus-visible, .research-page summary:focus-visible { outline: 2px solid var(--ui-ring); outline-offset: 3px; }

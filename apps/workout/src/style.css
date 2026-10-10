@@ -2,12 +2,12 @@
 @import "@form/ui/workout-theme.css";
 @import "@form/ui/styles.css" layer(components);
 :root {
-  color-scheme: dark;
-  font-family: "Inter Variable", sans-serif;
+  font-family: "Geist Variable", system-ui, sans-serif;
   font-size: 14px;
   color: var(--text);
   background: var(--background);
   font-synthesis: none;
+  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: none;
   text-size-adjust: none;
@@ -108,16 +108,16 @@ button:disabled svg {
   border: 1px solid var(--muted);
 }
 .ui-switch[data-state="checked"] {
-  background: var(--purple);
-  border-color: var(--purple);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 :focus-visible {
-  outline: 2px solid var(--purple);
-  outline-offset: 4px;
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
 }
 ::selection {
-  background: var(--purple);
-  color: var(--background);
+  background: var(--accent);
+  color: var(--on-accent);
 }
 h1,
 h2,
@@ -135,8 +135,8 @@ p {
 }
 h1 {
   font-size: clamp(1.5625rem, 1.1rem + 1vw, 2.0625rem);
-  font-weight: 580;
-  letter-spacing: -1.1px;
+  font-weight: 600;
+  letter-spacing: -1.4px;
   line-height: 1.3;
 }
 h2 {
@@ -159,7 +159,7 @@ svg {
   color: var(--muted);
 }
 .accent {
-  color: var(--purple);
+  color: var(--accent);
 }
 .small {
   font-size: 12px;
@@ -181,8 +181,8 @@ svg {
   inset-block-start: -100px;
   inset-inline-start: 16px;
   z-index: 100;
-  background: var(--purple);
-  color: var(--background);
+  background: var(--accent);
+  color: var(--on-accent);
   padding: 12px;
   border-radius: 6px;
 }
@@ -199,7 +199,7 @@ svg {
   inset-block-end: 0;
   inset-inline-start: 0;
   width: var(--sidebar-width);
-  border-inline-end: 1px solid var(--surface);
+  border-inline-end: 1px solid var(--border);
   padding: 30px 16px 20px;
   display: flex;
   flex-direction: column;
@@ -224,8 +224,8 @@ svg {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  background: var(--purple);
-  color: var(--background);
+  background: var(--accent);
+  color: var(--on-accent);
   width: 30px;
   height: 30px;
   border-radius: 8px;
@@ -252,23 +252,25 @@ svg {
   align-items: center;
   gap: 12px;
   color: var(--muted);
-  border-radius: 6px;
+  border-radius: 7px;
   padding: 0 13px;
   font-size: 13px;
+  font-weight: 550;
 }
 @media (hover: hover) and (pointer: fine) {
   .desktop-nav a:hover,
   .sidebar-action:hover {
-    background: var(--surface);
+    background: var(--hover);
     color: var(--text);
   }
 }
 .desktop-nav a.selected {
-  background: var(--surface);
-  color: var(--text);
+  background: var(--text);
+  color: var(--background);
 }
-.desktop-nav a.selected svg {
-  color: var(--purple);
+.desktop-nav a.selected .nav-count {
+  color: inherit;
+  opacity: 0.75;
 }
 .nav-count {
   margin-inline-start: auto;
@@ -296,7 +298,7 @@ svg {
   display: flex;
   gap: 12px;
   align-items: center;
-  border-block-start: 1px solid var(--surface);
+  border-block-start: 1px solid var(--border);
   padding: 22px 13px 0;
   margin-block-start: 17px;
   color: var(--muted);
@@ -310,7 +312,7 @@ svg {
   padding: 14px 8px;
   text-align: start;
   font-size: 11px;
-  border-block-start: 1px solid var(--surface);
+  border-block-start: 1px solid var(--border);
 }
 .active-sidebar small {
   display: block;
@@ -322,7 +324,7 @@ svg {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--purple);
+  background: var(--accent);
   flex-shrink: 0;
 }
 .workspace {
@@ -330,7 +332,7 @@ svg {
 }
 .topbar {
   height: 68px;
-  border-block-end: 1px solid var(--surface);
+  border-block-end: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -368,8 +370,9 @@ svg {
 }
 .eyebrow {
   color: var(--muted);
+  font-family: var(--font-mono);
   font-size: 10px;
-  letter-spacing: 1.1px;
+  letter-spacing: 1.4px;
   font-weight: 500;
   text-transform: uppercase;
 }
@@ -385,39 +388,37 @@ svg {
   align-items: center;
   justify-content: center;
   gap: 9px;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 0 16px;
-  min-height: 42px;
-  font-size: 12px;
-  font-weight: 530;
+  min-height: 44px;
+  font-size: 14px;
+  font-weight: 600;
   white-space: nowrap;
   border: 1px solid transparent;
 }
 .primary {
-  background: var(--purple);
-  color: var(--background);
+  background: var(--accent);
+  color: var(--on-accent);
 }
 @media (hover: hover) and (pointer: fine) {
-  .primary:hover {
-    background: var(--text);
+  .primary:hover:not(:disabled) {
+    background: var(--accent-hover);
   }
 }
 .primary:disabled {
-  background: var(--surface);
-  color: var(--muted);
+  background: var(--accent);
+  color: var(--on-accent);
+  opacity: 0.5;
 }
 .secondary {
   background: var(--surface);
-  border-color: var(--surface);
+  border-color: var(--border);
+  font-weight: 550;
 }
 @media (hover: hover) and (pointer: fine) {
-  .secondary:hover {
-    border-color: var(--muted);
-  }
-}
-@media (hover: hover) and (pointer: fine) {
+  .secondary:hover:not(:disabled),
   .ghost:hover {
-    background: var(--surface);
+    background: var(--hover);
   }
 }
 .full-width {
@@ -430,6 +431,7 @@ svg {
   gap: 7px;
   font-size: 12px;
   min-height: 36px;
+  font-weight: 550;
 }
 @media (pointer: coarse) {
   .text-button {
@@ -438,12 +440,14 @@ svg {
 }
 @media (hover: hover) and (pointer: fine) {
   .text-button:hover {
-    color: var(--purple);
+    color: var(--accent);
   }
 }
 .panel {
-  border: 1px solid var(--surface);
-  border-radius: 9px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 1px 2px var(--ui-shadow-soft);
 }
 .pill {
   display: inline-flex;
@@ -451,9 +455,10 @@ svg {
   gap: 6px;
   font-size: 10px;
   color: var(--muted);
-  border: 1px solid var(--surface);
-  padding: 5px 9px;
-  border-radius: 5px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 5px 10px;
+  border-radius: 999px;
   white-space: nowrap;
 }
 .section-heading {
@@ -492,10 +497,10 @@ svg {
   color: var(--text);
 }
 .week-day.trained > div {
-  color: var(--purple);
+  color: var(--accent);
 }
 .week-day svg {
-  color: var(--purple);
+  color: var(--accent);
   margin-block-start: -3px;
 }
 .metrics {
@@ -503,12 +508,12 @@ svg {
   grid-template-columns: repeat(3, 1fr);
   padding: 25px 0;
   margin: 23px 0 33px;
-  border-block-start: 1px solid var(--surface);
-  border-block-end: 1px solid var(--surface);
+  border-block-start: 1px solid var(--border);
+  border-block-end: 1px solid var(--border);
 }
 .metrics > div {
   padding: 0 25px;
-  border-inline-end: 1px solid var(--surface);
+  border-inline-end: 1px solid var(--border);
 }
 .metrics > div:first-child {
   padding-inline-start: 0;
@@ -549,7 +554,7 @@ svg {
   align-items: center;
   gap: 15px;
   padding: 22px 20px;
-  border: 1px dashed var(--surface);
+  border: 1px dashed var(--border);
   border-radius: 8px;
 }
 .empty-inline > svg {
@@ -581,15 +586,15 @@ svg {
   font-size: 12px;
 }
 .main-footer nav a[aria-current="page"] {
-  color: var(--purple);
+  color: var(--accent);
 }
 @media (hover: hover) and (pointer: fine) {
   .main-footer nav a:hover {
-    color: var(--purple);
+    color: var(--accent);
   }
 }
 .main-footer nav a:focus-visible {
-  outline: 2px solid var(--purple);
+  outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
 }
 .mobile-nav {
@@ -636,7 +641,7 @@ svg {
   gap: 12px;
   font-size: 11px;
   padding: 10px 0;
-  border-block-end: 1px solid var(--surface);
+  border-block-end: 1px solid var(--border);
 }
 .exercise-preview li > span:last-child {
   white-space: nowrap;
@@ -674,9 +679,9 @@ svg {
   width: 100%;
   min-width: 0;
   height: 44px;
-  border-radius: 5px;
+  border-radius: 8px;
   background: var(--surface);
-  border: 1px solid transparent;
+  border: 1px solid var(--border);
   text-align: center;
   font-size: 16px;
   font-variant-numeric: tabular-nums;
@@ -688,30 +693,30 @@ svg {
   margin: 0;
 }
 .completed .set-input {
-  border-color: var(--purple);
+  border-color: var(--accent);
 }
 .set-toggle {
   width: 44px;
   height: 44px;
   display: grid;
   place-items: center;
-  border: 1px solid var(--surface);
+  border: 1px solid var(--border);
   border-radius: 5px;
   color: var(--muted);
 }
 .set-toggle.has-draft {
-  border-color: var(--purple);
-  color: var(--purple);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 @media (hover: hover) and (pointer: fine) {
   .set-toggle:hover {
-    border-color: var(--purple);
-    color: var(--purple);
+    border-color: var(--accent);
+    color: var(--accent);
   }
 }
 .set-toggle.logged {
-  color: var(--background);
-  background: var(--purple);
+  color: var(--on-accent);
+  background: var(--accent);
 }
 .remove-set {
   width: 30px;
@@ -723,11 +728,11 @@ svg {
 }
 .draft-note {
   font-size: 10px;
-  color: var(--purple);
+  color: var(--accent);
   margin: -2px 0 13px 46px;
 }
 .field-error {
-  color: var(--purple);
+  color: var(--danger);
   font-size: 12px;
   margin: 12px 0;
 }
@@ -740,7 +745,8 @@ svg {
   color: var(--muted);
 }
 .history-list {
-  border: 1px solid var(--surface);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
   overflow: clip;
 }
@@ -752,14 +758,14 @@ svg {
   text-align: start;
   min-height: 94px;
   padding: 18px 22px;
-  border-block-end: 1px solid var(--surface);
+  border-block-end: 1px solid var(--border);
 }
 .history-row:last-child {
   border-block-end: 0;
 }
 @media (hover: hover) and (pointer: fine) {
   .history-row:hover {
-    background: var(--surface);
+    background: var(--hover);
   }
 }
 .history-row > svg {
@@ -776,7 +782,7 @@ svg {
   text-align: center;
 }
 .empty-state > svg {
-  color: var(--purple);
+  color: var(--accent);
   margin-block-end: 5px;
 }
 .empty-state h2 {
@@ -792,18 +798,19 @@ svg {
   display: flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid var(--surface);
-  border-radius: 6px;
-  min-height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  min-height: 46px;
   padding: 0 12px;
   color: var(--muted);
 }
 .search-field:focus-within {
-  border-color: var(--purple);
+  border-color: var(--accent);
 }
 /* The field draws the ring so it wraps the icon and the input together. */
 .search-field:has(input:focus-visible) {
-  outline: 2px solid var(--purple);
+  outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
 }
 .search-field input:focus-visible {
@@ -837,16 +844,16 @@ svg {
 }
 .chart-grid {
   fill: none;
-  stroke: var(--surface);
+  stroke: var(--border);
   stroke-width: 1;
 }
 .chart-line {
   fill: none;
-  stroke: var(--purple);
+  stroke: var(--accent);
   stroke-width: 2;
 }
 .chart-point {
-  fill: var(--purple);
+  fill: var(--accent);
   stroke: var(--background);
   stroke-width: 2;
 }
@@ -876,7 +883,8 @@ svg {
 }
 .record-card {
   padding: 23px;
-  border: 1px solid var(--surface);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
 }
 .record-card > strong {
@@ -895,8 +903,9 @@ svg {
   align-items: center;
   gap: 12px;
   font-size: 12px;
-  border: 1px solid var(--purple);
-  border-radius: 6px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--accent-soft);
   padding: 12px 16px;
   margin-block-end: 22px;
   line-height: 1.6;
@@ -905,7 +914,7 @@ svg {
   flex: 1;
 }
 .notice > svg {
-  color: var(--purple);
+  color: var(--accent);
 }
 .form-stack {
   display: grid;
@@ -922,14 +931,15 @@ svg {
   display: block;
   width: 100%;
   min-width: 0;
-  padding: 11px 12px;
+  padding: 11px 13px;
   background: var(--surface);
-  border: 1px solid transparent;
-  border-radius: 6px;
-  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+  min-height: 46px;
 }
 .input:focus {
-  border-color: var(--purple);
+  border-color: var(--accent);
 }
 .input:focus-visible {
   outline-offset: 2px;
@@ -941,8 +951,9 @@ textarea::placeholder {
 }
 .routine-exercise {
   padding: 16px;
-  border: 1px solid var(--surface);
-  border-radius: 7px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
 }
 .form-actions {
   display: flex;
@@ -974,7 +985,7 @@ textarea::placeholder {
 }
 @media (hover: hover) and (pointer: fine) {
   .picker-list button:hover {
-    background: var(--surface);
+    background: var(--hover);
   }
 }
 .picker-list small {
@@ -990,8 +1001,8 @@ textarea::placeholder {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  border-block-start: 1px solid var(--surface);
-  border-block-end: 1px solid var(--surface);
+  border-block-start: 1px solid var(--border);
+  border-block-end: 1px solid var(--border);
   padding: 22px 0;
   margin-block-end: 24px;
 }
@@ -1021,7 +1032,7 @@ textarea::placeholder {
   align-items: center;
   padding: 12px 0;
   font-size: 11px;
-  border-block-end: 1px solid var(--surface);
+  border-block-end: 1px solid var(--border);
 }
 .detail-status {
   display: flex;
@@ -1031,7 +1042,7 @@ textarea::placeholder {
   font-size: 10px;
 }
 .detail-status svg {
-  color: var(--purple);
+  color: var(--accent);
 }
 .settings-page {
   max-width: 720px;
@@ -1039,7 +1050,7 @@ textarea::placeholder {
 .settings-section {
   padding: 0 0 24px;
   margin-block-end: 24px;
-  border-block-end: 1px solid var(--surface);
+  border-block-end: 1px solid var(--border);
 }
 .settings-section h2 {
   font-size: 16px;
@@ -1078,8 +1089,9 @@ textarea::placeholder {
 .import-preview {
   margin-block-start: 18px;
   padding: 16px;
-  border: 1px solid var(--purple);
-  border-radius: 6px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--accent-soft);
   overflow-wrap: anywhere;
 }
 .import-preview strong {
@@ -1206,7 +1218,7 @@ textarea::placeholder {
     grid-auto-flow: column;
     grid-auto-columns: minmax(0, 1fr);
     background: var(--background);
-    border-block-start: 1px solid var(--surface);
+    border-block-start: 1px solid var(--border);
     padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
   }
   .mobile-nav a {
@@ -1221,8 +1233,7 @@ textarea::placeholder {
     border-radius: 6px;
   }
   .mobile-nav a.selected {
-    color: var(--purple);
-    background: var(--surface);
+    color: var(--text);
   }
   .routine-grid {
     gap: 16px;
@@ -1339,8 +1350,8 @@ textarea::placeholder {
   scroll-margin: 100px 0;
 }
 .set-form.is-current {
-  outline: 1px solid var(--purple);
-  background: color-mix(in oklch, var(--purple) 5%, transparent);
+  outline: 1px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
 }
 .set-row,
 .set-labels {
@@ -1402,7 +1413,7 @@ textarea::placeholder {
     gap: 6px 12px;
     padding: 8px 16px calc(10px + env(safe-area-inset-bottom, 0px));
     background: var(--background);
-    border-block-start: 1px solid var(--surface);
+    border-block-start: 1px solid var(--border);
   }
   .training-bar strong,
   .training-bar small {
@@ -1511,7 +1522,7 @@ textarea::placeholder {
   justify-content: space-between;
   gap: 8px;
   padding-block-start: 16px;
-  border-block-start: 1px solid var(--surface);
+  border-block-start: 1px solid var(--border);
 }
 .history-search {
   margin-block-end: 20px;
@@ -1536,8 +1547,8 @@ textarea::placeholder {
   text-align: start;
 }
 .picker-list .catalog-row.is-selected {
-  background: color-mix(in oklch, var(--purple) 9%, transparent);
-  border-color: color-mix(in oklch, var(--purple) 35%, transparent);
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
 }
 .catalog-row-name {
   flex: 1;
@@ -1553,10 +1564,10 @@ textarea::placeholder {
   display: grid;
   place-items: center;
   border: 1px solid var(--muted);
-  color: var(--purple);
+  color: var(--accent);
 }
 .is-selected .catalog-check {
-  border-color: var(--purple);
+  border-color: var(--accent);
 }
 .picker-actions {
   display: grid;
@@ -1568,7 +1579,7 @@ textarea::placeholder {
 }
 .previous-performance {
   padding: 16px 22px;
-  border-block-end: 1px solid var(--surface);
+  border-block-end: 1px solid var(--border);
 }
 .previous-performance .eyebrow {
   font-size: 9px;
@@ -1730,8 +1741,7 @@ textarea::placeholder {
   padding: 0;
 }
 .catalog-controls .search-field {
-  border: 0;
-  border-radius: 18px;
+  border-radius: 12px;
   background: var(--surface);
   min-height: 54px;
   margin: 0;
@@ -1753,7 +1763,7 @@ textarea::placeholder {
   gap: 9px;
   min-height: 44px;
   padding: 4px 0;
-  color: var(--purple);
+  color: var(--accent);
   background: transparent;
   border: 0;
   font: inherit;
@@ -1787,8 +1797,8 @@ textarea::placeholder {
   gap: 8px;
   min-height: 44px;
   padding: 8px 12px;
-  border: 1px solid var(--purple);
-  border-radius: 14px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
   background: var(--surface);
   color: var(--text);
   font: inherit;
@@ -1805,12 +1815,12 @@ button.catalog-chip {
   opacity: 0.5;
 }
 .catalog-chip:focus-visible {
-  outline: 2px solid var(--purple);
+  outline: 3px solid var(--focus-ring);
   outline-offset: -4px;
 }
 .picker-list.catalog-list {
   padding: 8px;
-  border-radius: 22px;
+  border-radius: 12px;
   background: var(--surface);
 }
 .picker-list .catalog-row {
@@ -1819,7 +1829,7 @@ button.catalog-chip {
   padding: 10px 8px;
   gap: 14px;
   min-height: 86px;
-  border-radius: 15px;
+  border-radius: 10px;
   color: var(--text);
 }
 .catalog-row .exercise-thumbnail {
@@ -1853,7 +1863,7 @@ button.catalog-chip {
   gap: 18px;
 }
 .filter-overview-group {
-  border-radius: 22px;
+  border-radius: 12px;
   overflow: clip;
   background: var(--surface);
 }
@@ -1892,7 +1902,7 @@ button.catalog-chip {
   gap: 16px;
   min-height: 76px;
   padding: 16px;
-  border-radius: 22px;
+  border-radius: 12px;
   background: var(--surface);
   cursor: pointer;
 }
@@ -1912,7 +1922,7 @@ button.catalog-chip {
   height: 22px;
   margin: 3px;
   border-radius: 50%;
-  background: var(--text);
+  background: var(--surface);
 }
 @media (prefers-reduced-motion: no-preference) {
   .filter-custom-toggle input::before {
@@ -1920,7 +1930,7 @@ button.catalog-chip {
   }
 }
 .filter-custom-toggle input:checked {
-  background: var(--purple);
+  background: var(--accent);
 }
 .filter-custom-toggle input:checked::before {
   transform: translateX(20px);
@@ -1956,7 +1966,7 @@ button.catalog-chip {
   gap: 12px;
   min-height: 160px;
   padding: 16px 10px;
-  border-radius: 22px;
+  border-radius: 12px;
   border: 2px solid transparent;
   background: var(--surface);
   color: var(--text);
@@ -1966,7 +1976,7 @@ button.catalog-chip {
   overflow-wrap: anywhere;
 }
 .filter-choice-card[aria-pressed="true"] {
-  border-color: var(--purple);
+  border-color: var(--accent);
 }
 .filter-choice-card img {
   width: 100%;
@@ -1981,12 +1991,12 @@ button.catalog-chip {
   position: absolute;
   inset-inline-end: 10px;
   inset-block-start: 10px;
-  color: var(--purple);
+  color: var(--accent);
 }
 .catalog-toolbar button:focus-visible,
 .exercise-filters button:focus-visible,
 .filter-custom-toggle input:focus-visible {
-  outline: 2px solid var(--purple);
+  outline: 3px solid var(--focus-ring);
   outline-offset: 3px;
 }
 .exercise-filters .filter-overview-row:focus-visible {
@@ -1995,18 +2005,18 @@ button.catalog-chip {
 
 .exercise-library-heading .text-button,
 .exercise-filters .text-button {
-  color: var(--purple);
+  color: var(--accent);
 }
 .exercise-filters .btn.primary {
-  background: var(--purple);
-  color: var(--background);
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
 .picker-actions .btn.primary {
   min-height: 56px;
-  border-radius: 18px;
-  background: var(--purple);
-  color: var(--background);
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--on-accent);
   font-size: 16px;
   font-weight: 650;
 }
@@ -2052,9 +2062,9 @@ button.catalog-chip {
   }
   .mobile-nav,
   .training-bar {
-    background: color-mix(in oklch, var(--background) 82%, transparent);
-    -webkit-backdrop-filter: saturate(160%) blur(20px);
-    backdrop-filter: saturate(160%) blur(20px);
+    background: color-mix(in srgb, var(--background) 82%, transparent);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
   }
   .mobile-nav {
     padding: 6px 8px calc(4px + env(safe-area-inset-bottom, 0px));
@@ -2065,8 +2075,21 @@ button.catalog-chip {
     font-size: 10px;
     font-weight: 550;
   }
-  .mobile-nav a.selected {
-    background: transparent;
+  .mobile-nav a {
+    position: relative;
+  }
+  .mobile-nav a.selected::before {
+    content: "";
+    position: absolute;
+    inset-block-start: -7px;
+    inset-inline-start: 50%;
+    width: 28px;
+    height: 2px;
+    translate: -50% 0;
+    background: currentColor;
+  }
+  .mobile-nav a.selected svg {
+    stroke-width: 2.4;
   }
   .mobile-nav,
   .training-bar,
@@ -2094,7 +2117,7 @@ button.catalog-chip {
 @media (max-width: 650px) {
   .picker-list.catalog-list {
     padding: 0 0 0 12px;
-    border-radius: 14px;
+    border-radius: 10px;
   }
   .picker-list .catalog-row {
     position: relative;

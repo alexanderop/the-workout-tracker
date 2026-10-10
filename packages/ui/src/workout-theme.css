@@ -1,16 +1,21 @@
-/* Shared workout palette for the app and component explorer. */
+/* Shared workout palette for the app and component explorer. Maps the app
+   roles in tokens.css to the generic component roles. Both resolve per theme. */
 :root {
   --ui-background: var(--background);
   --ui-foreground: var(--text);
-  --ui-primary: var(--purple);
-  --ui-primary-foreground: var(--background);
+  --ui-card: var(--surface);
+  --ui-card-foreground: var(--text);
+  --ui-popover: var(--surface);
+  --ui-popover-foreground: var(--text);
+  --ui-primary: var(--accent);
+  --ui-primary-foreground: var(--on-accent);
   --ui-secondary: var(--surface);
   --ui-secondary-foreground: var(--text);
-  --ui-accent: var(--surface);
+  --ui-accent: var(--hover);
   --ui-accent-foreground: var(--text);
   --ui-muted-foreground: var(--muted);
-  --ui-input: var(--surface);
-  --ui-border: var(--surface);
-  --ui-ring: var(--purple);
-  --ui-dark: 1;
+  --ui-destructive: var(--danger);
+  --ui-input: var(--border);
+  --ui-border: var(--border);
+  --ui-ring: var(--focus-ring);
 }

@@ -3,7 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      // Set the saved theme and accent before first paint. Keys and values
+      // match src/app/appearance.ts; invalid values keep the defaults.
+      try {
+        var root = document.documentElement;
+        var theme = localStorage.getItem("workout-theme");
+        var accent = localStorage.getItem("workout-accent");
+        var dark =
+          theme === "dark" ||
+          (theme !== "light" &&
+            matchMedia("(prefers-color-scheme: dark)").matches);
+        root.dataset.theme = dark ? "dark" : "light";
+        if (/^(blue|teal|violet|pink|sand)$/.test(accent))
+          root.dataset.accent = accent;
+      } catch (error) {}
+    </script>
     <title>The Workout Tracker — Design example</title>
   </head>
   <body>

@@ -6,6 +6,7 @@ Historical records preserve prior plans, decisions, and reported observations. T
 - [Workout-first audit trail](audit/workout-first.tsv): recorded implementation trail associated with that effort.
 - [Finish boundary correction](finish-boundary-correction.md): repeated finish bypasses, centralized enforcement, and failing historical-implementation proof from 2026-10-05.
 
+- [Visual identity: adopt the starter look](visual-identity-2026-10-10.md): the 2026-10-10 decision that replaced the dark-only purple identity with a light and dark theme, five accents and Geist.
 - [Mobile release review](mobile-release-review/README.md): ten mobile findings, corrections, verification results and known evidence limits from 2026-10-07.
 
 - [Audit working files](audit/README.md): plans, candidate designs, reviews and logs produced by earlier agent-driven efforts. Historical only.

@@ -11,7 +11,6 @@
     "preview": "histoire preview --host 127.0.0.1 --port 4186"
   },
   "dependencies": {
-    "@fontsource/inter": "5.3.0",
     "@form/ui": "workspace:*",
     "@lucide/vue": "1.51.0",
     "vue": "3.5.43",

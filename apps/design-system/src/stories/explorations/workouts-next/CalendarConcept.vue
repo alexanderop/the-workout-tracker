@@ -64,8 +64,8 @@ function openDay(key: string) { selected.value = key; month.value = new Date(`${
 <style scoped>
 .calendar-study { margin-bottom: 26px; color: var(--text); }
 button { cursor: pointer; font: inherit; color: inherit; }
-button:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; }
-.week-opener { display: block; width: 100%; padding: 0 0 23px; border: 0; border-bottom: 1px solid var(--surface); background: none; text-align: left; }
+button:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+.week-opener { display: block; width: 100%; padding: 0 0 23px; border: 0; border-bottom: 1px solid var(--border); background: none; text-align: left; }
 .calendar-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .calendar-heading strong { font-size: 13px; font-weight: 500; }
 .calendar-heading > span { display: flex; align-items: center; gap: 5px; color: var(--muted); font-size: 10px; }
@@ -73,9 +73,9 @@ button:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; }
 .week-day { display: flex; flex-direction: column; align-items: center; gap: 7px; }
 .week-day small { color: var(--muted); font-size: 10px; }
 .day-number { display: grid; place-items: center; width: 32px; height: 32px; font-size: 13px; border-radius: 50%; }
-.day-number.today { background: var(--purple); color: var(--background); }
+.day-number.today { background: var(--accent); color: var(--background); }
 i { display: block; width: 4px; height: 4px; border-radius: 50%; background: none; }
-i.logged { background: var(--purple); }
+i.logged { background: var(--accent); }
 .month-heading h2 { margin: 0; font-size: 14px; letter-spacing: -.2px; font-weight: 500; }
 .month-heading > div { display: flex; }
 .month-heading button, .rhythm-heading button { display: grid; place-items: center; min-width: 44px; min-height: 44px; background: none; border: 0; }
@@ -83,10 +83,10 @@ i.logged { background: var(--purple); }
 .month-grid { display: grid; grid-template-columns: repeat(7, minmax(44px, 1fr)); min-width: 308px; }
 .weekday { text-align: center; font-size: 10px; padding: 10px 0; color: var(--muted); }
 .month-grid button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 44px; border: 1px solid transparent; background: none; font-size: 12px; border-radius: 10px; }
-.month-grid button.today { border-color: var(--purple); }
+.month-grid button.today { border-color: var(--accent); }
 .month-grid button.selected { background: var(--surface); }
 .month-grid button:hover { background: var(--surface); }
-.date-detail { display: grid; gap: 6px; margin-top: 15px; padding: 14px 0; border-top: 1px solid var(--surface); }
+.date-detail { display: grid; gap: 6px; margin-top: 15px; padding: 14px 0; border-top: 1px solid var(--border); }
 .date-detail > span { color: var(--muted); font-size: 10px; }
 .date-detail strong { font-size: 13px; font-weight: 500; }
 .date-detail small { color: var(--muted); font-size: 11px; }
@@ -99,11 +99,11 @@ i.logged { background: var(--purple); }
 .rhythm-rail button { position: relative; height: 44px; border: 1px solid transparent; border-radius: 8px; background: none; display: flex; flex-direction: column; align-items: center; gap: 7px; justify-content: center; }
 .rhythm-rail button span { font-size: 10px; color: var(--muted); }
 .rhythm-rail button i { width: 10px; height: 10px; background: var(--surface); }
-.rhythm-rail button.completed i { background: var(--purple); }
-.rhythm-rail button.today { border-color: var(--purple); }
+.rhythm-rail button.completed i { background: var(--accent); }
+.rhythm-rail button.today { border-color: var(--accent); }
 .rhythm-caption { display: flex; justify-content: space-between; gap: 8px; margin-top: 12px; font-size: 9px; color: var(--muted); }
 .rhythm-caption > span { display: flex; align-items: center; gap: 5px; }
-.rhythm-caption i { background: var(--purple); }
+.rhythm-caption i { background: var(--accent); }
 .calendar-modal { color: var(--text); }
-.calendar-study--rhythm { padding-bottom: 23px; border-bottom: 1px solid var(--surface); }
+.calendar-study--rhythm { padding-bottom: 23px; border-bottom: 1px solid var(--border); }
 </style>
