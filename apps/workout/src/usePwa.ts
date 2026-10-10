@@ -6,6 +6,7 @@ import {
 import { ref, computed, onScopeDispose, watch } from "vue";
 import { useRegisterSW } from "virtual:pwa-register/vue";
 import { watchServiceWorkerUpdates } from "./serviceWorkerUpdates";
+import { useTranslation } from "./i18n";
 
 type InstallEvent = Event & {
   prompt: () => Promise<void>;
@@ -19,6 +20,7 @@ function isInstallEvent(event: Event): event is InstallEvent {
   );
 }
 export function usePwa() {
+  const { t } = useTranslation();
   const online = useOnline();
   const installEvent = ref<InstallEvent | null>(null);
   const displayMode = useMediaQuery("(display-mode: standalone)");
@@ -40,7 +42,10 @@ export function usePwa() {
     },
     { flush: "sync" },
   );
-  const installMessage = ref("");
+  const installOutcome = ref<"accepted" | "cancelled" | "failed" | null>(null);
+  const installMessage = computed(() =>
+    installOutcome.value ? t(`shell.install.${installOutcome.value}`) : "",
+  );
   let unmounted = false;
   let stopUpdateChecks: (() => void) | undefined;
   // True once this tab's user pressed Update app. Only then may a new
@@ -86,7 +91,7 @@ export function usePwa() {
     stopUpdateChecks?.();
   });
   function install() {
-    installMessage.value = "";
+    installOutcome.value = null;
     installOpen.value = true;
     return Promise.resolve();
   }
@@ -94,17 +99,14 @@ export function usePwa() {
     const event = installEvent.value;
     if (!event || installing.value) return;
     installing.value = true;
-    installMessage.value = "";
+    installOutcome.value = null;
     try {
       await event.prompt();
       const choice = await event.userChoice;
-      installMessage.value =
-        choice.outcome === "accepted"
-          ? "Installation requested. Follow your browser to finish."
-          : "Installation cancelled. You can keep using the app here.";
+      installOutcome.value =
+        choice.outcome === "accepted" ? "accepted" : "cancelled";
     } catch {
-      installMessage.value =
-        "The installer could not open. Use the browser instructions below.";
+      installOutcome.value = "failed";
     } finally {
       installEvent.value = null;
       installing.value = false;

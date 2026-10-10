@@ -7,6 +7,7 @@ import {
   type MuscleMapView,
   type MuscleRegion,
 } from "./regions";
+import { useUiText } from "../ui-text";
 
 const {
   highlights = [],
@@ -23,7 +24,8 @@ const {
 }>();
 const selected = defineModel<MuscleRegion | null>({ default: null });
 const attrs = useAttrs();
-const roleLabels = { primary: "Primary", supporting: "Supporting" } as const;
+const uiText = useUiText();
+const text = computed(() => uiText.value.muscleMap);
 const roles = computed(() => {
   const result: Partial<Record<MuscleRegion, MuscleHighlight["role"]>> = {};
   for (const { muscle, role } of highlights) {
@@ -42,12 +44,13 @@ const rows = computed(() => {
     ),
   );
   return muscleRegions
-    .filter((region) => visibleRegions.has(region.id))
-    .map((region) => {
-      const role = roles.value[region.id];
+    .filter((id) => visibleRegions.has(id))
+    .map((id) => {
+      const role = roles.value[id];
       return {
-        ...region,
-        involvement: role ? roleLabels[role] : "Not highlighted",
+        id,
+        label: text.value.regions[id],
+        involvement: role ? text.value[role] : text.value.notHighlighted,
       };
     });
 });
@@ -57,7 +60,7 @@ function accessibleLabel(): string | undefined {
     attrs["aria-labelledby"] !== undefined
   )
     return undefined;
-  return "Muscle map";
+  return text.value.label;
 }
 function select(region: MuscleRegion): void {
   if (disabled || !interactive) return;
@@ -97,16 +100,16 @@ function select(region: MuscleRegion): void {
             }"
           />
         </svg>
-        <span v-if="presentation === 'full'">{{ bodyView.label }}</span>
+        <span v-if="presentation === 'full'">{{ text[bodyView.id] }}</span>
       </div>
     </div>
     <div v-if="presentation === 'full'" class="ui-muscle-map-legend">
-      <span><i class="is-primary" />Primary</span
-      ><span><i class="is-supporting" />Supporting</span
-      ><span><i />Not highlighted</span>
+      <span><i class="is-primary" />{{ text.primary }}</span
+      ><span><i class="is-supporting" />{{ text.supporting }}</span
+      ><span><i />{{ text.notHighlighted }}</span>
     </div>
     <p v-if="interactive && presentation === 'full'" class="ui-muscle-map-hint">
-      Choose a muscle below to locate it on the map.
+      {{ text.hint }}
     </p>
     <ul v-if="presentation === 'full'" class="ui-muscle-map-list">
       <li v-for="region in rows" :key="region.id">

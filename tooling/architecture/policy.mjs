@@ -105,6 +105,12 @@ export function importViolation(
   if (!file.split(sep).join("/").includes("/src/")) return null;
   const source = describe(file);
   const targetPath = resolveImport(specifier, file);
+  // Feature UI reads text and number formats from the i18n entry point only.
+  if (
+    source?.layer === "ui" &&
+    targetPath?.split(sep).join("/").endsWith("/src/i18n/index.ts")
+  )
+    return null;
   const target = targetPath && describe(targetPath);
   if (target) {
     if (!Object.hasOwn(layers, target.layer))

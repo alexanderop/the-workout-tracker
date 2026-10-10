@@ -22,6 +22,8 @@ export default defineConfig({
   use: {
     baseURL: `http://127.0.0.1:${appPort}`,
     channel: "chrome",
+    // Journeys run in English; language.feature opens German contexts itself.
+    locale: "en-US",
     viewport: { width: 390, height: 844 },
     trace: "retain-on-failure",
     screenshot: "only-on-failure",

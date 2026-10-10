@@ -10,6 +10,7 @@ import {
   type DialogPortalProps,
 } from "reka-ui";
 import BaseDialogOverlay from "./BaseDialogOverlay.vue";
+import { useUiText } from "../ui-text";
 defineOptions({ inheritAttrs: false });
 const {
   showCloseButton = true,
@@ -27,6 +28,7 @@ const {
 >();
 const emits = defineEmits<DialogContentEmits>();
 defineSlots<{ default?: () => unknown }>();
+const uiText = useUiText();
 const forwarded = useForwardPropsEmits(contentProps, emits);
 </script>
 <template>
@@ -39,7 +41,7 @@ const forwarded = useForwardPropsEmits(contentProps, emits);
         v-if="showCloseButton"
         class="ui-dialog-dismiss"
         data-slot="dialog-close"
-        aria-label="Close"
+        :aria-label="uiText.close"
         ><X aria-hidden="true" /></DialogClose></DialogContent
   ></DialogPortal>
 </template>

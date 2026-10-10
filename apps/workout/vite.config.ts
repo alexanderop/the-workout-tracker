@@ -4,6 +4,7 @@ import VueRouter from "vue-router/vite";
 import vue from "@vitejs/plugin-vue";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
+import { catalogs } from "./catalogs.config";
 
 const base = process.env.VITE_BASE_PATH ?? "/";
 // Identifies the build in the error-recovery diagnostics and, as a meta tag,
@@ -66,6 +67,7 @@ export default defineConfig(({ mode, command }) => {
       }),
       vue(),
       tailwindcss(),
+      catalogs(),
       {
         name: "build-version-meta",
         transformIndexHtml: () => [
@@ -106,7 +108,7 @@ export default defineConfig(({ mode, command }) => {
               workbox: {
                 clientsClaim: true,
                 skipWaiting: false,
-                globPatterns: ["**/*.{js,css,html,ico,png,webp,svg,woff2}"],
+                globPatterns: ["**/*.{js,css,html,ico,png,webp,svg,woff2,json}"],
                 navigateFallback: `${base}index.html`,
                 cleanupOutdatedCaches: true,
               },

@@ -50,6 +50,19 @@ Illustrative compositions belong in `stories/patterns`, and foundations in `stor
 
 The root commands own catalog synchronization, development process coordination and static preview packaging. The [architecture contract](architecture.md#product-preview-boundary) explains the document boundary. A product preview proves interactions with sample memory adapters, not persistence, restart recovery, installation or offline behavior.
 
+## Add or change a user-visible string
+
+All text a person can read, including `aria-label`s, `title`s, placeholders, dialog text, notices and error messages, comes from the catalogs in `apps/workout/src/i18n`. See [Language and text ownership](architecture.md#language-and-text-ownership).
+
+1. Pick the area file that matches the screen (`en/training.ts` for the active workout, and so on) and add the English message under a key grouped by component, such as `training.setRow.logSet`. Placeholders are `{name}`; plural forms read `{n} set | {n} sets`. Do not put `|`, `{` or `}` in message text.
+2. Add the same key to the German file in `de/<area>.ts`. TypeScript rejects a missing or extra key, and `test/unit/i18n.test.ts` rejects a changed placeholder or plural-form count. Use the German terms in the [glossary](glossary.md#german-terms).
+3. In a component, call `const { t } = useTranslation()` and write `{{ t("training.setRow.logSet") }}` or `:aria-label="t(...)"`. Pass a count for plurals: `t("workouts.count", total)`. In a composable, take `t: Translate` as a parameter instead of calling `useTranslation()`; unit tests pass `t` from `src/i18n/testing.ts`.
+4. Format numbers and dates with `const format = useFormat()` (`format.number(x)`, `format.longDate(at)`), never with a hard-coded locale. Domain, ports, application and adapters return codes, not text: add a code and map it in the UI (`ui/errorMessages.ts` for failures).
+5. Components in `packages/ui` take text as props (with English defaults only where a default already exists); pass `t(...)` from the app.
+6. Tests look text up by key (`t` from `src/i18n/testing.ts`) or use the English literal; Playwright runs in `en-US`. `language.feature` covers switching to German, persistence and the browser-language default.
+
+To add a language, add `<locale>` to `supportedLocales` in `src/i18n/index.ts`, create a catalog file for each area typed as `Catalog["<area>"]`, export it from `i18n/<locale>.ts`, add the locale to `locales` in `catalogs.config.ts` and the URL type in `src/i18n-catalogs.d.ts`, register the TypeScript catalog in `i18n/testing.ts`, and add its endonym in `app/language.ts`. Each locale adds about 10 kB gzipped to the build output; the JavaScript budget is unaffected because catalogs ship as JSON, but the build-size budget counts them. The type checker lists every missing key.
+
 ## Component names
 
 Apply the naming rules from the [Vue Style Guide (Priority B)](https://vuejs.org/style-guide/rules-strongly-recommended.html) to our components:
@@ -101,7 +114,7 @@ Choose a test by the failure it must expose. Keep `pnpm verify` as type checking
 
 `test:unit` measures coverage. The workout logic layers (`domain/`, `application.ts`, `ui/*.ts`) and the pure `@form/ui` modules must stay at or above the thresholds in `apps/workout/coverage-thresholds.json` and `packages/ui/coverage-thresholds.json`. Raise a threshold when coverage rises; never lower one. Skipped or focused tests (`.skip`, `.only`, `.fixme`, `.todo`, `@skip`/`@only` tags) fail lint: fix or delete a test explicitly.
 
-Install Chrome with `pnpm --filter @form/workout exec playwright install chrome`. CI installs it before browser execution. The E2E command generates Playwright specs, builds the app with the root base path, and serves it on port 4197. A second server builds the app twice (versions 1 and 2) and serves port 4199 for the `@updates` journeys. Keep both ports free, or set `E2E_PORT` and `E2E_UPDATE_PORT`. Playwright starts both servers itself. Generated specs, reports, and traces are ignored by Git. Failed journeys retain traces and screenshots. The suite does not retry: a retry would turn a flaky journey into a pass. Run a new journey several times (`--repeat-each 3`) before delivering it. [Verification](verification.md) lists what each journey proves and what it does not claim.
+Install Chrome with `pnpm --filter @form/workout exec playwright install chrome`. CI installs it before browser execution. The E2E command generates Playwright specs, builds the app with the root base path, and serves it on port 4197. A second server builds the app twice (versions 1 and 2) and serves port 4199 for the `@updates` journeys. Keep both ports free, or set `E2E_PORT` and `E2E_UPDATE_PORT`. Playwright starts both servers itself. Generated specs, reports, and traces are ignored by Git. Failed journeys retain traces and screenshots. The suite does not retry: a retry would turn a flaky journey into a pass. Run a new journey several times (`--repeat-each 3`) before delivering it; add `--workers 1` for `@updates` journeys, because repeated copies would otherwise run in parallel against the one-version test server and interfere. [Verification](verification.md) lists what each journey proves and what it does not claim.
 
 ### Performance and offline guardrails
 
@@ -162,7 +175,7 @@ Put product-language scenarios under `apps/workout/test/e2e`. Keep semantic loca
 
 Use the test fixtures to seed prerequisites into an isolated browser context. Seeding is test-only and uses actual browser storage. Never seed the outcome of the action being tested. A fresh-user journey must create its workout through the UI. A reload journey must read the data the application saved. Do not add production seed endpoints or replace persistence with fixtures.
 
-Browser adapter tests use unique database names and close handles before cleanup. Each application scenario gets an isolated browser context. Chrome is the default browser. Tag a feature `@mobile` to also run it in the Pixel 7 project (touch, mobile user agent). Tag a feature `@updates` to run it against the two-version server, which holds one active version at a time, so those scenarios run one by one. Wait for observable state, never fixed delays: an update journey waits for the browser's registration to hold the waiting worker, and an offline journey waits for the worker to control the page before it goes offline. Accessibility scans use `axe-core` through `AccessibilityPage`; a known issue names its rule and fails once fixed. Functional tests do not establish visual parity, full accessibility, real-device offline availability, or cross-browser compatibility.
+Browser adapter tests use unique database names and close handles before cleanup. Each application scenario gets an isolated browser context. Chrome is the default browser. Tag a feature `@mobile` to also run it in the Pixel 7 project (touch, mobile user agent). Tag a feature `@updates` to run it against the two-version server, which holds one active version at a time, so those scenarios run one by one. Wait for observable state, never fixed delays: an update journey waits for the browser's registration to hold the waiting worker, and an offline journey waits for the worker to control the page before it goes offline. Accessibility scans use `axe-core` through `AccessibilityPage`; a scan accepts no violation. Functional tests do not establish visual parity, full accessibility, real-device offline availability, or cross-browser compatibility.
 
 ## Lint and TypeScript policy
 

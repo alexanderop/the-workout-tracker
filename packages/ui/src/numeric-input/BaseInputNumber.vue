@@ -11,12 +11,11 @@ import BaseDialogClose from "../dialog/BaseDialogClose.vue";
 import {
   beginEditing,
   editNumber,
-  numericHint,
   numericPresets,
-  pasteHint,
   replaceNumber,
   validNumber,
 } from "./editing";
+import { useNumericText } from "./useNumericText";
 
 defineOptions({ inheritAttrs: false });
 const {
@@ -53,6 +52,7 @@ const pasteIssue = ref("");
 // focus leaves the trigger so idle inputs add no status regions to the page.
 const announcement = ref("");
 const attrs = useAttrs();
+const { text, hint, pasteHint } = useNumericText();
 const display = useTemplateRef<HTMLElement>("display");
 const hintId = useId();
 const limits = computed(() => ({ min, max, decimals, presetStep }));
@@ -86,22 +86,22 @@ function press(key: string) {
 }
 function paste(event: ClipboardEvent) {
   event.preventDefault();
-  const text = event.clipboardData?.getData("text/plain") ?? "";
-  const next = replaceNumber(text, limits.value);
+  const pasted = event.clipboardData?.getData("text/plain") ?? "";
+  const next = replaceNumber(pasted, limits.value);
   pasteIssue.value = next ? "" : pasteHint(limits.value);
   if (next) draft.value = next;
 }
 function confirm(next = value.value) {
   if (disabled || next === null) return;
   emit("update:modelValue", String(next));
-  announcement.value = `${title} set to ${next}${unit ? ` ${unit}` : ""}`;
+  announcement.value = text.value.announce({ title, value: next, unit });
   open.value = false;
 }
 // A consumer's aria-label wins over the generated "label: value" name.
 function triggerLabel() {
   const own = attrs["aria-label"];
-  if (typeof own === "string" && own) return own;
-  return `${label}: ${modelValue === "" ? "empty" : modelValue}${unit ? ` ${unit}` : ""}`;
+  const name = text.value.trigger({ label, value: modelValue, unit });
+  return typeof own === "string" && own ? own : name;
 }
 function keyboard(event: KeyboardEvent) {
   if (event.ctrlKey || event.metaKey || event.altKey || event.isComposing)
@@ -162,13 +162,13 @@ function focusDisplay(event: Event) {
         </div>
         <BaseDialogClose as-child>
           <BaseButton type="button" variant="ghost" class="ui-numeric-cancel"
-            >Cancel</BaseButton
+            >{{ text.cancel }}</BaseButton
           >
         </BaseDialogClose>
       </header>
       <div class="ui-numeric-body">
-        <section class="ui-numeric-suggestions" aria-label="Suggested values">
-          <p>Quick pick <span>Tap to use</span></p>
+        <section class="ui-numeric-suggestions" :aria-label="text.suggestions">
+          <p>{{ text.quickPick }} <span>{{ text.tapToUse }}</span></p>
           <div class="ui-numeric-presets">
             <BaseButton
               v-for="preset in presets"
@@ -176,7 +176,7 @@ function focusDisplay(event: Event) {
               type="button"
               variant="secondary"
               class="ui-numeric-preset"
-              :aria-label="`Use ${preset}${unit ? ` ${unit}` : ''}`"
+              :aria-label="text.usePreset({ value: preset, unit })"
               @click="confirm(preset)"
               >{{ preset }}<small v-if="unit">{{ unit }}</small></BaseButton
             >
@@ -186,7 +186,7 @@ function focusDisplay(event: Event) {
           ref="display"
           tabindex="-1"
           role="group"
-          aria-label="Number editor"
+          :aria-label="text.editor"
           :aria-describedby="hintId"
           class="ui-numeric-display"
         >
@@ -198,10 +198,10 @@ function focusDisplay(event: Event) {
             :id="hintId"
             :class="{ 'ui-numeric-error': value === null || pasteIssue !== '' }"
           >
-            {{ pasteIssue || numericHint(draft, limits, unit) }}
+            {{ pasteIssue || hint(draft, limits, unit) }}
           </p>
         </div>
-        <div class="ui-numeric-keypad" role="group" aria-label="Numeric keypad">
+        <div class="ui-numeric-keypad" role="group" :aria-label="text.keypad">
           <BaseButton
             v-for="digit in digits"
             :key="digit"
@@ -216,7 +216,7 @@ function focusDisplay(event: Event) {
             type="button"
             variant="secondary"
             class="ui-numeric-key"
-            aria-label="Decimal point"
+            :aria-label="text.decimalPoint"
             @click="press('.')"
             >.</BaseButton
           >
@@ -232,7 +232,7 @@ function focusDisplay(event: Event) {
             type="button"
             variant="secondary"
             class="ui-numeric-key"
-            aria-label="Backspace"
+            :aria-label="text.backspace"
             @click="press('Backspace')"
             ><Delete :size="22"
           /></BaseButton>
@@ -244,7 +244,7 @@ function focusDisplay(event: Event) {
         :disabled="value === null || disabled"
         @click="confirm()"
       >
-        <Check :size="18" />Use {{ title.toLowerCase() }}
+        <Check :size="18" />{{ text.confirm(title) }}
       </BaseButton>
     </BaseDialogContent>
   </DialogRoot>

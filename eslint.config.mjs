@@ -72,6 +72,38 @@ export default [
     },
   },
   {
+    // App text comes from the message catalogs in apps/workout/src/i18n.
+    files: ["apps/workout/src/**/*.vue"],
+    rules: {
+      "vue/no-bare-strings-in-template": [
+        "error",
+        {
+          allowlist: [...'()[]{}<>,.:;!?&+-=*/#%|•·—–×…'.split(""), "kg"],
+          // Text props on any element or component, not only native ones.
+          attributes: {
+            "/.+/": [
+              "title",
+              "aria-label",
+              "aria-placeholder",
+              "aria-roledescription",
+              "aria-valuetext",
+              "alt",
+              "label",
+              "legend",
+              "description",
+              "placeholder",
+              "message",
+              "error",
+              "close-label",
+              "dismiss-label",
+              "skip-label",
+            ],
+          },
+        },
+      ],
+    },
+  },
+  {
     files: ["**/*.story.vue"],
     rules: { "vue/multi-word-component-names": "off" },
   },

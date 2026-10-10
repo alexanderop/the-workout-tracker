@@ -30,6 +30,9 @@ import { useWorkoutNavigation } from "./app/useWorkoutNavigation";
 import { provideWorkoutRouteContext } from "./app/workoutRouteContext";
 import type { Workouts, DraftJournal } from "./features/workouts";
 import { useWorkoutClock } from "./app/useWorkoutClock";
+import { useLanguage } from "./app/useLanguage";
+import { provideAppUiText } from "./app/uiText";
+import { useTranslation } from "./i18n";
 import type { WorkoutEnvironment } from "./app/environment";
 const {
   workouts,
@@ -42,8 +45,14 @@ const {
   environment: WorkoutEnvironment;
   initialExerciseSearch?: string;
 }>();
+useLanguage();
+const { t, locale } = useTranslation();
+provideAppUiText(t, locale);
 const clock = useWorkoutClock(environment.now);
-const workspace = useWorkoutWorkspace(workouts, drafts, clock.now);
+const workspace = useWorkoutWorkspace(workouts, drafts, {
+  now: clock.now,
+  t,
+});
 watch(() => workspace.active.value?.rest?.endsAt, clock.refresh);
 const { state, loadFailure, snapshot, saving, message, error, notice, history, active } = workspace;
 const dialogs = useTemplateRef<InstanceType<typeof WorkoutDialogs>>("dialogs");
@@ -70,7 +79,7 @@ const {
   prepareLinkNavigation,
 } = useWorkoutNavigation(
   workspace.clearMessage,
-  (text) => workspace.fail(text, true),
+  () => workspace.fail(t("shell.notice.pageNotOpened"), true),
   focusMain,
 );
 const progressExercise = ref("");
@@ -104,28 +113,31 @@ provideWorkoutRouteContext({
     install,
   },
 });
-const navigation = [
-  { id: "workouts", label: "Workouts", icon: Dumbbell },
-  { id: "exercises", label: "Exercises", icon: Library },
-  { id: "progress", label: "Progress", icon: TrendingUp },
-] as const;
-const mobileNavigation = [
-  ...navigation,
-  { id: "settings", label: "Settings", icon: Settings },
-] as const;
+const navigation = computed(() => [
+  { id: "workouts", label: t("shell.nav.workouts"), icon: Dumbbell },
+  { id: "exercises", label: t("shell.nav.exercises"), icon: Library },
+  { id: "progress", label: t("shell.nav.progress"), icon: TrendingUp },
+] as const);
+const mobileNavigation = computed(() => [
+  ...navigation.value,
+  { id: "settings", label: t("shell.nav.settings"), icon: Settings },
+] as const);
 function reload() {
   window.location.reload();
 }
 const title = computed(() => {
-  if (page.value === "session") return "Active workout";
-  if (page.value === "settings") return "Settings";
-  return navigation.find((item) => item.id === page.value)?.label ?? "Workouts";
+  if (page.value === "session") return t("shell.nav.session");
+  if (page.value === "settings") return t("shell.nav.settings");
+  return (
+    navigation.value.find((item) => item.id === page.value)?.label ??
+    t("shell.nav.workouts")
+  );
 });
 </script>
 
 <template>
   <a class="skip-link" href="#main" @click.prevent="focusMain"
-    >Skip to content</a
+    >{{ t("shell.skipToContent") }}</a
   >
   <div class="app-layout">
     <aside class="sidebar">
@@ -133,13 +145,16 @@ const title = computed(() => {
         :to="destination('workouts')"
         @click="prepareLinkNavigation($event, 'workouts')"
         class="brand"
-        aria-label="The Workout Tracker home"
+        
+        :aria-label="t('shell.brand.home')"
         ><span class="brand-mark"
           ><Dumbbell :size="20" aria-hidden="true" /></span
-        ><span class="brand-name">The Workout<br />Tracker</span></RouterLink
+        ><span class="brand-name"
+          >{{ t("shell.brand.first") }}<br />{{ t("shell.brand.second") }}</span
+        ></RouterLink
       >
-      <div class="workspace-label">YOUR TRAINING SPACE</div>
-      <nav class="desktop-nav" aria-label="Main navigation">
+      <div class="workspace-label">{{ t("shell.workspaceLabel") }}</div>
+      <nav class="desktop-nav" :aria-label="t('shell.nav.main')">
         <RouterLink
           v-for="item in navigation"
           :key="item.id"
@@ -167,7 +182,8 @@ const title = computed(() => {
       >
         <span class="activity-dot"></span
         ><span
-          >Workout in progress<small>{{ active.name }}</small></span
+          >{{ t("shell.workoutInProgress")
+          }}<small>{{ active.name }}</small></span
         ><ChevronRight :size="16" />
       </BaseButton>
       <div class="sidebar-bottom">
@@ -177,14 +193,14 @@ const title = computed(() => {
           class="sidebar-action"
           @click="install"
         >
-          <ArrowDownToLine :size="17" aria-hidden="true" /><span
-            >Install The Workout Tracker</span
-          >
+          <ArrowDownToLine :size="17" aria-hidden="true" /><span>{{
+            t("shell.installApp")
+          }}</span>
         </BaseButton>
         <div class="local-note">
-          <ShieldCheck :size="17" aria-hidden="true" /><span
-            >Yours. On this device.</span
-          >
+          <ShieldCheck :size="17" aria-hidden="true" /><span>{{
+            t("shell.localNote")
+          }}</span>
         </div>
       </div>
     </aside>
@@ -198,13 +214,14 @@ const title = computed(() => {
         :class="{ 'is-offline': !online }"
       >
         <div>
-          <span class="muted">Your workspace</span><span class="slash">/</span
+          <span class="muted">{{ t("shell.yourWorkspace") }}</span><span class="slash">/</span
           ><span>{{ title }}</span>
         </div>
         <div class="topbar-right">
           <span v-if="!online" class="connection accent"
-            ><WifiOff :size="14" aria-hidden="true" />Offline · saved
-            locally</span
+            ><WifiOff :size="14" aria-hidden="true" />{{
+              t("shell.offline")
+            }}</span
           >
         </div>
       </header>
@@ -218,13 +235,13 @@ const title = computed(() => {
         }"
         tabindex="-1"
       >
-        <BaseLoading v-if="state.kind === 'loading'" />
+        <BaseLoading v-if="state.kind === 'loading'" :label="t('shell.loading')" />
         <div
           v-else-if="loadFailure"
           class="empty-state"
         >
           <ShieldCheck :size="32" />
-          <h1>Your data needs attention</h1>
+          <h1>{{ t("shell.loadFailure.title") }}</h1>
           <p>{{ loadFailure.message }}</p>
           <BaseButton
             unstyled
@@ -234,9 +251,9 @@ const title = computed(() => {
               download(loadFailure.recoveryExport, 'the-workout-tracker-recovery.json')
             "
           >
-            Export recovery data</BaseButton
+            {{ t("shell.loadFailure.export") }}</BaseButton
           ><BaseButton unstyled class="btn primary" @click="reload"
-            >Try again</BaseButton
+            >{{ t("shell.loadFailure.tryAgain") }}</BaseButton
           >
         </div>
         <template v-else-if="snapshot">
@@ -247,39 +264,41 @@ const title = computed(() => {
               unstyled
               class="text-button"
               @click="reload"
-              >Reload</BaseButton
-            ><BaseButtonIcon label="Dismiss error" @click="workspace.clearError()">
+              >{{ t("shell.notice.reload") }}</BaseButton
+            ><BaseButtonIcon
+              :label="t('shell.notice.dismiss')"
+              @click="workspace.clearError()">
               <X :size="16" />
             </BaseButtonIcon>
           </div>
           <div v-if="needRefresh && !active" class="notice" role="status">
-            <span>A new version of The Workout Tracker is ready.</span
+            <span>{{ t("shell.notice.updateReady") }}</span
             ><BaseButton
               unstyled
               class="text-button"
               @click="updateServiceWorker(true)"
             >
-              Update app
+              {{ t("shell.notice.updateApp") }}
             </BaseButton>
           </div>
           <div v-if="reloadReady && !active" class="notice" role="status">
-            <span>Updated — reload when ready.</span
+            <span>{{ t("shell.notice.updated") }}</span
             ><BaseButton unstyled class="text-button" @click="reload">
-              Reload app
+              {{ t("shell.notice.reloadApp") }}
             </BaseButton>
           </div>
           <RouterView />
           <footer class="main-footer">
-            <nav aria-label="Footer navigation">
+            <nav :aria-label="t('shell.nav.footer')">
               <RouterLink
                 :to="destination('settings')"
                 @click="prepareLinkNavigation($event, 'settings')"
                 :aria-current="page === 'settings' ? 'page' : undefined"
-                >Settings</RouterLink
+                >{{ t("shell.nav.settings") }}</RouterLink
               >
             </nav>
             <span class="save-status" role="status">{{
-              saving ? "Saving…" : message || ""
+              saving ? t("shell.saving") : message || ""
             }}</span>
           </footer>
         </template>
@@ -291,7 +310,7 @@ const title = computed(() => {
       @finish="dialogs?.openFinish()"
       @pick="dialogs?.openPicker()"
     />
-    <nav v-else class="mobile-nav" aria-label="Mobile navigation">
+    <nav v-else class="mobile-nav" :aria-label="t('shell.nav.mobile')">
       <RouterLink
         v-for="item in mobileNavigation"
         :key="item.id"
@@ -311,7 +330,7 @@ const title = computed(() => {
 
   <BaseSheet
     :open="installOpen"
-    title="Install The Workout Tracker"
+    :title="t('shell.install.title')"
     @close="installOpen = false"
   >
     <BaseInstallInstructions

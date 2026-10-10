@@ -7,6 +7,7 @@ import BaseDialogClose from "./dialog/BaseDialogClose.vue";
 import BaseButton from "./button/BaseButton.vue";
 import { onBeforeUnmount, watch } from "vue";
 import { X } from "@lucide/vue";
+import { useUiText } from "./ui-text";
 import {
   releaseVelocity,
   sheetDragOffset,
@@ -29,6 +30,7 @@ const emit = defineEmits<{
   "close-auto-focus": [event: Event];
 }>();
 defineSlots<{ default?: () => unknown }>();
+const uiText = useUiText();
 let opener: HTMLElement | null = null;
 watch(
   () => open,
@@ -166,7 +168,7 @@ onBeforeUnmount(() => {
             class="muted sheet-description"
             >{{ description }}</BaseDialogDescription
           ><BaseDialogDescription v-else class="sr-only"
-            >{{ title }} options</BaseDialogDescription
+            >{{ uiText.sheetOptions(title) }}</BaseDialogDescription
           >
         </div>
         <BaseDialogClose as-child
@@ -175,7 +177,7 @@ onBeforeUnmount(() => {
             variant="ghost"
             size="icon"
             class="icon-button"
-            aria-label="Close dialog"
+            :aria-label="uiText.closeDialog"
             ><X :size="20" /></BaseButton
         ></BaseDialogClose>
       </header>

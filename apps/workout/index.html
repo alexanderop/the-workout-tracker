@@ -49,9 +49,56 @@
       <div class="startup-shell" role="status">
         <img src="/icon.svg" width="56" height="56" alt="" />
         <p>Opening your training journal</p>
-        <noscript>Enable JavaScript to open your saved workouts.</noscript>
+        <noscript
+          >Enable JavaScript to open your saved workouts.
+          <span lang="de"
+            >Aktiviere JavaScript, um deine gespeicherten Trainings zu
+            öffnen.</span
+          ></noscript
+        >
       </div>
     </div>
+    <script>
+      // Show the startup text in German before the app loads. Mirrors
+      // src/app/language.ts: the key holds JSON, and "system" or no choice
+      // follows the browser. The app sets the language itself once it starts.
+      try {
+        var saved = JSON.parse(localStorage.getItem("workout-language"));
+        var german = saved === "de";
+        if (saved !== "de" && saved !== "en") {
+          var found = Array.prototype.find.call(
+            navigator.languages || [],
+            function (tag) {
+              return /^(de|en)(-|$)/i.test(tag);
+            },
+          );
+          german = /^de/i.test(found || "");
+        }
+        // Start the catalog download before the app code asks for it. The
+        // build lists the file names; the dev server has none.
+        var files = window.__catalogFiles;
+        var file = files && files[german ? "de" : "en"];
+        if (file) {
+          var preload = document.createElement("link");
+          preload.rel = "preload";
+          preload.as = "fetch";
+          preload.crossOrigin = "";
+          preload.href = window.__catalogBase + file;
+          document.head.appendChild(preload);
+        }
+        if (german) {
+          document.documentElement.lang = "de";
+          document.querySelector(".startup-shell p").textContent =
+            "Dein Trainingstagebuch wird geöffnet";
+          document
+            .querySelector('meta[name="description"]')
+            .setAttribute(
+              "content",
+              "Ein ruhigerer Ort, um stärker zu werden. Plane Trainings, erfasse Sätze und verfolge deinen Fortschritt – auch offline.",
+            );
+        }
+      } catch (error) {}
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

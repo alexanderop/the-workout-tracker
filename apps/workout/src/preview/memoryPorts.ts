@@ -4,7 +4,7 @@ import {
   draftSchema,
   Conflict,
   DraftsDeleted,
-  InvalidChange,
+  invalidChange,
   InvalidRevision,
   loadState,
   StorageClosed,
@@ -32,20 +32,14 @@ export function createMemoryStorage(initial: Snapshot): WorkoutStorage {
       return Result.err(new InvalidRevision());
     const parsed = snapshotSchema.safeParse(next);
     if (!parsed.success)
-      return Result.err(
-        new InvalidChange({ message: "Invalid preview snapshot." }),
-      );
+      return Result.err(invalidChange("invalidWorkoutData"));
     if (expectedRevision !== snapshot.revision)
       return Result.err(new Conflict({ snapshot }));
     const unchanged = parsed.data.revision === snapshot.revision;
     if (unchanged && JSON.stringify(parsed.data) === JSON.stringify(snapshot))
       return Result.ok(snapshot);
     if (parsed.data.revision !== snapshot.revision + 1)
-      return Result.err(
-        new InvalidChange({
-          message: "Snapshot revisions must advance by one.",
-        }),
-      );
+      return Result.err(invalidChange("revisionMustAdvanceByOne"));
     snapshot = parsed.data;
     for (const listener of listeners) listener(ready());
     return Result.ok(snapshot);

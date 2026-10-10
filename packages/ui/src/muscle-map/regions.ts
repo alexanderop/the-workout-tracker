@@ -16,28 +16,26 @@ export type MuscleHighlight = Readonly<{
   role: "primary" | "supporting";
 }>;
 export type MuscleMapView = "front" | "back" | "both";
-export const muscleRegions: readonly { id: MuscleRegion; label: string }[] = [
-  { id: "chest", label: "Chest" },
-  { id: "shoulders", label: "Shoulders" },
-  { id: "biceps", label: "Biceps" },
-  { id: "triceps", label: "Triceps" },
-  { id: "forearms", label: "Forearms" },
-  { id: "abs", label: "Core" },
-  { id: "upper-back", label: "Upper back" },
-  { id: "lower-back", label: "Lower back" },
-  { id: "glutes", label: "Glutes" },
-  { id: "quads", label: "Quads" },
-  { id: "hamstrings", label: "Hamstrings" },
-  { id: "calves", label: "Calves" },
+export const muscleRegions: readonly MuscleRegion[] = [
+  "chest",
+  "shoulders",
+  "biceps",
+  "triceps",
+  "forearms",
+  "abs",
+  "upper-back",
+  "lower-back",
+  "glutes",
+  "quads",
+  "hamstrings",
+  "calves",
 ];
 export const bodyViews: readonly {
   id: Exclude<MuscleMapView, "both">;
-  label: string;
   regions: readonly { id: MuscleRegion; path: string }[];
 }[] = [
   {
     id: "front",
-    label: "Front",
     regions: [
       {
         id: "shoulders",
@@ -71,7 +69,6 @@ export const bodyViews: readonly {
   },
   {
     id: "back",
-    label: "Back",
     regions: [
       {
         id: "shoulders",

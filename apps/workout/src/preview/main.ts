@@ -1,5 +1,5 @@
 import { useEventListener } from "@form/composables";
-import { createApp, ref } from "vue";
+import { computed, createApp, ref } from "vue";
 import { createMemoryHistory } from "vue-router";
 import "@form/ui/tokens.css";
 import "../style.css";
@@ -9,6 +9,9 @@ import {
   createAppearance,
 } from "../app/appearance";
 import App from "../App.vue";
+import { initialLocale } from "../app/language";
+import { createAppI18n, strictTranslator, useTranslation } from "../i18n";
+import { startupLocale } from "../i18n/loadCatalog";
 import { createWorkoutRouter } from "../app/router";
 import type { Installation } from "../app/environment";
 import { createWorkouts, snapshotSchema } from "../features/workouts";
@@ -20,7 +23,11 @@ import {
   type ScenarioId,
 } from "./scenarios";
 
+// One instance for the page: every mounted scenario and the error text share it.
+const i18n = createAppI18n((await startupLocale(initialLocale())) ?? "en");
+
 function usePreviewInstallation(): Installation {
+  const { t } = useTranslation();
   const installOpen = ref(false);
   return {
     installOpen,
@@ -32,7 +39,7 @@ function usePreviewInstallation(): Installation {
     offlineReady: ref(false),
     needRefresh: ref(false),
     reloadReady: ref(false),
-    installMessage: ref("Installation is unavailable in this design example."),
+    installMessage: computed(() => t("shell.install.unavailable")),
     install() {
       installOpen.value = true;
       return Promise.resolve();
@@ -94,7 +101,7 @@ async function mountScenario(
         : scenario.route,
     );
     if (isDisposed()) return;
-    app.use(router);
+    app.use(router).use(i18n);
     await router.isReady();
     if (isDisposed()) return;
     mountStarted = true;
@@ -116,5 +123,5 @@ try {
   host.textContent =
     error instanceof Error
       ? error.message
-      : "This example could not be opened.";
+      : strictTranslator(i18n.global.locale).t("shell.previewError");
 }

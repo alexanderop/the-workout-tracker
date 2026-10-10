@@ -20,3 +20,28 @@ Use these terms in our conversations, product copy, and documentation. This docu
 **Confirm number** updates the draft → **Log set** records the attempt → **Finish workout** saves the workout to history.
 
 Confirming a number does not log a set. Logging a set does not finish the workout.
+
+## German terms
+
+The app ships English and German catalogs. German copy uses the informal "du" and these terms, so the same concept always has the same word.
+
+| English | German |
+| --- | --- |
+| Workout | Training |
+| Active workout | Aktives Training |
+| Completed workout | Abgeschlossenes Training |
+| Exercise | Übung |
+| Workout exercise | Übung im Training |
+| Template | Vorlage |
+| Set | Satz (Plural: Sätze) |
+| Logged set | Erfasster Satz |
+| Reps, target reps, recorded reps | Wiederholungen (Wdh.), Ziel-Wiederholungen, erfasste Wiederholungen |
+| Rest | Pause |
+| Draft | Entwurf |
+| Volume | Volumen |
+| History | Verlauf |
+| Progress | Fortschritt |
+| Muscle group | Muskelgruppe |
+| Equipment | Gerät |
+
+Built-in exercise names stay English because they are stored in snapshots and backups; muscle groups and equipment are translated for display only. Weights stay in kilograms (`kg`).

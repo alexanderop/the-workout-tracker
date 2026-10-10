@@ -38,3 +38,5 @@ export type {
   MuscleHighlight,
   MuscleMapView,
 } from "./muscle-map/regions";
+export { provideUiText, defaultUiText } from "./ui-text";
+export type { UiText, NumericRange } from "./ui-text";
