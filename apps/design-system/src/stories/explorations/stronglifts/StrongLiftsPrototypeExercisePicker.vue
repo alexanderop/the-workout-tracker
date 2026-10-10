@@ -8,7 +8,7 @@ const options = ["Squat", "Bench Press", "Barbell Row", "Overhead Press", "Deadl
 const filtered = computed(() => options.filter((name) => name.toLowerCase().includes(search.value.trim().toLowerCase())));
 </script>
 <template>
-  <BaseSheet :open="true" title="Add an exercise" description="Keep building your workout as you go." @close="emit('close')">
+  <BaseSheet open title="Add an exercise" description="Keep building your workout as you go." @close="emit('close')">
     <div class="sl-editor">
       <label class="sl-search">Find an exercise<input v-model="search" type="search" placeholder="Search exercises…" /></label>
       <p>Choose an exercise, then configure its sets, target reps and weight. The editable starting values are 3 × 8 at 20 kg.</p>

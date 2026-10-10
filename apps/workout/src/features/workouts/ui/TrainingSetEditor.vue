@@ -58,7 +58,7 @@ async function clear() {
       <SetRow
         :row="row"
         :busy="busy"
-        :current="true"
+        current
         :dirty="training.dirty(row)"
         :conflict="training.conflict(row)"
         @edit="(values) => forRow((id) => training.edit(id, values))"

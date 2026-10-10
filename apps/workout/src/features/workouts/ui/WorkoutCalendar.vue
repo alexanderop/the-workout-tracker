@@ -17,8 +17,8 @@ const { sessions, now } = defineProps<{
   sessions: readonly CompletedSession[];
   now: number;
 }>();
-defineSlots<{ default?: () => unknown }>();
 const emit = defineEmits<{ detail: [id: string] }>();
+defineSlots<{ default?: () => unknown }>();
 const today = computed(() => localDay(now));
 const sorted = computed(() =>
   [...sessions].sort((a, b) => a.finishedAt - b.finishedAt),

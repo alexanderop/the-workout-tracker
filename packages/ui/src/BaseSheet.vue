@@ -28,6 +28,7 @@ const emit = defineEmits<{
   close: [];
   "close-auto-focus": [event: Event];
 }>();
+defineSlots<{ default?: () => unknown }>();
 let opener: HTMLElement | null = null;
 watch(
   () => open,
@@ -133,7 +134,6 @@ onBeforeUnmount(() => {
   stopSwallowing?.();
   cancelAnimationFrame(settleFrame);
 });
-defineSlots<{ default?: () => unknown }>();
 </script>
 <template>
   <DialogRoot

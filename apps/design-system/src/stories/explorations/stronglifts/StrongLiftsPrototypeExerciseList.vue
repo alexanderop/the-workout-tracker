@@ -25,7 +25,7 @@ async function log(set: CircleSet, exercise: CircleExercise) {
       <header><h3>Completed</h3><span>{{ completed.length }} {{ completed.length === 1 ? 'exercise' : 'exercises' }}</span></header>
       <details v-for="exercise in completed" :key="exercise.name">
         <summary><span>✓ {{ exercise.name }}<small>{{ exercise.sets.length }} sets logged · {{ exercise.sets.reduce((sum, set) => sum + (set.reps ?? 0), 0) }} reps</small></span><span>Review</span></summary>
-        <StrongLiftsPrototypeExerciseListCircles :exercise="exercise" :editing="true" @weight="emit('weight', exercise)" @edit="(set, index) => emit('edit', set, index, exercise)" />
+        <StrongLiftsPrototypeExerciseListCircles :exercise="exercise" editing @weight="emit('weight', exercise)" @edit="(set, index) => emit('edit', set, index, exercise)" />
       </details>
       <p>All planned sets recorded, including missed reps. Open to correct or clear a set.</p>
     </section>

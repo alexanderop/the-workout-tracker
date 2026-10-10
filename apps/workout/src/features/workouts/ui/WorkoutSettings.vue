@@ -10,6 +10,7 @@ const { workspace } = defineProps<{
     "service" | "snapshot" | "saving" | "run" | "deleteAllData" | "importBackup"
   >;
 }>();
+defineSlots<{ default?: () => unknown }>();
 const { service, snapshot, saving, run, deleteAllData: deleteData, importBackup: importData } = workspace;
 const backupFile = ref<{ name: string; json: string; revision: number } | null>(
   null,
@@ -143,7 +144,6 @@ function changeRestDuration(event: Event) {
       },
     });
 }
-defineSlots<{ default?: () => unknown }>();
 </script>
 
 <template>

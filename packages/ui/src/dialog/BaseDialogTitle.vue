@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { DialogTitle, type DialogTitleProps, useForwardProps } from "reka-ui";
 const { ...props } = defineProps<DialogTitleProps>();
-const forwarded = useForwardProps(props);
 defineSlots<{ default?: () => unknown }>();
+const forwarded = useForwardProps(props);
 </script>
 <template>
   <DialogTitle

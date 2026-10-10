@@ -3,6 +3,7 @@ import { computed } from "vue";
 const { errors } = defineProps<{
   errors?: Array<string | { message: string | undefined } | undefined>;
 }>();
+defineSlots<{ default?: () => unknown }>();
 const messages = computed(() => [
   ...new Set(
     (errors ?? [])
@@ -10,7 +11,6 @@ const messages = computed(() => [
       .filter((message): message is string => Boolean(message)),
   ),
 ]);
-defineSlots<{ default?: () => unknown }>();
 </script>
 <template>
   <div

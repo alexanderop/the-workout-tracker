@@ -18,6 +18,14 @@ const { workspace, workoutsHref } = defineProps<{
   workspace: WorkoutWorkspace;
   workoutsHref: string;
 }>();
+const emit = defineEmits<{
+  finish: [];
+  pick: [];
+  options: [id: string];
+  confirm: [request: Confirmation];
+  navigate: [page: "workouts"];
+  back: [event: MouseEvent];
+}>();
 const {
   active,
   snapshot,
@@ -30,14 +38,6 @@ const {
   trainingMode,
   canFinish,
 } = workspace;
-const emit = defineEmits<{
-  finish: [];
-  pick: [];
-  options: [id: string];
-  confirm: [request: Confirmation];
-  navigate: [page: "workouts"];
-  back: [event: MouseEvent];
-}>();
 const { text: name, issue: nameIssue, dirty: nameDirty, conflict: nameConflict, save: rename, keepMine, useSaved } = workspace.workoutName;
 const renameOpen = ref(false);
 async function closeRename() {
