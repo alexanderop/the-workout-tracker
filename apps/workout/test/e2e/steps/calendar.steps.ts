@@ -37,7 +37,8 @@ When("I select today in my training rhythm", async ({ page }) => {
   await page
     .getByRole("group", { name: "Past 7 days" })
     .getByRole("button", {
-      name: "Monday, October 5, 2026, 2 completed workouts",
+      name: "Mon 5, Monday, October 5, 2026, 2 completed workouts",
+      exact: true,
     })
     .click();
 });
@@ -52,10 +53,10 @@ Then("the calendar lists both of today's workouts", async ({ page }) => {
     }),
   ).toBeFocused();
   await expect(
-    calendar.getByRole("button", { name: "Morning strength 60 min · 1 sets" }),
+    calendar.getByRole("button", { name: "Morning strength 60 min · 1 set" }),
   ).toBeVisible();
   await expect(
-    calendar.getByRole("button", { name: "Evening strength 60 min · 1 sets" }),
+    calendar.getByRole("button", { name: "Evening strength 60 min · 1 set" }),
   ).toBeVisible();
   await expect(
     calendar.getByRole("button", { name: "Next month" }),
@@ -64,7 +65,7 @@ Then("the calendar lists both of today's workouts", async ({ page }) => {
 When("I open {string} from the calendar", async ({ page }, name: string) => {
   await page
     .getByRole("dialog", { name: "Training calendar", exact: true })
-    .getByRole("button", { name: `${name} 60 min · 1 sets` })
+    .getByRole("button", { name: `${name} 60 min · 1 set` })
     .click();
 });
 Then("its review offers repeating and saving a template", async ({ page }) => {

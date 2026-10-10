@@ -174,7 +174,7 @@ When(
       .fill("Bench press");
     await page.getByRole("button", { name: /^Bench press Chest/ }).click();
     await page
-      .getByRole("button", { name: "Add 1 exercises", exact: true })
+      .getByRole("button", { name: "Add 1 exercise", exact: true })
       .click();
     await page
       .getByRole("button", { name: "Save template", exact: true })
