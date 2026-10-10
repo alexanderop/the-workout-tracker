@@ -52,13 +52,10 @@ When("I accept the update", async ({ page, request }) => {
   await new UpdatesPage(page, request).accept();
 });
 
-When(
-  "another tab activates version 2",
-  async ({ page, request, tabs }) => {
-    const other = await new UpdatesPage(page, request).activateFromAnotherTab();
-    tabs.remember(other);
-  },
-);
+When("another tab activates version 2", async ({ page, request, tabs }) => {
+  const other = await new UpdatesPage(page, request).activateFromAnotherTab();
+  tabs.remember(other);
+});
 
 Given(
   "a second tab shows the workouts without an active workout",
@@ -103,19 +100,19 @@ Then(
   },
 );
 
-Then(
-  "the template {string} is still open",
-  async ({ page }, name: string) => {
-    await expect(
-      page
-        .getByRole("dialog", { name: "Create template", exact: true })
-        .getByRole("textbox", { name: "Template name", exact: true }),
-    ).toHaveValue(name);
-  },
-);
+Then("the template {string} is still open", async ({ page }, name: string) => {
+  await expect(
+    page
+      .getByRole("dialog", { name: "Create template", exact: true })
+      .getByRole("textbox", { name: "Template name", exact: true }),
+  ).toHaveValue(name);
+});
 
 When("I open Settings in this tab", async ({ page }) => {
-  await page.getByRole("link", { name: "Settings", exact: true }).first().click();
+  await page
+    .getByRole("link", { name: "Settings", exact: true })
+    .first()
+    .click();
 });
 
 Then(
@@ -127,14 +124,14 @@ Then(
   },
 );
 
-When("I close the templates",async ({ page }) => {
+When("I close the templates", async ({ page }) => {
   await page
     .getByRole("dialog", { name: "Templates", exact: true })
     .getByRole("button", { name: "Close dialog", exact: true })
     .click();
 });
 
-Then("this tab offers a reload",async ({ page, request }) => {
+Then("this tab offers a reload", async ({ page, request }) => {
   await new UpdatesPage(page, request).expectReloadOffered();
 });
 

@@ -1,12 +1,12 @@
-import { enCommon } from "./en/common"
-import { enShell } from "./en/shell"
-import { enWorkouts } from "./en/workouts"
-import { enExercises } from "./en/exercises"
-import { enProgress } from "./en/progress"
-import { enTraining } from "./en/training"
-import { enDialogs } from "./en/dialogs"
-import { enSettings } from "./en/settings"
-import { enErrors } from "./en/errors"
+import { enCommon } from "./en/common";
+import { enShell } from "./en/shell";
+import { enWorkouts } from "./en/workouts";
+import { enExercises } from "./en/exercises";
+import { enProgress } from "./en/progress";
+import { enTraining } from "./en/training";
+import { enDialogs } from "./en/dialogs";
+import { enSettings } from "./en/settings";
+import { enErrors } from "./en/errors";
 
 // The source catalog. Its literal text types the arguments of each key, and
 // `Catalog` in ./index.ts makes every other locale match it key for key.
@@ -21,4 +21,4 @@ export const en = {
   dialogs: enDialogs,
   settings: enSettings,
   errors: enErrors,
-} as const
+} as const;

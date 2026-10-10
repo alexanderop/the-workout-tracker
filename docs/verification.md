@@ -4,12 +4,12 @@ What each automated check proves, how to run it, and what it does not claim. Com
 
 ## Commands
 
-| Command | Result on the recorded run |
-| --- | --- |
-| `pnpm verify` | Type checking, linting, architecture, boundary and dead-code checks passed |
-| `pnpm test:unit` | 80 shared UI tests and 161 workout tests passed, above the coverage thresholds |
-| `pnpm test:browser` | 44 shared UI tests and 32 workout tests passed in Chrome |
-| `pnpm test:e2e` | 70 journeys passed: 61 in desktop Chrome, 3 in Pixel 7 Chrome, 6 service-worker update journeys |
+| Command             | Result on the recorded run                                                                      |
+| ------------------- | ----------------------------------------------------------------------------------------------- |
+| `pnpm verify`       | Type checking, linting, architecture, boundary and dead-code checks passed                      |
+| `pnpm test:unit`    | 80 shared UI tests and 161 workout tests passed, above the coverage thresholds                  |
+| `pnpm test:browser` | 44 shared UI tests and 32 workout tests passed in Chrome                                        |
+| `pnpm test:e2e`     | 70 journeys passed: 61 in desktop Chrome, 3 in Pixel 7 Chrome, 6 service-worker update journeys |
 
 The recorded run was on macOS with Google Chrome. The e2e suite also passed with `--repeat-each 3` (207 runs, no failures), which is the check for flaky journeys; the suite itself does not retry.
 

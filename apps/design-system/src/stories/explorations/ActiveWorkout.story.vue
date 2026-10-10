@@ -5,13 +5,16 @@ import ActiveWorkoutConcept from "./active-workout/ActiveWorkoutConcept.vue";
 
 <template>
   <Story title="06 Explorations/Active workout explorations">
-    <Variant title="A · Focus" :meta="{ wrapper: false }"><ExplorationNotice />
+    <Variant title="A · Focus" :meta="{ wrapper: false }"
+      ><ExplorationNotice />
       <ActiveWorkoutConcept mode="focus" />
     </Variant>
-    <Variant title="B · Overview" :meta="{ wrapper: false }"><ExplorationNotice />
+    <Variant title="B · Overview" :meta="{ wrapper: false }"
+      ><ExplorationNotice />
       <ActiveWorkoutConcept mode="overview" />
     </Variant>
-    <Variant title="C · Rhythm" :meta="{ wrapper: false }"><ExplorationNotice />
+    <Variant title="C · Rhythm" :meta="{ wrapper: false }"
+      ><ExplorationNotice />
       <ActiveWorkoutConcept mode="rhythm" />
     </Variant>
   </Story>

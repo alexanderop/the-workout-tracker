@@ -158,7 +158,9 @@ describe("validNumber", () => {
 
 describe("replaceNumber", () => {
   it("should accept a pasted decimal comma or point alike", () => {
-    expect(replaceNumber("42,5", weight)).toEqual(replaceNumber("42.5", weight));
+    expect(replaceNumber("42,5", weight)).toEqual(
+      replaceNumber("42.5", weight),
+    );
     expect(replaceNumber("42,5", weight)).toEqual({
       text: "42.5",
       fresh: false,

@@ -15,7 +15,9 @@ function close() {
 
 <template>
   <main>
-    <BaseButton type="button" @click="open = true">Template settings</BaseButton>
+    <BaseButton type="button" @click="open = true"
+      >Template settings</BaseButton
+    >
     <BaseSheet
       :open="open"
       title="Template settings"

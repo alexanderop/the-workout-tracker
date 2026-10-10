@@ -17,7 +17,14 @@ const { workspace } = defineProps<{
 }>();
 defineSlots<{ default?: () => unknown }>();
 const { t } = useTranslation();
-const { service, snapshot, saving, run, deleteAllData: deleteData, importBackup: importData } = workspace;
+const {
+  service,
+  snapshot,
+  saving,
+  run,
+  deleteAllData: deleteData,
+  importBackup: importData,
+} = workspace;
 const backupFile = ref<{ name: string; json: string; revision: number } | null>(
   null,
 );
@@ -171,41 +178,43 @@ function changeRestDuration(event: Event) {
       <section class="settings-section">
         <h2>{{ t("settings.training.title") }}</h2>
         <div class="settings-rows">
-        <label class="settings-row"
-          ><span
-            >{{ t("settings.training.autoRest.label")
-            }}<small>{{ t("settings.training.autoRest.hint") }}</small></span
-          ><BaseSwitch
-            :aria-label="t('settings.training.autoRest.label')"
-            :model-value="snapshot.settings.autoRest"
-            :disabled="saving"
-            @update:model-value="changeAutoRest" /></label
-        ><label class="settings-row"
-          ><span
-            >{{ t("settings.training.restDuration.label")
-            }}<small>{{ t("settings.training.restDuration.hint") }}</small></span
-          ><BaseSelectNative
-            class="input rest-select"
-            :aria-label="t('settings.training.restDuration.ariaLabel')"
-            :model-value="snapshot.settings.restSeconds"
-            :disabled="saving"
-            @change="changeRestDuration"
-          >
-            <option
-              v-for="seconds in [30, 60, 90, 120, 180, 300]"
-              :key="seconds"
-              :value="seconds"
+          <label class="settings-row"
+            ><span
+              >{{ t("settings.training.autoRest.label")
+              }}<small>{{ t("settings.training.autoRest.hint") }}</small></span
+            ><BaseSwitch
+              :aria-label="t('settings.training.autoRest.label')"
+              :model-value="snapshot.settings.autoRest"
+              :disabled="saving"
+              @update:model-value="changeAutoRest" /></label
+          ><label class="settings-row"
+            ><span
+              >{{ t("settings.training.restDuration.label")
+              }}<small>{{
+                t("settings.training.restDuration.hint")
+              }}</small></span
+            ><BaseSelectNative
+              class="input rest-select"
+              :aria-label="t('settings.training.restDuration.ariaLabel')"
+              :model-value="snapshot.settings.restSeconds"
+              :disabled="saving"
+              @change="changeRestDuration"
             >
-              {{ t("settings.training.restDuration.option", { seconds }) }}
-            </option>
-          </BaseSelectNative></label
-        >
-        <div class="settings-row">
-          <span>{{ t("settings.training.weightUnit.label") }}</span
-          ><span class="muted">{{
-            t("settings.training.weightUnit.value")
-          }}</span>
-        </div>
+              <option
+                v-for="seconds in [30, 60, 90, 120, 180, 300]"
+                :key="seconds"
+                :value="seconds"
+              >
+                {{ t("settings.training.restDuration.option", { seconds }) }}
+              </option>
+            </BaseSelectNative></label
+          >
+          <div class="settings-row">
+            <span>{{ t("settings.training.weightUnit.label") }}</span
+            ><span class="muted">{{
+              t("settings.training.weightUnit.value")
+            }}</span>
+          </div>
         </div>
       </section>
       <section class="settings-section">
@@ -220,7 +229,9 @@ function changeRestDuration(event: Event) {
             :disabled="backupBusy || saving"
             @click="exportBackup"
           >
-            <ArrowDownToLine :size="17" />{{ t("settings.backup.export") }}</BaseButton
+            <ArrowDownToLine :size="17" />{{
+              t("settings.backup.export")
+            }}</BaseButton
           ><BaseButton
             unstyled
             class="btn secondary"
@@ -314,7 +325,9 @@ function changeRestDuration(event: Event) {
         @click="deleteAllData"
       >
         {{
-          saving ? t("settings.deleteData.deleting") : t("settings.deleteData.button")
+          saving
+            ? t("settings.deleteData.deleting")
+            : t("settings.deleteData.button")
         }}
       </BaseButton>
     </div>

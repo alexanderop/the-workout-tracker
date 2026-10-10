@@ -32,7 +32,8 @@ function confirmDeletion() {
           ><BaseFieldLegend>Workout</BaseFieldLegend
           ><BaseFieldGroup
             ><BaseField orientation="horizontal"
-              ><BaseFieldLabel for="settings-auto">Automatic timer</BaseFieldLabel
+              ><BaseFieldLabel for="settings-auto"
+                >Automatic timer</BaseFieldLabel
               ><BaseSwitch id="settings-auto" v-model="autoRest" /></BaseField
             ><BaseFieldDescription
               >Starts the rest timer after you log a set.</BaseFieldDescription

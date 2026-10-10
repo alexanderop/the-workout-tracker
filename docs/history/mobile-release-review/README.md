@@ -4,18 +4,18 @@ This records observed results for the mobile review and fixes based on `0e9b7a5`
 
 ## Ten findings addressed
 
-| Finding | Delivered change |
-| --- | --- |
-| Numeric confirmation clipped on short phones | Fixed header/footer with a scrolling body; compact 44px keypad at 320 × 568. |
-| No way to correct completed workouts | Edit name and logged weight/reps together, preserving identity, dates and unlogged work. |
-| Repeated log activation undoes a set | Stable Logged state; explicit Undo log in set options. |
-| Retained draft and applied values sound identical | Finish names affected sets and explains Apply input values does not log them. |
-| Next is informational only | Action selects, reveals and focuses the first unfinished set. |
-| Add set is buried | Inline action below rows selects the newly created set. |
-| Set count lacks a visible label | Number of sets label in configuration. |
-| Configuration save is too small | Minimum 44px mobile button height regardless of pointer type. |
-| Search hides selected exercise identity | Removable selection tray resolves against the full catalog. |
-| Active filters show only a count | Individually removable equipment, muscle-group and custom filter chips. |
+| Finding                                           | Delivered change                                                                         |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Numeric confirmation clipped on short phones      | Fixed header/footer with a scrolling body; compact 44px keypad at 320 × 568.             |
+| No way to correct completed workouts              | Edit name and logged weight/reps together, preserving identity, dates and unlogged work. |
+| Repeated log activation undoes a set              | Stable Logged state; explicit Undo log in set options.                                   |
+| Retained draft and applied values sound identical | Finish names affected sets and explains Apply input values does not log them.            |
+| Next is informational only                        | Action selects, reveals and focuses the first unfinished set.                            |
+| Add set is buried                                 | Inline action below rows selects the newly created set.                                  |
+| Set count lacks a visible label                   | Number of sets label in configuration.                                                   |
+| Configuration save is too small                   | Minimum 44px mobile button height regardless of pointer type.                            |
+| Search hides selected exercise identity           | Removable selection tray resolves against the full catalog.                              |
+| Active filters show only a count                  | Individually removable equipment, muscle-group and custom filter chips.                  |
 
 Completed corrections use a narrow atomic command with a captured revision. Concurrent changes retain local input and require explicit reload. Cancel, Escape, Back and native unload preserve editing intent; Back is blocked while a numeric keypad is open. No storage migration or new dependency was added.
 

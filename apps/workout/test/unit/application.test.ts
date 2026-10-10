@@ -1,7 +1,11 @@
 import { Result } from "@form/result";
 import { describe, expect, it } from "vitest";
 import { createWorkouts } from "../../src/features/workouts/application";
-import { DraftStorageFailed, StorageUnavailable, type Snapshot } from "../../src/features/workouts/domain";
+import {
+  DraftStorageFailed,
+  StorageUnavailable,
+  type Snapshot,
+} from "../../src/features/workouts/domain";
 import { createWorkoutFactory, FIXED_NOW } from "../support/factories";
 import { errorTag, failure, success } from "../support/results";
 import {
@@ -117,7 +121,12 @@ describe("workout application", () => {
   it("does not overwrite a change made after the caller's reviewed revision", async () => {
     const { app, memory } = setup();
     expect(
-      (await app.execute({ type: "start-selected", exerciseIds: ["bench-press"] }, 0)).isOk(),
+      (
+        await app.execute(
+          { type: "start-selected", exerciseIds: ["bench-press"] },
+          0,
+        )
+      ).isOk(),
     ).toBe(true);
     const stale = await app.execute(
       { type: "settings", settings: { restSeconds: 30, autoRest: false } },
@@ -136,23 +145,49 @@ describe("workout application", () => {
 
   it("commits exactly one complete workout when starts compete", async () => {
     const { app, memory } = setup();
-    const command = { type: "start-selected" as const, exerciseIds: ["bench-press", "squat"] };
-    const results = await Promise.all([app.execute(command, 0), app.execute(command, 0)]);
-    expect(results.map((result) => errorTag(result) ?? "saved").sort()).toEqual(["Conflict", "saved"]);
+    const command = {
+      type: "start-selected" as const,
+      exerciseIds: ["bench-press", "squat"],
+    };
+    const results = await Promise.all([
+      app.execute(command, 0),
+      app.execute(command, 0),
+    ]);
+    expect(results.map((result) => errorTag(result) ?? "saved").sort()).toEqual(
+      ["Conflict", "saved"],
+    );
     expect(memory.current().revision).toBe(1);
-    expect(memory.current().active?.exercises.map((exercise) => exercise.exerciseId)).toEqual(["bench-press", "squat"]);
+    expect(
+      memory.current().active?.exercises.map((exercise) => exercise.exerciseId),
+    ).toEqual(["bench-press", "squat"]);
     const sets = memory.current().active?.exercises[0]?.sets;
     expect(sets).toHaveLength(1);
-    expect(sets?.[0]).toMatchObject({ weightKg: 0, reps: 8, targetReps: 8, completed: false });
+    expect(sets?.[0]).toMatchObject({
+      weightKg: 0,
+      reps: 8,
+      targetReps: 8,
+      completed: false,
+    });
   });
 
   it("leaves no partial workout when selected creation cannot save", async () => {
     const { dependencies, memory } = setup();
-    const app = createWorkouts({ ...dependencies, storage: {
-      ...dependencies.storage,
-      compareAndSave: () => Promise.resolve(Result.err(new StorageUnavailable())),
-    } });
-    expect(errorTag(await app.execute({ type: "start-selected", exerciseIds: ["bench-press"] }, 0))).toBe("StorageUnavailable");
+    const app = createWorkouts({
+      ...dependencies,
+      storage: {
+        ...dependencies.storage,
+        compareAndSave: () =>
+          Promise.resolve(Result.err(new StorageUnavailable())),
+      },
+    });
+    expect(
+      errorTag(
+        await app.execute(
+          { type: "start-selected", exerciseIds: ["bench-press"] },
+          0,
+        ),
+      ),
+    ).toBe("StorageUnavailable");
     expect(memory.current().active).toBeNull();
     expect(memory.current().revision).toBe(0);
   });
@@ -237,7 +272,9 @@ describe("workout application", () => {
   it("merges an active workout whose identity names an inherited object property", async () => {
     const factory = createWorkoutFactory("inherited");
     const completed = factory.completedSession();
-    const local = factory.snapshot({ completed: { [completed.id]: completed } });
+    const local = factory.snapshot({
+      completed: { [completed.id]: completed },
+    });
     const active = factory.activeSession({ id: "toString" });
     const backup = JSON.stringify({
       format: "form-workout",
@@ -255,21 +292,28 @@ describe("workout application", () => {
     const { dependencies, memory, drafts } = setup(
       factory.snapshot({ active, revision: 4 }),
     );
-    const retainedDraft = success(dependencies.journal.write({
-      sessionId: active.id,
-      setId: active.exercises[0]!.sets[0]!.id,
-      weight: "60",
-      reps: "8",
-      revision: 4,
-      base: { weightKg: 40, reps: 8, targetReps: 8, completed: false },
-    }));
+    const retainedDraft = success(
+      dependencies.journal.write({
+        sessionId: active.id,
+        setId: active.exercises[0]!.sets[0]!.id,
+        weight: "60",
+        reps: "8",
+        revision: 4,
+        base: { weightKg: 40, reps: 8, targetReps: 8, completed: false },
+      }),
+    );
     let cleanupAvailable = false;
     const app = createWorkouts({
       ...dependencies,
       journal: {
         ...dependencies.journal,
         clearBefore(revision) {
-          if (!cleanupAvailable) return Result.err(new DraftStorageFailed({ cause: new Error("Draft storage unavailable") }));
+          if (!cleanupAvailable)
+            return Result.err(
+              new DraftStorageFailed({
+                cause: new Error("Draft storage unavailable"),
+              }),
+            );
           return dependencies.journal.clearBefore(revision);
         },
       },
@@ -359,7 +403,10 @@ describe("given a storage write that throws", () => {
 
   it("carries the rule code of a rejected change", async () => {
     const { app } = setup();
-    const result = await app.execute({ type: "finish", sessionId: "missing" }, 0);
+    const result = await app.execute(
+      { type: "finish", sessionId: "missing" },
+      0,
+    );
     expect(failure(result)).toMatchObject({
       _tag: "InvalidChange",
       code: "noLongerActive",

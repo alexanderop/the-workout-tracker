@@ -10,9 +10,7 @@ const { entries, dismiss } = defineProps<{
 const { t } = useTranslation();
 const issue = ref("");
 function dismissAll() {
-  issue.value = dismiss()
-    ? ""
-    : t("training.detached.cannotClear");
+  issue.value = dismiss() ? "" : t("training.detached.cannotClear");
 }
 </script>
 <template>
@@ -36,9 +34,9 @@ function dismissAll() {
     </ul>
     <p class="muted">{{ t("training.detached.hint") }}</p>
     <p v-if="issue" class="field-error" role="alert">{{ issue }}</p>
-    <BaseButton size="sm" variant="secondary" @click="dismissAll"
-      >{{ t("training.detached.dismiss") }}</BaseButton
-    >
+    <BaseButton size="sm" variant="secondary" @click="dismissAll">{{
+      t("training.detached.dismiss")
+    }}</BaseButton>
   </aside>
 </template>
 <style scoped>

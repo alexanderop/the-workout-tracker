@@ -15,10 +15,7 @@ type NameRecovery = DetachedNameDraft &
   ({ state: "ready" | "conflict"; savedName: string } | { state: "missing" });
 
 export function useWorkoutName(
-  workspace: Pick<
-    ReturnType<typeof useWorkouts>,
-    "snapshot" | "run"
-  > & {
+  workspace: Pick<ReturnType<typeof useWorkouts>, "snapshot" | "run"> & {
     saving: Readonly<Ref<boolean>>;
     active: Readonly<Ref<ActiveSession | null>>;
     t: Translate;
@@ -189,7 +186,9 @@ export function useWorkoutName(
       return;
     }
     const snapshot = workspace.snapshot.value;
-    const recovery = recoveries.value.find((entry) => entry.sessionId === sessionId);
+    const recovery = recoveries.value.find(
+      (entry) => entry.sessionId === sessionId,
+    );
     if (!snapshot || !recovery || recovery.state === "missing") return;
     if (workspace.saving.value || recovering.value) return;
     if (action === "save" && recovery.state === "conflict") return;

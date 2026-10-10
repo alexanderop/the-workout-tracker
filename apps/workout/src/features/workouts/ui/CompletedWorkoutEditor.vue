@@ -19,7 +19,11 @@ const { draft, baseline, dirty, pending, state, localError } = editor;
 const rows = computed(
   () => new Map(draft.value.sets.map((set) => [set.setId, set])),
 );
-function updateSet(id: string, field: "weightKg" | "reps", value: string | number) {
+function updateSet(
+  id: string,
+  field: "weightKg" | "reps",
+  value: string | number,
+) {
   const row = rows.value.get(id);
   if (row) row[field] = value;
 }
@@ -192,7 +196,9 @@ defineExpose({ requestClose, requestLeave });
           >{{ t("dialogs.actions.cancel") }}</BaseButton
         >
         <BaseButton type="submit" :disabled="pending || state !== 'ready'">{{
-          pending ? t("dialogs.actions.saving") : t("dialogs.completedEditor.save")
+          pending
+            ? t("dialogs.actions.saving")
+            : t("dialogs.completedEditor.save")
         }}</BaseButton>
       </div>
     </form>
@@ -208,9 +214,9 @@ defineExpose({ requestClose, requestLeave });
     @close="keepEditing"
   >
     <div class="form-actions">
-      <BaseButton variant="secondary" @click="keepEditing"
-        >{{ t("dialogs.actions.keepEditing") }}</BaseButton
-      >
+      <BaseButton variant="secondary" @click="keepEditing">{{
+        t("dialogs.actions.keepEditing")
+      }}</BaseButton>
       <BaseButton :disabled="pending" @click="discard">{{
         discardIntent === "reload"
           ? t("dialogs.completedEditor.discardAndReload")

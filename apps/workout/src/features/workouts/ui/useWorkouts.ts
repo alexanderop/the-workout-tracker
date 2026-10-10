@@ -112,7 +112,9 @@ export function useWorkouts(service: Workouts, t: Translate) {
     saving.value = true;
     try {
       const result = await task();
-      const reported = result.isOk() ? result.value : reportedSnapshot(result.error);
+      const reported = result.isOk()
+        ? result.value
+        : reportedSnapshot(result.error);
       if (reported) state.value = { kind: "ready", snapshot: reported };
       return result;
     } finally {

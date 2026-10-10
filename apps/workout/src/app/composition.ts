@@ -1,6 +1,10 @@
 import { readStorage, writeStorage } from "@form/composables";
 import { z } from "zod";
-import { createWorkouts, initialSnapshot, type DraftJournal } from "../features/workouts";
+import {
+  createWorkouts,
+  initialSnapshot,
+  type DraftJournal,
+} from "../features/workouts";
 import {
   openDexieWorkoutStorage,
   createDraftJournal,

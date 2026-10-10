@@ -14,15 +14,21 @@ export class EditSafetyPage {
   async editName(name: string) {
     // Rename starts closed on every page load; each caller opens it once.
     await expect(this.name()).toHaveCount(0);
-    await this.page.getByRole("button", { name: "Rename workout", exact: true }).click();
+    await this.page
+      .getByRole("button", { name: "Rename workout", exact: true })
+      .click();
     await this.name().fill(name);
   }
   async saveName() {
     await this.page
       .getByRole("button", { name: "Save name", exact: true })
       .click();
-    await expect(this.page.getByRole("button", { name: "Save name", exact: true })).toHaveCount(0);
-    await expect(this.page.getByRole("button", { name: "Rename workout", exact: true })).toBeVisible();
+    await expect(
+      this.page.getByRole("button", { name: "Save name", exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      this.page.getByRole("button", { name: "Rename workout", exact: true }),
+    ).toBeVisible();
   }
   async logSet() {
     await this.page

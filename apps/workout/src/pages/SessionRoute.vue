@@ -8,7 +8,8 @@ import { useLinkNavigation } from "../app/useWorkoutNavigation";
 definePage({ name: "session", path: "/session" });
 const { workspace, dialogs, navigate, workoutsHref } = useWorkoutRouteContext();
 const prepareLinkNavigation = useLinkNavigation();
-const trainingPage = useTemplateRef<InstanceType<typeof TrainingPage>>("trainingPage");
+const trainingPage =
+  useTemplateRef<InstanceType<typeof TrainingPage>>("trainingPage");
 onBeforeRouteLeave(() => trainingPage.value?.requestLeave() ?? true);
 </script>
 

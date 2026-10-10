@@ -49,8 +49,11 @@ const formState = () =>
     replaceTargets.value,
     note.value,
   ]);
-const dirty = computed(() =>
-  !!exercise && (view.value === "note" || view.value === "configure") && formState() !== baseline.value,
+const dirty = computed(
+  () =>
+    !!exercise &&
+    (view.value === "note" || view.value === "configure") &&
+    formState() !== baseline.value,
 );
 useUnsavedChangesWarning(() => dirty.value);
 const minimum = computed(() =>
@@ -144,15 +147,20 @@ function settleExit(discard: boolean) {
   exitConfirmation.settle(discard);
 }
 function requestExit(kind: "close" | "leave"): Promise<boolean> {
-  if (workspace.saving.value || savePending.value) return Promise.resolve(false);
+  if (workspace.saving.value || savePending.value)
+    return Promise.resolve(false);
   if (!dirty.value && !dismiss.value) {
     if (kind === "close") emit("close");
     return Promise.resolve(true);
   }
   return exitConfirmation.request();
 }
-function close() { void requestExit("close"); }
-function requestLeave() { return requestExit("leave"); }
+function close() {
+  void requestExit("close");
+}
+function requestLeave() {
+  return requestExit("leave");
+}
 defineExpose({ requestLeave });
 const addedId = (priorIds: ReadonlySet<string>) =>
   workspace.active.value?.exercises.find((item) => !priorIds.has(item.id))?.id;
@@ -357,10 +365,7 @@ function saveReplacement() {
       >
         {{ t("training.config.keepEditing") }}
       </BaseButton>
-      <BaseButton
-        :disabled="workspace.saving.value"
-        @click="settleExit(true)"
-      >
+      <BaseButton :disabled="workspace.saving.value" @click="settleExit(true)">
         {{ t("training.config.discardAction") }}
       </BaseButton>
     </div>
@@ -375,10 +380,7 @@ function saveReplacement() {
       <BaseButton variant="secondary" @click="removalOpen = false">
         {{ t("training.config.cancel") }}
       </BaseButton>
-      <BaseButton
-        :disabled="workspace.saving.value"
-        @click="saveConfiguration"
-      >
+      <BaseButton :disabled="workspace.saving.value" @click="saveConfiguration">
         {{ t("training.config.removeSets") }}
       </BaseButton>
     </div>

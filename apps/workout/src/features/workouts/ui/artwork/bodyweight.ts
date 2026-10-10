@@ -30,7 +30,5 @@ export const bodyweightArtwork: Readonly<Record<string, ArtworkRows>> = {
     ["reverse-crunch", "Reverse crunch", reverseCrunch],
     ["dead-bug", "Dead bug", deadBug],
   ],
-  Other: [
-    ["ab-wheel-rollout", "Ab wheel rollout", abWheelRollout],
-  ],
+  Other: [["ab-wheel-rollout", "Ab wheel rollout", abWheelRollout]],
 };

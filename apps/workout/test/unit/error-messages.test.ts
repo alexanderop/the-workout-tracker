@@ -118,7 +118,9 @@ describe("rejection messages", () => {
   it("translates a rejection by its code, in each language", () => {
     for (const code of codes) {
       const error = invalidChange(code);
-      expect(describeFailure(error, t).message).toBe(en.errors.rejections[code]);
+      expect(describeFailure(error, t).message).toBe(
+        en.errors.rejections[code],
+      );
       expect(describeFailure(error, translator("de").t).message).toBe(
         de.errors.rejections[code],
       );
@@ -131,8 +133,10 @@ describe("rejection messages", () => {
 
   it("shows a raw schema message when no code is attached", () => {
     expect(
-      describeFailure(new InvalidChange({ message: "Name is required." }), translator("de").t)
-        .message,
+      describeFailure(
+        new InvalidChange({ message: "Name is required." }),
+        translator("de").t,
+      ).message,
     ).toBe("Name is required.");
   });
 });

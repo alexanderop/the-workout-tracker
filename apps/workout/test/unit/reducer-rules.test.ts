@@ -19,13 +19,19 @@ const ROUTINE = {
   exercises: [{ exerciseId: "bench-press", sets: [{ weightKg: 60, reps: 6 }] }],
 };
 
-function journal(exercises?: (factory: ReturnType<typeof createWorkoutFactory>) => SessionExercise[]) {
+function journal(
+  exercises?: (
+    factory: ReturnType<typeof createWorkoutFactory>,
+  ) => SessionExercise[],
+) {
   const factory = createWorkoutFactory("rules");
   const logged = factory.set({ completed: true });
   const planned = factory.set();
   const exercise = factory.sessionExercise({ sets: [logged, planned] });
   const active = factory.activeSession({
-    exercises: exercises ? exercises(factory) : [exercise, factory.sessionExercise()],
+    exercises: exercises
+      ? exercises(factory)
+      : [exercise, factory.sessionExercise()],
   });
   const completed = factory.completedSession();
   const snapshot = factory.snapshot({
@@ -36,7 +42,17 @@ function journal(exercises?: (factory: ReturnType<typeof createWorkoutFactory>) 
   const run = (state: Snapshot, command: Command, at = FIXED_NOW): Transition =>
     reduceWorkout(state, command, { at, id: factory.id });
   const target = { sessionId: active.id, exerciseId: exercise.id };
-  return { factory, snapshot, active, completed, exercise, logged, planned, target, run };
+  return {
+    factory,
+    snapshot,
+    active,
+    completed,
+    exercise,
+    logged,
+    planned,
+    target,
+    run,
+  };
 }
 
 function rejection(transition: Transition): string | undefined {
@@ -49,7 +65,8 @@ function rejection(transition: Transition): string | undefined {
 }
 
 function changedSnapshot(transition: Transition): Snapshot {
-  if (transition.kind !== "changed") throw new Error(`Expected a change, got ${transition.kind}.`);
+  if (transition.kind !== "changed")
+    throw new Error(`Expected a change, got ${transition.kind}.`);
   return transition.snapshot;
 }
 
@@ -71,7 +88,9 @@ describe("given an active workout", () => {
     const { factory, run } = journal();
     const only = factory.set();
     const exercise = factory.sessionExercise({ sets: [only] });
-    const active = factory.activeSession({ exercises: [exercise, factory.sessionExercise()] });
+    const active = factory.activeSession({
+      exercises: [exercise, factory.sessionExercise()],
+    });
     const result = run(factory.snapshot({ active }), {
       type: "remove-set",
       sessionId: active.id,
@@ -84,7 +103,10 @@ describe("given an active workout", () => {
   it("should refuse a set count below the logged work", () => {
     const { factory, run } = journal();
     const exercise = factory.sessionExercise({
-      sets: [factory.set({ completed: true }), factory.set({ completed: true })],
+      sets: [
+        factory.set({ completed: true }),
+        factory.set({ completed: true }),
+      ],
     });
     const active = factory.activeSession({ exercises: [exercise] });
     const result = run(factory.snapshot({ active }), {
@@ -107,7 +129,9 @@ describe("given an active workout", () => {
       weightKg: 40,
       reps: 0,
     });
-    expect(rejection(result)).toBe("Planned sets need at least one target repetition.");
+    expect(rejection(result)).toBe(
+      "Planned sets need at least one target repetition.",
+    );
   });
 
   it("should refuse to remove its last exercise and suggest discarding instead", () => {
@@ -128,15 +152,23 @@ describe("given an active workout", () => {
 
   it("should remove an exercise while others remain", () => {
     const { snapshot, target, run } = journal();
-    const next = changedSnapshot(run(snapshot, { type: "remove-exercise", ...target }));
-    expect(next.active?.exercises.map((row) => row.id)).not.toContain(target.exerciseId);
+    const next = changedSnapshot(
+      run(snapshot, { type: "remove-exercise", ...target }),
+    );
+    expect(next.active?.exercises.map((row) => row.id)).not.toContain(
+      target.exerciseId,
+    );
     expect(next.active?.exercises).toHaveLength(1);
   });
 
   it("should finish at its start time when the clock reads earlier", () => {
     const { snapshot, active, run } = journal();
     const next = changedSnapshot(
-      run(snapshot, { type: "finish", sessionId: active.id }, active.startedAt - 60_000),
+      run(
+        snapshot,
+        { type: "finish", sessionId: active.id },
+        active.startedAt - 60_000,
+      ),
     );
     expect(next.active).toBeNull();
     expect(next.completed[active.id]?.finishedAt).toBe(active.startedAt);
@@ -144,14 +176,16 @@ describe("given an active workout", () => {
 
   it("should treat finishing an already completed workout as unchanged", () => {
     const { snapshot, active, run } = journal();
-    const finished = changedSnapshot(run(snapshot, { type: "finish", sessionId: active.id }));
+    const finished = changedSnapshot(
+      run(snapshot, { type: "finish", sessionId: active.id }),
+    );
     expect(run(finished, { type: "finish", sessionId: active.id })).toEqual({
       kind: "unchanged",
       snapshot: finished,
     });
-    expect(rejection(run(finished, { type: "finish", sessionId: "missing" }))).toBe(
-      "This workout is no longer active.",
-    );
+    expect(
+      rejection(run(finished, { type: "finish", sessionId: "missing" })),
+    ).toBe("This workout is no longer active.");
   });
 });
 
@@ -177,11 +211,19 @@ describe("given the 50-exercise limit", () => {
       ),
     ).toBe(message);
     const fifty = changedSnapshot(
-      run(snapshot, { type: "add-exercise", sessionId: active.id, exerciseId: OTHER_EXERCISE_ID }),
+      run(snapshot, {
+        type: "add-exercise",
+        sessionId: active.id,
+        exerciseId: OTHER_EXERCISE_ID,
+      }),
     );
     expect(
       rejection(
-        run(fifty, { type: "add-exercise", sessionId: active.id, exerciseId: OTHER_EXERCISE_ID }),
+        run(fifty, {
+          type: "add-exercise",
+          sessionId: active.id,
+          exerciseId: OTHER_EXERCISE_ID,
+        }),
       ),
     ).toBe(message);
   });
@@ -207,29 +249,51 @@ describe("given identifiers that name inherited object properties", () => {
     expect(rejection(run(idle, { type: "start", routineId: "toString" }))).toBe(
       "Routine was not found.",
     );
-    expect(rejection(run(idle, { type: "start-selected", exerciseIds: ["valueOf"] }))).toBe(
-      "Exercise was not found.",
-    );
-    expect(rejection(run(idle, { type: "repeat", completedId: "hasOwnProperty" }))).toBe(
-      "Workout was not found.",
-    );
-    expect(
-      rejection(run(idle, { type: "rename-completed", sessionId: "toString", name: "Renamed" })),
-    ).toBe("This completed workout was not found.");
-    expect(
-      rejection(run(idle, { type: "correct-completed", sessionId: "toString", sets: [] })),
-    ).toBe("This completed workout was not found.");
-    expect(rejection(run(idle, { type: "finish", sessionId: "toString" }))).toBe(
-      "This workout is no longer active.",
-    );
     expect(
       rejection(
-        run(snapshot, { type: "replace-exercise", ...target, replacementExerciseId: "toString" }),
+        run(idle, { type: "start-selected", exerciseIds: ["valueOf"] }),
+      ),
+    ).toBe("Exercise was not found.");
+    expect(
+      rejection(run(idle, { type: "repeat", completedId: "hasOwnProperty" })),
+    ).toBe("Workout was not found.");
+    expect(
+      rejection(
+        run(idle, {
+          type: "rename-completed",
+          sessionId: "toString",
+          name: "Renamed",
+        }),
+      ),
+    ).toBe("This completed workout was not found.");
+    expect(
+      rejection(
+        run(idle, {
+          type: "correct-completed",
+          sessionId: "toString",
+          sets: [],
+        }),
+      ),
+    ).toBe("This completed workout was not found.");
+    expect(
+      rejection(run(idle, { type: "finish", sessionId: "toString" })),
+    ).toBe("This workout is no longer active.");
+    expect(
+      rejection(
+        run(snapshot, {
+          type: "replace-exercise",
+          ...target,
+          replacementExerciseId: "toString",
+        }),
       ),
     ).toBe("Exercise was not found.");
     expect(
       rejection(
-        run(snapshot, { type: "add-exercise", sessionId: target.sessionId, exerciseId: "toString" }),
+        run(snapshot, {
+          type: "add-exercise",
+          sessionId: target.sessionId,
+          exerciseId: "toString",
+        }),
       ),
     ).toBe("Exercise was not found.");
   });
@@ -251,7 +315,12 @@ describe("given identifiers that name inherited object properties", () => {
     const unknownRoutine = {
       ...base,
       routines: {
-        press: { ...ROUTINE, exercises: [{ exerciseId: "toString", sets: [{ weightKg: 60, reps: 6 }] }] },
+        press: {
+          ...ROUTINE,
+          exercises: [
+            { exerciseId: "toString", sets: [{ weightKg: 60, reps: 6 }] },
+          ],
+        },
       },
     };
     expect(snapshotSchema.safeParse(unknownRoutine).success).toBe(false);
@@ -262,7 +331,10 @@ describe("given identifiers that name inherited object properties", () => {
       }),
     };
     expect(snapshotSchema.safeParse(unknownExercise).success).toBe(false);
-    const inheritedName = { ...base, active: factory.activeSession({ id: "toString" }) };
+    const inheritedName = {
+      ...base,
+      active: factory.activeSession({ id: "toString" }),
+    };
     expect(snapshotSchema.safeParse(inheritedName).success).toBe(true);
   });
 });

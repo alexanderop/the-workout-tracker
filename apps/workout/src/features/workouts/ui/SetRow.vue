@@ -154,9 +154,9 @@ defineExpose({
             :size="19"
           />
         </BaseFeedback>
-        <span v-if="row.set.completed && !dirty" class="set-logged-label"
-          >{{ t("training.setRow.logged") }}</span
-        >
+        <span v-if="row.set.completed && !dirty" class="set-logged-label">{{
+          t("training.setRow.logged")
+        }}</span>
       </BaseButton>
       <BaseButtonIcon
         type="button"
@@ -230,7 +230,7 @@ defineExpose({
   </form>
   <BaseSheet
     :open="discardOpen"
-:title="t('training.discardInput.title')"
+    :title="t('training.discardInput.title')"
     :description="t('training.discardInput.description')"
     @close="discardOpen = false"
   >

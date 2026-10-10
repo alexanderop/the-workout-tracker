@@ -4,7 +4,9 @@ export function lastExercisePerformance(
   completed: Readonly<Record<string, CompletedSession>>,
   exerciseId: string,
 ) {
-  const sessions = Object.values(completed).sort((a, b) => b.finishedAt - a.finishedAt);
+  const sessions = Object.values(completed).sort(
+    (a, b) => b.finishedAt - a.finishedAt,
+  );
   for (const session of sessions) {
     const sets = session.exercises
       .filter((exercise) => exercise.exerciseId === exerciseId)

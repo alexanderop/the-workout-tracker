@@ -106,11 +106,11 @@ For documentation-only changes, check links, referenced paths, command names, an
 
 Choose a test by the failure it must expose. Keep `pnpm verify` as type checking and linting. Run `pnpm test` to execute all behavior suites, or choose the affected layer:
 
-| Command | Proof |
-| --- | --- |
-| `pnpm test:unit` | Pure rules, application orchestration and the vendored `@form/result` suite in Node |
-| `pnpm test:browser` | Shared UI components, `@form/composables` and real browser storage adapters in Chrome |
-| `pnpm test:e2e` | Executable Gherkin journeys against production builds in desktop Chrome (390 px wide), Pixel 7 Chrome for `@mobile` features, and a two-version server for `@updates` features |
+| Command             | Proof                                                                                                                                                                          |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pnpm test:unit`    | Pure rules, application orchestration and the vendored `@form/result` suite in Node                                                                                            |
+| `pnpm test:browser` | Shared UI components, `@form/composables` and real browser storage adapters in Chrome                                                                                          |
+| `pnpm test:e2e`     | Executable Gherkin journeys against production builds in desktop Chrome (390 px wide), Pixel 7 Chrome for `@mobile` features, and a two-version server for `@updates` features |
 
 `test:unit` measures coverage. The workout logic layers (`domain/`, `application.ts`, `ui/*.ts`) and the pure `@form/ui` modules must stay at or above the thresholds in `apps/workout/coverage-thresholds.json` and `packages/ui/coverage-thresholds.json`. Raise a threshold when coverage rises; never lower one. Skipped or focused tests (`.skip`, `.only`, `.fixme`, `.todo`, `@skip`/`@only` tags) fail lint: fix or delete a test explicitly.
 
@@ -122,12 +122,12 @@ Run `pnpm performance:check` before delivering image, font, dependency, renderin
 
 Install Chrome using the command above. Keep port 4198 free. By default the build and checks use `/the-workout-tracker/`; set `VITE_BASE_PATH` consistently to audit a different deployment path. The command builds `apps/workout/dist`, which is also the deployment artifact. It never audits the development server or Histoire.
 
-| Command | Purpose |
-| --- | --- |
-| `pnpm performance:check` | Build and run all performance/offline checks |
-| `pnpm performance:budget` | Inspect the existing production build and imported exercise sources |
-| `pnpm performance:offline` | Start a production preview and verify offline restart plus all catalog artwork |
-| `pnpm performance:lighthouse` | Start a production preview and audit Workouts and Exercises |
+| Command                       | Purpose                                                                        |
+| ----------------------------- | ------------------------------------------------------------------------------ |
+| `pnpm performance:check`      | Build and run all performance/offline checks                                   |
+| `pnpm performance:budget`     | Inspect the existing production build and imported exercise sources            |
+| `pnpm performance:offline`    | Start a production preview and verify offline restart plus all catalog artwork |
+| `pnpm performance:lighthouse` | Start a production preview and audit Workouts and Exercises                    |
 
 The last three commands require a fresh `pnpm performance:build` with the same base path. [Asset budgets](../apps/workout/performance-budgets.json) cap the complete uncompressed build at 1,750,000 bytes, gzip JavaScript (including the service worker) at 200,000 bytes, imported exercise images at 750,000 bytes combined and 20,000 bytes each, thumbnail dimensions at 192px, and image data URLs embedded in JavaScript at zero bytes. The checker rejects PNG/JPEG assets emitted into the bundled assets directory; installation icons in the public root remain permitted. These deterministic checks cover assets that lazy loading might hide from a Lighthouse page audit.
 

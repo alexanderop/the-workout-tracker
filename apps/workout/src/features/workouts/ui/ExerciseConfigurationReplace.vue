@@ -3,17 +3,25 @@ import { BaseButton } from "@form/ui";
 import { useTranslation } from "../../../i18n";
 import type { Exercise, SessionExercise, WorkoutSet } from "../domain";
 import ExerciseCatalog from "./ExerciseCatalog.vue";
-const { exercise, remaining, logged, catalog, selection, replacement, busy, canAdd } =
-  defineProps<{
-    exercise: SessionExercise;
-    remaining: readonly WorkoutSet[];
-    logged: number;
-    catalog: readonly Exercise[];
-    selection: readonly string[];
-    replacement: Exercise | undefined;
-    busy: boolean;
-    canAdd: boolean;
-  }>();
+const {
+  exercise,
+  remaining,
+  logged,
+  catalog,
+  selection,
+  replacement,
+  busy,
+  canAdd,
+} = defineProps<{
+  exercise: SessionExercise;
+  remaining: readonly WorkoutSet[];
+  logged: number;
+  catalog: readonly Exercise[];
+  selection: readonly string[];
+  replacement: Exercise | undefined;
+  busy: boolean;
+  canAdd: boolean;
+}>();
 const emit = defineEmits<{
   toggle: [id: string];
   add: [];

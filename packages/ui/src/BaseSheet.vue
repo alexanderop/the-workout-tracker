@@ -88,7 +88,10 @@ function moveDrag(event: PointerEvent) {
   drag.velocity = (event.clientY - drag.lastY) / elapsed;
   drag.lastY = event.clientY;
   drag.lastTime = event.timeStamp;
-  drag.sheet.style.setProperty("--ui-sheet-drag", `${sheetDragOffset(distance)}px`);
+  drag.sheet.style.setProperty(
+    "--ui-sheet-drag",
+    `${sheetDragOffset(distance)}px`,
+  );
 }
 function endDrag(event: PointerEvent) {
   if (!drag || event.pointerId !== drag.pointerId) return;
@@ -159,28 +162,28 @@ onBeforeUnmount(() => {
         @pointerup="endDrag"
         @pointercancel="endDrag"
       >
-      <span class="sheet-grabber" aria-hidden="true"></span>
-      <header class="sheet-header">
-        <div>
-          <BaseDialogTitle class="sheet-title">{{ title }}</BaseDialogTitle
-          ><BaseDialogDescription
-            v-if="description"
-            class="muted sheet-description"
-            >{{ description }}</BaseDialogDescription
-          ><BaseDialogDescription v-else class="sr-only"
-            >{{ uiText.sheetOptions(title) }}</BaseDialogDescription
-          >
-        </div>
-        <BaseDialogClose as-child
-          ><BaseButton
-            type="button"
-            variant="ghost"
-            size="icon"
-            class="icon-button"
-            :aria-label="uiText.closeDialog"
-            ><X :size="20" /></BaseButton
-        ></BaseDialogClose>
-      </header>
+        <span class="sheet-grabber" aria-hidden="true"></span>
+        <header class="sheet-header">
+          <div>
+            <BaseDialogTitle class="sheet-title">{{ title }}</BaseDialogTitle
+            ><BaseDialogDescription
+              v-if="description"
+              class="muted sheet-description"
+              >{{ description }}</BaseDialogDescription
+            ><BaseDialogDescription v-else class="sr-only">{{
+              uiText.sheetOptions(title)
+            }}</BaseDialogDescription>
+          </div>
+          <BaseDialogClose as-child
+            ><BaseButton
+              type="button"
+              variant="ghost"
+              size="icon"
+              class="icon-button"
+              :aria-label="uiText.closeDialog"
+              ><X :size="20" /></BaseButton
+          ></BaseDialogClose>
+        </header>
       </div>
       <slot />
     </BaseDialogContent>

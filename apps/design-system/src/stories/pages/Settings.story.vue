@@ -5,15 +5,31 @@ import ProductPreviewControls from "../../ProductPreviewControls.vue";
 import { previewsIn } from "../../previewCatalog";
 const examples = previewsIn("settings");
 const revision = ref(0);
-function resetExample() { revision.value += 1; }
+function resetExample() {
+  revision.value += 1;
+}
 </script>
 
 <template>
-  <Story id="pages-settings" title="04 Pages/Settings" :layout="{ type: 'single', iframe: true }" :meta="{ wrapper: false }">
-    <Variant v-for="example in examples" :id="example.id" :key="example.id" :title="example.title">
+  <Story
+    id="pages-settings"
+    title="04 Pages/Settings"
+    :layout="{ type: 'single', iframe: true }"
+    :meta="{ wrapper: false }"
+  >
+    <Variant
+      v-for="example in examples"
+      :id="example.id"
+      :key="example.id"
+      :title="example.title"
+    >
       <ProductPreview :scenario="example.id" :revision="revision" />
       <template #controls>
-        <ProductPreviewControls :scenario="example.id" :revision="revision" @reset="resetExample" />
+        <ProductPreviewControls
+          :scenario="example.id"
+          :revision="revision"
+          @reset="resetExample"
+        />
       </template>
     </Variant>
   </Story>

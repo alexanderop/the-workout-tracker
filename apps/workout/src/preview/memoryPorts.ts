@@ -31,8 +31,7 @@ export function createMemoryStorage(initial: Snapshot): WorkoutStorage {
     if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 0)
       return Result.err(new InvalidRevision());
     const parsed = snapshotSchema.safeParse(next);
-    if (!parsed.success)
-      return Result.err(invalidChange("invalidWorkoutData"));
+    if (!parsed.success) return Result.err(invalidChange("invalidWorkoutData"));
     if (expectedRevision !== snapshot.revision)
       return Result.err(new Conflict({ snapshot }));
     const unchanged = parsed.data.revision === snapshot.revision;

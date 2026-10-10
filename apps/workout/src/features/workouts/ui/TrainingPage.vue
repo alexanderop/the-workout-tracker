@@ -30,22 +30,20 @@ const emit = defineEmits<{
   navigate: [page: "workouts"];
   back: [event: MouseEvent];
 }>();
-const {
-  active,
-  snapshot,
-  saving,
-  activeSetCount,
-  training,
-  canFinish,
-} = workspace;
+const { active, snapshot, saving, activeSetCount, training, canFinish } =
+  workspace;
 const { t } = useTranslation();
 const format = useFormat();
 const renameOpen = ref(false);
-const renameSheets = useTemplateRef<InstanceType<typeof TrainingRenameSheets>>("renameSheets");
-const configurationEditor = useTemplateRef<InstanceType<typeof ExerciseConfiguration>>("configurationEditor");
+const renameSheets =
+  useTemplateRef<InstanceType<typeof TrainingRenameSheets>>("renameSheets");
+const configurationEditor = useTemplateRef<
+  InstanceType<typeof ExerciseConfiguration>
+>("configurationEditor");
 async function requestLeave(): Promise<boolean> {
   if (saving.value) return false;
-  if (!await (configurationEditor.value?.requestLeave() ?? true)) return false;
+  if (!(await (configurationEditor.value?.requestLeave() ?? true)))
+    return false;
   return (await renameSheets.value?.requestDiscard()) ?? true;
 }
 defineExpose({ requestLeave });
@@ -59,7 +57,8 @@ const configuration = computed(
     ) ?? null,
 );
 const setRows = useTemplateRef<InstanceType<typeof SetRow>[]>("setRows");
-const optionsButton = useTemplateRef<InstanceType<typeof BaseButtonIcon>>("optionsButton");
+const optionsButton =
+  useTemplateRef<InstanceType<typeof BaseButtonIcon>>("optionsButton");
 const addButton = useTemplateRef<InstanceType<typeof BaseButton>>("addButton");
 const selectedExercise = training.currentExercise;
 const selectedRows = computed<TrainingRow[]>(() =>
@@ -68,12 +67,19 @@ const selectedRows = computed<TrainingRow[]>(() =>
     return row ? [row] : [];
   }),
 );
-const definition = computed(() => selectedExercise.value
-  ? snapshot.value?.exercises[selectedExercise.value.exerciseId]
-  : undefined);
+const definition = computed(() =>
+  selectedExercise.value
+    ? snapshot.value?.exercises[selectedExercise.value.exerciseId]
+    : undefined,
+);
 const lastTime = computed(() => {
   const exercise = selectedExercise.value;
-  return exercise ? lastExercisePerformance(snapshot.value?.completed ?? {}, exercise.exerciseId) : null;
+  return exercise
+    ? lastExercisePerformance(
+        snapshot.value?.completed ?? {},
+        exercise.exerciseId,
+      )
+    : null;
 });
 const prescription = computed(() => {
   const sets = selectedExercise.value?.sets ?? [];
@@ -126,7 +132,7 @@ async function commit(id: string) {
   setRows.value?.find((row) => row.setId === id)?.focusLog();
 }
 watch(
-  () => editorSet.value ? training.rows.get(editorSet.value) : undefined,
+  () => (editorSet.value ? training.rows.get(editorSet.value) : undefined),
   (row) => {
     if (editorSet.value && !row) void closeEditor();
   },
@@ -135,12 +141,18 @@ function focusExercise() {
   const element = optionsButton.value?.$el ?? addButton.value?.$el;
   if (element instanceof HTMLElement) element.focus({ preventScroll: true });
 }
-watch(() => selectedExercise.value?.id, async (_value, previous) => {
-  if (previous && !active.value?.exercises.some((exercise) => exercise.id === previous)) {
-    await nextTick();
-    focusExercise();
-  }
-});
+watch(
+  () => selectedExercise.value?.id,
+  async (_value, previous) => {
+    if (
+      previous &&
+      !active.value?.exercises.some((exercise) => exercise.id === previous)
+    ) {
+      await nextTick();
+      focusExercise();
+    }
+  },
+);
 function remove(exercise: SessionExercise) {
   configId.value = null;
   if (!active.value) return;
@@ -191,8 +203,15 @@ function discard() {
 </script>
 <template>
   <section v-if="active" class="active-workout">
-    <a class="training-back text-button" :href="workoutsHref" :aria-label="t('training.page.backLabel')" @click="emit('back', $event)"
-      ><ChevronLeft :size="20" aria-hidden="true" /><span class="training-back-label">{{ t("training.page.backShort") }}</span></a
+    <a
+      class="training-back text-button"
+      :href="workoutsHref"
+      :aria-label="t('training.page.backLabel')"
+      @click="emit('back', $event)"
+      ><ChevronLeft :size="20" aria-hidden="true" /><span
+        class="training-back-label"
+        >{{ t("training.page.backShort") }}</span
+      ></a
     >
     <TrainingHeader
       :workspace="workspace"
@@ -210,30 +229,106 @@ function discard() {
         <article v-if="selectedExercise" class="workout-selected-exercise">
           <header>
             <h2>{{ selectedExercise.name }}</h2>
-            <BaseButtonIcon ref="optionsButton" :label="t('training.page.optionsFor', { exercise: selectedExercise.name })" :disabled="saving" @click="configure(selectedExercise.id)"><Ellipsis :size="22" /></BaseButtonIcon>
+            <BaseButtonIcon
+              ref="optionsButton"
+              :label="
+                t('training.page.optionsFor', {
+                  exercise: selectedExercise.name,
+                })
+              "
+              :disabled="saving"
+              @click="configure(selectedExercise.id)"
+              ><Ellipsis :size="22"
+            /></BaseButtonIcon>
           </header>
-          <BaseButton unstyled class="workout-prescription" :disabled="saving" @click="configure(selectedExercise.id)">
-            <span v-if="definition">{{ equipmentLabel(definition.equipment, t) }} · </span>{{ prescription }}<span class="sr-only">{{ t("training.page.editPrescription", { exercise: selectedExercise.name }) }}</span>
+          <BaseButton
+            unstyled
+            class="workout-prescription"
+            :disabled="saving"
+            @click="configure(selectedExercise.id)"
+          >
+            <span v-if="definition"
+              >{{ equipmentLabel(definition.equipment, t) }} · </span
+            >{{ prescription
+            }}<span class="sr-only">{{
+              t("training.page.editPrescription", {
+                exercise: selectedExercise.name,
+              })
+            }}</span>
           </BaseButton>
-          <p v-if="selectedExercise.note" class="workout-exercise-note">{{ selectedExercise.note }}</p>
+          <p v-if="selectedExercise.note" class="workout-exercise-note">
+            {{ selectedExercise.note }}
+          </p>
           <div v-if="!editorSet" class="workout-inline-sets">
-            <div class="set-labels" aria-hidden="true"><span>{{ t("training.page.columnSet") }}</span><span>{{ t("training.page.columnKg") }}</span><span>{{ t("training.page.columnReps") }}</span><span>{{ t("training.page.columnLog") }}</span><span></span></div>
-            <SetRow v-for="row in selectedRows" :key="row.set.id" ref="setRows" :row="row" :busy="saving" :current="training.current.value?.set.id === row.set.id" :dirty="training.dirty(row)" :conflict="training.conflict(row)"
-              @edit="training.edit(row.set.id, $event)" @commit="commit(row.set.id)" @select="training.selectSet(row.set.id)" @options="edit(row.set.id)" @discard="training.useSaved(row.set.id)" @keep="training.keepInput(row.set.id)" @recover="training.chooseDraft(row.set.id, $event)" />
-            <BaseButton variant="secondary" class="workout-add-set" :disabled="saving || selectedExercise.sets.length >= 30" @click="training.addSet(selectedExercise.id)"><Plus :size="18" />{{ t("training.page.addSet") }}</BaseButton>
+            <div class="set-labels" aria-hidden="true">
+              <span>{{ t("training.page.columnSet") }}</span
+              ><span>{{ t("training.page.columnKg") }}</span
+              ><span>{{ t("training.page.columnReps") }}</span
+              ><span>{{ t("training.page.columnLog") }}</span
+              ><span></span>
+            </div>
+            <SetRow
+              v-for="row in selectedRows"
+              :key="row.set.id"
+              ref="setRows"
+              :row="row"
+              :busy="saving"
+              :current="training.current.value?.set.id === row.set.id"
+              :dirty="training.dirty(row)"
+              :conflict="training.conflict(row)"
+              @edit="training.edit(row.set.id, $event)"
+              @commit="commit(row.set.id)"
+              @select="training.selectSet(row.set.id)"
+              @options="edit(row.set.id)"
+              @discard="training.useSaved(row.set.id)"
+              @keep="training.keepInput(row.set.id)"
+              @recover="training.chooseDraft(row.set.id, $event)"
+            />
+            <BaseButton
+              variant="secondary"
+              class="workout-add-set"
+              :disabled="saving || selectedExercise.sets.length >= 30"
+              @click="training.addSet(selectedExercise.id)"
+              ><Plus :size="18" />{{ t("training.page.addSet") }}</BaseButton
+            >
           </div>
-          <section v-if="lastTime" class="workout-last-time" :aria-label="t('training.page.lastTime')">
-            <header><h3>{{ t("training.page.lastTime") }}</h3><span>{{ format.longDate(lastTime.finishedAt) }}</span></header>
-            <p v-for="(set, index) in lastTime.sets" :key="set.id"><span>{{ t("training.page.lastTimeSet", { n: index + 1 }) }}</span><strong>{{ t("training.page.lastTimeResult", { weight: format.number(set.weightKg), reps: set.reps }) }}</strong></p>
+          <section
+            v-if="lastTime"
+            class="workout-last-time"
+            :aria-label="t('training.page.lastTime')"
+          >
+            <header>
+              <h3>{{ t("training.page.lastTime") }}</h3>
+              <span>{{ format.longDate(lastTime.finishedAt) }}</span>
+            </header>
+            <p v-for="(set, index) in lastTime.sets" :key="set.id">
+              <span>{{ t("training.page.lastTimeSet", { n: index + 1 }) }}</span
+              ><strong>{{
+                t("training.page.lastTimeResult", {
+                  weight: format.number(set.weightKg),
+                  reps: set.reps,
+                })
+              }}</strong>
+            </p>
           </section>
-          <p v-if="isExerciseComplete(selectedExercise)" class="workout-exercise-complete"><Check :size="16" /> {{ t("training.page.setLogged", selectedExercise.sets.length) }}</p>
+          <p
+            v-if="isExerciseComplete(selectedExercise)"
+            class="workout-exercise-complete"
+          >
+            <Check :size="16" />
+            {{ t("training.page.setLogged", selectedExercise.sets.length) }}
+          </p>
         </article>
-    <p v-if="training.notice.value" class="workout-guidance" role="status">{{ training.notice.value }}</p>
+        <p v-if="training.notice.value" class="workout-guidance" role="status">
+          {{ training.notice.value }}
+        </p>
         <div v-if="allDone" class="workout-done">
           <p class="eyebrow">{{ t("training.page.allLoggedEyebrow") }}</p>
           <h2>{{ t("training.page.allLoggedTitle") }}</h2>
           <p>{{ t("training.page.allLoggedText") }}</p>
-          <BaseButton :disabled="!canFinish" @click="emit('finish')">{{ t("training.page.finishWorkout") }}</BaseButton>
+          <BaseButton :disabled="!canFinish" @click="emit('finish')">{{
+            t("training.page.finishWorkout")
+          }}</BaseButton>
         </div>
         <BaseButton
           v-if="!active.exercises.length"
@@ -244,7 +339,11 @@ function discard() {
           @click="pick"
           ><Plus :size="18" />{{ t("training.page.addExercises") }}</BaseButton
         >
-        <BaseButton variant="ghost" class="workout-discard" :disabled="saving" @click="discard"
+        <BaseButton
+          variant="ghost"
+          class="workout-discard"
+          :disabled="saving"
+          @click="discard"
           >{{ t("training.page.discardWorkout") }}</BaseButton
         >
       </div>
@@ -260,7 +359,11 @@ function discard() {
       @add="addFromOptions"
       @replaced="focusReplacement"
     />
-    <TrainingRenameSheets ref="renameSheets" v-model:open="renameOpen" :workspace="workspace" />
+    <TrainingRenameSheets
+      ref="renameSheets"
+      v-model:open="renameOpen"
+      :workspace="workspace"
+    />
     <TrainingSetEditor
       :set-id="editorSet"
       :training="training"
@@ -274,6 +377,8 @@ function discard() {
   <div v-else class="empty-state">
     <Dumbbell :size="32" />
     <h1>{{ t("training.page.readyTitle") }}</h1>
-    <BaseButton @click="emit('navigate', 'workouts')">{{ t("training.page.chooseWorkout") }}</BaseButton>
+    <BaseButton @click="emit('navigate', 'workouts')">{{
+      t("training.page.chooseWorkout")
+    }}</BaseButton>
   </div>
 </template>

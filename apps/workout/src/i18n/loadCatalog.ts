@@ -3,7 +3,9 @@ import { createCatalogLoader } from "./catalogLoader";
 import type { Locale } from "./index";
 
 /** The browser entry to the catalog files the build emitted. */
-export const loadCatalog = createCatalogLoader(catalogUrls, (url) => fetch(url));
+export const loadCatalog = createCatalogLoader(catalogUrls, (url) =>
+  fetch(url),
+);
 
 /**
  * The locale to start in: the wanted one, else English, else null when no

@@ -131,12 +131,12 @@ The service owns its storage handle. Components own subscriptions only. Disposin
 
 Expected failures are return values. The storage port, the application commands (`execute`, `importBackup`, `exportBackup`, `deleteAllData`) and the draft journal return `Result<T, E>` from `@form/result`; programmer errors and violated invariants (a missing route context, an unknown preview scenario) still throw. Each failure is one `TaggedError` class in `domain/errors.ts` or `domain/backup.ts`. `Result.gen` composes the steps of a command in order and stops at the first failure; `Result.tryPromise` and `Result.try` turn one thrown browser or IndexedDB exception into a typed error at the adapter and application boundary.
 
-| Vocabulary | Errors |
-| --- | --- |
-| saved | the `Ok` snapshot |
-| conflict | `Conflict` (carries the current snapshot) |
-| invalid | `InvalidChange`, `InvalidRevision`, `RecoveryRequired`, and the backup errors `BackupTooLarge`, `BackupUnreadable`, `InvalidBackup`, `ConflictingRecord`, `ActiveWorkoutInProgress`, `ActiveWorkoutFinished` |
-| unavailable | `StorageUnavailable`, `StorageClosed`, `SaveUnconfirmed` |
+| Vocabulary  | Errors                                                                                                                                                                                                       |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| saved       | the `Ok` snapshot                                                                                                                                                                                            |
+| conflict    | `Conflict` (carries the current snapshot)                                                                                                                                                                    |
+| invalid     | `InvalidChange`, `InvalidRevision`, `RecoveryRequired`, and the backup errors `BackupTooLarge`, `BackupUnreadable`, `InvalidBackup`, `ConflictingRecord`, `ActiveWorkoutInProgress`, `ActiveWorkoutFinished` |
+| unavailable | `StorageUnavailable`, `StorageClosed`, `SaveUnconfirmed`                                                                                                                                                     |
 
 `DraftCleanupPending` (a deletion that committed while draft cleanup failed) and the draft journal's `DraftsDeleted` and `DraftStorageFailed` complete the set. The workspace layer keeps `Snapshot | null` for its own callers: `useWorkouts.run` turns a failed `Result` into a notice and adopts the snapshot a `Conflict` carries.
 
@@ -154,15 +154,15 @@ Backups merge complete records atomically. Imports skip identical records, rejec
 
 The Oxlint plugin and standalone checker share one policy in `tooling/architecture/policy.mjs`.
 
-| Layer                | Allowed internal dependencies | Allowed external dependencies   |
-| -------------------- | ----------------------------- | ------------------------------- |
-| Domain               | Domain                        | Zod, `@form/result`             |
-| Ports                | Domain types                  | `@form/result` types            |
-| Application          | Domain, ports, application    | Zod, `@form/result`             |
-| Adapters             | Domain, ports, adapters       | `@form/result`, explicitly registered SDKs |
+| Layer                | Allowed internal dependencies | Allowed external dependencies                                        |
+| -------------------- | ----------------------------- | -------------------------------------------------------------------- |
+| Domain               | Domain                        | Zod, `@form/result`                                                  |
+| Ports                | Domain types                  | `@form/result` types                                                 |
+| Application          | Domain, ports, application    | Zod, `@form/result`                                                  |
+| Adapters             | Domain, ports, adapters       | `@form/result`, explicitly registered SDKs                           |
 | UI                   | Domain, application, UI       | Vue, `@form/result`, `@form/composables` and registered UI libraries |
-| Public index         | Domain, application           | None                            |
-| Infrastructure entry | Adapters                      | None                            |
+| Public index         | Domain, application           | None                                                                 |
+| Infrastructure entry | Adapters                      | None                                                                 |
 
 Dexie is registered only for `adapters/dexie.ts`. Future SDKs require an explicit adapter ownership rule. Concrete SDK types are not allowed in ports.
 

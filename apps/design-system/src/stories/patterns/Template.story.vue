@@ -37,8 +37,11 @@ function save() {
               >Enter a name.</BaseFieldError
             ></BaseField
           ><BaseField
-            ><BaseFieldLabel for="template-notes">Description · optional</BaseFieldLabel
-            ><BaseTextarea id="template-notes" v-model="description" /></BaseField
+            ><BaseFieldLabel for="template-notes"
+              >Description · optional</BaseFieldLabel
+            ><BaseTextarea
+              id="template-notes"
+              v-model="description" /></BaseField
           ><BaseInputNumber
             v-model="weight"
             title="Weight"

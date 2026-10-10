@@ -46,7 +46,8 @@ export const deTrainingPage: Pick<
     setLogged: "Satz erfasst | Alle {n} Sätze erfasst",
     allLoggedEyebrow: "ALLE SÄTZE ERFASST",
     allLoggedTitle: "Das war dein letzter Satz.",
-    allLoggedText: "Sieh dir deine Sätze an oder füge eine weitere Übung hinzu.",
+    allLoggedText:
+      "Sieh dir deine Sätze an oder füge eine weitere Übung hinzu.",
     finishWorkout: "Training abschließen",
     discardWorkout: "Training verwerfen",
     readyTitle: "Bereit für dein nächstes Training?",

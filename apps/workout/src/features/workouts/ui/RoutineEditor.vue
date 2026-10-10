@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { BaseButtonIcon, BaseButton, BaseInput, BaseTextarea, BaseInputNumber } from "@form/ui";
+import {
+  BaseButtonIcon,
+  BaseButton,
+  BaseInput,
+  BaseTextarea,
+  BaseInputNumber,
+} from "@form/ui";
 import { computed, ref } from "vue";
 import { Plus, Trash2 } from "@lucide/vue";
 import type { CompletedSession, Exercise, Routine } from "../domain";
@@ -202,8 +208,7 @@ function save() {
             >{{ setIndex + 1
             }}<small v-if="set.skipped" class="skipped-label">{{
               t("dialogs.routineEditor.skipped")
-            }}</small
-            ></span
+            }}</small></span
           >
           <label class="field"
             ><span>{{ t("dialogs.fields.weightKg") }}</span

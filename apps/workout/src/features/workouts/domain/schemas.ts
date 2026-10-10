@@ -235,4 +235,3 @@ export function sessionTotals(session: ActiveSession | CompletedSession): {
       { completedSets: 0, volumeKg: 0 },
     );
 }
-

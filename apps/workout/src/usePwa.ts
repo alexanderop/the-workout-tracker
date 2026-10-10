@@ -1,8 +1,4 @@
-import {
-  useEventListener,
-  useMediaQuery,
-  useOnline,
-} from "@form/composables";
+import { useEventListener, useMediaQuery, useOnline } from "@form/composables";
 import { ref, computed, onScopeDispose, watch } from "vue";
 import { useRegisterSW } from "virtual:pwa-register/vue";
 import { watchServiceWorkerUpdates } from "./serviceWorkerUpdates";

@@ -57,7 +57,9 @@ const longContent = ref(false);
             </div>
             <BaseDialogFooter
               ><BaseDialogClose as-child
-                ><BaseButton variant="outline">Close</BaseButton></BaseDialogClose
+                ><BaseButton variant="outline"
+                  >Close</BaseButton
+                ></BaseDialogClose
               ></BaseDialogFooter
             ></BaseDialogContent
           ></BaseDialog

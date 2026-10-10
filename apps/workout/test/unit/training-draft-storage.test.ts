@@ -2,7 +2,10 @@ import { Result } from "@form/result";
 import { afterEach, describe, expect, it } from "vitest";
 import { effectScope, nextTick, ref, type EffectScope } from "vue";
 import { createWorkouts } from "../../src/features/workouts/application";
-import { DraftStorageFailed, type Snapshot } from "../../src/features/workouts/domain";
+import {
+  DraftStorageFailed,
+  type Snapshot,
+} from "../../src/features/workouts/domain";
 import type { DraftJournal } from "../../src/features/workouts/ports";
 import { useTrainingSession } from "../../src/features/workouts/ui/useTrainingSession";
 import { t } from "../../src/i18n/testing";
@@ -38,7 +41,11 @@ function setup(recoveredWeight?: string) {
     ...memory.journal,
     consume(records) {
       if (faults.consume)
-        return Result.err(new DraftStorageFailed({ cause: new Error("The quota was exceeded.") }));
+        return Result.err(
+          new DraftStorageFailed({
+            cause: new Error("The quota was exceeded."),
+          }),
+        );
       return memory.journal.consume(records);
     },
   };
@@ -106,14 +113,16 @@ describe("training draft storage", () => {
 
     it("should not choose a recovered draft", () => {
       const { training, saving, memory, active, set, row } = setup();
-      const other = success(memory.journal.write({
-        sessionId: active.id,
-        setId: set.id,
-        weight: "70",
-        reps: "8",
-        revision: 0,
-        base: set,
-      }));
+      const other = success(
+        memory.journal.write({
+          sessionId: active.id,
+          setId: set.id,
+          weight: "70",
+          reps: "8",
+          revision: 0,
+          base: set,
+        }),
+      );
       saving.value = true;
       training.chooseDraft(set.id, other);
       expect(row().weight).toBe("40");
@@ -158,7 +167,10 @@ describe("training draft storage", () => {
       expect(row().storageIssue).toBe(
         "Draft saved, but older input could not be cleared on this device.",
       );
-      expect(memory.current().map((draft) => draft.weight)).toEqual(["55", "60"]);
+      expect(memory.current().map((draft) => draft.weight)).toEqual([
+        "55",
+        "60",
+      ]);
       expect(row().weight).toBe("60");
       faults.consume = false;
       training.useSaved(set.id);

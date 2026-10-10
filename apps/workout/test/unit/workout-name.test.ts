@@ -306,7 +306,10 @@ describe("racing workout-name saves", () => {
       snapshot.value = factory.snapshot({
         revision: 2,
         completed: {
-          [active.id]: factory.completedSession({ id: active.id, name: "Renamed" }),
+          [active.id]: factory.completedSession({
+            id: active.id,
+            name: "Renamed",
+          }),
         },
       });
       release(null);

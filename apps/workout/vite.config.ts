@@ -108,7 +108,9 @@ export default defineConfig(({ mode, command }) => {
               workbox: {
                 clientsClaim: true,
                 skipWaiting: false,
-                globPatterns: ["**/*.{js,css,html,ico,png,webp,svg,woff2,json}"],
+                globPatterns: [
+                  "**/*.{js,css,html,ico,png,webp,svg,woff2,json}",
+                ],
                 navigateFallback: `${base}index.html`,
                 cleanupOutdatedCaches: true,
               },

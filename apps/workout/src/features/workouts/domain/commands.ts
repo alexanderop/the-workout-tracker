@@ -14,7 +14,11 @@ import {
 } from "./schemas";
 
 const sessionId = { sessionId: identifier };
-const selectedExerciseIds = z.array(identifier).min(1).max(50).refine((ids) => new Set(ids).size === ids.length);
+const selectedExerciseIds = z
+  .array(identifier)
+  .min(1)
+  .max(50)
+  .refine((ids) => new Set(ids).size === ids.length);
 const values = { weightKg: weight, reps: actualReps };
 const plannedValues = { weightKg: weight, reps };
 export function setTargetReps(set: WorkoutSet): number {
@@ -24,7 +28,9 @@ export const commandSchema = z
   .discriminatedUnion("type", [
     z.object({ type: z.literal("repeat"), completedId: identifier }).strict(),
     z.object({ type: z.literal("rename"), ...sessionId, name }).strict(),
-    z.object({ type: z.literal("rename-completed"), ...sessionId, name }).strict(),
+    z
+      .object({ type: z.literal("rename-completed"), ...sessionId, name })
+      .strict(),
     z
       .object({
         type: z.literal("add-exercises"),
@@ -40,9 +46,7 @@ export const commandSchema = z
         name: name.optional(),
       })
       .strict(),
-    z
-      .object({ type: z.literal("start"), routineId: identifier })
-      .strict(),
+    z.object({ type: z.literal("start"), routineId: identifier }).strict(),
     z
       .object({
         type: z.literal("set-entry"),
@@ -125,17 +129,27 @@ export const commandSchema = z
         replacementExerciseId: identifier,
       })
       .strict(),
-    z.object({
-      type: z.literal("correct-completed"),
-      ...sessionId,
-      name: name.optional(),
-      sets: z.array(z.object({
-        exerciseId: identifier,
-        setId: identifier,
-        weightKg: weight,
-        reps: actualReps,
-      }).strict().readonly()).max(1500).readonly(),
-    }).strict(),
+    z
+      .object({
+        type: z.literal("correct-completed"),
+        ...sessionId,
+        name: name.optional(),
+        sets: z
+          .array(
+            z
+              .object({
+                exerciseId: identifier,
+                setId: identifier,
+                weightKg: weight,
+                reps: actualReps,
+              })
+              .strict()
+              .readonly(),
+          )
+          .max(1500)
+          .readonly(),
+      })
+      .strict(),
     z.object({ type: z.literal("finish"), ...sessionId }).strict(),
     z.object({ type: z.literal("discard"), ...sessionId }).strict(),
     z.object({ type: z.literal("stop-rest"), ...sessionId }).strict(),

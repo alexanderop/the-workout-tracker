@@ -4,9 +4,7 @@
     {
       "name": "workout",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": [
-        "dev"
-      ],
+      "runtimeArgs": ["dev"],
       "port": 4180
     },
     {

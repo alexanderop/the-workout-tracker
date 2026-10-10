@@ -4,7 +4,8 @@ import { render } from "vitest-browser-vue";
 import NumberField from "../fixtures/_BaseInput.vue";
 import { expectNoAxeViolations } from "../support/axe";
 
-const input = () => page.getByRole("spinbutton", { name: "Target repetitions" });
+const input = () =>
+  page.getByRole("spinbutton", { name: "Target repetitions" });
 const modelValue = () => page.getByTestId("model-value");
 const modelType = () => page.getByTestId("model-type");
 

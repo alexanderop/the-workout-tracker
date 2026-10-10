@@ -18,9 +18,7 @@ const logged = ref(false);
       </div>
     </Variant>
     <Variant title="Already confirmed">
-      <BaseFeedback active
-        ><Check :size="20" /> Already logged</BaseFeedback
-      >
+      <BaseFeedback active><Check :size="20" /> Already logged</BaseFeedback>
     </Variant>
   </Story>
 </template>

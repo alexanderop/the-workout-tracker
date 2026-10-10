@@ -30,8 +30,7 @@ export const deTrainingNotices: Pick<Catalog["training"], "notices" | "name"> =
         "Prüfe Gewicht und Wiederholungen dieses Satzes, bevor du einen weiteren Satz hinzufügst.",
       saveBeforeUndo:
         "Speichere oder verwirf die Eingabe dieses Satzes, bevor du die Erfassung zurücknimmst.",
-      undone:
-        "Satz als nicht erfasst markiert. Du kannst ihn erneut erfassen.",
+      undone: "Satz als nicht erfasst markiert. Du kannst ihn erneut erfassen.",
       reviewBeforeCircle:
         "Prüfe die Eingabe dieses Satzes, bevor du die Kreis-Abkürzung nutzt.",
       recorded:

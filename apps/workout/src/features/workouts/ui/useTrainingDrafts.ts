@@ -142,7 +142,11 @@ export function useTrainingDrafts(options: {
   }
   function synchronizeRow(
     { session, revision }: { session: string; revision: number },
-    { exercise, index, set }: {
+    {
+      exercise,
+      index,
+      set,
+    }: {
       exercise: SessionExercise;
       index: number;
       set: WorkoutSet;
@@ -173,18 +177,18 @@ export function useTrainingDrafts(options: {
   function persist(row: TrainingRow) {
     if (!active.value || !options.snapshot.value) return;
     const written = options.journal.write({
-        sessionId: active.value.id,
-        setId: row.set.id,
-        weight: row.weight,
-        reps: row.reps,
-        base: {
-          weightKg: row.base.weightKg,
-          reps: row.base.reps,
-          completed: row.base.completed,
-          targetReps: row.base.targetReps,
-        },
-        revision: row.revision,
-      });
+      sessionId: active.value.id,
+      setId: row.set.id,
+      weight: row.weight,
+      reps: row.reps,
+      base: {
+        weightKg: row.base.weightKg,
+        reps: row.base.reps,
+        completed: row.base.completed,
+        targetReps: row.base.targetReps,
+      },
+      revision: row.revision,
+    });
     if (written.isErr()) {
       row.storageIssue = matchError(written.error, {
         DraftsDeleted: () => t("training.notices.deleted"),

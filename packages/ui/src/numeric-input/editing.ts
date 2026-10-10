@@ -21,7 +21,10 @@ export function beginEditing(value: string | number): NumericDraft {
 }
 
 /** Shows a value with the locale's decimal mark; drafts and stored values keep ".". */
-export function localizeNumber(value: string | number, separator: string): string {
+export function localizeNumber(
+  value: string | number,
+  separator: string,
+): string {
   return String(value).replace(".", separator);
 }
 
@@ -133,8 +136,9 @@ export function numericPresets(
   const center = Math.round((parsed * 10 ** scale) / grid);
   const first = Math.max(lowest, Math.min(center - 3, highest - 7));
   const last = Math.min(highest, first + 7);
-  const presets = Array.from({ length: Math.max(0, last - first + 1) }, (_, i) =>
-    at(first + i),
+  const presets = Array.from(
+    { length: Math.max(0, last - first + 1) },
+    (_, i) => at(first + i),
   ).filter((preset) => validNumber(String(preset), limits) !== null);
   return [...new Set(presets)];
 }

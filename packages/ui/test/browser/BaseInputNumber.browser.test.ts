@@ -89,14 +89,18 @@ describe("given a weight input", () => {
     it("should replace the draft without changing the confirmed value", async () => {
       await openEditor();
       await userEvent.keyboard("55");
-      await expect.element(draft().getByText("55", { exact: true })).toBeVisible();
+      await expect
+        .element(draft().getByText("55", { exact: true }))
+        .toBeVisible();
       await expect.element(confirmed()).toHaveTextContent("70.25");
     });
 
     it("should not announce each keypress", async () => {
       await openEditor();
       await userEvent.keyboard("55");
-      await expect.element(draft().getByText("55", { exact: true })).toBeVisible();
+      await expect
+        .element(draft().getByText("55", { exact: true }))
+        .toBeVisible();
       expect(dialog().getByRole("status").query()).toBeNull();
       expect(document.querySelector('[role="status"]')).toBeNull();
     });
@@ -154,7 +158,9 @@ describe("given a weight input", () => {
   describe("when choosing a suggested value", () => {
     it("should confirm it immediately", async () => {
       await openEditor();
-      const suggestions = page.getByRole("region", { name: "Suggested values" });
+      const suggestions = page.getByRole("region", {
+        name: "Suggested values",
+      });
       const first = suggestions.getByRole("button").first();
       const label = first.element().getAttribute("aria-label") ?? "";
       await first.click();
@@ -173,7 +179,9 @@ describe("given a consumer-supplied aria-label", () => {
       props: { triggerLabel: "Bench press weight, 70.25 kg" },
     });
     await expect
-      .element(page.getByRole("button", { name: "Bench press weight, 70.25 kg" }))
+      .element(
+        page.getByRole("button", { name: "Bench press weight, 70.25 kg" }),
+      )
       .toBeVisible();
   });
 });
@@ -229,7 +237,9 @@ describe("given a language with a decimal comma", () => {
     await render(NumberInput, { props: { separator: "," } });
     await expect.element(trigger()).toHaveTextContent("70,25");
     await trigger().click();
-    await expect.element(draft().getByText("70,25", { exact: true })).toBeVisible();
+    await expect
+      .element(draft().getByText("70,25", { exact: true }))
+      .toBeVisible();
     await expect
       .element(page.getByRole("button", { name: "Decimal point" }))
       .toHaveTextContent(",");
@@ -241,9 +251,13 @@ describe("given a language with a decimal comma", () => {
   it("should accept a comma or a point from the keyboard and store a number", async () => {
     await openCommaEditor();
     await userEvent.keyboard("42,5");
-    await expect.element(draft().getByText("42,5", { exact: true })).toBeVisible();
+    await expect
+      .element(draft().getByText("42,5", { exact: true }))
+      .toBeVisible();
     await userEvent.keyboard("{Backspace}{Backspace}.5");
-    await expect.element(draft().getByText("42,5", { exact: true })).toBeVisible();
+    await expect
+      .element(draft().getByText("42,5", { exact: true }))
+      .toBeVisible();
     await confirm().click();
     await expect.element(confirmed()).toHaveTextContent("42.5");
     await expect.element(trigger()).toHaveTextContent("42,5");
@@ -254,6 +268,8 @@ describe("given a language with a decimal comma", () => {
     await page.getByRole("button", { name: "4" }).click();
     await page.getByRole("button", { name: "Decimal point" }).click();
     await page.getByRole("button", { name: "5" }).click();
-    await expect.element(draft().getByText("4,5", { exact: true })).toBeVisible();
+    await expect
+      .element(draft().getByText("4,5", { exact: true }))
+      .toBeVisible();
   });
 });

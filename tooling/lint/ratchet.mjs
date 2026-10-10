@@ -15,10 +15,26 @@ const base = process.argv[2] ?? "HEAD";
 // "max": a larger value is looser. "min": a smaller value is looser.
 // `newKeys: false` rejects added entries (each one is a new exception).
 const limits = [
-  { path: "tooling/lint/file-size-baseline.json", direction: "max", newKeys: false },
-  { path: "apps/workout/performance-budgets.json", direction: "max", newKeys: true },
-  { path: "apps/workout/coverage-thresholds.json", direction: "min", newKeys: true },
-  { path: "packages/ui/coverage-thresholds.json", direction: "min", newKeys: true },
+  {
+    path: "tooling/lint/file-size-baseline.json",
+    direction: "max",
+    newKeys: false,
+  },
+  {
+    path: "apps/workout/performance-budgets.json",
+    direction: "max",
+    newKeys: true,
+  },
+  {
+    path: "apps/workout/coverage-thresholds.json",
+    direction: "min",
+    newKeys: true,
+  },
+  {
+    path: "packages/ui/coverage-thresholds.json",
+    direction: "min",
+    newKeys: true,
+  },
 ];
 
 function previous(path) {
@@ -42,22 +58,30 @@ for (const { path, direction, newKeys } of limits) {
     problems.push(`${path}: the limit file was deleted.`);
     continue;
   }
-  const after = JSON.parse(readFileSync(new URL(path, `file://${root}`), "utf8"));
+  const after = JSON.parse(
+    readFileSync(new URL(path, `file://${root}`), "utf8"),
+  );
   for (const [key, value] of Object.entries(after)) {
     const old = before[key];
     if (old === undefined) {
-      if (!newKeys) problems.push(`${path}: new exception "${key}". Split the file instead.`);
+      if (!newKeys)
+        problems.push(
+          `${path}: new exception "${key}". Split the file instead.`,
+        );
       continue;
     }
     const looser = direction === "max" ? value > old : value < old;
-    if (looser) problems.push(`${path}: "${key}" loosened from ${old} to ${value}.`);
+    if (looser)
+      problems.push(`${path}: "${key}" loosened from ${old} to ${value}.`);
   }
   if (direction === "min")
     for (const key of Object.keys(before))
-      if (!(key in after)) problems.push(`${path}: threshold "${key}" was removed.`);
+      if (!(key in after))
+        problems.push(`${path}: threshold "${key}" was removed.`);
   if (direction === "max" && newKeys)
     for (const key of Object.keys(before))
-      if (!(key in after)) problems.push(`${path}: budget "${key}" was removed.`);
+      if (!(key in after))
+        problems.push(`${path}: budget "${key}" was removed.`);
 }
 
 if (problems.length) {

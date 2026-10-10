@@ -17,14 +17,14 @@ Developer familiarity should inform our respect for efficiency and precision. It
 
 ### Design principles
 
-| Principle | Design consequence |
-| --------- | ------------------ |
-| Minimal, but understandable | Keep the next action prominent. Use clear labels and progressive disclosure rather than hiding essential actions behind unfamiliar icons. |
-| Fast to edit, safe to correct | Keep frequent edits close to their values. Distinguish editing a value from logging a set, preserve input on failure and make recovery clear. |
-| Confirm before deleting | Every delete, removal or discard action opens a confirmation modal before changing data. Name what will be lost, explain permanence, and provide a clear Cancel action. |
-| An overview before detail | Lead with information needed for the current task. Keep workout summaries scannable and exercise and set details easy to reach. |
-| Progress grounded in real training | Explain metrics, units and comparison periods. Distinguish completed work from planned work, and handle limited history honestly. |
-| Motivation without pressure | Make completed work and personal improvements visible. Use calm, specific encouragement; avoid guilt, invented achievements or rewards that distract from training. |
+| Principle                          | Design consequence                                                                                                                                                      |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Minimal, but understandable        | Keep the next action prominent. Use clear labels and progressive disclosure rather than hiding essential actions behind unfamiliar icons.                               |
+| Fast to edit, safe to correct      | Keep frequent edits close to their values. Distinguish editing a value from logging a set, preserve input on failure and make recovery clear.                           |
+| Confirm before deleting            | Every delete, removal or discard action opens a confirmation modal before changing data. Name what will be lost, explain permanence, and provide a clear Cancel action. |
+| An overview before detail          | Lead with information needed for the current task. Keep workout summaries scannable and exercise and set details easy to reach.                                         |
+| Progress grounded in real training | Explain metrics, units and comparison periods. Distinguish completed work from planned work, and handle limited history honestly.                                       |
+| Motivation without pressure        | Make completed work and personal improvements visible. Use calm, specific encouragement; avoid guilt, invented achievements or rewards that distract from training.     |
 
 ### Design review questions
 
@@ -40,17 +40,17 @@ The Workout Tracker adopts the visual identity of the [Vue PWA starter](prior-ar
 
 Values live in [`packages/ui/src/tokens.css`](../packages/ui/src/tokens.css). Each color is one `light-dark()` pair, so a theme change needs no second stylesheet. [`packages/ui/src/workout-theme.css`](../packages/ui/src/workout-theme.css) maps these roles to the shared component roles (`--ui-*`). App layout lives in [`apps/workout/src/style.css`](../apps/workout/src/style.css).
 
-| Token | Light | Dark | Role |
-| --- | --- | --- | --- |
-| `--background` | #F2F1EC | #121316 | Canvas and sheets |
-| `--surface` | #FFFFFF | #1B1D22 | Cards, fields, secondary buttons |
-| `--text` | #1B1D21 | #ECEDEF | Primary content and the selected navigation item |
-| `--body` | #3D424A | #C9CCD2 | Long-form text |
-| `--muted` | #5D636C | #9EA3AD | Supporting labels and icons |
-| `--border` | #DCDAD3 | #2E3138 | Outlines of cards, fields and dividers |
-| `--rule` | #ECEAE3 | #24272D | Quiet inner rules |
-| `--danger` | #B4382A | #FF9B8E | Errors and destructive actions |
-| `--accent` | per accent | per accent | Primary actions, logged sets, progress, selection and focus |
+| Token                             | Light      | Dark       | Role                                                                    |
+| --------------------------------- | ---------- | ---------- | ----------------------------------------------------------------------- |
+| `--background`                    | #F2F1EC    | #121316    | Canvas and sheets                                                       |
+| `--surface`                       | #FFFFFF    | #1B1D22    | Cards, fields, secondary buttons                                        |
+| `--text`                          | #1B1D21    | #ECEDEF    | Primary content and the selected navigation item                        |
+| `--body`                          | #3D424A    | #C9CCD2    | Long-form text                                                          |
+| `--muted`                         | #5D636C    | #9EA3AD    | Supporting labels and icons                                             |
+| `--border`                        | #DCDAD3    | #2E3138    | Outlines of cards, fields and dividers                                  |
+| `--rule`                          | #ECEAE3    | #24272D    | Quiet inner rules                                                       |
+| `--danger`                        | #B4382A    | #FF9B8E    | Errors and destructive actions                                          |
+| `--accent`                        | per accent | per accent | Primary actions, logged sets, progress, selection and focus             |
 | `--accent-hover`, `--accent-soft` | per accent | per accent | Hover for the primary action, soft background for selection and notices |
 
 The accents are Blue (default), Teal, Violet, Pink and Sand. Each defines `--accent`, `--accent-hover` and `--accent-soft` for light and dark. `--on-accent` (the surface color) is the text color on a filled accent. Status uses text, icons and shape; errors additionally use `--danger`. The modal overlay is a translucent tint with a slight blur.
@@ -211,14 +211,14 @@ The project has a Paper file named **The Workout Tracker — Product design**:
 [Open the project guide](https://app.paper.design/file/01M440C3G4G4K1P2R5FBR3JPKW/p-2-0).
 Use the Paper MCP tools with explicit file ID `01M440C3G4G4K1P2R5FBR3JPKW`; read the Paper guide and inspect the live file before editing. Do not assume the currently open file is this project.
 
-| Page | Page ID |
-| --- | --- |
-| 00 — Start here | `p-2-0` |
-| 01 — Foundations | `p-3-0` |
-| 02 — UI catalog | `p-4-0` |
-| 03 — Current app | `p-1-0` |
+| Page                     | Page ID |
+| ------------------------ | ------- |
+| 00 — Start here          | `p-2-0` |
+| 01 — Foundations         | `p-3-0` |
+| 02 — UI catalog          | `p-4-0` |
+| 03 — Current app         | `p-1-0` |
 | 04 — Design explorations | `p-5-0` |
-| 05 — User flows | `p-6-0` |
+| 05 — User flows          | `p-6-0` |
 
 Paper contains visual references and proposals. The rules in this document, Vue components and Histoire remain authoritative for implemented behavior. Paper and code do not automatically synchronize. Token descriptions distinguish existing code palette values from Paper aliases and extracted design references; do not assume all Paper token names exist in app CSS. Copied UI examples are independent copies, not linked component instances.
 

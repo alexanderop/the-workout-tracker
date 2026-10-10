@@ -47,6 +47,8 @@ provideUiText(
       :preset-step="presetStep"
       :aria-label="triggerLabel"
     />
-    <output aria-label="Confirmed value" data-testid="confirmed-value">{{ value }}</output>
+    <output aria-label="Confirmed value" data-testid="confirmed-value">{{
+      value
+    }}</output>
   </main>
 </template>

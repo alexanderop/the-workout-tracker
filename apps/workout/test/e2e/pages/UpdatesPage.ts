@@ -155,7 +155,8 @@ export class UpdatesPage {
    * This tab saw the new worker take control. It neither reloaded nor showed a
    * browser prompt.
    */
-  async expectTakenOverWithoutReload() {    await expect
+  async expectTakenOverWithoutReload() {
+    await expect
       .poll(() =>
         this.page.evaluate(
           () => document.documentElement.dataset.controllerChanged,

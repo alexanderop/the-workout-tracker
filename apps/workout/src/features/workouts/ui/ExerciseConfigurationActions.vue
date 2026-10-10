@@ -66,13 +66,12 @@ const { t } = useTranslation();
       variant="secondary"
       :disabled="saving"
       @click="emit('remove', exercise)"
-      ><Trash2 :size="18" />{{ t("training.config.removeExercise") }}</BaseButton
+      ><Trash2 :size="18" />{{
+        t("training.config.removeExercise")
+      }}</BaseButton
     >
   </div>
-  <BaseButton
-    variant="ghost"
-    :disabled="saving || !canAdd"
-    @click="emit('add')"
+  <BaseButton variant="ghost" :disabled="saving || !canAdd" @click="emit('add')"
     ><Plus :size="18" />{{ t("training.config.addExercises") }}</BaseButton
   >
 </template>

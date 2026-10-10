@@ -51,11 +51,11 @@ const format = useFormat();
       <ul :aria-label="t('dialogs.finish.retainedList')">
         <li v-for="row in pending" :key="row.set.id">
           {{
-          t("dialogs.finish.retainedItem", {
-            exercise: row.exercise.name,
-            number: row.index + 1,
-          })
-        }}
+            t("dialogs.finish.retainedItem", {
+              exercise: row.exercise.name,
+              number: row.index + 1,
+            })
+          }}
         </li>
       </ul>
       <BaseButton

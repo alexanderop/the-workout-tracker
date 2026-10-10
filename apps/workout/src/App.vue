@@ -54,7 +54,17 @@ const workspace = useWorkoutWorkspace(workouts, drafts, {
   t,
 });
 watch(() => workspace.active.value?.rest?.endsAt, clock.refresh);
-const { state, loadFailure, snapshot, saving, message, error, notice, history, active } = workspace;
+const {
+  state,
+  loadFailure,
+  snapshot,
+  saving,
+  message,
+  error,
+  notice,
+  history,
+  active,
+} = workspace;
 const dialogs = useTemplateRef<InstanceType<typeof WorkoutDialogs>>("dialogs");
 const router = useRouter();
 onScopeDispose(router.beforeEach(() => dialogs.value?.requestLeave() ?? true));
@@ -113,15 +123,21 @@ provideWorkoutRouteContext({
     install,
   },
 });
-const navigation = computed(() => [
-  { id: "workouts", label: t("shell.nav.workouts"), icon: Dumbbell },
-  { id: "exercises", label: t("shell.nav.exercises"), icon: Library },
-  { id: "progress", label: t("shell.nav.progress"), icon: TrendingUp },
-] as const);
-const mobileNavigation = computed(() => [
-  ...navigation.value,
-  { id: "settings", label: t("shell.nav.settings"), icon: Settings },
-] as const);
+const navigation = computed(
+  () =>
+    [
+      { id: "workouts", label: t("shell.nav.workouts"), icon: Dumbbell },
+      { id: "exercises", label: t("shell.nav.exercises"), icon: Library },
+      { id: "progress", label: t("shell.nav.progress"), icon: TrendingUp },
+    ] as const,
+);
+const mobileNavigation = computed(
+  () =>
+    [
+      ...navigation.value,
+      { id: "settings", label: t("shell.nav.settings"), icon: Settings },
+    ] as const,
+);
 function reload() {
   window.location.reload();
 }
@@ -136,16 +152,15 @@ const title = computed(() => {
 </script>
 
 <template>
-  <a class="skip-link" href="#main" @click.prevent="focusMain"
-    >{{ t("shell.skipToContent") }}</a
-  >
+  <a class="skip-link" href="#main" @click.prevent="focusMain">{{
+    t("shell.skipToContent")
+  }}</a>
   <div class="app-layout">
     <aside class="sidebar">
       <RouterLink
         :to="destination('workouts')"
         @click="prepareLinkNavigation($event, 'workouts')"
         class="brand"
-        
         :aria-label="t('shell.brand.home')"
         ><span class="brand-mark"
           ><Dumbbell :size="20" aria-hidden="true" /></span
@@ -214,8 +229,8 @@ const title = computed(() => {
         :class="{ 'is-offline': !online }"
       >
         <div>
-          <span class="muted">{{ t("shell.yourWorkspace") }}</span><span class="slash">/</span
-          ><span>{{ title }}</span>
+          <span class="muted">{{ t("shell.yourWorkspace") }}</span
+          ><span class="slash">/</span><span>{{ title }}</span>
         </div>
         <div class="topbar-right">
           <span v-if="!online" class="connection accent"
@@ -235,11 +250,11 @@ const title = computed(() => {
         }"
         tabindex="-1"
       >
-        <BaseLoading v-if="state.kind === 'loading'" :label="t('shell.loading')" />
-        <div
-          v-else-if="loadFailure"
-          class="empty-state"
-        >
+        <BaseLoading
+          v-if="state.kind === 'loading'"
+          :label="t('shell.loading')"
+        />
+        <div v-else-if="loadFailure" class="empty-state">
           <ShieldCheck :size="32" />
           <h1>{{ t("shell.loadFailure.title") }}</h1>
           <p>{{ loadFailure.message }}</p>
@@ -248,13 +263,16 @@ const title = computed(() => {
             v-if="loadFailure.recoveryExport"
             class="btn secondary"
             @click="
-              download(loadFailure.recoveryExport, 'the-workout-tracker-recovery.json')
+              download(
+                loadFailure.recoveryExport,
+                'the-workout-tracker-recovery.json',
+              )
             "
           >
             {{ t("shell.loadFailure.export") }}</BaseButton
-          ><BaseButton unstyled class="btn primary" @click="reload"
-            >{{ t("shell.loadFailure.tryAgain") }}</BaseButton
-          >
+          ><BaseButton unstyled class="btn primary" @click="reload">{{
+            t("shell.loadFailure.tryAgain")
+          }}</BaseButton>
         </div>
         <template v-else-if="snapshot">
           <div v-if="error" class="notice" role="alert">
@@ -267,7 +285,8 @@ const title = computed(() => {
               >{{ t("shell.notice.reload") }}</BaseButton
             ><BaseButtonIcon
               :label="t('shell.notice.dismiss')"
-              @click="workspace.clearError()">
+              @click="workspace.clearError()"
+            >
               <X :size="16" />
             </BaseButtonIcon>
           </div>

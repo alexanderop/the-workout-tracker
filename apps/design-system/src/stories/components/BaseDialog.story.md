@@ -45,7 +45,9 @@ const name = ref("Morning strength");
 </script>
 <template>
   <BaseDialog>
-    <BaseDialogTrigger as-child><BaseButton>Edit workout name</BaseButton></BaseDialogTrigger>
+    <BaseDialogTrigger as-child
+      ><BaseButton>Edit workout name</BaseButton></BaseDialogTrigger
+    >
     <BaseDialogContent>
       <BaseDialogHeader>
         <BaseDialogTitle>Workout name</BaseDialogTitle>

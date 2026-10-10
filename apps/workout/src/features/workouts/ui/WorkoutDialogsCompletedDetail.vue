@@ -88,13 +88,17 @@ const format = useFormat();
           :disabled="saving || active"
           @click="emit('repeat', detail.id)"
         >
-          <Repeat2 :size="17" />{{ t("dialogs.completedDetail.repeat") }}</BaseButton
+          <Repeat2 :size="17" />{{
+            t("dialogs.completedDetail.repeat")
+          }}</BaseButton
         ><BaseButton
           unstyled
           class="btn secondary"
           @click="emit('convert', detail.id)"
         >
-          <BookmarkPlus :size="17" />{{ t("dialogs.completedDetail.saveAsTemplate") }}
+          <BookmarkPlus :size="17" />{{
+            t("dialogs.completedDetail.saveAsTemplate")
+          }}
         </BaseButton>
       </div>
     </template></BaseSheet

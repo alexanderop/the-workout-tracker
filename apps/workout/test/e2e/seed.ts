@@ -1,5 +1,8 @@
 import type { Page } from "@playwright/test";
-import { snapshotSchema, type Snapshot } from "../../src/features/workouts/domain";
+import {
+  snapshotSchema,
+  type Snapshot,
+} from "../../src/features/workouts/domain";
 
 export async function seedWorkoutStorage(page: Page, snapshot: Snapshot) {
   const valid = snapshotSchema.parse(snapshot);
@@ -29,7 +32,9 @@ export async function seedWorkoutStorage(page: Page, snapshot: Snapshot) {
 }
 
 /** The first active set's weight once logged, read straight from the on-device journal. */
-export async function readFirstLoggedWeight(page: Page): Promise<number | null> {
+export async function readFirstLoggedWeight(
+  page: Page,
+): Promise<number | null> {
   const stored = await page.evaluate(async () => {
     const database = await new Promise<IDBDatabase>((resolve, reject) => {
       const request = indexedDB.open("form-workout-v1");

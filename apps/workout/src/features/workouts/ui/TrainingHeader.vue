@@ -6,11 +6,17 @@ import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 const { workspace } = defineProps<{
   workspace: Pick<
     WorkoutWorkspace,
-    "active" | "saving" | "activeTotals" | "activeSetCount" | "elapsed" | "canFinish"
+    | "active"
+    | "saving"
+    | "activeTotals"
+    | "activeSetCount"
+    | "elapsed"
+    | "canFinish"
   >;
 }>();
 const emit = defineEmits<{ finish: []; rename: [] }>();
-const { active, saving, activeTotals, activeSetCount, elapsed, canFinish } = workspace;
+const { active, saving, activeTotals, activeSetCount, elapsed, canFinish } =
+  workspace;
 const { t } = useTranslation();
 const format = useFormat();
 </script>
@@ -21,7 +27,12 @@ const format = useFormat();
         <p class="eyebrow">{{ t("training.page.eyebrow", { elapsed }) }}</p>
         <div class="workout-title">
           <h1>{{ active.name }}</h1>
-          <BaseButtonIcon :label="t('training.page.renameWorkout')" :disabled="saving" @click="emit('rename')"><Pencil :size="16" /></BaseButtonIcon>
+          <BaseButtonIcon
+            :label="t('training.page.renameWorkout')"
+            :disabled="saving"
+            @click="emit('rename')"
+            ><Pencil :size="16"
+          /></BaseButtonIcon>
         </div>
       </div>
       <BaseButton
@@ -33,9 +44,20 @@ const format = useFormat();
       >
     </header>
     <div class="active-workout-metrics">
-      <span v-if="!activeTotals.completedSets">{{ t("training.page.exerciseCount", active.exercises.length) }}</span
-      ><span v-else>{{ t("training.page.setsLogged", { logged: activeTotals.completedSets, total: activeSetCount }) }}</span
-      ><span v-if="activeTotals.completedSets">{{ t("training.page.lifted", { volume: format.number(activeTotals.volumeKg) }) }}</span>
+      <span v-if="!activeTotals.completedSets">{{
+        t("training.page.exerciseCount", active.exercises.length)
+      }}</span
+      ><span v-else>{{
+        t("training.page.setsLogged", {
+          logged: activeTotals.completedSets,
+          total: activeSetCount,
+        })
+      }}</span
+      ><span v-if="activeTotals.completedSets">{{
+        t("training.page.lifted", {
+          volume: format.number(activeTotals.volumeKg),
+        })
+      }}</span>
     </div>
     <div class="workout-progress-space">
       <progress

@@ -100,7 +100,9 @@ describe("given an app that translates the text", () => {
       },
     });
     const html = await renderToString(createSSRApp(Root));
-    expect(html).toBe("<p>Dialog schließen|ersetzen|ersetzen|einfügen|42,5</p>");
+    expect(html).toBe(
+      "<p>Dialog schließen|ersetzen|ersetzen|einfügen|42,5</p>",
+    );
   });
 
   it("should fall back to English without a provider", async () => {

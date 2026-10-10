@@ -16,10 +16,7 @@
     "no-console": [
       "error",
       {
-        "allow": [
-          "warn",
-          "error"
-        ]
+        "allow": ["warn", "error"]
       }
     ],
     "complexity": [
@@ -30,14 +27,8 @@
       }
     ],
     "no-else-return": "error",
-    "vue/component-definition-name-casing": [
-      "error",
-      "PascalCase"
-    ],
-    "vue/prop-name-casing": [
-      "error",
-      "camelCase"
-    ],
+    "vue/component-definition-name-casing": ["error", "PascalCase"],
+    "vue/prop-name-casing": ["error", "camelCase"],
     "vue/define-props-destructuring": "error",
     "typescript/switch-exhaustiveness-check": [
       "error",
@@ -61,19 +52,12 @@
     "import/no-unassigned-import": [
       "error",
       {
-        "allow": [
-          "**/*.css",
-          "@fontsource/*",
-          "@fontsource-variable/*"
-        ]
+        "allow": ["**/*.css", "@fontsource/*", "@fontsource-variable/*"]
       }
     ],
     "typescript/await-thenable": "error",
     "typescript/require-await": "error",
-    "typescript/return-await": [
-      "error",
-      "in-try-catch"
-    ],
+    "typescript/return-await": ["error", "in-try-catch"],
     "typescript/no-unnecessary-condition": "error",
     "typescript/no-unnecessary-type-assertion": "error",
     "typescript/no-unsafe-argument": "error",
@@ -137,11 +121,7 @@
     "vitest/expect-expect": [
       "error",
       {
-        "assertFunctionNames": [
-          "expect",
-          "expectNoAxeViolations",
-          "fc.assert"
-        ]
+        "assertFunctionNames": ["expect", "expectNoAxeViolations", "fc.assert"]
       }
     ]
   },
@@ -161,9 +141,7 @@
   },
   "overrides": [
     {
-      "files": [
-        "**/*.vue"
-      ],
+      "files": ["**/*.vue"],
       "rules": {
         "no-restricted-properties": [
           "error",
@@ -196,9 +174,7 @@
       }
     },
     {
-      "files": [
-        "**/test/**/*.ts"
-      ],
+      "files": ["**/test/**/*.ts"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -206,10 +182,7 @@
             "paths": [
               {
                 "name": "vitest",
-                "importNames": [
-                  "vi",
-                  "vitest"
-                ],
+                "importNames": ["vi", "vitest"],
                 "message": "Pass explicit inputs or injected capabilities. Do not mock modules, spy on calls, or replace globals."
               }
             ]

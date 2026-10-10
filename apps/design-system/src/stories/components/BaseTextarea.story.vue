@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { logEvent } from "histoire/client";
-import { BaseTextarea, BaseField, BaseFieldLabel, BaseFieldError } from "@form/ui";
+import {
+  BaseTextarea,
+  BaseField,
+  BaseFieldLabel,
+  BaseFieldError,
+} from "@form/ui";
 const notes = ref("");
 const label = ref("Workout notes");
 const disabled = ref(false);

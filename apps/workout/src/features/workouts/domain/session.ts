@@ -1,7 +1,12 @@
 import { defaultExercises } from "./catalog";
 import type { Command } from "./commands";
 import { setTargetReps } from "./commands";
-import type { ActiveSession, CompletedSession, Routine, Snapshot } from "./schemas";
+import type {
+  ActiveSession,
+  CompletedSession,
+  Routine,
+  Snapshot,
+} from "./schemas";
 export { sessionTotals } from "./schemas";
 
 export function initialSnapshot(): Snapshot {

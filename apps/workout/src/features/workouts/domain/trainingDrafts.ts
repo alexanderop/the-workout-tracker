@@ -216,8 +216,7 @@ export function decideSetCommit(
   if (hasDraftConflict(state))
     return { kind: "blocked", issue: "draftConflict" };
   const values = parseSetValues(state);
-  if (!values)
-    return { kind: "blocked", issue: "invalidValues" };
+  if (!values) return { kind: "blocked", issue: "invalidValues" };
   if (
     !valuesOnly &&
     state.set.completed &&

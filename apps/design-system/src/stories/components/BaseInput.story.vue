@@ -22,7 +22,9 @@ const disabled = ref(false);
             id="input-name"
             v-model="value"
             :disabled="disabled"
-            @update:model-value="logEvent('BaseInput: update:modelValue', { value: $event })"
+            @update:model-value="
+              logEvent('BaseInput: update:modelValue', { value: $event })
+            "
             aria-describedby="input-help"
           /><BaseFieldDescription id="input-help"
             >A name you will recognize later.</BaseFieldDescription
@@ -40,7 +42,9 @@ const disabled = ref(false);
       ><div class="stack">
         <BaseField
           ><BaseFieldLabel for="input-empty">Empty</BaseFieldLabel
-          ><BaseInput id="input-empty" placeholder="e.g. Upper body" /></BaseField
+          ><BaseInput
+            id="input-empty"
+            placeholder="e.g. Upper body" /></BaseField
         ><BaseField
           ><BaseFieldLabel for="input-disabled">Disabled</BaseFieldLabel
           ><BaseInput

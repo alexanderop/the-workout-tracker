@@ -10,7 +10,9 @@ import { errorTag, failure, success } from "../support/results";
 
 describe("backup files", () => {
   it("round-trips a snapshot through its JSON text", () => {
-    const snapshot = createWorkoutFactory("round-trip").snapshot({ revision: 3 });
+    const snapshot = createWorkoutFactory("round-trip").snapshot({
+      revision: 3,
+    });
     expect(success(parseBackup(serializeBackup(snapshot)))).toEqual(snapshot);
   });
 

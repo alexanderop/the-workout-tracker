@@ -28,7 +28,10 @@ import {
   type Snapshot,
 } from "./domain";
 import type { DraftJournal, WorkoutStorage } from "./ports";
-import { routineValuesSchema, type RoutineValues } from "./domain/routineDrafts";
+import {
+  routineValuesSchema,
+  type RoutineValues,
+} from "./domain/routineDrafts";
 
 /** Why a revision-checked command did not save. */
 export type CommandError = SaveError | SaveUnconfirmed;
@@ -40,21 +43,28 @@ export type ApplicationCommand =
   | Command
   | { type: "create-routine"; routine: RoutineValues }
   | { type: "create-exercise"; exercise: Omit<Exercise, "id" | "custom"> };
-const createRoutineSchema = z.object({
-  type: z.literal("create-routine"),
-  routine: routineValuesSchema,
-}).strict();
-const createExerciseSchema = z.object({
-  type: z.literal("create-exercise"),
-  exercise: exerciseSchema.unwrap().omit({ id: true, custom: true }),
-}).strict();
+const createRoutineSchema = z
+  .object({
+    type: z.literal("create-routine"),
+    routine: routineValuesSchema,
+  })
+  .strict();
+const createExerciseSchema = z
+  .object({
+    type: z.literal("create-exercise"),
+    exercise: exerciseSchema.unwrap().omit({ id: true, custom: true }),
+  })
+  .strict();
 const applicationCommandSchema = z.union([
   commandSchema,
   createRoutineSchema,
   createExerciseSchema,
 ]);
 
-function resolveCommand(request: ApplicationCommand, id: () => string): Command {
+function resolveCommand(
+  request: ApplicationCommand,
+  id: () => string,
+): Command {
   if (request.type === "create-routine")
     return { type: "save-routine", routine: { ...request.routine, id: id() } };
   if (request.type === "create-exercise")
@@ -142,7 +152,8 @@ export function createWorkouts({
     if (after.isErr()) return Result.err(new SaveUnconfirmed());
     if (after.value.revision === expectedRevision)
       return Result.err(new StorageUnavailable());
-    if (canonical(after.value) === canonical(next)) return Result.ok(after.value);
+    if (canonical(after.value) === canonical(next))
+      return Result.ok(after.value);
     return Result.err(new Conflict({ snapshot: after.value }));
   };
   const save = async (
@@ -194,19 +205,28 @@ export function createWorkouts({
       const parsed = applicationCommandSchema.safeParse(command);
       if (!parsed.success)
         return Promise.resolve(
-          Result.err(issueOr(parsed.error.issues[0]?.message, "invalidWorkoutCommand")),
+          Result.err(
+            issueOr(parsed.error.issues[0]?.message, "invalidWorkoutCommand"),
+          ),
         );
       return write(expectedRevision, (snapshot) => {
         const resolved = resolveCommand(parsed.data, id);
         const validated = commandSchema.safeParse(resolved);
         if (!validated.success)
-          return Result.err(issueOr(validated.error.issues[0]?.message, "invalidWorkoutCommand"));
+          return Result.err(
+            issueOr(
+              validated.error.issues[0]?.message,
+              "invalidWorkoutCommand",
+            ),
+          );
         const result = reduceWorkout(snapshot, validated.data, {
           at: now(),
           id,
         });
         return result.kind === "rejected"
-          ? Result.err(new InvalidChange({ message: result.message, code: result.code }))
+          ? Result.err(
+              new InvalidChange({ message: result.message, code: result.code }),
+            )
           : Result.ok(result.snapshot);
       });
     },

@@ -143,7 +143,9 @@ function focusDisplay(event: Event) {
         >{{ modelValue === "" ? "—" : show(modelValue) }}</BaseButton
       >
     </BaseDialogTrigger>
-    <span v-if="announcement" role="status" class="ui-visually-hidden">{{ announcement }}</span>
+    <span v-if="announcement" role="status" class="ui-visually-hidden">{{
+      announcement
+    }}</span>
     <BaseDialogContent
       class="ui-numeric-dialog"
       overlay-class="ui-numeric-overlay"
@@ -162,17 +164,13 @@ function focusDisplay(event: Event) {
           }}</BaseDialogDescription>
         </div>
         <BaseDialogClose as-child>
-          <BaseButton type="button" variant="ghost" class="ui-numeric-cancel"
-            >{{ text.cancel }}</BaseButton
-          >
+          <BaseButton type="button" variant="ghost" class="ui-numeric-cancel">{{
+            text.cancel
+          }}</BaseButton>
         </BaseDialogClose>
       </header>
       <div class="ui-numeric-body">
-        <NumericPresets
-          :presets="presets"
-          :unit="unit"
-          @pick="confirm"
-        />
+        <NumericPresets :presets="presets" :unit="unit" @pick="confirm" />
         <div
           ref="display"
           tabindex="-1"

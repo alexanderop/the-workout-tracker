@@ -56,11 +56,7 @@ watch(
 defineExpose({ requestDiscard });
 </script>
 <template>
-  <BaseSheet
-    :open="open"
-    :title="t('training.rename.title')"
-    @close="close"
-  >
+  <BaseSheet :open="open" :title="t('training.rename.title')" @close="close">
     <label class="field"
       ><span>{{ t("training.rename.label") }}</span>
       <BaseInput

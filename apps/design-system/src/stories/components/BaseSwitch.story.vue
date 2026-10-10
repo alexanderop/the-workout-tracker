@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { logEvent } from "histoire/client";
-import { BaseSwitch, BaseField, BaseFieldLabel, BaseFieldDescription } from "@form/ui";
+import {
+  BaseSwitch,
+  BaseField,
+  BaseFieldLabel,
+  BaseFieldDescription,
+} from "@form/ui";
 const enabled = ref(true);
 const label = ref("Automatic rest timer");
 const disabled = ref(false);
@@ -11,7 +16,8 @@ const disabled = ref(false);
     <Variant title="Usage"
       ><div class="stack">
         <BaseField orientation="horizontal"
-          ><BaseFieldLabel for="switch-rest">Automatic rest timer</BaseFieldLabel
+          ><BaseFieldLabel for="switch-rest"
+            >Automatic rest timer</BaseFieldLabel
           ><BaseSwitch
             id="switch-rest"
             v-model="enabled"

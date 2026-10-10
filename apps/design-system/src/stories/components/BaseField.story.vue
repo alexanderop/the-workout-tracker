@@ -28,7 +28,9 @@ const enabled = ref(true);
             aria-describedby="field-help field-error"
           /><BaseFieldDescription id="field-help"
             >Helps you choose before your workout.</BaseFieldDescription
-          ><BaseFieldError id="field-error">A name is required.</BaseFieldError></BaseField
+          ><BaseFieldError id="field-error"
+            >A name is required.</BaseFieldError
+          ></BaseField
         >
       </div></Variant
     >

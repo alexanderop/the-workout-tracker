@@ -3,7 +3,10 @@ import { Dexie } from "dexie";
 import { afterEach, describe, expect, it } from "vitest";
 import { StoredDataUnreadable } from "../../src/features/workouts/domain";
 import { openDexieWorkoutStorage } from "../../src/features/workouts/adapters/dexie";
-import type { LoadState, WorkoutStorage } from "../../src/features/workouts/ports";
+import type {
+  LoadState,
+  WorkoutStorage,
+} from "../../src/features/workouts/ports";
 import { createWorkoutFactory } from "../support/factories";
 import { errorTag, failure } from "../support/results";
 
@@ -12,10 +15,14 @@ function isolatedStorage() {
   const factory = createWorkoutFactory("browser");
   const initial = factory.snapshot();
   const name = `workout-test-${crypto.randomUUID()}`;
-  const adapters = [openDexieWorkoutStorage(name, initial), openDexieWorkoutStorage(name, initial)];
+  const adapters = [
+    openDexieWorkoutStorage(name, initial),
+    openDexieWorkoutStorage(name, initial),
+  ];
   resources.push({ name, adapters });
   const [first, second] = adapters;
-  if (!first || !second) throw new Error("Two storage connections are required.");
+  if (!first || !second)
+    throw new Error("Two storage connections are required.");
   return { first, second, initial, name, adapters };
 }
 describe("workout storage", () => {
@@ -26,22 +33,40 @@ describe("workout storage", () => {
     }
   });
 
-
   describe("real IndexedDB workout storage", () => {
     it("adds new built-in exercises on reopen without replacing existing journal data", async () => {
       const { first, second, initial, name, adapters } = isolatedStorage();
-      const saved = { ...initial, revision: 1, settings: { autoRest: false, restSeconds: 30 } };
+      const saved = {
+        ...initial,
+        revision: 1,
+        settings: { autoRest: false, restSeconds: 30 },
+      };
       await first.compareAndSave(0, saved);
       first.close();
       second.close();
-      const exercise = { id: "new-built-in", name: "New machine", category: "Core", equipment: "EGYM", custom: false };
-      const seed = { ...initial, exercises: { ...initial.exercises, [exercise.id]: exercise } };
+      const exercise = {
+        id: "new-built-in",
+        name: "New machine",
+        category: "Core",
+        equipment: "EGYM",
+        custom: false,
+      };
+      const seed = {
+        ...initial,
+        exercises: { ...initial.exercises, [exercise.id]: exercise },
+      };
       const reopened = openDexieWorkoutStorage(name, seed);
       adapters.push(reopened);
-      const expected = { ...saved, revision: 2, exercises: { ...saved.exercises, [exercise.id]: exercise } };
+      const expected = {
+        ...saved,
+        revision: 2,
+        exercises: { ...saved.exercises, [exercise.id]: exercise },
+      };
       expect(await reopened.read()).toEqual(Result.ok(expected));
       expect(await reopened.read()).toEqual(Result.ok(expected));
-      expect(errorTag(await reopened.compareAndSave(1, saved))).toBe("Conflict");
+      expect(errorTag(await reopened.compareAndSave(1, saved))).toBe(
+        "Conflict",
+      );
     });
 
     it("reports stored invalid data for recovery and refuses writes without touching it", async () => {
@@ -58,9 +83,16 @@ describe("workout storage", () => {
       const unreadable = failure(await storage.read());
       expect(unreadable.name).toBe("StoredDataUnreadable");
       if (!StoredDataUnreadable.is(unreadable)) return;
-      expect(JSON.parse(unreadable.rawExport)).toEqual({ format: "form-workout-recovery", raw });
-      expect(errorTag(await storage.compareAndSave(0, { ...initial, revision: 1 }))).toBe("RecoveryRequired");
-      expect(errorTag(await storage.compareAndSave(0, initial))).toBe("RecoveryRequired");
+      expect(JSON.parse(unreadable.rawExport)).toEqual({
+        format: "form-workout-recovery",
+        raw,
+      });
+      expect(
+        errorTag(await storage.compareAndSave(0, { ...initial, revision: 1 })),
+      ).toBe("RecoveryRequired");
+      expect(errorTag(await storage.compareAndSave(0, initial))).toBe(
+        "RecoveryRequired",
+      );
       const reopened = new Dexie(name);
       reopened.version(1).stores({ state: "" });
       expect(await reopened.table("state").get("snapshot")).toEqual(raw);
@@ -91,11 +123,22 @@ describe("workout storage", () => {
 
     it("allows only one concurrent writer to advance a revision", async () => {
       const { first, second, initial } = isolatedStorage();
-      const next = { ...initial, revision: 1, settings: { autoRest: false, restSeconds: 30 } };
+      const next = {
+        ...initial,
+        revision: 1,
+        settings: { autoRest: false, restSeconds: 30 },
+      };
       const other = { ...next, settings: { autoRest: true, restSeconds: 90 } };
-      const results = await Promise.all([first.compareAndSave(0, next), second.compareAndSave(0, other)]);
-      const winners = results.flatMap((result) => (result.isOk() ? [result.value] : []));
-      const losers = results.flatMap((result) => (result.isErr() ? [result.error] : []));
+      const results = await Promise.all([
+        first.compareAndSave(0, next),
+        second.compareAndSave(0, other),
+      ]);
+      const winners = results.flatMap((result) =>
+        result.isOk() ? [result.value] : [],
+      );
+      const losers = results.flatMap((result) =>
+        result.isErr() ? [result.error] : [],
+      );
       expect(winners).toHaveLength(1);
       expect(losers.map((error) => error.name)).toEqual(["Conflict"]);
       const [saved] = winners;
@@ -110,9 +153,16 @@ describe("workout storage", () => {
 
     it("rejects stale no-op writes without overwriting the current revision", async () => {
       const { first, second, initial } = isolatedStorage();
-      const next = { ...initial, revision: 1, settings: { autoRest: false, restSeconds: 30 } };
+      const next = {
+        ...initial,
+        revision: 1,
+        settings: { autoRest: false, restSeconds: 30 },
+      };
       expect((await first.compareAndSave(0, next)).isOk()).toBe(true);
-      expect(failure(await second.compareAndSave(0, initial))).toMatchObject({ _tag: "Conflict", snapshot: next });
+      expect(failure(await second.compareAndSave(0, initial))).toMatchObject({
+        _tag: "Conflict",
+        snapshot: next,
+      });
       expect(await first.read()).toEqual(Result.ok(next));
     });
 
@@ -122,7 +172,9 @@ describe("workout storage", () => {
       await first.compareAndSave(0, next);
       first.close();
       expect(errorTag(await first.read())).toBe("StorageClosed");
-      expect(errorTag(await first.compareAndSave(1, next))).toBe("StorageClosed");
+      expect(errorTag(await first.compareAndSave(1, next))).toBe(
+        "StorageClosed",
+      );
       expect(await second.read()).toEqual(Result.ok(next));
       second.close();
       const reopened = openDexieWorkoutStorage(name, initial);
@@ -136,11 +188,19 @@ describe("workout storage", () => {
       const active: LoadState[] = [];
       const unsubscribe = first.subscribe((state) => removed.push(state));
       const stop = second.subscribe((state) => active.push(state));
-      await expect.poll(() => removed.some((state) => state.kind === "ready")).toBe(true);
+      await expect
+        .poll(() => removed.some((state) => state.kind === "ready"))
+        .toBe(true);
       unsubscribe();
       const count = removed.length;
       await second.compareAndSave(0, { ...initial, revision: 1 });
-      await expect.poll(() => active.some((state) => state.kind === "ready" && state.snapshot.revision === 1)).toBe(true);
+      await expect
+        .poll(() =>
+          active.some(
+            (state) => state.kind === "ready" && state.snapshot.revision === 1,
+          ),
+        )
+        .toBe(true);
       expect(removed).toHaveLength(count);
       stop();
     });

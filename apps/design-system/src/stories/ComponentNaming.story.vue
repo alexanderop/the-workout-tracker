@@ -12,12 +12,20 @@ import { Plus } from "@lucide/vue";
         <section class="pattern-card stack" aria-labelledby="naming-rules">
           <h2 id="naming-rules">Our Vue naming rules</h2>
           <ul>
-            <li>One component per PascalCase file; use the same name in imports and templates.</li>
+            <li>
+              One component per PascalCase file; use the same name in imports
+              and templates.
+            </li>
             <li>Shared styled components begin with Base.</li>
             <li>Put the general family first and the modifier last.</li>
-            <li>Tightly coupled children begin with their parent’s full name.</li>
+            <li>
+              Tightly coupled children begin with their parent’s full name.
+            </li>
             <li>Use full words; preserve third-party component names.</li>
-            <li>Component story filenames and catalog titles match the public export.</li>
+            <li>
+              Component story filenames and catalog titles match the public
+              export.
+            </li>
           </ul>
         </section>
         <section class="pattern-card stack" aria-labelledby="naming-migration">
@@ -31,10 +39,14 @@ import { Plus } from "@lucide/vue";
           </ul>
           <div class="row">
             <BaseButton type="button">BaseButton</BaseButton>
-            <BaseButtonIcon label="Add exercise"><Plus aria-hidden="true" /></BaseButtonIcon>
+            <BaseButtonIcon label="Add exercise"
+              ><Plus aria-hidden="true"
+            /></BaseButtonIcon>
           </div>
         </section>
-        <p class="note">The Docs panel includes parent–child examples and rename guidance.</p>
+        <p class="note">
+          The Docs panel includes parent–child examples and rename guidance.
+        </p>
       </div>
     </Variant>
   </Story>

@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { logEvent } from "histoire/client";
-import { BaseSelectNative, BaseField, BaseFieldLabel, BaseFieldError } from "@form/ui";
+import {
+  BaseSelectNative,
+  BaseField,
+  BaseFieldLabel,
+  BaseFieldError,
+} from "@form/ui";
 const rest = ref<string | number>(90);
 const label = ref("Rest between sets");
 const disabled = ref(false);
@@ -16,7 +21,9 @@ const disabled = ref(false);
             id="select-rest"
             v-model="rest"
             :disabled="disabled"
-            @update:model-value="logEvent('Select: update:modelValue', { value: $event })"
+            @update:model-value="
+              logEvent('Select: update:modelValue', { value: $event })
+            "
             ><option
               v-for="seconds in [30, 60, 90, 120, 180]"
               :key="seconds"

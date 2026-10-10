@@ -97,7 +97,8 @@ export class DraftStorageFailed extends TaggedError("DraftStorageFailed")<{
 }> {}
 
 /** Why reading the confirmed snapshot failed. */
-export type ReadError = StorageUnavailable | StorageClosed | StoredDataUnreadable;
+export type ReadError =
+  StorageUnavailable | StorageClosed | StoredDataUnreadable;
 /** Why the draft journal could not write a draft. */
 export type DraftWriteError = DraftsDeleted | DraftStorageFailed;
 /** Why a revision-checked write did not save. */

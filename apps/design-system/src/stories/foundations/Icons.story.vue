@@ -8,7 +8,8 @@ import { BaseButton } from "@form/ui";
       ><div class="stack">
         <h1>Icons support an action.</h1>
         <div class="row">
-          <BaseButton><Plus :size="18" aria-hidden="true" />Add exercise</BaseButton
+          <BaseButton
+            ><Plus :size="18" aria-hidden="true" />Add exercise</BaseButton
           ><BaseButton variant="secondary"
             ><Check :size="18" aria-hidden="true" />Log set</BaseButton
           ><BaseButton variant="ghost" size="icon" aria-label="Settings"

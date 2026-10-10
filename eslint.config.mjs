@@ -60,7 +60,9 @@ export default [
       "vue/block-order": ["error", { order: ["script", "template", "style"] }],
       "vue/define-macros-order": [
         "error",
-        { order: ["defineOptions", "defineProps", "defineEmits", "defineSlots"] },
+        {
+          order: ["defineOptions", "defineProps", "defineEmits", "defineSlots"],
+        },
       ],
       "vue/no-undef-components": [
         "error",
@@ -78,7 +80,7 @@ export default [
       "vue/no-bare-strings-in-template": [
         "error",
         {
-          allowlist: [...'()[]{}<>,.:;!?&+-=*/#%|•·—–×…'.split(""), "kg"],
+          allowlist: [..."()[]{}<>,.:;!?&+-=*/#%|•·—–×…".split(""), "kg"],
           // Text props on any element or component, not only native ones.
           attributes: {
             "/.+/": [

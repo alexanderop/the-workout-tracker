@@ -167,7 +167,12 @@ const BUILDERS: Record<Kind, (context: Context) => Command> = {
     ...ids(target),
     setCount: target.step.setCount,
     ...(target.step.completed
-      ? { values: { weightKg: target.step.weightKg, reps: target.step.reps + 1 } }
+      ? {
+          values: {
+            weightKg: target.step.weightKg,
+            reps: target.step.reps + 1,
+          },
+        }
       : {}),
   })),
   "remove-set": onSet((target) => ({
@@ -382,20 +387,24 @@ function mustAccept(snapshot: Snapshot, command: Command): boolean {
     "set-values": (_, exercise) =>
       "reps" in command &&
       (command.reps > 0 ||
-        exercise?.sets.find((set) => "setId" in command && set.id === command.setId)
-          ?.completed === true),
+        exercise?.sets.find(
+          (set) => "setId" in command && set.id === command.setId,
+        )?.completed === true),
     "set-entry": () =>
       command.type === "set-entry" && (command.completed || command.reps > 0),
     "add-set": (_, exercise) => (exercise?.sets.length ?? 30) < 30,
     "remove-set": (_, exercise) => (exercise?.sets.length ?? 1) > 1,
     "configure-exercise": (_, exercise) =>
       command.type === "configure-exercise" &&
-      command.setCount >= (exercise?.sets.filter((set) => set.completed).length ?? 0),
+      command.setCount >=
+        (exercise?.sets.filter((set) => set.completed).length ?? 0),
     "add-exercises": () =>
       command.type === "add-exercises" &&
       active.exercises.length + command.exerciseIds.length <= 50,
   };
-  return rules[command.type]?.(active, findExercise(snapshot, command)) ?? false;
+  return (
+    rules[command.type]?.(active, findExercise(snapshot, command)) ?? false
+  );
 }
 
 function runJourney(steps: readonly Step[]) {
@@ -406,8 +415,12 @@ function runJourney(steps: readonly Step[]) {
     at += step.advanceMs;
     const command = toCommand(snapshot, step);
     const transition = reduceWorkout(snapshot, command, { at, id: factory.id });
-    const refused = mustAccept(snapshot, command) && transition.kind === "rejected";
-    expect({ type: command.type, refused }).toEqual({ type: command.type, refused: false });
+    const refused =
+      mustAccept(snapshot, command) && transition.kind === "rejected";
+    expect({ type: command.type, refused }).toEqual({
+      type: command.type,
+      refused: false,
+    });
     snapshot = checkStep(snapshot, command, transition);
   }
 }
@@ -437,60 +450,70 @@ function applyChanged(snapshot: Snapshot, command: Command, id: () => string) {
 const PROPERTY_TIMEOUT_MS = 60_000;
 
 describe("given random workout journeys", () => {
-  it("should accept valid commands, keep history and preserve logged work", () => {
-    fc.assert(fc.property(journeyArbitrary, runJourney), { numRuns: 300 });
-  }, PROPERTY_TIMEOUT_MS);
+  it(
+    "should accept valid commands, keep history and preserve logged work",
+    () => {
+      fc.assert(fc.property(journeyArbitrary, runJourney), { numRuns: 300 });
+    },
+    PROPERTY_TIMEOUT_MS,
+  );
 
-  it("should log any unlogged set with entered values and restore its target when undone", () => {
-    let exercised = 0;
-    fc.assert(
-      fc.property(
-        journeyArbitrary,
-        fc.nat(),
-        stepArbitrary,
-        (steps, choice, entry) => {
-          const factory = createWorkoutFactory("undo");
-          const snapshot = replay(steps, factory.id);
-          const active = snapshot.active;
-          const set = pick(
-            allSets(active).filter((row) => !row.completed),
-            choice,
-          );
-          const exercise = active?.exercises.find((row) =>
-            row.sets.some((candidate) => candidate.id === set?.id),
-          );
-          if (!active || !set || !exercise) return;
-          exercised += 1;
-          const target = { sessionId: active.id, setId: set.id };
-          const logged = applyChanged(
-            snapshot,
-            {
-              type: "set-entry",
-              ...target,
-              exerciseId: exercise.id,
+  it(
+    "should log any unlogged set with entered values and restore its target when undone",
+    () => {
+      let exercised = 0;
+      fc.assert(
+        fc.property(
+          journeyArbitrary,
+          fc.nat(),
+          stepArbitrary,
+          (steps, choice, entry) => {
+            const factory = createWorkoutFactory("undo");
+            const snapshot = replay(steps, factory.id);
+            const active = snapshot.active;
+            const set = pick(
+              allSets(active).filter((row) => !row.completed),
+              choice,
+            );
+            const exercise = active?.exercises.find((row) =>
+              row.sets.some((candidate) => candidate.id === set?.id),
+            );
+            if (!active || !set || !exercise) return;
+            exercised += 1;
+            const target = { sessionId: active.id, setId: set.id };
+            const logged = applyChanged(
+              snapshot,
+              {
+                type: "set-entry",
+                ...target,
+                exerciseId: exercise.id,
+                weightKg: entry.weightKg,
+                reps: entry.reps,
+                completed: true,
+              },
+              factory.id,
+            );
+            const undone = applyChanged(
+              logged,
+              { type: "set-completed", ...target, completed: false },
+              factory.id,
+            );
+            expect(
+              allSets(undone.active).find((row) => row.id === set.id),
+            ).toEqual({
+              ...set,
               weightKg: entry.weightKg,
-              reps: entry.reps,
-              completed: true,
-            },
-            factory.id,
-          );
-          const undone = applyChanged(
-            logged,
-            { type: "set-completed", ...target, completed: false },
-            factory.id,
-          );
-          expect(allSets(undone.active).find((row) => row.id === set.id)).toEqual({
-            ...set,
-            weightKg: entry.weightKg,
-            reps: setTargetReps(set),
-            targetReps: setTargetReps(set),
-          });
-          expect(undone.active?.rest?.setId).not.toBe(set.id);
-        },
-      ),
-      { numRuns: 200 },
-    );
-    // Journeys without an unlogged set skip the check; most must reach it.
-    expect(exercised).toBeGreaterThanOrEqual(MIN_UNDO_RUNS);
-  }, PROPERTY_TIMEOUT_MS);
+              reps: setTargetReps(set),
+              targetReps: setTargetReps(set),
+            });
+            expect(undone.active?.rest?.setId).not.toBe(set.id);
+          },
+        ),
+        { numRuns: 200 },
+      );
+      // Journeys without an unlogged set skip the check; most must reach it.
+      expect(exercised).toBeGreaterThanOrEqual(MIN_UNDO_RUNS);
+    },
+    PROPERTY_TIMEOUT_MS,
+  );
 });

@@ -154,7 +154,9 @@ export function createDraftJournal(deps: {
         const storage = yield* attempt(() => deps.storage());
         const before = yield* attempt(() => minimumRevision(storage));
         if (draft.revision < before) return yield* new DraftsDeleted();
-        yield* attempt(() => storage.setItem(key(draft), JSON.stringify(draft)));
+        yield* attempt(() =>
+          storage.setItem(key(draft), JSON.stringify(draft)),
+        );
         const after = yield* attempt(() => minimumRevision(storage));
         if (draft.revision < after) {
           yield* attempt(() => storage.removeItem(key(draft)));

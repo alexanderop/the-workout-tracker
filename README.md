@@ -84,17 +84,17 @@ Husky runs `pnpm verify` and the limit ratchet before each commit, and `pnpm tes
 
 ## Documentation map
 
-| Question | Document |
-| --- | --- |
-| How should an agent work here? | [AGENTS.md](AGENTS.md) |
-| Which words do we use for workout concepts? | [Glossary](docs/glossary.md) |
-| What are the workout rules, state transitions, and revisions? | [Domain context](docs/context.md) |
-| Which workspace or module owns a behavior? | [Architecture](docs/architecture.md) |
-| What are the visual and interaction rules? | [Design](docs/design.md) |
-| How do I add a command, component, or persistence change? | [Development workflows](docs/workflows.md) |
-| What does each test or check prove? | [Verification](docs/verification.md) |
-| Which references informed our choices? | [Prior art](docs/prior-art.md) |
-| What did earlier work decide or report? | [Implementation history](docs/history/README.md) |
+| Question                                                      | Document                                         |
+| ------------------------------------------------------------- | ------------------------------------------------ |
+| How should an agent work here?                                | [AGENTS.md](AGENTS.md)                           |
+| Which words do we use for workout concepts?                   | [Glossary](docs/glossary.md)                     |
+| What are the workout rules, state transitions, and revisions? | [Domain context](docs/context.md)                |
+| Which workspace or module owns a behavior?                    | [Architecture](docs/architecture.md)             |
+| What are the visual and interaction rules?                    | [Design](docs/design.md)                         |
+| How do I add a command, component, or persistence change?     | [Development workflows](docs/workflows.md)       |
+| What does each test or check prove?                           | [Verification](docs/verification.md)             |
+| Which references informed our choices?                        | [Prior art](docs/prior-art.md)                   |
+| What did earlier work decide or report?                       | [Implementation history](docs/history/README.md) |
 
 The glossary, context, architecture, and design describe current contracts. History preserves earlier plans and evidence, not current instructions. Update the authoritative document when its contract changes and link to it from other guides.
 
@@ -124,15 +124,15 @@ The explorer uses Histoire 1.0 beta with Vite 7; the workout app compiles its ow
 
 ### Design workspace organization
 
-| Section | Contents |
-| --- | --- |
-| **00 Start here** | Product audience, design principles, catalog guidance and naming |
-| **01 Foundations** | Semantic colors, typography, spacing, touch sizes, icons and motion |
-| **02 Components** | Public `@form/ui` components, variants and interactive controls |
-| **03 Patterns** | Illustrative compositions with local sample state and explicit limitations |
-| **04 Pages** | Workouts, Exercises, Active workout, Progress and Settings in named states |
-| **05 Flows** | First workout, repeat a workout, and finish and review |
-| **06 Explorations** | Proposals clearly distinguished from implemented product behavior |
+| Section             | Contents                                                                   |
+| ------------------- | -------------------------------------------------------------------------- |
+| **00 Start here**   | Product audience, design principles, catalog guidance and naming           |
+| **01 Foundations**  | Semantic colors, typography, spacing, touch sizes, icons and motion        |
+| **02 Components**   | Public `@form/ui` components, variants and interactive controls            |
+| **03 Patterns**     | Illustrative compositions with local sample state and explicit limitations |
+| **04 Pages**        | Workouts, Exercises, Active workout, Progress and Settings in named states |
+| **05 Flows**        | First workout, repeat a workout, and finish and review                     |
+| **06 Explorations** | Proposals clearly distinguished from implemented product behavior          |
 
 Stories live in `apps/design-system/src/stories/**/*.story.vue`. Complete pages render the production application through its preview document; do not copy page markup or move workout rules into the UI package for the explorer. Sample feedback in patterns and explorations must not imply a real save. Spacing examples are reference values, not additional global tokens.
 

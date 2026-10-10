@@ -10,16 +10,25 @@ const artwork: ReadonlyMap<
   string,
   { name: string; equipment: string; src: string }
 > = new Map(
-  [barbellArtwork, dumbbellArtwork, cableArtwork, machineArtwork, bodyweightArtwork].flatMap((group) =>
+  [
+    barbellArtwork,
+    dumbbellArtwork,
+    cableArtwork,
+    machineArtwork,
+    bodyweightArtwork,
+  ].flatMap((group) =>
     Object.entries(group).flatMap(([equipment, rows]) =>
       rows.map(([id, name, src]) => [id, { name, equipment, src }] as const),
     ),
   ),
 );
 
-export function exerciseArtwork(exercise: Exercise | undefined): string | undefined {
+export function exerciseArtwork(
+  exercise: Exercise | undefined,
+): string | undefined {
   if (!exercise || exercise.custom) return undefined;
   const match = artwork.get(exercise.id);
-  if (match?.name !== exercise.name || match.equipment !== exercise.equipment) return undefined;
+  if (match?.name !== exercise.name || match.equipment !== exercise.equipment)
+    return undefined;
   return match.src;
 }

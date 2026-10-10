@@ -47,7 +47,10 @@ describe("training draft decisions", () => {
       recoveredStale: true,
     });
     expect(hasDraftConflict(restored)).toBe(true);
-    expect(decideSetCommit(restored)).toEqual({ kind: "blocked", issue: "draftConflict" });
+    expect(decideSetCommit(restored)).toEqual({
+      kind: "blocked",
+      issue: "draftConflict",
+    });
   });
 
   it("keeps a live draft usable after unrelated saves when its set baseline is unchanged", () => {
@@ -69,12 +72,18 @@ describe("training draft decisions", () => {
     );
     expect(alternatives.alternatives).toEqual([first, second]);
     expect(hasDraftConflict(alternatives)).toBe(true);
-    expect(decideSetCommit(alternatives)).toEqual({ kind: "blocked", issue: "draftConflict" });
+    expect(decideSetCommit(alternatives)).toEqual({
+      kind: "blocked",
+      issue: "draftConflict",
+    });
     const changed = restoreTrainingDraft(
       draftState({ set: factory.set({ weightKg: 55 }), records: [first] }),
     );
     expect(changed).toMatchObject({ weight: "45", recoveredStale: true });
-    expect(decideSetCommit(changed)).toEqual({ kind: "blocked", issue: "draftConflict" });
+    expect(decideSetCommit(changed)).toEqual({
+      kind: "blocked",
+      issue: "draftConflict",
+    });
   });
 
   it("collapses equivalent recovered inputs without losing their acknowledgement records", () => {
@@ -117,7 +126,10 @@ describe("training draft decisions", () => {
       values: { weightKg: 40, reps: 8 },
       completed: true,
     });
-    expect(decideSetCommit({ ...unlogged, reps: "" })).toEqual({ kind: "blocked", issue: "invalidValues" });
+    expect(decideSetCommit({ ...unlogged, reps: "" })).toEqual({
+      kind: "blocked",
+      issue: "invalidValues",
+    });
   });
 
   it("invalidates undo after the logged set changes or the active session changes", () => {
@@ -133,19 +145,30 @@ describe("training draft decisions", () => {
   it("reports one status for every combination of stored draft flags", () => {
     const factory = createWorkoutFactory();
     const set = factory.set();
-    expect(draftStatus(draftState({ set, base: set }))).toEqual({ kind: "saved" });
+    expect(draftStatus(draftState({ set, base: set }))).toEqual({
+      kind: "saved",
+    });
     expect(draftStatus(draftState({ set, base: set, touched: true }))).toEqual({
       kind: "editing",
     });
     expect(
-      draftStatus(draftState({ set, base: { ...set, weightKg: 1 }, touched: true })),
+      draftStatus(
+        draftState({ set, base: { ...set, weightKg: 1 }, touched: true }),
+      ),
     ).toEqual({ kind: "conflict", reason: "changed-elsewhere" });
     expect(
-      draftStatus(draftState({ set, base: set, touched: true, recoveredStale: true })),
+      draftStatus(
+        draftState({ set, base: set, touched: true, recoveredStale: true }),
+      ),
     ).toEqual({ kind: "conflict", reason: "recovered-stale" });
     expect(
       draftStatus(
-        draftState({ set, base: set, touched: true, alternatives: [factory.draft()] }),
+        draftState({
+          set,
+          base: set,
+          touched: true,
+          alternatives: [factory.draft()],
+        }),
       ),
     ).toEqual({ kind: "conflict", reason: "alternatives" });
   });
@@ -156,7 +179,10 @@ describe("training draft decisions", () => {
     const clean = draftState({ set, base: set, revision: 2 });
     const edited = { ...clean, ...editDraft(clean, { weight: "55" }, 3) };
     expect(edited).toMatchObject({ weight: "55", touched: true, revision: 3 });
-    expect(editDraft(edited, { reps: "9" }, 4)).toEqual({ reps: "9", touched: true });
+    expect(editDraft(edited, { reps: "9" }, 4)).toEqual({
+      reps: "9",
+      touched: true,
+    });
 
     const changed = { ...set, weightKg: 60 };
     const observed = { ...edited, ...observeSavedSet(edited, changed) };
@@ -196,16 +222,34 @@ describe("training draft decisions", () => {
     expect(decideSetCommit(logged)).toEqual({ kind: "unchanged" });
 
     const whole = createWorkoutFactory().set({ weightKg: 45 });
-    expect(isDraftDirty(draftState({ set: whole, weight: "45.0", reps: "8" }))).toBe(false);
-    expect(isDraftDirty(draftState({ set: whole, weight: "45,5", reps: "8" }))).toBe(true);
-    expect(isDraftDirty(draftState({ set: whole, weight: "45", reps: "9" }))).toBe(true);
-    expect(isDraftDirty(draftState({ set: whole, weight: "", reps: "8" }))).toBe(true);
+    expect(
+      isDraftDirty(draftState({ set: whole, weight: "45.0", reps: "8" })),
+    ).toBe(false);
+    expect(
+      isDraftDirty(draftState({ set: whole, weight: "45,5", reps: "8" })),
+    ).toBe(true);
+    expect(
+      isDraftDirty(draftState({ set: whole, weight: "45", reps: "9" })),
+    ).toBe(true);
+    expect(
+      isDraftDirty(draftState({ set: whole, weight: "", reps: "8" })),
+    ).toBe(true);
   });
 });
 
 function sameBase(
-  base: { weightKg: number; reps: number; completed: boolean; targetReps?: number },
-  set: { weightKg: number; reps: number; completed: boolean; targetReps?: number },
+  base: {
+    weightKg: number;
+    reps: number;
+    completed: boolean;
+    targetReps?: number;
+  },
+  set: {
+    weightKg: number;
+    reps: number;
+    completed: boolean;
+    targetReps?: number;
+  },
 ) {
   return (
     base.weightKg === set.weightKg &&

@@ -97,8 +97,8 @@ export function catalogs(): Plugin {
         const files = Object.fromEntries(
           locales.map((locale) => [
             locale,
-            Object.keys(context.bundle ?? {}).find((name) =>
-              name.includes(`/${locale}-`) && name.endsWith(".json"),
+            Object.keys(context.bundle ?? {}).find(
+              (name) => name.includes(`/${locale}-`) && name.endsWith(".json"),
             ),
           ]),
         );

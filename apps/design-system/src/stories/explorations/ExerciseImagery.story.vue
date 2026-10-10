@@ -17,7 +17,8 @@ const matches = computed(() =>
 
 <template>
   <Story title="06 Explorations/Exercise imagery">
-    <Variant title="Equipment gallery"><ExplorationNotice />
+    <Variant title="Equipment gallery"
+      ><ExplorationNotice />
       <main class="preview imagery-preview">
         <header class="imagery-header">
           <p class="imagery-eyebrow">Exercise library · Art direction</p>
@@ -50,7 +51,8 @@ const matches = computed(() =>
         </p>
       </main>
     </Variant>
-    <Variant title="Exercise picker"><ExplorationNotice />
+    <Variant title="Exercise picker"
+      ><ExplorationNotice />
       <main class="preview imagery-picker">
         <header class="imagery-header">
           <p class="imagery-eyebrow">Build your workout</p>

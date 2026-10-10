@@ -49,10 +49,7 @@ function usePreviewInstallation(): Installation {
   };
 }
 const nextId = () => `preview-new-${crypto.randomUUID()}`;
-async function mountScenario(
-  host: HTMLElement,
-  id: ScenarioId,
-): Promise<void> {
+async function mountScenario(host: HTMLElement, id: ScenarioId): Promise<void> {
   const scenario = getScenario(id);
   const snapshot = snapshotSchema.parse(scenario.seed());
   const started = performance.now();

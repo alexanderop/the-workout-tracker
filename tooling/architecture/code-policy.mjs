@@ -37,7 +37,9 @@ function isDefineProps(node) {
   if (node?.type !== "CallExpression" || node.callee.type !== "Identifier")
     return false;
   if (node.callee.name === "defineProps") return true;
-  return node.callee.name === "withDefaults" && isDefineProps(node.arguments[0]);
+  return (
+    node.callee.name === "withDefaults" && isDefineProps(node.arguments[0])
+  );
 }
 function patternNames(pattern) {
   if (!pattern) return [];

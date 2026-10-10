@@ -9,7 +9,9 @@ const { text, show } = useNumericText();
 
 <template>
   <section class="ui-numeric-suggestions" :aria-label="text.suggestions">
-    <p>{{ text.quickPick }} <span>{{ text.tapToUse }}</span></p>
+    <p>
+      {{ text.quickPick }} <span>{{ text.tapToUse }}</span>
+    </p>
     <div class="ui-numeric-presets">
       <BaseButton
         v-for="preset in presets"

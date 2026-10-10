@@ -47,7 +47,9 @@ describe("browser draft journal", () => {
       const { first, second, input } = setup();
       localStorage.setItem("other-app", "keep");
       success(first.write(input));
-      const newer = success(second.write({ ...input, revision: 3, weight: "55" }));
+      const newer = success(
+        second.write({ ...input, revision: 3, weight: "55" }),
+      );
       success(first.clearBefore(2));
       expect(success(first.recover("session", "set"))).toEqual([newer]);
       expect(errorTag(second.write({ ...input, weight: "60" }))).toBe(
@@ -77,7 +79,10 @@ describe("browser draft journal", () => {
       });
       const late = success(first.write(input));
       success(first.write({ ...input, sessionId: "discarded" }));
-      const snapshot = factory.snapshot({ revision: 2, completed: { session: finished } });
+      const snapshot = factory.snapshot({
+        revision: 2,
+        completed: { session: finished },
+      });
       expect(success(first.prune(snapshot))).toEqual([late]);
       expect(success(first.recover("session", "set"))).toEqual([late]);
       expect(success(first.recover("discarded", "set"))).toEqual([]);
@@ -92,9 +97,13 @@ describe("browser draft journal", () => {
       expect(errorTag(first.write(input))).toBe("DraftsDeleted");
       success(first.clearBefore(2));
       success(first.clearBefore(1));
-      const markers = Object.keys(localStorage).filter((name) => name.startsWith("form-workout:drafts-deleted-before"));
+      const markers = Object.keys(localStorage).filter((name) =>
+        name.startsWith("form-workout:drafts-deleted-before"),
+      );
       expect(markers).toEqual(["form-workout:drafts-deleted-before"]);
-      expect(localStorage.getItem("form-workout:drafts-deleted-before")).toBe("3");
+      expect(localStorage.getItem("form-workout:drafts-deleted-before")).toBe(
+        "3",
+      );
       expect(errorTag(first.write({ ...input, revision: 2 }))).toBe(
         "DraftsDeleted",
       );
@@ -112,11 +121,18 @@ describe("browser draft journal", () => {
         getItem: (name: string) => localStorage.getItem(name),
         removeItem: (name: string) => localStorage.removeItem(name),
         setItem(name: string, value: string) {
-          if (full) throw new DOMException("The quota has been exceeded.", "QuotaExceededError");
+          if (full)
+            throw new DOMException(
+              "The quota has been exceeded.",
+              "QuotaExceededError",
+            );
           localStorage.setItem(name, value);
         },
       };
-      const journal = createDraftJournal({ storage: () => quotaLimited, id: factory.id });
+      const journal = createDraftJournal({
+        storage: () => quotaLimited,
+        id: factory.id,
+      });
       const saved = success(journal.write(input));
       full = true;
       const refused = failure(journal.write({ ...input, weight: "50" }));

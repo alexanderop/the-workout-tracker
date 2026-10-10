@@ -43,13 +43,10 @@ Then("the app is shown in German without reloading", async ({ page }) => {
   await expectGerman(page);
 });
 
-Then(
-  "after reloading the app is still shown in German",
-  async ({ page }) => {
-    await page.reload({ waitUntil: "commit" });
-    await expectGerman(page);
-  },
-);
+Then("after reloading the app is still shown in German", async ({ page }) => {
+  await page.reload({ waitUntil: "commit" });
+  await expectGerman(page);
+});
 
 Then(
   "a German browser shows the app in German without a stored choice",
@@ -97,28 +94,25 @@ const weightButton = (page: Page) =>
     name: de("training.setRow.weightLabel", { n: 1, exercise: "Bench press" }),
   });
 
-Given(
-  "my active workout is open in German",
-  async ({ workout, page }) => {
-    await workout.open();
-    await page.goto("/#/settings");
-    await page.getByRole("radio", { name: "Deutsch", exact: true }).check();
-    const factory = createWorkoutFactory("german-decimal");
-    await seedWorkoutStorage(
-      page,
-      factory.snapshot({ active: factory.activeSession() }),
-    );
-    await page.goto("/#/");
-    await page
-      .getByRole("button", {
-        name: de("workouts.home.continueWorkout"),
-        exact: true,
-      })
-      .click();
-    await expect(page).toHaveURL(/#\/session$/);
-    await expect(weightButton(page)).toBeVisible();
-  },
-);
+Given("my active workout is open in German", async ({ workout, page }) => {
+  await workout.open();
+  await page.goto("/#/settings");
+  await page.getByRole("radio", { name: "Deutsch", exact: true }).check();
+  const factory = createWorkoutFactory("german-decimal");
+  await seedWorkoutStorage(
+    page,
+    factory.snapshot({ active: factory.activeSession() }),
+  );
+  await page.goto("/#/");
+  await page
+    .getByRole("button", {
+      name: de("workouts.home.continueWorkout"),
+      exact: true,
+    })
+    .click();
+  await expect(page).toHaveURL(/#\/session$/);
+  await expect(weightButton(page)).toBeVisible();
+});
 
 When(
   "I type the weight {string} in the number editor",
@@ -166,8 +160,6 @@ When("I log the German first set", async ({ page }) => {
 Then(
   "the journal stores a weight of {float} kilograms",
   async ({ page }, kilograms: number) => {
-    await expect
-      .poll(() => readFirstLoggedWeight(page))
-      .toBe(kilograms);
+    await expect.poll(() => readFirstLoggedWeight(page)).toBe(kilograms);
   },
 );

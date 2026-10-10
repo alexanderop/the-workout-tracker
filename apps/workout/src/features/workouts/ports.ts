@@ -33,9 +33,7 @@ export type WorkoutStorage = {
  * instead of throwing; the UI decides how much that matters.
  */
 export type DraftJournal = {
-  readonly clearBefore: (
-    revision: number,
-  ) => Result<void, DraftStorageFailed>;
+  readonly clearBefore: (revision: number) => Result<void, DraftStorageFailed>;
   /**
    * Removes obsolete drafts and returns, without removing them, the drafts
    * that belong to a set of a finished workout. Such input arrived too late

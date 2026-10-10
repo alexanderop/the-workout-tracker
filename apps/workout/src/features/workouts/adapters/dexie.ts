@@ -54,32 +54,38 @@ export function openDexieWorkoutStorage(
     for (const listener of listeners) listener(state);
   };
   const initialize = () => {
-    initialized ??= database.transaction("rw", table, async () => {
-      const raw = await table.get("snapshot");
-      if (raw === undefined) {
-        await table.put(seed, "snapshot");
-        return;
-      }
-      const parsed = snapshotSchema.safeParse(raw);
-      if (!parsed.success) return;
-      const missing = Object.values(seed.exercises).filter(
-        (exercise) => !exercise.custom && !Object.hasOwn(parsed.data.exercises, exercise.id),
-      );
-      if (!missing.length) return;
-      const updated = snapshotSchema.parse({
-        ...parsed.data,
-        revision: parsed.data.revision + 1,
-        exercises: {
-          ...parsed.data.exercises,
-          ...Object.fromEntries(missing.map((exercise) => [exercise.id, exercise])),
-        },
+    initialized ??= database
+      .transaction("rw", table, async () => {
+        const raw = await table.get("snapshot");
+        if (raw === undefined) {
+          await table.put(seed, "snapshot");
+          return;
+        }
+        const parsed = snapshotSchema.safeParse(raw);
+        if (!parsed.success) return;
+        const missing = Object.values(seed.exercises).filter(
+          (exercise) =>
+            !exercise.custom &&
+            !Object.hasOwn(parsed.data.exercises, exercise.id),
+        );
+        if (!missing.length) return;
+        const updated = snapshotSchema.parse({
+          ...parsed.data,
+          revision: parsed.data.revision + 1,
+          exercises: {
+            ...parsed.data.exercises,
+            ...Object.fromEntries(
+              missing.map((exercise) => [exercise.id, exercise]),
+            ),
+          },
+        });
+        await table.put(updated, "snapshot");
+      })
+      .catch((error: unknown) => {
+        // Forget a failed attempt so the next call retries the open.
+        initialized = undefined;
+        throw error;
       });
-      await table.put(updated, "snapshot");
-    }).catch((error: unknown) => {
-      // Forget a failed attempt so the next call retries the open.
-      initialized = undefined;
-      throw error;
-    });
     return initialized;
   };
   const commit = async (
@@ -92,20 +98,17 @@ export function openDexieWorkoutStorage(
       return Result.err(new Conflict({ snapshot: current.data }));
     if (candidate.revision === expectedRevision) {
       if (JSON.stringify(candidate) !== JSON.stringify(current.data))
-        return Result.err(
-          invalidChange("changedDataMustAdvance"),
-        );
+        return Result.err(invalidChange("changedDataMustAdvance"));
       return Result.ok(current.data);
     }
     if (candidate.revision !== expectedRevision + 1)
-      return Result.err(
-        invalidChange("revisionMustAdvanceByOne"),
-      );
+      return Result.err(invalidChange("revisionMustAdvanceByOne"));
     await table.put(candidate, "snapshot");
     return Result.ok(candidate);
   };
   /** A failed effect is `closed` when the handle was closed meanwhile. */
-  const failure = () => (isClosed() ? new StorageClosed() : new StorageUnavailable());
+  const failure = () =>
+    isClosed() ? new StorageClosed() : new StorageUnavailable();
   const rawRead = async () => {
     await initialize();
     return table.get("snapshot");
@@ -127,7 +130,10 @@ export function openDexieWorkoutStorage(
       const candidate = snapshotSchema.safeParse(next);
       if (!candidate.success)
         return Result.err(invalidChange("invalidWorkoutData"));
-      const opened = await Result.tryPromise({ try: initialize, catch: failure });
+      const opened = await Result.tryPromise({
+        try: initialize,
+        catch: failure,
+      });
       if (opened.isErr()) return Result.err(opened.error);
       if (isClosed()) return Result.err(new StorageClosed());
       return Result.flatten(

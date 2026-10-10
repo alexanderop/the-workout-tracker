@@ -33,12 +33,18 @@ describe("save notice", () => {
         { type: "settings", settings: { restSeconds: 60, autoRest: false } },
         0,
       );
-      expect(workouts.notice.value).toMatchObject({ kind: "failed", reload: true });
+      expect(workouts.notice.value).toMatchObject({
+        kind: "failed",
+        reload: true,
+      });
       expect(workouts.message.value).toBe("");
       workouts.clearError();
       expect(workouts.notice.value).toEqual({ kind: "none" });
       workouts.fail("Local guidance");
-      expect(workouts.notice.value).toMatchObject({ kind: "failed", reload: false });
+      expect(workouts.notice.value).toMatchObject({
+        kind: "failed",
+        reload: false,
+      });
     } finally {
       scope.stop();
     }

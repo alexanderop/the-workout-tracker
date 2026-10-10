@@ -26,7 +26,9 @@ describe("design examples", () => {
       "Unknown design example",
     );
     expect(parseScenarioId(null)).toBe("workouts.first-visit");
-    expect(() => parseScenarioId("missing-example")).toThrow("Unknown design example");
+    expect(() => parseScenarioId("missing-example")).toThrow(
+      "Unknown design example",
+    );
   });
 
   it("enforces revisions, idempotence, subscriptions and closed storage", async () => {
@@ -86,7 +88,9 @@ describe("design examples", () => {
     journal.consume([first]);
     expect(success(journal.recover("session", "set"))).toEqual([second]);
     second.base.weightKg = 999;
-    expect(success(journal.recover("session", "set"))[0]?.base.weightKg).toBe(60);
+    expect(success(journal.recover("session", "set"))[0]?.base.weightKg).toBe(
+      60,
+    );
     journal.clearBefore(1);
     expect(success(journal.recover("session", "set"))).toEqual([]);
     expect(errorTag(journal.write(input))).toBe("DraftsDeleted");

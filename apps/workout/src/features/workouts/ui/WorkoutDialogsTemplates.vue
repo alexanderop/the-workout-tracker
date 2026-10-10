@@ -191,9 +191,9 @@ defineExpose({ editRoutine });
             @click="useSavedRoutine"
             >{{ t("dialogs.templates.useSaved") }}</BaseButton
           >
-          <BaseButton :disabled="saving" @click="keepRoutineChanges"
-            >{{ t("dialogs.templates.keepMine") }}</BaseButton
-          >
+          <BaseButton :disabled="saving" @click="keepRoutineChanges">{{
+            t("dialogs.templates.keepMine")
+          }}</BaseButton>
         </div>
       </div>
       <template v-if="!routineOpen">
@@ -202,7 +202,9 @@ defineExpose({ editRoutine });
           unstyled
           class="btn secondary"
           @click="editRoutine(null)"
-          ><Plus :size="17" />{{ t("dialogs.templates.newTemplate") }}</BaseButton
+          ><Plus :size="17" />{{
+            t("dialogs.templates.newTemplate")
+          }}</BaseButton
         >
         <div v-if="!routines.length" class="overview-empty">
           <BookmarkPlus :size="26" />
@@ -225,7 +227,9 @@ defineExpose({ editRoutine });
               ><BaseButton
                 unstyled
                 class="text-button"
-                :aria-label="t('dialogs.templates.editAria', { name: routine.name })"
+                :aria-label="
+                  t('dialogs.templates.editAria', { name: routine.name })
+                "
                 :data-template-id="routine.id"
                 @click="editRoutine(routine)"
               >
@@ -234,7 +238,9 @@ defineExpose({ editRoutine });
             </header>
             <h2>{{ routine.name }}</h2>
             <p class="muted small routine-description">
-              {{ routine.description || t("dialogs.templates.defaultDescription") }}
+              {{
+                routine.description || t("dialogs.templates.defaultDescription")
+              }}
             </p>
             <ul class="exercise-preview">
               <li
@@ -242,11 +248,9 @@ defineExpose({ editRoutine });
                 :key="index"
               >
                 <span>{{ exercises[entry.exerciseId]?.name }}</span
-                ><span class="muted"
-                  >{{
-                    t("dialogs.templates.setCount", entry.sets.length)
-                  }}</span
-                >
+                ><span class="muted">{{
+                  t("dialogs.templates.setCount", entry.sets.length)
+                }}</span>
               </li>
               <li v-if="routine.exercises.length > 4" class="muted">
                 {{
@@ -257,15 +261,16 @@ defineExpose({ editRoutine });
               </li>
             </ul>
             <footer>
-              <span class="muted small"
-                >{{
-                  t("dialogs.templates.exerciseCount", routine.exercises.length)
-                }}</span
+              <span class="muted small">{{
+                t("dialogs.templates.exerciseCount", routine.exercises.length)
+              }}</span
               ><BaseButton
                 unstyled
                 class="btn secondary"
                 :disabled="saving || !!active"
-                :aria-label="t('dialogs.templates.startAria', { name: routine.name })"
+                :aria-label="
+                  t('dialogs.templates.startAria', { name: routine.name })
+                "
                 @click="emit('start', routine.id)"
               >
                 {{ t("dialogs.templates.start") }}<ArrowRight :size="16" />

@@ -4,8 +4,21 @@ import bench from "../../../assets/exercises/bench-press.png";
 import row from "../../../assets/exercises/seated-row.png";
 import press from "../../../assets/exercises/shoulder-press.png";
 
-function createExercise({ name, weight, image }: { name: string; weight: number; image: string }, index: number) {
-  return { name, weight, image, sets: Array.from({ length: 3 }, (_, set): DemoSet => ({ id: index * 3 + set, weight, reps: 8, logged: index === 0 && set === 0 })) };
+function createExercise(
+  { name, weight, image }: { name: string; weight: number; image: string },
+  index: number,
+) {
+  return {
+    name,
+    weight,
+    image,
+    sets: Array.from({ length: 3 }, (_, set): DemoSet => ({
+      id: index * 3 + set,
+      weight,
+      reps: 8,
+      logged: index === 0 && set === 0,
+    })),
+  };
 }
 type DemoExercise = ReturnType<typeof createExercise>;
 function createExercises(): [DemoExercise, ...DemoExercise[]] {
@@ -18,7 +31,13 @@ function createExercises(): [DemoExercise, ...DemoExercise[]] {
 function isValid(set: DemoSet) {
   const weight = Number(set.weight);
   const reps = Number(set.reps);
-  return String(set.weight).trim() !== "" && Number.isFinite(weight) && weight >= 0 && Number.isInteger(reps) && reps > 0;
+  return (
+    String(set.weight).trim() !== "" &&
+    Number.isFinite(weight) &&
+    weight >= 0 &&
+    Number.isInteger(reps) &&
+    reps > 0
+  );
 }
 export function useResearchWorkout() {
   const exercises = ref(createExercises());
@@ -27,12 +46,29 @@ export function useResearchWorkout() {
   const review = ref(false);
   const notice = ref("Demo only. Confirming a number does not log a set.");
   const lastId = ref<number>();
-  const exercise = computed(() => exercises.value[selected.value] ?? exercises.value[0]);
-  const current = computed(() => exercise.value.sets.find(set => !set.logged));
-  const setNumber = computed(() => exercise.value.sets.findIndex(set => !set.logged) + 1);
-  const logged = computed(() => exercises.value.flatMap(item => item.sets).filter(set => set.logged));
-  const volume = computed(() => logged.value.reduce((sum, set) => sum + Number(set.weight) * Number(set.reps), 0));
-  function findSet(id: number) { return exercises.value.flatMap(item => item.sets).find(set => set.id === id); }
+  const exercise = computed(
+    () => exercises.value[selected.value] ?? exercises.value[0],
+  );
+  const current = computed(() =>
+    exercise.value.sets.find((set) => !set.logged),
+  );
+  const setNumber = computed(
+    () => exercise.value.sets.findIndex((set) => !set.logged) + 1,
+  );
+  const logged = computed(() =>
+    exercises.value.flatMap((item) => item.sets).filter((set) => set.logged),
+  );
+  const volume = computed(() =>
+    logged.value.reduce(
+      (sum, set) => sum + Number(set.weight) * Number(set.reps),
+      0,
+    ),
+  );
+  function findSet(id: number) {
+    return exercises.value
+      .flatMap((item) => item.sets)
+      .find((set) => set.id === id);
+  }
   function edit(id: number, field: "weight" | "reps", value: string | number) {
     const set = findSet(id);
     if (!set || set.logged) return;
@@ -47,13 +83,19 @@ export function useResearchWorkout() {
       notice.value = "Log undone. You can edit the set again.";
       return;
     }
-    if (!isValid(set)) { notice.value = "Enter a weight of zero or more and a whole repetition count above zero."; return; }
+    if (!isValid(set)) {
+      notice.value =
+        "Enter a weight of zero or more and a whole repetition count above zero.";
+      return;
+    }
     set.logged = true;
     lastId.value = id;
     resting.value = true;
     notice.value = "Set logged in preview. Rest display is a paused example.";
   }
-  function logCurrent() { if (current.value) toggle(current.value.id); }
+  function logCurrent() {
+    if (current.value) toggle(current.value.id);
+  }
   function undo() {
     if (lastId.value === undefined) return;
     const set = findSet(lastId.value);
@@ -64,12 +106,36 @@ export function useResearchWorkout() {
     resting.value = false;
     if (circuit) selected.value = (selected.value + 1) % exercises.value.length;
     if (current.value) return;
-    const nextIndex = exercises.value.findIndex(item => item.sets.some(set => !set.logged));
+    const nextIndex = exercises.value.findIndex((item) =>
+      item.sets.some((set) => !set.logged),
+    );
     if (nextIndex >= 0) selected.value = nextIndex;
   }
   function reset() {
-    exercises.value = createExercises(); selected.value = 0; resting.value = false;
-    review.value = false; lastId.value = undefined; notice.value = "Preview reset.";
+    exercises.value = createExercises();
+    selected.value = 0;
+    resting.value = false;
+    review.value = false;
+    lastId.value = undefined;
+    notice.value = "Preview reset.";
   }
-  return { exercises, selected, exercise, current, setNumber, logged, volume, resting, review, notice, lastId, edit, toggle, logCurrent, undo, next, reset };
+  return {
+    exercises,
+    selected,
+    exercise,
+    current,
+    setNumber,
+    logged,
+    volume,
+    resting,
+    review,
+    notice,
+    lastId,
+    edit,
+    toggle,
+    logCurrent,
+    undo,
+    next,
+    reset,
+  };
 }

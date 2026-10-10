@@ -3,7 +3,13 @@
 Independent Vue components built on native controls and Reka UI. Consumers own form state, validation, content, and layout. The library requires no Tailwind build, shadcn package, or CLI.
 
 ```ts
-import { BaseButton, BaseInput, BaseField, BaseFieldLabel, BaseFieldDescription } from "@form/ui";
+import {
+  BaseButton,
+  BaseInput,
+  BaseField,
+  BaseFieldLabel,
+  BaseFieldDescription,
+} from "@form/ui";
 import "@form/ui/tokens.css";
 import "@form/ui/styles.css";
 ```
@@ -57,12 +63,12 @@ The workout app consumes these shadcn-vue adaptations through `@form/ui`. Its st
 
 The fixed reference is [shadcn-vue b251d9f](https://github.com/unovue/shadcn-vue/tree/b251d9fd92aa496495e127137a7734704fb34a29/apps/v4/registry/new-york-v4/ui), using new-york-v4 and the [neutral OKLCH theme](https://github.com/unovue/shadcn-vue/blob/b251d9fd92aa496495e127137a7734704fb34a29/apps/v4/public/r/styles/new-york-v4/theme-neutral.json). Source and CSS adaptation is covered by [MIT attribution](./THIRD_PARTY_NOTICES.md).
 
-| Delivered family | Contract                                                                                                                                                                 |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| BaseButton           | default, destructive, outline, secondary, ghost, link; default, xs, sm, lg, icon, icon-xs, icon-sm, icon-lg sizes; Reka Primitive composition                            |
-| BaseInput            | Native input, controlled/default values, number input conversion, invalid/disabled/focus styling                                                                         |
-| BaseField            | BaseField, BaseFieldGroup, BaseFieldSet, BaseFieldLegend, BaseFieldContent, BaseFieldTitle, BaseFieldDescription, BaseFieldLabel, BaseFieldError, BaseFieldSeparator; vertical/horizontal/responsive orientation |
-| BaseDialog           | BaseDialog, BaseDialogTrigger, BaseDialogContent, BaseDialogHeader, BaseDialogFooter, BaseDialogTitle, BaseDialogDescription, BaseDialogClose, BaseDialogOverlay; additional BaseDialogPortal export             |
+| Delivered family | Contract                                                                                                                                                                                                         |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| BaseButton       | default, destructive, outline, secondary, ghost, link; default, xs, sm, lg, icon, icon-xs, icon-sm, icon-lg sizes; Reka Primitive composition                                                                    |
+| BaseInput        | Native input, controlled/default values, number input conversion, invalid/disabled/focus styling                                                                                                                 |
+| BaseField        | BaseField, BaseFieldGroup, BaseFieldSet, BaseFieldLegend, BaseFieldContent, BaseFieldTitle, BaseFieldDescription, BaseFieldLabel, BaseFieldError, BaseFieldSeparator; vertical/horizontal/responsive orientation |
+| BaseDialog       | BaseDialog, BaseDialogTrigger, BaseDialogContent, BaseDialogHeader, BaseDialogFooter, BaseDialogTitle, BaseDialogDescription, BaseDialogClose, BaseDialogOverlay; additional BaseDialogPortal export             |
 
 BaseButton heights are 24/32/36/40px at a 16px root font size. BaseInput is 36px tall. BaseDialog has 24px padding, 16px gaps, a 512px desktop maximum width and a 16px viewport inset. Responsive BaseField layout uses a container query. The neutral theme radius is 0.625rem; control radii subtract 2px. Slots, native semantics and Reka behavior follow the reference.
 

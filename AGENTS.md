@@ -4,16 +4,16 @@
 
 Start with [README.md](README.md) for the product overview and run commands. Read the documents relevant to the change:
 
-| Question | Read |
-| --- | --- |
-| Which words do we use for workout concepts? | [Glossary](docs/glossary.md) |
-| What are the workout rules and state transitions? | [Domain context](docs/context.md) |
-| Which module owns this behavior or dependency? | [Architecture](docs/architecture.md) |
-| How should the interface look and behave? | [Design](docs/design.md) |
-| How do I add a command, component, or storage change? | [Development workflows](docs/workflows.md) |
-| What does each test or check prove, and what does it not claim? | [Verification](docs/verification.md) |
-| Which references informed our choices? | [Prior art](docs/prior-art.md) |
-| Why did an earlier implementation take this approach? | [History](docs/history/README.md) |
+| Question                                                        | Read                                       |
+| --------------------------------------------------------------- | ------------------------------------------ |
+| Which words do we use for workout concepts?                     | [Glossary](docs/glossary.md)               |
+| What are the workout rules and state transitions?               | [Domain context](docs/context.md)          |
+| Which module owns this behavior or dependency?                  | [Architecture](docs/architecture.md)       |
+| How should the interface look and behave?                       | [Design](docs/design.md)                   |
+| How do I add a command, component, or storage change?           | [Development workflows](docs/workflows.md) |
+| What does each test or check prove, and what does it not claim? | [Verification](docs/verification.md)       |
+| Which references informed our choices?                          | [Prior art](docs/prior-art.md)             |
+| Why did an earlier implementation take this approach?           | [History](docs/history/README.md)          |
 
 Current contracts live in the glossary, context, architecture, and design. Historical plans and findings are evidence, not current instructions. Use the [glossary](docs/glossary.md) terms consistently; it records where existing code names differ from product language.
 
@@ -43,12 +43,12 @@ Write clear, maintainable production code. Keep changes focused and dependencies
 
 ## Enforced correction rules
 
-| Rule | Enforcement |
-| --- | --- |
-| No silenced checks: no `eslint-disable`, `oxlint-disable` or `@ts-*` comments, no skipped or focused tests. | `pnpm lint:guards` ([tooling/lint/no-suppressions.mjs](tooling/lint/no-suppressions.mjs)), run by `pnpm verify`. |
-| No non-null assertions (`value!`) in source or Vue templates. | Oxlint `typescript/no-non-null-assertion`, ESLint for Vue scripts, and `pnpm lint:guards` for templates. |
-| File-size baseline, performance budgets and coverage thresholds only tighten. | [tooling/lint/ratchet.mjs](tooling/lint/ratchet.mjs) in the pre-commit hook and CI. See [Quality limits only tighten](docs/workflows.md#quality-limits-only-tighten). |
-| Unit tests pass with coverage at or above the thresholds. | `pnpm test:unit` in the pre-push hook and CI. |
+| Rule                                                                                                         | Enforcement                                                                                                                                                                                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No silenced checks: no `eslint-disable`, `oxlint-disable` or `@ts-*` comments, no skipped or focused tests.  | `pnpm lint:guards` ([tooling/lint/no-suppressions.mjs](tooling/lint/no-suppressions.mjs)), run by `pnpm verify`.                                                                                                                                                                                                       |
+| No non-null assertions (`value!`) in source or Vue templates.                                                | Oxlint `typescript/no-non-null-assertion`, ESLint for Vue scripts, and `pnpm lint:guards` for templates.                                                                                                                                                                                                               |
+| File-size baseline, performance budgets and coverage thresholds only tighten.                                | [tooling/lint/ratchet.mjs](tooling/lint/ratchet.mjs) in the pre-commit hook and CI. See [Quality limits only tighten](docs/workflows.md#quality-limits-only-tighten).                                                                                                                                                  |
+| Unit tests pass with coverage at or above the thresholds.                                                    | `pnpm test:unit` in the pre-push hook and CI.                                                                                                                                                                                                                                                                          |
 | Finish actions preserve unsaved workout names and numeric input, including drafts arriving from another tab. | [Workspace command boundary](apps/workout/src/features/workouts/ui/useWorkoutWorkspace.ts), training journal checks, and [workspace finish regressions](apps/workout/test/unit/workspace-finish.test.ts), run by `pnpm test:unit` locally and in CI. See [ownership](docs/architecture.md#active-workout-integration). |
 
 ## Commands

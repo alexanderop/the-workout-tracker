@@ -25,8 +25,7 @@ export function createWorkoutRouter(history: RouterHistory) {
     history,
     resolver,
     scrollBehavior(to, from, savedPosition) {
-      if (to.path === from.path && !crossesHistoryView(to, from))
-        return false;
+      if (to.path === from.path && !crossesHistoryView(to, from)) return false;
       return savedPosition ?? { top: 0 };
     },
   });

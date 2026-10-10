@@ -24,9 +24,7 @@ export class ActiveWorkoutFinished extends TaggedError(
 
 type BackupParseError = BackupTooLarge | BackupUnreadable | InvalidBackup;
 type BackupMergeError =
-  | ConflictingRecord
-  | ActiveWorkoutInProgress
-  | ActiveWorkoutFinished;
+  ConflictingRecord | ActiveWorkoutInProgress | ActiveWorkoutFinished;
 export type BackupError = BackupParseError | BackupMergeError;
 
 const backupSchema = z
@@ -46,9 +44,7 @@ export function serializeBackup(snapshot: Snapshot): string {
 }
 
 /** Reads a backup file's text into its snapshot. */
-export function parseBackup(
-  json: string,
-): Result<Snapshot, BackupParseError> {
+export function parseBackup(json: string): Result<Snapshot, BackupParseError> {
   if (json.length > backupLimits.characters)
     return Result.err(new BackupTooLarge());
   return Result.try({

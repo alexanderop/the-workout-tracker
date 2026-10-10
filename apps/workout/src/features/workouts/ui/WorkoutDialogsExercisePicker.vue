@@ -17,7 +17,15 @@ const emit = defineEmits<{ started: [] }>();
 const { t } = useTranslation();
 const { snapshot, saving, error, run, training, active, catalog } = workspace;
 
-const muscleGroups = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Other"];
+const muscleGroups = [
+  "Chest",
+  "Back",
+  "Legs",
+  "Shoulders",
+  "Arms",
+  "Core",
+  "Other",
+];
 // Stored values stay English; only their display text is translated.
 const equipmentTypes = [
   "Barbell",

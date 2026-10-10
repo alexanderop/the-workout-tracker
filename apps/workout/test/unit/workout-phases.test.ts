@@ -20,7 +20,9 @@ function fixture() {
     id: "press",
     name: "Press day",
     description: "",
-    exercises: [{ exerciseId: "bench-press", sets: [{ weightKg: 60, reps: 6 }] }],
+    exercises: [
+      { exerciseId: "bench-press", sets: [{ weightKg: 60, reps: 6 }] },
+    ],
   };
   const routines = { [routine.id]: routine };
   const completed = factory.completedSession();
@@ -36,8 +38,14 @@ function fixture() {
   const target = { sessionId: active.id, exerciseId: exercise.id };
   // Typed as a complete record so a new command type fails to compile here.
   const commands: Record<Command["type"], Command> = {
-    settings: { type: "settings", settings: { restSeconds: 60, autoRest: false } },
-    "save-routine": { type: "save-routine", routine: { ...routine, id: "pull" } },
+    settings: {
+      type: "settings",
+      settings: { restSeconds: 60, autoRest: false },
+    },
+    "save-routine": {
+      type: "save-routine",
+      routine: { ...routine, id: "pull" },
+    },
     "save-exercise": {
       type: "save-exercise",
       exercise: factory.exercise({ id: "custom-press" }),
@@ -54,23 +62,60 @@ function fixture() {
       sets: [],
     },
     start: { type: "start", routineId: routine.id },
-    "start-selected": { type: "start-selected", exerciseIds: [exercise.exerciseId] },
+    "start-selected": {
+      type: "start-selected",
+      exerciseIds: [exercise.exerciseId],
+    },
     repeat: { type: "repeat", completedId: completed.id },
     rename: { type: "rename", sessionId: active.id, name: "Renamed" },
     discard: { type: "discard", sessionId: active.id },
     finish: { type: "finish", sessionId: active.id },
     "stop-rest": { type: "stop-rest", sessionId: active.id },
-    "add-exercise": { type: "add-exercise", sessionId: active.id, exerciseId: exercise.exerciseId },
-    "add-exercises": { type: "add-exercises", sessionId: active.id, exerciseIds: [exercise.exerciseId] },
+    "add-exercise": {
+      type: "add-exercise",
+      sessionId: active.id,
+      exerciseId: exercise.exerciseId,
+    },
+    "add-exercises": {
+      type: "add-exercises",
+      sessionId: active.id,
+      exerciseIds: [exercise.exerciseId],
+    },
     "remove-exercise": { type: "remove-exercise", ...target },
     "set-exercise-note": { type: "set-exercise-note", ...target, note: "note" },
-    "replace-exercise": { type: "replace-exercise", ...target, replacementExerciseId: otherExerciseId },
-    "configure-exercise": { type: "configure-exercise", ...target, setCount: 2 },
+    "replace-exercise": {
+      type: "replace-exercise",
+      ...target,
+      replacementExerciseId: otherExerciseId,
+    },
+    "configure-exercise": {
+      type: "configure-exercise",
+      ...target,
+      setCount: 2,
+    },
     "add-set": { type: "add-set", ...target },
     "remove-set": { type: "remove-set", ...target, setId: set.id },
-    "set-entry": { type: "set-entry", ...target, setId: set.id, weightKg: 50, reps: 5, completed: true },
-    "set-values": { type: "set-values", ...target, setId: set.id, weightKg: 50, reps: 5 },
-    "set-completed": { type: "set-completed", sessionId: active.id, setId: set.id, completed: false },
+    "set-entry": {
+      type: "set-entry",
+      ...target,
+      setId: set.id,
+      weightKg: 50,
+      reps: 5,
+      completed: true,
+    },
+    "set-values": {
+      type: "set-values",
+      ...target,
+      setId: set.id,
+      weightKg: 50,
+      reps: 5,
+    },
+    "set-completed": {
+      type: "set-completed",
+      sessionId: active.id,
+      setId: set.id,
+      completed: false,
+    },
   };
   return { factory, commands, idle, training, resting };
 }

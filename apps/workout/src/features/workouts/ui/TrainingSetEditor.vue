@@ -54,7 +54,10 @@ async function clear() {
     @close="emit('close')"
   >
     <div v-if="row" class="workout-editor">
-      <nav class="workout-set-nav" :aria-label="t('training.setEditor.chooseSet')">
+      <nav
+        class="workout-set-nav"
+        :aria-label="t('training.setEditor.chooseSet')"
+      >
         <BaseButton
           v-for="(set, index) in row.exercise.sets"
           :key="set.id"
@@ -104,8 +107,9 @@ async function clear() {
         @click="confirmation = 'discard'"
         >{{ t("training.setEditor.discardChanges") }}</BaseButton
       >
-      <BaseButton variant="ghost" @click="emit('close')">{{ t("training.setEditor.done") }}</BaseButton
-      >
+      <BaseButton variant="ghost" @click="emit('close')">{{
+        t("training.setEditor.done")
+      }}</BaseButton>
     </div>
   </BaseSheet>
   <BaseSheet

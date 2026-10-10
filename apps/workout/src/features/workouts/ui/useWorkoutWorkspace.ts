@@ -1,6 +1,10 @@
 import { computed, watch, type Ref } from "vue";
 import type { Translate } from "../../../i18n";
-import type { Workouts, DraftJournal, ApplicationCommand } from "../application";
+import type {
+  Workouts,
+  DraftJournal,
+  ApplicationCommand,
+} from "../application";
 import { sessionTotals, remainingRestSeconds } from "../domain";
 import { useWorkouts } from "./useWorkouts";
 import { useTrainingSession, type TrainingRow } from "./useTrainingSession";
@@ -14,10 +18,7 @@ export type TrainingMode =
   | { kind: "all-logged" }
   | { kind: "empty" };
 /** Explains input that a finish overtook; the drafts stay recoverable. */
-function detachedDraftMessage(
-  entries: readonly DetachedDraft[],
-  t: Translate,
-) {
+function detachedDraftMessage(entries: readonly DetachedDraft[], t: Translate) {
   const sets = entries
     .map((entry) =>
       t("errors.failures.detachedDraftSet", {
@@ -31,7 +32,13 @@ function detachedDraftMessage(
   return t("errors.failures.detachedDraft", { sets });
 }
 export type WorkoutPage =
-  "today" | "workouts" | "history" | "exercises" | "progress" | "session" | "settings";
+  | "today"
+  | "workouts"
+  | "history"
+  | "exercises"
+  | "progress"
+  | "session"
+  | "settings";
 /** The clock and the translator the workspace reads; tests pass fixed ones. */
 export type WorkspaceEnvironment = {
   readonly now: Readonly<Ref<number>>;

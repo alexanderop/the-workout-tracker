@@ -183,7 +183,10 @@ function convertWorkout(id: string) {
   const session = snapshot.value?.completed[id];
   if (!session) return;
   selectedSession.value = null;
-  templates.value?.editRoutine(routineFromSession(session, session.id), session);
+  templates.value?.editRoutine(
+    routineFromSession(session, session.id),
+    session,
+  );
 }
 defineExpose({
   requestLeave,

@@ -36,7 +36,10 @@ export function reduceActive(
 ): Transition {
   const { snapshot, inputs, reject, unchanged, changed, selectedExercises } =
     context;
-  if (command.type === "finish" && ownRecord(snapshot.completed, command.sessionId))
+  if (
+    command.type === "finish" &&
+    ownRecord(snapshot.completed, command.sessionId)
+  )
     return unchanged();
   const candidate = snapshot.active;
   if (!candidate || candidate.id !== command.sessionId)
@@ -126,10 +129,7 @@ export function reduceActive(
     if (!candidateExercise) return reject("workoutExerciseNotFound");
     const exercise = candidateExercise;
     if (request.type === "remove-exercise") {
-      if (active.exercises.length === 1)
-        return reject(
-          "needsOneExercise",
-        );
+      if (active.exercises.length === 1) return reject("needsOneExercise");
       return saveActive({
         ...active,
         exercises: active.exercises.filter((row) => row.id !== exercise.id),
@@ -170,8 +170,7 @@ export function reduceActive(
         return reject("chooseDifferentExercise");
       const remaining = exercise.sets.filter((set) => !set.completed);
       const logged = exercise.sets.filter((set) => set.completed);
-      if (!remaining.length)
-        return reject("allSetsLogged");
+      if (!remaining.length) return reject("allSetsLogged");
       if (logged.length && active.exercises.length >= 50)
         return reject("tooManyExercises");
       const next: SessionExercise = {
@@ -191,9 +190,7 @@ export function reduceActive(
         ...active,
         exercises: active.exercises.flatMap((row) => {
           if (row.id !== exercise.id) return [row];
-          return logged.length
-            ? [{ ...exercise, sets: logged }, next]
-            : [next];
+          return logged.length ? [{ ...exercise, sets: logged }, next] : [next];
         }),
         rest: remaining.some((set) => set.id === active.rest?.setId)
           ? null
@@ -205,9 +202,7 @@ export function reduceActive(
     ): Transition {
       const logged = exercise.sets.filter((set) => set.completed).length;
       if (configuration.setCount < logged)
-        return reject(
-          "setCountRemovesLogged",
-        );
+        return reject("setCountRemovesLogged");
       let remaining = configuration.setCount - logged;
       const retained = exercise.sets
         .filter((set) => {
@@ -266,8 +261,7 @@ export function reduceActive(
       const set = exercise.sets.find((row) => row.id === update.setId);
       if (!set) return reject("setNotFound");
       if (update.type === "remove-set") {
-        if (exercise.sets.length === 1)
-          return reject("keepOneSet");
+        if (exercise.sets.length === 1) return reject("keepOneSet");
         return saveExercise(
           {
             ...exercise,
@@ -283,9 +277,7 @@ export function reduceActive(
       return saveExercise(
         {
           ...exercise,
-          sets: exercise.sets.map((row) =>
-            row.id === set.id ? nextSet : row,
-          ),
+          sets: exercise.sets.map((row) => (row.id === set.id ? nextSet : row)),
         },
         rest,
       );
