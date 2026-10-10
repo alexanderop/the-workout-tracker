@@ -47,7 +47,7 @@ describe("training draft decisions", () => {
       recoveredStale: true,
     });
     expect(hasDraftConflict(restored)).toBe(true);
-    expect(decideSetCommit(restored).kind).toBe("blocked");
+    expect(decideSetCommit(restored)).toEqual({ kind: "blocked", issue: "draftConflict" });
   });
 
   it("keeps a live draft usable after unrelated saves when its set baseline is unchanged", () => {
@@ -69,12 +69,12 @@ describe("training draft decisions", () => {
     );
     expect(alternatives.alternatives).toEqual([first, second]);
     expect(hasDraftConflict(alternatives)).toBe(true);
-    expect(decideSetCommit(alternatives).kind).toBe("blocked");
+    expect(decideSetCommit(alternatives)).toEqual({ kind: "blocked", issue: "draftConflict" });
     const changed = restoreTrainingDraft(
       draftState({ set: factory.set({ weightKg: 55 }), records: [first] }),
     );
     expect(changed).toMatchObject({ weight: "45", recoveredStale: true });
-    expect(decideSetCommit(changed).kind).toBe("blocked");
+    expect(decideSetCommit(changed)).toEqual({ kind: "blocked", issue: "draftConflict" });
   });
 
   it("collapses equivalent recovered inputs without losing their acknowledgement records", () => {
@@ -117,7 +117,7 @@ describe("training draft decisions", () => {
       values: { weightKg: 40, reps: 8 },
       completed: true,
     });
-    expect(decideSetCommit({ ...unlogged, reps: "" }).kind).toBe("blocked");
+    expect(decideSetCommit({ ...unlogged, reps: "" })).toEqual({ kind: "blocked", issue: "invalidValues" });
   });
 
   it("invalidates undo after the logged set changes or the active session changes", () => {

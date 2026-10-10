@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import { createWorkouts } from "../../src/features/workouts/application";
 import { useWorkouts } from "../../src/features/workouts/ui/useWorkouts";
 import { useCompletedWorkoutEditor } from "../../src/features/workouts/ui/useCompletedWorkoutEditor";
+import type { Translate } from "../../src/i18n";
+import { t, translator } from "../../src/i18n/testing";
 import { createWorkoutFactory, FIXED_NOW } from "../support/factories";
 import { errorTag } from "../support/results";
 import {
@@ -10,7 +12,7 @@ import {
   createMemoryStorage,
 } from "../support/memory-ports";
 
-function setup() {
+function setup(translate: Translate = t) {
   const factory = createWorkoutFactory("editor");
   const completed = factory.completedSession();
   const active = factory.activeSession();
@@ -25,7 +27,11 @@ function setup() {
   });
   const scope = effectScope();
   const editor = scope.run(() =>
-    useCompletedWorkoutEditor(completed, useWorkouts(service)),
+    useCompletedWorkoutEditor(
+      completed,
+      useWorkouts(service, translate),
+      translate,
+    ),
   )!;
   return { editor, service, scope, memory, completed, active };
 }
@@ -59,6 +65,19 @@ describe("completed editor", () => {
       });
       expect(editor.localError.value).toContain("whole reps");
       expect(memory.current().revision).toBe(0);
+    } finally {
+      scope.stop();
+    }
+  });
+  it("explains invalid input in the active language", async () => {
+    const { editor, scope } = setup(translator("de").t);
+    try {
+      editor.draft.value.sets[0]!.reps = "";
+      expect(await editor.save()).toBe(false);
+      expect(editor.localError.value).toBe(
+        translator("de").t("dialogs.completedEditor.invalid"),
+      );
+      expect(editor.localError.value).toContain("Wiederholungen");
     } finally {
       scope.stop();
     }

@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vitest";
-import {
-  fmt,
-  trainingTotals,
-} from "../../src/features/workouts/ui/presentation";
+import { trainingTotals } from "../../src/features/workouts/ui/presentation";
+import { createFormat } from "../../src/i18n/format";
 import { successfulProgress } from "../../src/features/workouts/ui/progress";
 import { createWorkoutFactory } from "../support/factories";
 
 describe("precise workout values", () => {
   it("shows the complete supported weight precision", () => {
-    expect(fmt(20.25)).toBe("20.25");
-    expect(fmt(20)).toBe("20");
+    expect(createFormat("en").number(20.25)).toBe("20.25");
+    expect(createFormat("en").number(20)).toBe("20");
+    expect(createFormat("de").number(20.25)).toBe("20,25");
   });
 });
 

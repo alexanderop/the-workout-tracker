@@ -47,14 +47,17 @@ export {
   DraftsDeleted,
   DraftStorageFailed,
   InvalidChange,
+  invalidChange,
   InvalidRevision,
   RecoveryRequired,
+  rejections,
   SaveUnconfirmed,
   StorageClosed,
   StorageUnavailable,
   StoredDataUnreadable,
   type DraftWriteError,
   type ReadError,
+  type RejectionCode,
   type SaveError,
 } from "./domain/errors";
 export { loadState, type LoadState } from "./domain/loadState";

@@ -8,6 +8,7 @@ import {
   exerciseSchema,
   initialSnapshot,
   InvalidChange,
+  invalidChange,
   InvalidRevision,
   mergeSnapshots,
   parseBackup,
@@ -78,14 +79,19 @@ const expectedSchema = z
   .nonnegative()
   .max(Number.MAX_SAFE_INTEGER);
 
+/** The first schema issue stays as written; without one the code names it. */
+const issueOr = (
+  message: string | undefined,
+  code: "invalidWorkoutCommand" | "invalidWorkoutData",
+): InvalidChange =>
+  message ? new InvalidChange({ message }) : invalidChange(code);
+
 function validateWrite(next: Snapshot): Result<Snapshot, InvalidChange> {
   const validated = snapshotSchema.safeParse(next);
   return validated.success
     ? Result.ok(validated.data)
     : Result.err(
-        new InvalidChange({
-          message: validated.error.issues[0]?.message ?? "Invalid workout data.",
-        }),
+        issueOr(validated.error.issues[0]?.message, "invalidWorkoutData"),
       );
 }
 
@@ -123,9 +129,7 @@ export function createWorkouts({
         try: () => transform(snapshot),
         catch: (error) => {
           reportError("Workout change failed unexpectedly.", error);
-          return new InvalidChange({
-            message: "This change failed unexpectedly. Nothing was saved.",
-          });
+          return invalidChange("changeFailedUnexpectedly");
         },
       }),
     );
@@ -190,29 +194,19 @@ export function createWorkouts({
       const parsed = applicationCommandSchema.safeParse(command);
       if (!parsed.success)
         return Promise.resolve(
-          Result.err(
-            new InvalidChange({
-              message:
-                parsed.error.issues[0]?.message ?? "Invalid workout command.",
-            }),
-          ),
+          Result.err(issueOr(parsed.error.issues[0]?.message, "invalidWorkoutCommand")),
         );
       return write(expectedRevision, (snapshot) => {
         const resolved = resolveCommand(parsed.data, id);
         const validated = commandSchema.safeParse(resolved);
         if (!validated.success)
-          return Result.err(
-            new InvalidChange({
-              message:
-                validated.error.issues[0]?.message ?? "Invalid workout command.",
-            }),
-          );
+          return Result.err(issueOr(validated.error.issues[0]?.message, "invalidWorkoutCommand"));
         const result = reduceWorkout(snapshot, validated.data, {
           at: now(),
           id,
         });
         return result.kind === "rejected"
-          ? Result.err(new InvalidChange({ message: result.message }))
+          ? Result.err(new InvalidChange({ message: result.message, code: result.code }))
           : Result.ok(result.snapshot);
       });
     },

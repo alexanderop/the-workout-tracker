@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { BaseSheet, BaseButtonIcon, BaseButton, BaseInput, BaseTextarea, BaseInputNumber } from "@form/ui";
+import { BaseButtonIcon, BaseButton, BaseInput, BaseTextarea, BaseInputNumber } from "@form/ui";
 import { computed, ref } from "vue";
 import { Plus, Trash2 } from "@lucide/vue";
 import type { CompletedSession, Exercise, Routine } from "../domain";
 import { parseRoutineDraft, type RoutineValues } from "../domain/routineDrafts";
 import ExerciseCatalog from "./ExerciseCatalog.vue";
+import RoutineEditorConfirmations from "./RoutineEditorConfirmations.vue";
 import { useUnsavedChangesWarning } from "./useUnsavedChangesWarning";
+import { useTranslation } from "../../../i18n";
 const { routine, source, exercises, busy } = defineProps<{
   routine: Routine | null;
   source?: CompletedSession | null;
@@ -13,6 +15,7 @@ const { routine, source, exercises, busy } = defineProps<{
   busy: boolean;
 }>();
 const emit = defineEmits<{ save: [routine: RoutineValues]; cancel: [] }>();
+const { t } = useTranslation();
 type SetDraft = {
   weightKg: string | number;
   reps: string | number;
@@ -92,6 +95,9 @@ const error = ref("");
 const names = computed(
   () => new Map(exercises.map((exercise) => [exercise.id, exercise.name])),
 );
+function nameOf(id: string) {
+  return names.value.get(id) ?? "";
+}
 function toggle(id: string) {
   selected.value = selected.value.includes(id)
     ? selected.value.filter((item) => item !== id)
@@ -99,7 +105,7 @@ function toggle(id: string) {
 }
 function addExercises() {
   if (entries.value.length + selected.value.length > 50) {
-    error.value = "Keep up to 50 exercises in a template.";
+    error.value = t("dialogs.routineEditor.tooMany");
     return;
   }
   entries.value.push(
@@ -128,8 +134,7 @@ function save() {
     exercises: entries.value,
   });
   if (!result) {
-    error.value =
-      "Add a name and at least one exercise. Use 0–1,000 kg and 1–1,000 whole reps for every set.";
+    error.value = t("dialogs.routineEditor.invalid");
     return;
   }
   emit("save", result);
@@ -143,28 +148,31 @@ function save() {
   >
     <fieldset class="editor-fields form-stack" :disabled="busy">
       <label class="field"
-        ><span>Template name</span
+        ><span>{{ t("dialogs.routineEditor.nameLabel") }}</span
         ><BaseInput
           v-model="name"
           class="input"
           name="routine-name"
-          placeholder="e.g. Upper body"
+          :placeholder="t('dialogs.routineEditor.namePlaceholder')"
           maxlength="80"
           required
       /></label>
       <label class="field"
-        ><span>Description <span class="muted">(optional)</span></span
+        ><span
+          >{{ t("dialogs.routineEditor.descriptionLabel") }}
+          <span class="muted">{{
+            t("dialogs.routineEditor.optional")
+          }}</span></span
         ><BaseTextarea
           v-model="description"
           class="input"
           maxlength="240"
           rows="2"
-          placeholder="Your focus for this session"
+          :placeholder="t('dialogs.routineEditor.descriptionPlaceholder')"
         />
       </label>
       <p class="muted small">
-        Every set is editable. Remove any sets you do not want to repeat,
-        including those you skipped.
+        {{ t("dialogs.routineEditor.hint") }}
       </p>
       <section
         v-for="(entry, index) in entries"
@@ -175,7 +183,11 @@ function save() {
           <h3>{{ index + 1 }}. {{ names.get(entry.exerciseId) }}</h3>
           <BaseButtonIcon
             type="button"
-            :label="`Remove ${names.get(entry.exerciseId)}`"
+            :label="
+              t('dialogs.routineEditor.removeExercise', {
+                exercise: nameOf(entry.exerciseId),
+              })
+            "
             @click="removal = { kind: 'exercise', entry }"
           >
             <Trash2 :size="17" />
@@ -188,39 +200,55 @@ function save() {
         >
           <span class="muted"
             >{{ setIndex + 1
-            }}<small v-if="set.skipped" class="skipped-label"
-              >Skipped</small
+            }}<small v-if="set.skipped" class="skipped-label">{{
+              t("dialogs.routineEditor.skipped")
+            }}</small
             ></span
           >
           <label class="field"
-            ><span>Weight · kg</span
+            ><span>{{ t("dialogs.fields.weightKg") }}</span
             ><BaseInputNumber
               v-model="set.weightKg"
               class="input"
-              title="Weight"
+              :title="t('dialogs.fields.weight')"
               unit="kg"
               :decimals="2"
               :preset-step="2.5"
               :disabled="busy"
               :min="0"
               :max="1000"
-              :label="`${names.get(entry.exerciseId)} set ${setIndex + 1} weight`"
+              :label="
+                t('dialogs.routineEditor.weightLabel', {
+                  exercise: nameOf(entry.exerciseId),
+                  number: setIndex + 1,
+                })
+              "
           /></label>
           <label class="field"
-            ><span>Reps</span
+            ><span>{{ t("dialogs.fields.reps") }}</span
             ><BaseInputNumber
               v-model="set.reps"
               class="input"
-              title="Reps"
+              :title="t('dialogs.fields.reps')"
               :disabled="busy"
               :min="1"
               :max="1000"
-              :label="`${names.get(entry.exerciseId)} set ${setIndex + 1} reps`"
+              :label="
+                t('dialogs.routineEditor.repsLabel', {
+                  exercise: nameOf(entry.exerciseId),
+                  number: setIndex + 1,
+                })
+              "
           /></label>
           <BaseButtonIcon
             type="button"
             :disabled="entry.sets.length <= 1"
-            :label="`Remove set ${setIndex + 1} of ${names.get(entry.exerciseId)}`"
+            :label="
+              t('dialogs.routineEditor.removeSetAria', {
+                number: setIndex + 1,
+                exercise: nameOf(entry.exerciseId),
+              })
+            "
             @click="removal = { kind: 'set', entry, set }"
           >
             <Trash2 :size="16" />
@@ -233,7 +261,7 @@ function save() {
           :disabled="entry.sets.length >= 30"
           @click="addSet(entry)"
         >
-          <Plus :size="15" />Add set
+          <Plus :size="15" />{{ t("dialogs.routineEditor.addSet") }}
         </BaseButton>
       </section>
       <BaseButton
@@ -244,7 +272,9 @@ function save() {
         @click="pickerOpen = !pickerOpen"
       >
         <Plus :size="17" />{{
-          pickerOpen ? "Close exercise library" : "Add exercises"
+          pickerOpen
+            ? t("dialogs.routineEditor.closeLibrary")
+            : t("dialogs.routineEditor.addExercises")
         }}
       </BaseButton>
       <div v-if="pickerOpen" class="template-picker">
@@ -260,7 +290,7 @@ function save() {
           :disabled="!selected.length"
           @click="addExercises"
         >
-          Add {{ selected.length }} exercises
+          {{ t("dialogs.routineEditor.addSelected", selected.length) }}
         </BaseButton>
       </div>
     </fieldset>
@@ -273,42 +303,23 @@ function save() {
         :disabled="busy"
         @click="requestClose"
       >
-        Cancel</BaseButton
+        {{ t("dialogs.actions.cancel") }}</BaseButton
       ><BaseButton unstyled type="submit" class="btn primary" :disabled="busy">
-        {{ busy ? "Saving…" : "Save template" }}
+        {{
+          busy ? t("dialogs.actions.saving") : t("dialogs.routineEditor.save")
+        }}
       </BaseButton>
     </div>
   </form>
-  <BaseSheet
-    :open="discardOpen"
-    title="Discard template changes?"
-    description="Your unsaved template changes will be lost."
-    @close="discardOpen = false"
-  >
-    <div class="form-actions">
-      <BaseButton variant="secondary" @click="discardOpen = false">
-        Keep editing
-      </BaseButton>
-      <BaseButton :disabled="busy" @click="discardChanges">
-        Discard changes
-      </BaseButton>
-    </div>
-  </BaseSheet>
-  <BaseSheet
-    :open="removal !== null"
-    :title="removal?.kind === 'exercise' ? 'Remove exercise?' : 'Remove set?'"
-    :description="`This removes ${removal?.kind === 'exercise' ? 'the exercise and all its sets' : 'this set'} from your template draft. Save the template to keep this change.`"
-    @close="removal = null"
-  >
-    <div class="form-actions">
-      <BaseButton variant="secondary" @click="removal = null">
-        Cancel
-      </BaseButton>
-      <BaseButton :disabled="busy" @click="removeConfirmed">
-        Remove
-      </BaseButton>
-    </div>
-  </BaseSheet>
+  <RoutineEditorConfirmations
+    :discard-open="discardOpen"
+    :removal="removal?.kind ?? null"
+    :busy="busy"
+    @keep-editing="discardOpen = false"
+    @discard="discardChanges"
+    @cancel-removal="removal = null"
+    @confirm-removal="removeConfirmed"
+  />
 </template>
 <style scoped>
 .editor-fields {

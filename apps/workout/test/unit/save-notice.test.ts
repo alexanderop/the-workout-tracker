@@ -2,6 +2,7 @@ import { effectScope } from "vue";
 import { describe, expect, it } from "vitest";
 import { createWorkouts } from "../../src/features/workouts/application";
 import { useWorkouts } from "../../src/features/workouts/ui/useWorkouts";
+import { t } from "../../src/i18n/testing";
 import { createWorkoutFactory, FIXED_NOW } from "../support/factories";
 import {
   createMemoryJournal,
@@ -20,14 +21,14 @@ describe("save notice", () => {
     });
     const scope = effectScope();
     try {
-      const workouts = scope.run(() => useWorkouts(app))!;
+      const workouts = scope.run(() => useWorkouts(app, t))!;
       await Promise.resolve();
       const saved = await workouts.run({
         type: "settings",
         settings: { restSeconds: 30, autoRest: false },
       });
       expect(saved).not.toBeNull();
-      expect(workouts.message.value).toBe("Saved on this device");
+      expect(workouts.message.value).toBe(t("errors.failures.savedOnDevice"));
       await workouts.run(
         { type: "settings", settings: { restSeconds: 60, autoRest: false } },
         0,

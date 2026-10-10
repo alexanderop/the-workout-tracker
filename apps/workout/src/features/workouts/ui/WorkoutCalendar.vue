@@ -3,6 +3,7 @@ import { computed, nextTick, ref, useTemplateRef } from "vue";
 import { BaseSheet, BaseButtonIcon } from "@form/ui";
 import { CalendarDays, ChevronLeft, ChevronRight } from "@lucide/vue";
 import { sessionTotals, type CompletedSession } from "../domain";
+import { useFormat, useTranslation } from "../../../i18n";
 import { sessionMinutes } from "./presentation";
 import {
   eligibleSessionCount,
@@ -11,6 +12,7 @@ import {
   monthDays,
   monthStart,
   rollingDays,
+  weekdayStarts,
 } from "./workoutCalendar";
 
 const { sessions, now } = defineProps<{
@@ -19,6 +21,8 @@ const { sessions, now } = defineProps<{
 }>();
 const emit = defineEmits<{ detail: [id: string] }>();
 defineSlots<{ default?: () => unknown }>();
+const { t } = useTranslation();
+const format = useFormat();
 const today = computed(() => localDay(now));
 const sorted = computed(() =>
   [...sessions].sort((a, b) => a.finishedAt - b.finishedAt),
@@ -37,22 +41,26 @@ const pendingDetail = ref<string | null>(null);
 let opener: HTMLElement | null = null;
 const cells = computed(() => monthDays(month.value));
 const selectedSessions = computed(() => index.value.get(selected.value) ?? []);
-const dateLabel = (day: number) =>
-  new Date(day).toLocaleDateString("en", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-const monthLabel = computed(() =>
-  new Date(month.value).toLocaleDateString("en", {
-    month: "long",
-    year: "numeric",
-  }),
+const weekdayInitials = computed(() =>
+  weekdayStarts().map((at) => format.value.weekdayNarrow(at)),
 );
+const monthLabel = computed(() => format.value.monthYear(month.value));
 function label(day: number) {
-  const amount = index.value.get(day)?.length ?? 0;
-  return `${dateLabel(day)}, ${amount} completed ${amount === 1 ? "workout" : "workouts"}`;
+  return t("workouts.calendar.dayLabel", {
+    date: format.value.fullDate(day),
+    count: t(
+      "workouts.calendar.completedCount",
+      index.value.get(day)?.length ?? 0,
+    ),
+  });
+}
+// A day button's name starts with its visible text (weekday and day number).
+function rhythmLabel(day: number) {
+  return t("workouts.calendar.rhythmDayLabel", {
+    weekday: format.value.weekdayShort(day),
+    day: new Date(day).getDate(),
+    label: label(day),
+  });
 }
 async function openDay(day: number) {
   opener =
@@ -104,30 +112,34 @@ function afterClose(event: Event) {
 </script>
 
 <template>
-  <section class="training-rhythm" aria-label="Training rhythm">
+  <section class="training-rhythm" :aria-label="t('workouts.calendar.rhythm')">
     <header ref="calendarHeading" class="rhythm-heading">
-      <slot><h2>Training rhythm</h2></slot>
+      <slot
+        ><h2>{{ t("workouts.calendar.rhythm") }}</h2></slot
+      >
       <BaseButtonIcon
         class="calendar-action"
-        label="Open training calendar"
+        :label="t('workouts.calendar.open')"
         @click="showMonth"
         ><CalendarDays :size="21"
       /></BaseButtonIcon>
     </header>
     <div class="calendar-scroll">
-      <div class="rhythm-days" role="group" aria-label="Past 7 days">
+      <div
+        class="rhythm-days"
+        role="group"
+        :aria-label="t('workouts.calendar.pastDays')"
+      >
         <button
           v-for="day in days"
           :key="day"
           type="button"
-          :aria-label="label(day)"
+          :aria-label="rhythmLabel(day)"
           :aria-current="day === today ? 'date' : undefined"
           :class="{ today: day === today, completed: index.has(day) }"
           @click="openDay(day)"
         >
-          <small>{{
-            new Date(day).toLocaleDateString("en", { weekday: "short" })
-          }}</small
+          <small>{{ `${format.weekdayShort(day)} ` }}</small
           ><span>{{ new Date(day).getDate() }}</span
           ><i aria-hidden="true" />
         </button>
@@ -136,21 +148,21 @@ function afterClose(event: Event) {
   </section>
   <BaseSheet
     :open="open"
-    title="Training calendar"
+    :title="t('workouts.calendar.sheetTitle')"
     @close="close"
     @close-auto-focus="afterClose"
   >
     <div class="calendar-month-heading">
       <BaseButtonIcon
         class="calendar-action"
-        label="Previous month"
+        :label="t('workouts.calendar.previousMonth')"
         @click="previousMonth"
         ><ChevronLeft :size="20"
       /></BaseButtonIcon>
       <h3>{{ monthLabel }}</h3>
       <BaseButtonIcon
         class="calendar-action"
-        label="Next month"
+        :label="t('workouts.calendar.nextMonth')"
         :disabled="month >= monthStart(today)"
         @click="nextMonth"
         ><ChevronRight :size="20"
@@ -164,7 +176,7 @@ function afterClose(event: Event) {
         :aria-label="monthLabel"
       >
         <span
-          v-for="(weekday, position) in ['M', 'T', 'W', 'T', 'F', 'S', 'S']"
+          v-for="(weekday, position) in weekdayInitials"
           :key="position"
           class="weekday"
           aria-hidden="true"
@@ -191,11 +203,15 @@ function afterClose(event: Event) {
     </div>
     <div class="calendar-day-detail">
       <p role="status">
-        {{ dateLabel(selected) }} · {{ selectedSessions.length }}
-        {{ selectedSessions.length === 1 ? "workout" : "workouts" }}
+        {{
+          t("workouts.calendar.selectedDay", {
+            date: format.fullDate(selected),
+            count: t("workouts.calendar.workoutCount", selectedSessions.length),
+          })
+        }}
       </p>
       <p v-if="!selectedSessions.length" class="calendar-empty">
-        No completed workouts.
+        {{ t("workouts.calendar.noWorkouts") }}
       </p>
       <button
         v-for="session in selectedSessions"
@@ -206,10 +222,15 @@ function afterClose(event: Event) {
       >
         <span
           ><strong>{{ session.name }}</strong
-          ><small
-            >{{ sessionMinutes(session) }} min ·
-            {{ sessionTotals(session).completedSets }} sets</small
-          ></span
+          ><small>{{
+            t("workouts.calendar.sessionSummary", {
+              minutes: sessionMinutes(session),
+              sets: t(
+                "workouts.calendar.sessionSets",
+                sessionTotals(session).completedSets,
+              ),
+            })
+          }}</small></span
         ><ChevronRight :size="18" />
       </button>
     </div>

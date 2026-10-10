@@ -8,7 +8,9 @@ import {
   PersonStanding,
   Check,
 } from "@lucide/vue";
+import { useTranslation } from "../../../i18n";
 import { emptyCatalogFilters, type CatalogFilters } from "./catalogFilters";
+import { categoryLabel, equipmentLabel } from "./exerciseLabels";
 import {
   equipmentIllustrations,
   muscleIllustrations,
@@ -20,16 +22,23 @@ const { open, equipment, categories } = defineProps<{
   categories: readonly string[];
 }>();
 const emit = defineEmits<{ close: [] }>();
+const { t } = useTranslation();
 const filters = defineModel<CatalogFilters>({ required: true });
 type Panel = "overview" | "equipment" | "muscle";
 const panel = ref<Panel>("overview");
 const content = useTemplateRef<HTMLElement>("content");
 const title = computed(
   () =>
-    ({ overview: "Filters", equipment: "Equipment", muscle: "Muscle group" })[
-      panel.value
-    ],
+    ({
+      overview: t("exercises.filters.title"),
+      equipment: t("exercises.filters.equipment"),
+      muscle: t("exercises.filters.muscleGroup"),
+    })[panel.value],
 );
+const optionLabel = (option: string) =>
+  panel.value === "equipment"
+    ? equipmentLabel(option, t)
+    : categoryLabel(option, t);
 const options = computed(() =>
   panel.value === "equipment" ? equipment : categories,
 );
@@ -71,8 +80,14 @@ function choose(option: string) {
             data-focus="equipment"
             @click="showPanel('equipment', 'back')"
           >
-            <Dumbbell aria-hidden="true" :size="22" /><span>Equipment</span
-            ><small>{{ filters.equipment || "All" }}</small
+            <Dumbbell aria-hidden="true" :size="22" /><span>{{
+              t("exercises.filters.equipment")
+            }}</span
+            ><small>{{
+              filters.equipment
+                ? equipmentLabel(filters.equipment, t)
+                : t("exercises.filters.all")
+            }}</small
             ><ChevronRight aria-hidden="true" :size="18" />
           </button>
           <button
@@ -81,14 +96,19 @@ function choose(option: string) {
             data-focus="muscle"
             @click="showPanel('muscle', 'back')"
           >
-            <PersonStanding aria-hidden="true" :size="22" /><span
-              >Muscle group</span
-            ><small>{{ filters.category || "All" }}</small
+            <PersonStanding aria-hidden="true" :size="22" /><span>{{
+              t("exercises.filters.muscleGroup")
+            }}</span
+            ><small>{{
+              filters.category
+                ? categoryLabel(filters.category, t)
+                : t("exercises.filters.all")
+            }}</small
             ><ChevronRight aria-hidden="true" :size="18" />
           </button>
         </div>
         <label class="filter-custom-toggle">
-          <span>Only custom exercises</span>
+          <span>{{ t("exercises.catalog.onlyCustom") }}</span>
           <input
             type="checkbox"
             role="switch"
@@ -102,10 +122,10 @@ function choose(option: string) {
             class="text-button"
             @click="filters = emptyCatalogFilters"
           >
-            Reset filters
+            {{ t("exercises.filters.reset") }}
           </button>
           <button type="button" class="btn primary" @click="emit('close')">
-            Done
+            {{ t("exercises.filters.done") }}
           </button>
         </div>
       </template>
@@ -117,7 +137,9 @@ function choose(option: string) {
             data-focus="back"
             @click="showPanel('overview', panel)"
           >
-            <ArrowLeft aria-hidden="true" :size="18" />Back
+            <ArrowLeft aria-hidden="true" :size="18" />{{
+              t("exercises.filters.back")
+            }}
           </button>
           <button
             type="button"
@@ -125,7 +147,7 @@ function choose(option: string) {
             :aria-pressed="selected('')"
             @click="choose('')"
           >
-            All
+            {{ t("exercises.filters.all") }}
           </button>
         </div>
         <div class="filter-card-grid">
@@ -163,7 +185,7 @@ function choose(option: string) {
               aria-hidden="true"
               :size="48"
             />
-            <span>{{ option }}</span
+            <span>{{ optionLabel(option) }}</span
             ><Check
               v-if="selected(option)"
               class="filter-choice-check"

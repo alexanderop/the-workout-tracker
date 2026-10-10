@@ -2,7 +2,7 @@ import { Result } from "@form/result";
 import { Dexie, liveQuery, type Table } from "dexie";
 import {
   Conflict,
-  InvalidChange,
+  invalidChange,
   InvalidRevision,
   loadState,
   RecoveryRequired,
@@ -93,15 +93,13 @@ export function openDexieWorkoutStorage(
     if (candidate.revision === expectedRevision) {
       if (JSON.stringify(candidate) !== JSON.stringify(current.data))
         return Result.err(
-          new InvalidChange({
-            message: "Changed workout data must advance its revision.",
-          }),
+          invalidChange("changedDataMustAdvance"),
         );
       return Result.ok(current.data);
     }
     if (candidate.revision !== expectedRevision + 1)
       return Result.err(
-        new InvalidChange({ message: "Workout revisions must advance by one." }),
+        invalidChange("revisionMustAdvanceByOne"),
       );
     await table.put(candidate, "snapshot");
     return Result.ok(candidate);
@@ -128,7 +126,7 @@ export function openDexieWorkoutStorage(
         return Result.err(new InvalidRevision());
       const candidate = snapshotSchema.safeParse(next);
       if (!candidate.success)
-        return Result.err(new InvalidChange({ message: "Invalid workout data." }));
+        return Result.err(invalidChange("invalidWorkoutData"));
       const opened = await Result.tryPromise({ try: initialize, catch: failure });
       if (opened.isErr()) return Result.err(opened.error);
       if (isClosed()) return Result.err(new StorageClosed());

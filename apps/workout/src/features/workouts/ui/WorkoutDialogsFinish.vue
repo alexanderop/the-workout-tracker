@@ -2,7 +2,7 @@
 import { BaseSheet, BaseButton } from "@form/ui";
 import { Check } from "@lucide/vue";
 import type { TrainingRow } from "./useTrainingSession";
-import { fmt } from "./presentation";
+import { useFormat, useTranslation } from "../../../i18n";
 
 const { open, totals, elapsed, pending, saving, error } = defineProps<{
   open: boolean;
@@ -19,38 +19,43 @@ const emit = defineEmits<{
   review: [];
   finish: [];
 }>();
+const { t } = useTranslation();
+const format = useFormat();
 </script>
 
 <template>
   <BaseSheet
     :open="open"
-    title="Finish this workout?"
-    description="Only logged sets count toward your progress. Unlogged sets stay in the session record."
+    :title="t('dialogs.finish.title')"
+    :description="t('dialogs.finish.description')"
     @close="emit('close')"
     @close-auto-focus="emit('close-auto-focus', $event)"
     ><div class="finish-stats">
       <div>
         <strong>{{ totals.completedSets }}</strong
-        ><span>sets logged</span>
+        ><span>{{ t("dialogs.stats.setsLogged") }}</span>
       </div>
       <div>
-        <strong>{{ fmt(totals.volumeKg) }}</strong
-        ><span>kg volume</span>
+        <strong>{{ format.number(totals.volumeKg) }}</strong
+        ><span>{{ t("dialogs.stats.kgVolume") }}</span>
       </div>
       <div>
         <strong>{{ elapsed }}</strong
-        ><span>elapsed</span>
+        ><span>{{ t("dialogs.stats.elapsed") }}</span>
       </div>
     </div>
     <div v-if="pending.length" class="draft-finish-notice">
       <p>
-        Your input is retained on this device but has not been applied to the
-        workout. Apply it before finishing, or review your sets to change or
-        discard it. Applying values does not log additional sets.
+        {{ t("dialogs.finish.retained") }}
       </p>
-      <ul aria-label="Sets with retained input">
+      <ul :aria-label="t('dialogs.finish.retainedList')">
         <li v-for="row in pending" :key="row.set.id">
-          {{ row.exercise.name }} · Set {{ row.index + 1 }}
+          {{
+          t("dialogs.finish.retainedItem", {
+            exercise: row.exercise.name,
+            number: row.index + 1,
+          })
+        }}
         </li>
       </ul>
       <BaseButton
@@ -59,7 +64,7 @@ const emit = defineEmits<{
         :disabled="saving"
         @click="emit('apply')"
       >
-        Apply input values
+        {{ t("dialogs.finish.apply") }}
       </BaseButton>
       <BaseButton
         unstyled
@@ -67,15 +72,14 @@ const emit = defineEmits<{
         :disabled="saving"
         @click="emit('review')"
       >
-        Review my sets
+        {{ t("dialogs.finish.review") }}
       </BaseButton>
       <p
         v-if="pending.some((row) => row.issue)"
         class="field-error"
         role="alert"
       >
-        Some values need attention. Return to the highlighted set to review
-        them.
+        {{ t("dialogs.finish.attention") }}
       </p>
     </div>
     <p v-if="error" class="field-error" role="alert">{{ error }}</p>
@@ -86,14 +90,14 @@ const emit = defineEmits<{
         :disabled="saving"
         @click="emit('close')"
       >
-        Keep training</BaseButton
+        {{ t("dialogs.finish.keepTraining") }}</BaseButton
       ><BaseButton
         unstyled
         class="btn primary"
         :disabled="saving || !!pending.length"
         @click="emit('finish')"
       >
-        Save workout<Check :size="17" />
+        {{ t("dialogs.finish.save") }}<Check :size="17" />
       </BaseButton></div
   ></BaseSheet>
 </template>

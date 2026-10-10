@@ -41,6 +41,7 @@ describe("completed workout name recovery", () => {
         ),
       ).toEqual({
         kind: "rejected",
+        code: "completedNotFound",
         message: "This completed workout was not found.",
       });
     }
@@ -59,6 +60,7 @@ describe("completed workout name recovery", () => {
       ),
     ).toEqual({
       kind: "rejected",
+      code: "invalidValues",
       message: "Please check the entered values.",
     });
   });

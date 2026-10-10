@@ -4,6 +4,8 @@ import { BaseSheet, BaseButton, BaseInput, BaseSelectNative } from "@form/ui";
 import { Plus, Check } from "@lucide/vue";
 import ExerciseCatalog from "./ExerciseCatalog.vue";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
+import { categoryLabel, equipmentLabel } from "./exerciseLabels";
+import { useTranslation } from "../../../i18n";
 
 const { workspace } = defineProps<{
   workspace: Pick<
@@ -12,9 +14,11 @@ const { workspace } = defineProps<{
   >;
 }>();
 const emit = defineEmits<{ started: [] }>();
+const { t } = useTranslation();
 const { snapshot, saving, error, run, training, active, catalog } = workspace;
 
 const muscleGroups = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Other"];
+// Stored values stay English; only their display text is translated.
 const equipmentTypes = [
   "Barbell",
   "Dumbbell",
@@ -55,6 +59,7 @@ async function addExercises() {
       ? {
           type: "start-selected" as const,
           exerciseIds: selectedExercises.value,
+          name: t("workouts.home.defaultName"),
         }
       : {
           type: "add-exercises" as const,
@@ -112,8 +117,12 @@ defineExpose({
 <template>
   <BaseSheet
     :open="pickerOpen"
-    :title="picker?.kind === 'start' ? 'Select exercises' : 'Add exercises'"
-    description="Choose the movements for this workout."
+    :title="
+      picker?.kind === 'start'
+        ? t('dialogs.picker.titleStart')
+        : t('dialogs.picker.titleAdd')
+    "
+    :description="t('dialogs.picker.description')"
     @close="closePicker"
   >
     <ExerciseCatalog
@@ -129,49 +138,51 @@ defineExpose({
         :disabled="saving"
         @click="createOpen = true"
       >
-        <Plus :size="16" />Create your own</BaseButton
+        <Plus :size="16" />{{ t("dialogs.picker.createOwn") }}</BaseButton
       ><BaseButton
         unstyled
         class="btn primary full-width"
         :disabled="saving || !selectedExercises.length"
         @click="addExercises"
       >
-        {{ picker?.kind === "start" ? "Start" : "Add" }} ({{
-          selectedExercises.length
-        }})<Check :size="17" />
+        {{
+          picker?.kind === "start"
+            ? t("dialogs.picker.start", { count: selectedExercises.length })
+            : t("dialogs.picker.add", { count: selectedExercises.length })
+        }}<Check :size="17" />
       </BaseButton>
     </div>
     <p v-if="error" class="field-error" role="alert">{{ error }}</p>
   </BaseSheet>
   <BaseSheet
     :open="createOpen"
-    title="Create exercise"
-    description="Add a movement to your personal library."
+    :title="t('dialogs.picker.createTitle')"
+    :description="t('dialogs.picker.createDescription')"
     @close="createOpen = false"
   >
     <form class="form-stack" @submit.prevent="createExercise">
       <label class="field"
-        ><span>Exercise name</span
+        ><span>{{ t("dialogs.picker.nameLabel") }}</span
         ><BaseInput
           v-model="customName"
           class="input"
           required
           maxlength="80"
-          placeholder="e.g. Cable lateral raise"
+          :placeholder="t('dialogs.picker.namePlaceholder')"
       /></label>
       <label class="field"
-        ><span>Muscle group</span
+        ><span>{{ t("dialogs.picker.muscleGroup") }}</span
         ><BaseSelectNative v-model="customCategory" class="input">
-          <option v-for="group in muscleGroups" :key="group">
-            {{ group }}
+          <option v-for="group in muscleGroups" :key="group" :value="group">
+            {{ categoryLabel(group, t) }}
           </option>
         </BaseSelectNative></label
       >
       <label class="field"
-        ><span>Equipment</span
+        ><span>{{ t("dialogs.picker.equipment") }}</span
         ><BaseSelectNative v-model="customEquipment" class="input">
-          <option v-for="item in equipmentTypes" :key="item">
-            {{ item }}
+          <option v-for="item in equipmentTypes" :key="item" :value="item">
+            {{ equipmentLabel(item, t) }}
           </option>
         </BaseSelectNative></label
       >
@@ -181,7 +192,7 @@ defineExpose({
         type="submit"
         :disabled="saving || !customName.trim()"
       >
-        <Plus :size="17" />Create exercise
+        <Plus :size="17" />{{ t("dialogs.picker.createSubmit") }}
       </BaseButton>
       <p v-if="error" class="field-error" role="alert">{{ error }}</p>
     </form>

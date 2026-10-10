@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { BaseSheet, BaseButton } from "@form/ui";
 import type { TrainingRow } from "./useTrainingSession";
+import { useTranslation } from "../../../i18n";
 
 const { row, saving } = defineProps<{
   row: TrainingRow | undefined;
@@ -12,13 +13,21 @@ const emit = defineEmits<{
   adjust: [amount: number];
   remove: [];
 }>();
+const { t } = useTranslation();
 </script>
 
 <template>
   <BaseSheet
     :open="!!row"
-    :title="row ? `Set ${row.index + 1} of ${row.exercise.name}` : 'Set options'"
-    description="Adjust repetitions, undo logging or remove this set."
+    :title="
+      row
+        ? t('dialogs.setOptions.title', {
+            number: row.index + 1,
+            exercise: row.exercise.name,
+          })
+        : t('dialogs.setOptions.fallbackTitle')
+    "
+    :description="t('dialogs.setOptions.description')"
     @close="emit('close')"
   >
     <template v-if="row">
@@ -27,23 +36,25 @@ const emit = defineEmits<{
         variant="secondary"
         :disabled="saving || row.touched"
         @click="emit('undo', row.set.id)"
-        >Undo log</BaseButton
+        >{{ t("dialogs.setOptions.undoLog") }}</BaseButton
       >
       <div class="repetition-adjuster">
         <BaseButton
           unstyled
           class="btn secondary"
           :disabled="saving || Number(row.reps) <= 0"
-          aria-label="Decrease repetitions"
+          :aria-label="t('dialogs.setOptions.decreaseReps')"
           @click="emit('adjust', -1)"
         >
-          −</BaseButton
-        ><strong>{{ row.reps || "—" }} reps</strong
+          {{ "−" }}</BaseButton
+        ><strong>{{
+          t("dialogs.setOptions.reps", { reps: row.reps || "—" })
+        }}</strong
         ><BaseButton
           unstyled
           class="btn secondary"
           :disabled="saving || Number(row.reps) >= 1000"
-          aria-label="Increase repetitions"
+          :aria-label="t('dialogs.setOptions.increaseReps')"
           @click="emit('adjust', 1)"
         >
           +
@@ -55,7 +66,7 @@ const emit = defineEmits<{
         :disabled="saving || row.exercise.sets.length <= 1"
         @click="emit('remove')"
       >
-        Remove set
+        {{ t("dialogs.setOptions.removeSet") }}
       </BaseButton>
     </template>
   </BaseSheet>

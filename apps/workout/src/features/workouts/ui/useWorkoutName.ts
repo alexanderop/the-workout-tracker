@@ -1,4 +1,5 @@
 import { computed, reactive, ref, watch, type Ref } from "vue";
+import type { Translate } from "../../../i18n";
 import type { ActiveSession } from "../domain";
 import type { useWorkouts } from "./useWorkouts";
 
@@ -20,6 +21,7 @@ export function useWorkoutName(
   > & {
     saving: Readonly<Ref<boolean>>;
     active: Readonly<Ref<ActiveSession | null>>;
+    t: Translate;
   },
 ) {
   const draft = ref<NameDraft | null>(null);
@@ -135,7 +137,7 @@ export function useWorkoutName(
     if (!draft.value || !canSave.value) return;
     const submitted = { ...draft.value };
     if (!submitted.text.trim()) {
-      issue.value = "Give this workout a name.";
+      issue.value = workspace.t("training.name.required");
       return;
     }
     submitting.value = true;
@@ -146,7 +148,7 @@ export function useWorkoutName(
     submitting.value = false;
     if (draftSessionId() !== submitted.sessionId) return;
     if (!saved) {
-      issue.value = "Name not saved. Your input is still here.";
+      issue.value = workspace.t("training.name.notSaved");
       return;
     }
     const active = saved.active;
@@ -196,7 +198,7 @@ export function useWorkoutName(
   async function saveRecovery(submitted: DetachedNameDraft, revision: number) {
     const { sessionId } = submitted;
     if (!submitted.text.trim()) {
-      recoveryIssues.set(sessionId, "Give this workout a name.");
+      recoveryIssues.set(sessionId, workspace.t("training.name.required"));
       return;
     }
     recovering.value = sessionId;
@@ -207,10 +209,7 @@ export function useWorkoutName(
     recovering.value = null;
     if (detached.get(sessionId) !== submitted) return;
     if (!saved) {
-      recoveryIssues.set(
-        sessionId,
-        "Name not saved. Your input is still here.",
-      );
+      recoveryIssues.set(sessionId, workspace.t("training.name.notSaved"));
       return;
     }
     detached.delete(sessionId);

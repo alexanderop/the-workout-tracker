@@ -1,39 +1,43 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { BaseButton } from "@form/ui";
+import { useTranslation } from "../../../i18n";
 import type { DetachedDraft } from "./useDetachedDrafts";
 const { entries, dismiss } = defineProps<{
   entries: readonly DetachedDraft[];
   dismiss: () => boolean;
 }>();
+const { t } = useTranslation();
 const issue = ref("");
 function dismissAll() {
   issue.value = dismiss()
     ? ""
-    : "This input could not be cleared on this device. Try again.";
+    : t("training.detached.cannotClear");
 }
 </script>
 <template>
   <aside
     v-if="entries.length"
     class="detached-input-notice"
-    aria-label="Input not saved to a finished workout"
+    :aria-label="t('training.detached.label')"
   >
-    <p role="status">
-      Input entered while this workout was finished was not saved.
-    </p>
+    <p role="status">{{ t("training.detached.intro") }}</p>
     <ul>
       <li v-for="entry in entries" :key="entry.key">
-        {{ entry.exerciseName }} set {{ entry.index + 1 }}:
-        {{ entry.weight }} kg × {{ entry.reps }}
+        {{
+          t("training.detached.entry", {
+            exercise: entry.exerciseName,
+            set: entry.index + 1,
+            weight: entry.weight,
+            reps: entry.reps,
+          })
+        }}
       </li>
     </ul>
-    <p class="muted">
-      Edit the finished workout in History to keep these values.
-    </p>
+    <p class="muted">{{ t("training.detached.hint") }}</p>
     <p v-if="issue" class="field-error" role="alert">{{ issue }}</p>
     <BaseButton size="sm" variant="secondary" @click="dismissAll"
-      >Dismiss unsaved input</BaseButton
+      >{{ t("training.detached.dismiss") }}</BaseButton
     >
   </aside>
 </template>

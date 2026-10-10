@@ -1,4 +1,5 @@
 import { computed, ref, watch, type Ref } from "vue";
+import type { Translate } from "../../../i18n";
 import type { DraftJournal } from "../application";
 import type { Command, SessionExercise, Snapshot, WorkoutSet } from "../domain";
 import {
@@ -22,7 +23,9 @@ export function useTrainingSession(options: {
   saving: Readonly<Ref<boolean>>;
   journal: DraftJournal;
   run: (command: Command, revision?: number) => Promise<Snapshot | null>;
+  t: Translate;
 }) {
+  const { t } = options;
   const drafts = useTrainingDrafts(options);
   const { rows, pending } = drafts;
   const lastLog = ref<{
@@ -83,7 +86,7 @@ export function useTrainingSession(options: {
     const decision = decideSetCommit(row, valuesOnly);
     switch (decision.kind) {
       case "blocked":
-        row.issue = decision.issue;
+        row.issue = t(`training.notices.${decision.issue}`);
         return;
       case "unchanged":
         return;
@@ -119,7 +122,7 @@ export function useTrainingSession(options: {
     { completed, valuesOnly }: { completed: boolean; valuesOnly: boolean },
   ) {
     if (valuesOnly) {
-      notice.value = "Set values saved. Logging is unchanged.";
+      notice.value = t("training.notices.valuesSaved");
       return;
     }
     if (completed) {
@@ -135,12 +138,15 @@ export function useTrainingSession(options: {
           targetReps: row.base.targetReps,
         },
       };
-      notice.value = `${row.exercise.name} · set ${row.index + 1} logged.`;
+      notice.value = t("training.notices.setLogged", {
+        exercise: row.exercise.name,
+        n: row.index + 1,
+      });
       selected.value = null;
       return;
     }
     lastLog.value = null;
-    notice.value = "Set marked as not logged.";
+    notice.value = t("training.notices.setNotLogged");
   }
   function lastExerciseRow(exercise: SessionExercise | undefined) {
     const last = exercise?.sets.at(-1);
@@ -154,8 +160,7 @@ export function useTrainingSession(options: {
     if (!recoverUnseenDrafts(session.id)) return;
     const values = addedSetValues(row);
     if (row && (!values || conflict(row))) {
-      row.issue =
-        "Review this set's weight and repetitions before adding another set.";
+      row.issue = t("training.notices.reviewBeforeAdding");
       selectSet(row.set.id);
       return;
     }
@@ -184,7 +189,7 @@ export function useTrainingSession(options: {
       return;
     if (!recoverUnseenDrafts(session.id)) return;
     if (hasPendingInput(row)) {
-      notice.value = "Save or discard this set’s input before undoing its log.";
+      notice.value = t("training.notices.saveBeforeUndo");
       selectSet(setId);
       return;
     }
@@ -201,7 +206,7 @@ export function useTrainingSession(options: {
     ) {
       selectSet(setId);
       lastLog.value = null;
-      notice.value = "Set marked as not logged. You can log it again.";
+      notice.value = t("training.notices.undone");
     }
   }
   /** Undoes the most recent log through the same guards as an explicit undo. */
@@ -224,8 +229,7 @@ export function useTrainingSession(options: {
     if (!recoverUnseenDrafts(session.id)) return false;
     if (hasPendingInput(row)) {
       selectSet(setId);
-      notice.value =
-        "Review this set's input before using the circle shortcut.";
+      notice.value = t("training.notices.reviewBeforeCircle");
       return false;
     }
     const result = await options.run(
@@ -243,7 +247,10 @@ export function useTrainingSession(options: {
     if (!result) return false;
     selectSet(setId);
     lastLog.value = null;
-    notice.value = `${row.exercise.name} · set ${row.index + 1} recorded. Tap again for fewer reps.`;
+    notice.value = t("training.notices.recorded", {
+      exercise: row.exercise.name,
+      n: row.index + 1,
+    });
     return true;
   }
   async function clearSet(setId: string): Promise<boolean> {
@@ -252,7 +259,7 @@ export function useTrainingSession(options: {
     if (!row || !session || options.saving.value) return false;
     if (!recoverUnseenDrafts(session.id)) return false;
     if (hasPendingInput(row)) {
-      notice.value = "Save or discard this set's draft before clearing it.";
+      notice.value = t("training.notices.saveBeforeClear");
       return false;
     }
     const result = await options.run({
@@ -263,7 +270,9 @@ export function useTrainingSession(options: {
     });
     if (!result) return false;
     selectSet(setId);
-    notice.value = `${row.exercise.name} returned to unfinished work.`;
+    notice.value = t("training.notices.returned", {
+      exercise: row.exercise.name,
+    });
     return true;
   }
   async function editExercise(
@@ -285,16 +294,15 @@ export function useTrainingSession(options: {
         (row) => row.exercise.id === command.exerciseId && hasPendingInput(row),
       )
     ) {
-      notice.value =
-        "Save or discard this exercise's drafts before changing its configuration.";
+      notice.value = t("training.notices.saveBeforeConfigure");
       return false;
     }
     const saved = await options.run(command, revision);
     if (saved)
       notice.value =
         command.type === "set-exercise-note"
-          ? "Exercise note saved."
-          : "Exercise updated. Logged sets are unchanged.";
+          ? t("training.notices.noteSaved")
+          : t("training.notices.exerciseUpdated");
     return !!saved;
   }
   async function saveEdits() {
@@ -319,7 +327,7 @@ export function useTrainingSession(options: {
     if (command.type === "finish" && session) {
       if (!recoverUnseenDrafts(session.id)) return null;
       if (pending.value.length) {
-        notice.value = "Save or discard your input drafts before finishing.";
+        notice.value = t("training.notices.saveBeforeFinish");
         const first = pending.value[0];
         if (first) selectSet(first.set.id);
         return null;
@@ -328,8 +336,7 @@ export function useTrainingSession(options: {
     const observed = drafts.retiringRecords(command);
     const result = await options.run(command, revision);
     if (result && !drafts.acknowledge(observed))
-      notice.value =
-        "Workout saved, but old input drafts could not be cleared on this device.";
+      notice.value = t("training.notices.draftsNotCleared");
     return result;
   }
   return {

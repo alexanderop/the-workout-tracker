@@ -4,6 +4,7 @@ import type { Snapshot } from "../../src/features/workouts/domain";
 import { createWorkouts } from "../../src/features/workouts/application";
 import { useWorkouts } from "../../src/features/workouts/ui/useWorkouts";
 import { useWorkoutName } from "../../src/features/workouts/ui/useWorkoutName";
+import { t } from "../../src/i18n/testing";
 import { createWorkoutFactory, FIXED_NOW } from "../support/factories";
 import {
   createMemoryJournal,
@@ -26,10 +27,11 @@ function setup() {
   });
   const scope = effectScope();
   const editor = scope.run(() => {
-    const workouts = useWorkouts(app);
+    const workouts = useWorkouts(app, t);
     return useWorkoutName({
       ...workouts,
       active: computed(() => workouts.snapshot.value?.active ?? null),
+      t,
     });
   })!;
   return { editor, app, memory, active, scope };
@@ -245,6 +247,7 @@ describe("racing workout-name saves", () => {
         snapshot: computed(() => snapshot.value),
         active: computed(() => snapshot.value.active),
         saving: ref(false),
+        t,
         run: () =>
           new Promise<Snapshot>((resolve) => {
             release = resolve;
@@ -290,6 +293,7 @@ describe("racing workout-name saves", () => {
         snapshot: computed(() => snapshot.value),
         active: computed(() => snapshot.value.active),
         saving: ref(false),
+        t,
         run: () =>
           new Promise<Snapshot | null>((resolve) => {
             release = resolve;

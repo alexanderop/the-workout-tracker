@@ -113,10 +113,12 @@ describe("workout phases", () => {
     const inputs = { at: FIXED_NOW, id: factory.id };
     expect(reduceWorkout(resting, commands.start, inputs)).toEqual({
       kind: "rejected",
+      code: "finishCurrentFirst",
       message: "Finish your current workout first.",
     });
     expect(reduceWorkout(idle, commands["add-set"], inputs)).toEqual({
       kind: "rejected",
+      code: "noLongerActive",
       message: "This workout is no longer active.",
     });
   });

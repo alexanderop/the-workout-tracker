@@ -352,7 +352,18 @@ describe("given a storage write that throws", () => {
     );
     expect(failure(result)).toMatchObject({
       _tag: "InvalidChange",
+      code: "changeFailedUnexpectedly",
       message: "This change failed unexpectedly. Nothing was saved.",
+    });
+  });
+
+  it("carries the rule code of a rejected change", async () => {
+    const { app } = setup();
+    const result = await app.execute({ type: "finish", sessionId: "missing" }, 0);
+    expect(failure(result)).toMatchObject({
+      _tag: "InvalidChange",
+      code: "noLongerActive",
+      message: "This workout is no longer active.",
     });
   });
 });

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   initialSnapshot,
   reduceWorkout,
+  rejections,
   snapshotSchema,
   type Command,
   type SessionExercise,
@@ -39,7 +40,12 @@ function journal(exercises?: (factory: ReturnType<typeof createWorkoutFactory>) 
 }
 
 function rejection(transition: Transition): string | undefined {
-  return transition.kind === "rejected" ? transition.message : undefined;
+  if (transition.kind !== "rejected") return undefined;
+  // Every rejection names its rule by code; the code and text must agree.
+  expect(transition.code ? rejections[transition.code] : undefined).toBe(
+    transition.message,
+  );
+  return transition.message;
 }
 
 function changedSnapshot(transition: Transition): Snapshot {

@@ -19,6 +19,15 @@ describe("selected workout start", () => {
     ] }] });
     expect(result.snapshot.routines).toEqual(snapshot.routines);
   });
+  it("names the workout in the caller's language and falls back to English", () => {
+    const f = createWorkoutFactory();
+    const named = reduceWorkout(f.snapshot(), { type: "start-selected", exerciseIds: ["bench-press"], name: "Neues Training" }, { at: FIXED_NOW, id: f.id });
+    const unnamed = reduceWorkout(f.snapshot(), { type: "start-selected", exerciseIds: ["bench-press"] }, { at: FIXED_NOW, id: f.id });
+    if (named.kind === "rejected" || unnamed.kind === "rejected") throw new Error("start rejected");
+    expect(named.snapshot.active?.name).toBe("Neues Training");
+    expect(unnamed.snapshot.active?.name).toBe("New workout");
+    expect(commandSchema.safeParse({ type: "start-selected", exerciseIds: ["bench-press"], name: "  " }).success).toBe(false);
+  });
   it("rejects missing catalog entries and an already active workout", () => {
     const f = createWorkoutFactory();
     expect(reduceWorkout(f.snapshot(), { type: "start-selected", exerciseIds: ["bench-press", "missing"] }, { at: FIXED_NOW, id: f.id }).kind).toBe("rejected");

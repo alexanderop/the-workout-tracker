@@ -3,6 +3,7 @@ import { effectScope, nextTick, ref, type EffectScope } from "vue";
 import { createWorkouts } from "../../src/features/workouts/application";
 import type { WorkoutStorage } from "../../src/features/workouts/ports";
 import { useWorkoutWorkspace } from "../../src/features/workouts/ui/useWorkoutWorkspace";
+import { t } from "../../src/i18n/testing";
 import { createWorkoutFactory, FIXED_NOW } from "../support/factories";
 import { createMemoryJournal, createMemoryStorage } from "../support/memory-ports";
 
@@ -16,7 +17,7 @@ function setup() {
   const service = createWorkouts({ storage: storage.storage, journal, now: () => FIXED_NOW, id: factory.id });
   const scope = effectScope();
   scopes.push(scope);
-  const workspace = scope.run(() => useWorkoutWorkspace(service, journal, ref(FIXED_NOW)))!;
+  const workspace = scope.run(() => useWorkoutWorkspace(service, journal, { now: ref(FIXED_NOW), t }))!;
   return { workspace, storage, active, set, journal };
 }
 
@@ -41,7 +42,7 @@ function race() {
     const service = createWorkouts({ storage: target, journal: drafts.journal, now: () => FIXED_NOW, id: factory.id });
     const scope = effectScope();
     scopes.push(scope);
-    const workspace = scope.run(() => useWorkoutWorkspace(service, drafts.journal, ref(FIXED_NOW)));
+    const workspace = scope.run(() => useWorkoutWorkspace(service, drafts.journal, { now: ref(FIXED_NOW), t }));
     if (!workspace) throw new Error("The workspace was not created.");
     return workspace;
   };

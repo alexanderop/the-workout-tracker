@@ -1,5 +1,6 @@
 import { computed, onScopeDispose, ref, shallowRef } from "vue";
 import type { Result } from "@form/result";
+import type { Translate } from "../../../i18n";
 import type { Workouts, ApplicationCommand } from "../application";
 import {
   Conflict,
@@ -26,7 +27,7 @@ function reportedSnapshot(failure: Error): Snapshot | undefined {
     : undefined;
 }
 
-export function useWorkouts(service: Workouts) {
+export function useWorkouts(service: Workouts, t: Translate) {
   const state = shallowRef<LoadState>({ kind: "loading" });
   const saving = ref(false);
   const notice = shallowRef<SaveNotice>({ kind: "none" });
@@ -61,7 +62,7 @@ export function useWorkouts(service: Workouts) {
     const current = state.value;
     if (current.kind !== "failed") return null;
     return {
-      message: describeReadFailure(current.error),
+      message: describeReadFailure(current.error, t),
       recoveryExport: StoredDataUnreadable.is(current.error)
         ? current.error.rawExport
         : null,
@@ -84,19 +85,16 @@ export function useWorkouts(service: Workouts) {
       const result = await service.execute(command, expectedRevision);
       if (result.isOk()) {
         state.value = { kind: "ready", snapshot: result.value };
-        notify("Saved on this device");
+        notify(t("errors.failures.savedOnDevice"));
         return result.value;
       }
       if (Conflict.is(result.error))
         state.value = { kind: "ready", snapshot: result.error.snapshot };
-      const failure = describeFailure(result.error);
+      const failure = describeFailure(result.error, t);
       fail(failure.message, failure.reload);
       return null;
     } catch {
-      fail(
-        "Could not save. Your previous saved workout is safe. Try again.",
-        true,
-      );
+      fail(t("errors.failures.saveFailed"), true);
       return null;
     } finally {
       saving.value = false;

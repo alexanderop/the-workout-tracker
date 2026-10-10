@@ -24,6 +24,12 @@ export function rollingDays(today: number): readonly number[] {
   return Array.from({ length: 7 }, (_, index) => shiftDay(today, index - 6));
 }
 
+/** One timestamp per weekday, Monday first, for the calendar's column heads. */
+export function weekdayStarts(): readonly number[] {
+  const monday = new Date(2024, 0, 1).getTime();
+  return Array.from({ length: 7 }, (_, index) => shiftDay(monday, index));
+}
+
 export function monthDays(month: number): readonly (number | null)[] {
   const first = monthStart(month);
   const leading = (new Date(first).getDay() + 6) % 7;

@@ -197,13 +197,16 @@ export function isDraftDirty(state: TrainingDraftState): boolean {
   );
 }
 
+/** Why a commit is refused; the interface turns the code into text. */
+type SetCommitIssue = "draftConflict" | "invalidValues";
+
 export type SetCommitDecision =
   | {
       kind: "ready";
       values: { weightKg: number; reps: number };
       completed: boolean;
     }
-  | { kind: "blocked"; issue: string }
+  | { kind: "blocked"; issue: SetCommitIssue }
   | { kind: "unchanged" };
 
 export function decideSetCommit(
@@ -211,18 +214,10 @@ export function decideSetCommit(
   valuesOnly = false,
 ): SetCommitDecision {
   if (hasDraftConflict(state))
-    return {
-      kind: "blocked",
-      issue:
-        "This set changed in another tab or has different recovered drafts. Review it before logging.",
-    };
+    return { kind: "blocked", issue: "draftConflict" };
   const values = parseSetValues(state);
   if (!values)
-    return {
-      kind: "blocked",
-      issue:
-        "Enter 0–1000 kg and 0–1000 whole repetitions. Planned sets need at least one rep.",
-    };
+    return { kind: "blocked", issue: "invalidValues" };
   if (
     !valuesOnly &&
     state.set.completed &&

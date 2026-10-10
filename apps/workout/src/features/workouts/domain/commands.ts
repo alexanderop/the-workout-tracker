@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { RejectionCode } from "./errors";
 import {
   actualReps,
   identifier,
@@ -31,7 +32,14 @@ export const commandSchema = z
         exerciseIds: selectedExerciseIds,
       })
       .strict(),
-    z.object({ type: z.literal("start-selected"), exerciseIds: selectedExerciseIds }).strict(),
+    z
+      .object({
+        type: z.literal("start-selected"),
+        exerciseIds: selectedExerciseIds,
+        // The caller names the workout in its own language.
+        name: name.optional(),
+      })
+      .strict(),
     z
       .object({ type: z.literal("start"), routineId: identifier })
       .strict(),
@@ -145,5 +153,9 @@ export const commandSchema = z
 export type Command = z.infer<typeof commandSchema>;
 export type Transition =
   | { readonly kind: "changed" | "unchanged"; readonly snapshot: Snapshot }
-  | { readonly kind: "rejected"; readonly message: string };
+  | {
+      readonly kind: "rejected";
+      readonly message: string;
+      readonly code?: RejectionCode;
+    };
 export type Inputs = { readonly at: number; readonly id: () => string };

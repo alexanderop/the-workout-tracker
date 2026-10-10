@@ -5,6 +5,7 @@ import { createWorkouts } from "../../src/features/workouts/application";
 import { DraftStorageFailed, type Snapshot } from "../../src/features/workouts/domain";
 import type { DraftJournal } from "../../src/features/workouts/ports";
 import { useTrainingSession } from "../../src/features/workouts/ui/useTrainingSession";
+import { t } from "../../src/i18n/testing";
 import { createWorkoutFactory, FIXED_NOW } from "../support/factories";
 import { success } from "../support/results";
 import {
@@ -55,6 +56,7 @@ function setup(recoveredWeight?: string) {
       snapshot,
       saving,
       journal,
+      t,
       async run(command, revision = snapshot.value?.revision ?? 0) {
         const result = await service.execute(command, revision);
         if (result.isErr()) return null;

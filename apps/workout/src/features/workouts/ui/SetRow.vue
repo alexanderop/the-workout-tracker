@@ -6,10 +6,11 @@ import {
   BaseButton,
   BaseInputNumber,
 } from "@form/ui";
-import { useTemplateRef, watch, nextTick, ref } from "vue";
+import { computed, useTemplateRef, watch, nextTick, ref } from "vue";
 import { Check, MoreHorizontal, Save } from "@lucide/vue";
 import type { TrainingRow } from "./useTrainingSession";
 import type { RawValues, SetDraft } from "../domain/drafts";
+import { useFormat, useTranslation } from "../../../i18n";
 const { row, busy, current, dirty, conflict } = defineProps<{
   row: TrainingRow;
   busy: boolean;
@@ -26,7 +27,27 @@ const emit = defineEmits<{
   keep: [];
   recover: [draft: SetDraft];
 }>();
+const { t } = useTranslation();
+const format = useFormat();
 const discardOpen = ref(false);
+const savedSummary = computed(() =>
+  t(
+    row.set.completed
+      ? "training.setRow.savedLogged"
+      : "training.setRow.savedNotLogged",
+    {
+      weight: format.value.number(row.set.weightKg),
+      reps: row.set.reps,
+    },
+  ),
+);
+const toggleLabel = () => {
+  const values = { n: row.index + 1, exercise: row.exercise.name };
+  if (!row.set.completed) return t("training.setRow.logSet", values);
+  return dirty
+    ? t("training.setRow.saveSet", values)
+    : t("training.setRow.loggedSet", values);
+};
 const form = useTemplateRef<HTMLFormElement>("form");
 watch(
   () => row.issue,
@@ -71,7 +92,12 @@ defineExpose({
         unstyled
         type="button"
         class="set-number"
-        :aria-label="`Select set ${row.index + 1} of ${row.exercise.name}`"
+        :aria-label="
+          t('training.setRow.select', {
+            n: row.index + 1,
+            exercise: row.exercise.name,
+          })
+        "
         :aria-current="current ? 'true' : undefined"
         @click="emit('select')"
       >
@@ -79,26 +105,36 @@ defineExpose({
       </BaseButton>
       <BaseInputNumber
         :model-value="row.weight"
-        title="Weight"
-        unit="kg"
+        :title="t('training.setRow.weight')"
+        :unit="t('training.setRow.kg')"
         :decimals="2"
         :preset-step="2.5"
         class="set-input"
         :aria-invalid="!!row.issue"
         :aria-describedby="row.issue ? `set-issue-${row.set.id}` : undefined"
-        :label="`Set ${row.index + 1} weight for ${row.exercise.name}`"
+        :label="
+          t('training.setRow.weightLabel', {
+            n: row.index + 1,
+            exercise: row.exercise.name,
+          })
+        "
         :disabled="busy"
         @update:model-value="emit('edit', { weight: $event })"
         @open="emit('select')"
       />
       <BaseInputNumber
         :model-value="row.reps"
-        title="Reps"
+        :title="t('training.setRow.reps')"
         :min="0"
         class="set-input"
         :aria-invalid="!!row.issue"
         :aria-describedby="row.issue ? `set-issue-${row.set.id}` : undefined"
-        :label="`Set ${row.index + 1} repetitions for ${row.exercise.name}`"
+        :label="
+          t('training.setRow.repsLabel', {
+            n: row.index + 1,
+            exercise: row.exercise.name,
+          })
+        "
         :disabled="busy"
         @update:model-value="emit('edit', { reps: $event })"
         @open="emit('select')"
@@ -108,7 +144,7 @@ defineExpose({
         type="submit"
         class="set-toggle"
         :class="{ logged: row.set.completed, 'has-draft': dirty }"
-        :aria-label="`${row.set.completed ? (dirty ? 'Save' : 'Logged') : 'Log'} set ${row.index + 1} of ${row.exercise.name}`"
+        :aria-label="toggleLabel()"
         :aria-disabled="row.set.completed && !dirty"
         :disabled="busy"
       >
@@ -119,13 +155,18 @@ defineExpose({
           />
         </BaseFeedback>
         <span v-if="row.set.completed && !dirty" class="set-logged-label"
-          >Logged</span
+          >{{ t("training.setRow.logged") }}</span
         >
       </BaseButton>
       <BaseButtonIcon
         type="button"
         class="set-options"
-        :label="`Options for set ${row.index + 1} of ${row.exercise.name}`"
+        :label="
+          t('training.setRow.options', {
+            n: row.index + 1,
+            exercise: row.exercise.name,
+          })
+        "
         :disabled="busy"
         @click="emit('options')"
       >
@@ -141,14 +182,8 @@ defineExpose({
       {{ row.issue }}
     </p>
     <div v-if="conflict" class="draft-conflict">
-      <p>
-        This set changed in another tab or has different recovered drafts. Your
-        input is preserved.
-      </p>
-      <p>
-        Saved: {{ row.set.weightKg }} kg × {{ row.set.reps }} reps ·
-        {{ row.set.completed ? "logged" : "not logged" }}.
-      </p>
+      <p>{{ t("training.setRow.conflict") }}</p>
+      <p>{{ savedSummary }}</p>
       <BaseButton
         unstyled
         type="button"
@@ -156,7 +191,7 @@ defineExpose({
         :disabled="busy"
         @click="emit('keep')"
       >
-        Keep my input
+        {{ t("training.setRow.keepInput") }}
       </BaseButton>
       <BaseButton
         unstyled
@@ -166,8 +201,12 @@ defineExpose({
         class="text-button"
         @click="emit('recover', draft)"
       >
-        Review {{ draft.weight || "empty" }} kg ×
-        {{ draft.reps || "empty" }} reps
+        {{
+          t("training.setRow.reviewDraft", {
+            weight: draft.weight || t("training.setRow.empty"),
+            reps: draft.reps || t("training.setRow.empty"),
+          })
+        }}
       </BaseButton>
       <BaseButton
         unstyled
@@ -175,30 +214,29 @@ defineExpose({
         class="text-button"
         @click="discardOpen = true"
       >
-        Discard drafts and use saved values
+        {{ t("training.setRow.useSaved") }}
       </BaseButton>
     </div>
     <p v-if="row.storageIssue" class="field-error" role="alert">
       {{ row.storageIssue }}
     </p>
     <p v-else-if="row.touched && !conflict" class="draft-note">
-      Input retained on this device.
       {{
         row.set.completed
-          ? "Save to apply it to this logged set."
-          : "It is not logged. Log when you finish this set."
+          ? t("training.setRow.retainedLogged")
+          : t("training.setRow.retainedUnlogged")
       }}
     </p>
   </form>
   <BaseSheet
     :open="discardOpen"
-    title="Discard input changes?"
-    description="This deletes the input drafts for this set and restores its saved values."
+:title="t('training.discardInput.title')"
+    :description="t('training.discardInput.description')"
     @close="discardOpen = false"
   >
     <div class="form-actions">
       <BaseButton variant="secondary" @click="discardOpen = false">
-        Keep editing
+        {{ t("training.discardInput.keepEditing") }}
       </BaseButton>
       <BaseButton
         :disabled="busy"
@@ -207,7 +245,7 @@ defineExpose({
           discardOpen = false;
         "
       >
-        Discard input
+        {{ t("training.discardInput.action") }}
       </BaseButton>
     </div>
   </BaseSheet>
