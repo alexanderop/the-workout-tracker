@@ -2,7 +2,10 @@ import { expect, type Page } from "@playwright/test";
 import { WorkoutPage } from "./WorkoutPage";
 
 export class MobileControlsPage {
-  constructor(private readonly page: Page) {}
+  private readonly page: Page;
+  constructor(page: Page) {
+    this.page = page;
+  }
 
   async openShortWorkout() {
     await this.page.setViewportSize({ width: 320, height: 568 });

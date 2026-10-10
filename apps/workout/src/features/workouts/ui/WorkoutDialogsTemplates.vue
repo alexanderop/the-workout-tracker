@@ -24,14 +24,14 @@ const { workspace, open = false } = defineProps<{
     | "catalog"
   >;
 }>();
-const { snapshot, saving, error, notify, clearError, run, active, catalog } =
-  workspace;
 const emit = defineEmits<{
   start: [routineId: string];
   "template-saved": [];
   "close-templates": [];
   "template-closed": [event: Event];
 }>();
+const { snapshot, saving, error, notify, clearError, run, active, catalog } =
+  workspace;
 
 const routineOpen = ref(false);
 const templateContent = useTemplateRef<HTMLElement>("templateContent");

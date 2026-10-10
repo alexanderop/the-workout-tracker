@@ -1,4 +1,4 @@
-export type AppId = "strong" | "hevy" | "fitbod" | "jefit" | "stronglifts" | "boostcamp" | "alpha" | "nike" | "freeletics" | "sweat";
+type AppId = "strong" | "hevy" | "fitbod" | "jefit" | "stronglifts" | "boostcamp" | "alpha" | "nike" | "freeletics" | "sweat";
 export type Reference = {
   id: AppId;
   name: string;

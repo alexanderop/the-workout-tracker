@@ -2,7 +2,10 @@ import { expect, type Page } from "@playwright/test";
 
 /** Connectivity of the scenario's browser context, as a user would lose it. */
 export class OfflinePage {
-  constructor(readonly page: Page) {}
+  readonly page: Page;
+  constructor(page: Page) {
+    this.page = page;
+  }
 
   /** Opens the app online, waits for the worker to cache it, and reloads. */
   async openReadyForOffline() {

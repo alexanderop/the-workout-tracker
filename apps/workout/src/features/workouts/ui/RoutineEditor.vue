@@ -340,7 +340,7 @@ function save() {
   min-height: 44px;
 }
 .template-picker {
-  border: 1px solid var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 12px;
 }

@@ -109,15 +109,14 @@ export function useTrainingSession(options: {
     const saved = savedSetBaseline(result, setId, { ...values, completed });
     Object.assign(row, resetDraftToSaved(saved, result.revision));
     row.issue = "";
-    reportCommit(row, session.id, completed, valuesOnly);
+    reportCommit(row, session.id, { completed, valuesOnly });
     Object.assign(row, restoreTrainingDraft(row));
     recoverUnseenDrafts(session.id);
   }
   function reportCommit(
     row: TrainingRow,
     sessionId: string,
-    completed: boolean,
-    valuesOnly: boolean,
+    { completed, valuesOnly }: { completed: boolean; valuesOnly: boolean },
   ) {
     if (valuesOnly) {
       notice.value = "Set values saved. Logging is unchanged.";

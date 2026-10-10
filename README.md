@@ -2,7 +2,7 @@
 
 [Open the app](https://alexanderop.github.io/the-workout-tracker/) · [Source](https://github.com/alexanderop/the-workout-tracker)
 
-A quiet, local-first workout journal. Dark mode, five colors, purple as the primary accent. Built with Vue 3, strict TypeScript, Vite, Dexie, Reka UI, Lucide and a service worker.
+A quiet, local-first workout journal. Light and dark themes (following your device by default), five accent colors and Geist. Built with Vue 3, strict TypeScript, Vite, Dexie, Reka UI, Lucide and a service worker.
 
 ## Workspace
 
@@ -16,7 +16,7 @@ The app imports its buttons, form controls, dialogs and mobile numeric editor fr
 
 `@form/ui` is a private source package: Vite compiles its Vue source as part of the consuming app. It does not yet produce a standalone npm distribution. New component consumers import `@form/ui/styles.css` alongside the tokens. Its public API is limited by package exports; import paths into another workspace's source are forbidden.
 
-`pnpm check:boundaries` checks workspace manifests and imports in source and configuration. It rejects cross-workspace relative imports, private deep imports, undeclared dependencies and dependencies on applications. Source cannot rely on development-only dependencies. This standalone check is optional and is not part of `pnpm verify`.
+`pnpm check:boundaries` checks workspace manifests and imports in source and configuration. It rejects cross-workspace relative imports, private deep imports, undeclared dependencies and dependencies on applications. Source cannot rely on development-only dependencies. `pnpm lint`, and so `pnpm verify`, runs this check.
 
 Within the app, `src/features/workouts` contains the domain, application, storage port, Dexie adapter, and feature UI. The app composition root supplies concrete dependencies. Shared Oxlint and standalone rules enforce feature entry points and layer direction; `pnpm check:architecture` checks feature and layer boundaries.
 
@@ -133,3 +133,7 @@ The explorer uses Histoire 1.0 beta with Vite 7; the workout app compiles its ow
 Stories live in `apps/design-system/src/stories/**/*.story.vue`. Complete pages render the production application through its preview document; do not copy page markup or move workout rules into the UI package for the explorer. Sample feedback in patterns and explorations must not imply a real save. Spacing examples are reference values, not additional global tokens.
 
 See [the design contract](docs/design.md#product-design-workspace) for presentation rules and [the preview workflow](docs/workflows.md#add-a-product-page-state-or-flow) for adding examples.
+
+## Design reference
+
+[Tilly](https://github.com/carlassmann/tilly) inspired the restrained colors, rounded controls, responsive navigation, and PWA interaction patterns. The Vue components and implementation are original. Geist and Lucide retain their respective package licenses.

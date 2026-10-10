@@ -139,16 +139,16 @@ describe("workout application", () => {
     expect(results.map((result) => result.kind).sort()).toEqual(["conflict", "saved"]);
     expect(memory.current().revision).toBe(1);
     expect(memory.current().active?.exercises.map((exercise) => exercise.exerciseId)).toEqual(["bench-press", "squat"]);
-    expect(memory.current().active?.exercises[0]?.sets).toEqual([
-      { id: expect.any(String), weightKg: 0, reps: 8, targetReps: 8, completed: false },
-    ]);
+    const sets = memory.current().active?.exercises[0]?.sets;
+    expect(sets).toHaveLength(1);
+    expect(sets?.[0]).toMatchObject({ weightKg: 0, reps: 8, targetReps: 8, completed: false });
   });
 
   it("leaves no partial workout when selected creation cannot save", async () => {
     const { dependencies, memory } = setup();
     const app = createWorkouts({ ...dependencies, storage: {
       ...dependencies.storage,
-      async compareAndSave() { return { kind: "unavailable", message: "Storage unavailable" }; },
+      compareAndSave: () => Promise.resolve({ kind: "unavailable" as const, message: "Storage unavailable" }),
     } });
     expect((await app.execute({ type: "start-selected", exerciseIds: ["bench-press"] }, 0)).kind).toBe("unavailable");
     expect(memory.current().active).toBeNull();
@@ -326,9 +326,7 @@ describe("given a storage write that throws", () => {
       ...dependencies,
       storage: {
         ...memory.storage,
-        async compareAndSave() {
-          throw new Error("Quota exceeded.");
-        },
+        compareAndSave: () => Promise.reject(new Error("Quota exceeded.")),
       },
     });
     expect(await app.execute(settings, 0)).toMatchObject({

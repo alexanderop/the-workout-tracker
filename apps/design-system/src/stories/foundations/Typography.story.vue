@@ -21,7 +21,7 @@
 
 ## Usage
 
-Inter connects navigation, forms and workout values.
+Geist Variable connects navigation, forms and workout values.
 
 ## Variants
 

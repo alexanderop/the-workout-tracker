@@ -2,14 +2,12 @@
 export {
   exerciseSchema,
   routineSchema,
-  settingsSchema,
   snapshotSchema,
   type ActiveSession,
   type CompletedSession,
   type Exercise,
   type Routine,
   type SessionExercise,
-  type Settings,
   type Snapshot,
   type WorkoutSet,
 } from "./domain/schemas";
@@ -17,7 +15,6 @@ export {
   commandSchema,
   setTargetReps,
   type Command,
-  type Inputs,
   type Transition,
 } from "./domain/commands";
 export {

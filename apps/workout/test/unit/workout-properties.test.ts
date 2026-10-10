@@ -1,4 +1,4 @@
-import fc from "fast-check";
+import * as fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import {
   initialSnapshot,
@@ -362,6 +362,8 @@ type Acceptance = (
   exercise: SessionExercise | undefined,
 ) => boolean;
 
+const always: Acceptance = () => true;
+
 // Commands the domain contract allows. A rejection here means validation is
 // hiding a broken transition instead of the user's change being applied.
 function mustAccept(snapshot: Snapshot, command: Command): boolean {
@@ -369,7 +371,6 @@ function mustAccept(snapshot: Snapshot, command: Command): boolean {
   const active = snapshot.active;
   if (!active || !("sessionId" in command) || command.sessionId !== active.id)
     return false;
-  const always: Acceptance = () => true;
   const rules: Partial<Record<Command["type"], Acceptance>> = {
     rename: always,
     discard: always,
@@ -405,8 +406,8 @@ function runJourney(steps: readonly Step[]) {
     at += step.advanceMs;
     const command = toCommand(snapshot, step);
     const transition = reduceWorkout(snapshot, command, { at, id: factory.id });
-    if (mustAccept(snapshot, command))
-      expect(transition, command.type).not.toMatchObject({ kind: "rejected" });
+    const refused = mustAccept(snapshot, command) && transition.kind === "rejected";
+    expect({ type: command.type, refused }).toEqual({ type: command.type, refused: false });
     snapshot = checkStep(snapshot, command, transition);
   }
 }

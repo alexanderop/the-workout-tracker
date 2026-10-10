@@ -12,6 +12,9 @@ import type { SetDraft } from "../../src/features/workouts/domain/drafts";
 
 export const FIXED_NOW = 1_800_000_000_000;
 
+const snapshot = (overrides: Partial<Snapshot> = {}): Snapshot =>
+  snapshotSchema.parse({ ...initialSnapshot(), ...overrides });
+
 export function createWorkoutFactory(seed = "workout") {
   let sequence = 0;
   const id = () => `${seed}-${++sequence}`;
@@ -63,8 +66,6 @@ export function createWorkoutFactory(seed = "workout") {
     exercises: [sessionExercise({ sets: [set({ completed: true })] })],
     ...overrides,
   });
-  const snapshot = (overrides: Partial<Snapshot> = {}): Snapshot =>
-    snapshotSchema.parse({ ...initialSnapshot(), ...overrides });
   const draft = (overrides: Partial<SetDraft> = {}): SetDraft => ({
     id: id(),
     writer: seed,

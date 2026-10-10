@@ -11,8 +11,8 @@ const { workspace } = defineProps<{
     "snapshot" | "saving" | "error" | "run" | "training" | "active" | "catalog"
   >;
 }>();
-const { snapshot, saving, error, run, training, active, catalog } = workspace;
 const emit = defineEmits<{ started: [] }>();
+const { snapshot, saving, error, run, training, active, catalog } = workspace;
 
 const muscleGroups = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Other"];
 const equipmentTypes = [

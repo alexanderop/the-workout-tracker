@@ -26,9 +26,9 @@ const { label = "Opening your training journal" } = defineProps<{
   place-items: center;
   width: 56px;
   height: 56px;
-  border-radius: 16px;
+  border-radius: 12px;
   background: var(--surface);
-  color: var(--purple);
+  color: var(--accent);
 }
 .ui-loading p {
   margin: 0;

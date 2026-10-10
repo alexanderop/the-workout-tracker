@@ -6,10 +6,12 @@ import { expect, type APIRequestContext, type Page } from "@playwright/test";
  * the Update app notice and the build version of the loaded document.
  */
 export class UpdatesPage {
-  constructor(
-    readonly page: Page,
-    private readonly request: APIRequestContext,
-  ) {}
+  readonly page: Page;
+  private readonly request: APIRequestContext;
+  constructor(page: Page, request: APIRequestContext) {
+    this.page = page;
+    this.request = request;
+  }
 
   /** The server answers with this build until told otherwise. */
   async serve(version: "1" | "2") {
@@ -109,7 +111,7 @@ export class UpdatesPage {
     });
     await other.waitForFunction(async () => {
       const registration = await navigator.serviceWorker.getRegistration();
-      return registration !== undefined && registration.waiting === null;
+      return registration?.waiting === null;
     });
     return other;
   }

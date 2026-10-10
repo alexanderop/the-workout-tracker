@@ -30,7 +30,7 @@ export default defineConfig({
       {
         plugins: [vue()],
         // Mirrors the build-time constant that vite.config.ts defines.
-        define: { __APP_VERSION__: JSON.stringify("test-build") },
+        define: { APP_VERSION: JSON.stringify("test-build") },
         test: {
           name: "browser",
           include: ["test/browser/**/*.test.ts"],

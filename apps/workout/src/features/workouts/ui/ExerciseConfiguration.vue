@@ -66,12 +66,12 @@ const targets = computed(() =>
 const sameValue = <T,>(values: T[]) =>
   new Set(values).size === 1 ? values[0] : undefined;
 const repsSummary = computed(() => {
-  const reps = sameValue(targets.value.map(setTargetReps));
-  return reps === undefined ? "Mixed reps" : `${reps} reps`;
+  const shared = sameValue(targets.value.map(setTargetReps));
+  return shared === undefined ? "Mixed reps" : `${shared} reps`;
 });
 const weightSummary = computed(() => {
-  const weight = sameValue(targets.value.map((set) => set.weightKg));
-  return weight === undefined ? "Mixed kg" : `${fmt(weight)} kg`;
+  const shared = sameValue(targets.value.map((set) => set.weightKg));
+  return shared === undefined ? "Mixed kg" : `${fmt(shared)} kg`;
 });
 const catalog = computed(() =>
   Object.values(workspace.snapshot.value?.exercises ?? {}).filter(
@@ -137,6 +137,8 @@ function requestExit(kind: "close" | "leave"): Promise<boolean> {
 function close() { void requestExit("close"); }
 function requestLeave() { return requestExit("leave"); }
 defineExpose({ requestLeave });
+const addedId = (priorIds: ReadonlySet<string>) =>
+  workspace.active.value?.exercises.find((item) => !priorIds.has(item.id))?.id;
 async function save(
   command: Extract<
     Command,
@@ -149,12 +151,8 @@ async function save(
   savePending.value = true;
   try {
     if (await workspace.training.editExercise(command, revision)) {
-      if (command.type === "replace-exercise") {
-        const added = workspace.active.value?.exercises.find(
-          (item) => !priorIds.has(item.id),
-        );
-        if (added) replacementFocusId = added.id;
-      }
+      if (command.type === "replace-exercise")
+        replacementFocusId = addedId(priorIds) ?? replacementFocusId;
       baseline.value = formState();
       emit("close");
       return;
@@ -465,14 +463,14 @@ function saveReplacement() {
   padding-inline: 8px;
 }
 .exercise-option-targets :deep(button) {
-  border-radius: 18px;
+  border-radius: 12px;
   min-height: 58px;
 }
 .exercise-option-group {
   display: grid;
   overflow: clip;
   background: var(--surface);
-  border-radius: 14px;
+  border-radius: 10px;
 }
 .exercise-option-group :deep(button) {
   justify-content: flex-start;

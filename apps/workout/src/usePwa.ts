@@ -68,9 +68,10 @@ export function usePwa() {
     window.removeEventListener("beforeinstallprompt", captureInstall);
     window.removeEventListener("appinstalled", markInstalled);
   });
-  async function install() {
+  function install() {
     installMessage.value = "";
     installOpen.value = true;
+    return Promise.resolve();
   }
   async function requestInstall() {
     const event = installEvent.value;

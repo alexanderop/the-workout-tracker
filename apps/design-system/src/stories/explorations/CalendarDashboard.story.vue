@@ -24,17 +24,17 @@ const concepts = [
 <style scoped>
 .calendar-board { padding: 40px 24px 56px; background: var(--background); color: var(--text); }
 .board-intro, .concept-grid { max-width: 1240px; margin-inline: auto; }
-.board-intro > span { color: var(--purple); font-size: 10px; letter-spacing: 1.7px; }
+.board-intro > span { color: var(--accent); font-size: 10px; letter-spacing: 1.7px; }
 .board-intro h1 { font-size: 34px; font-weight: 550; letter-spacing: -1.2px; line-height: 1.2; margin: 13px 0; }
 .board-intro p { font-size: 13px; color: var(--muted); line-height: 1.6; }
 .board-intro label { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 12px; margin: 20px 0 30px; cursor: pointer; }
-.board-intro input { accent-color: var(--purple); }
+.board-intro input { accent-color: var(--accent); }
 .concept-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; }
 .concept-caption { min-height: 143px; }
-.concept-caption > span { font-size: 10px; color: var(--purple); }
+.concept-caption > span { font-size: 10px; color: var(--accent); }
 .concept-caption h2 { font-size: 17px; font-weight: 500; letter-spacing: -.3px; margin: 10px 0; }
 .concept-caption p { color: var(--muted); font-size: 12px; line-height: 1.6; max-width: 330px; }
-.concept-phone { border: 1px solid var(--surface); border-radius: 22px; overflow: hidden; }
+.concept-phone { border: 1px solid var(--border); border-radius: 22px; overflow: hidden; }
 @media (max-width: 1100px) { .concept-grid { grid-template-columns: 1fr; max-width: 390px; gap: 36px; } .board-intro { max-width: 390px; } .concept-caption { min-height: auto; margin-bottom: 22px; } }
 </style>
 <docs lang="md">

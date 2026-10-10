@@ -16,6 +16,11 @@ import {
   type Snapshot,
 } from "./schemas";
 
+const reject = (message: string): Transition => ({
+  kind: "rejected",
+  message,
+});
+
 export function reduceWorkout(
   snapshot: Snapshot,
   command: Command,
@@ -24,10 +29,6 @@ export function reduceWorkout(
   const parsed = commandSchema.safeParse(command);
   if (!parsed.success || !timestamp.safeParse(inputs.at).success)
     return { kind: "rejected", message: "Please check the entered values." };
-  const reject = (message: string): Transition => ({
-    kind: "rejected",
-    message,
-  });
   const unchanged = (): Transition => ({ kind: "unchanged", snapshot });
   const changed = (next: Snapshot): Transition => {
     if (JSON.stringify(next) === JSON.stringify(snapshot)) return unchanged();
@@ -111,11 +112,11 @@ export function reduceWorkout(
     case "set-completed":
       return reduceActive(context, command);
   }
-  function correctCompleted(command: Extract<Command, { type: "correct-completed" }>): Transition {
-      const completed = ownRecord(snapshot.completed, command.sessionId);
+  function correctCompleted(request: Extract<Command, { type: "correct-completed" }>): Transition {
+      const completed = ownRecord(snapshot.completed, request.sessionId);
       if (!completed) return reject("This completed workout was not found.");
-      const patches = new Map<string, (typeof command.sets)[number]>();
-      for (const patch of command.sets) {
+      const patches = new Map<string, (typeof request.sets)[number]>();
+      for (const patch of request.sets) {
         const exercise = completed.exercises.find((row) => row.id === patch.exerciseId);
         const set = exercise?.sets.find((row) => row.id === patch.setId);
         if (!set) return reject("This set was not found in the completed workout.");
@@ -129,7 +130,7 @@ export function reduceWorkout(
           ...snapshot.completed,
           [completed.id]: {
             ...completed,
-            name: command.name?.trim() ?? completed.name,
+            name: request.name?.trim() ?? completed.name,
             exercises: completed.exercises.map((exercise) => ({
               ...exercise,
               sets: exercise.sets.map((set) => {
@@ -142,9 +143,9 @@ export function reduceWorkout(
       });
     }
   function repeatWorkout(
-    command: Extract<Command, { type: "repeat" }>,
+    request: Extract<Command, { type: "repeat" }>,
   ): Transition {
-    const source = ownRecord(snapshot.completed, command.completedId);
+    const source = ownRecord(snapshot.completed, request.completedId);
     if (!source) return reject("Workout was not found.");
     const id = inputs.id();
     if (ownRecord(snapshot.completed, id)) return reject("Workout ID already exists.");
@@ -173,12 +174,12 @@ export function reduceWorkout(
     });
   }
   function startWorkout(
-    command: Extract<Command, { type: "start" | "start-selected" }>,
+    request: Extract<Command, { type: "start" | "start-selected" }>,
   ): Transition {
-    const routine = command.type === "start" ? ownRecord(snapshot.routines, command.routineId) : null;
-    if (command.type === "start" && !routine) return reject("Routine was not found.");
-    const sessionExercises = command.type === "start-selected"
-      ? selectedExercises(command.exerciseIds)
+    const routine = request.type === "start" ? ownRecord(snapshot.routines, request.routineId) : null;
+    if (request.type === "start" && !routine) return reject("Routine was not found.");
+    const sessionExercises = request.type === "start-selected"
+      ? selectedExercises(request.exerciseIds)
       : routineExercises(routine);
     if (typeof sessionExercises === "string") return reject(sessionExercises);
     const id = inputs.id();

@@ -1,6 +1,6 @@
 import { defineConfig } from "@playwright/test";
 
-const base = process.env.VITE_BASE_PATH || "/the-workout-tracker/";
+const base = process.env.VITE_BASE_PATH ?? "/the-workout-tracker/";
 
 export default defineConfig({
   testDir: "test/performance",

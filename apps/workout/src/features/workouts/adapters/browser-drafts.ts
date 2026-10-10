@@ -42,6 +42,43 @@ function obsoleteDraft(
     (draft.sessionId !== snapshot.active?.id || !retained.has(draft.setId))
   );
 }
+const key = (draft: Pick<SetDraft, "id">) => prefix + draft.id;
+/** Malformed markers are ignored rather than blocking every write. */
+const minimumRevision = (storage: KeyValueStorage) => {
+  let minimum = markerRevision(storage.getItem(deletedBeforeKey)) ?? 0;
+  for (let i = 0; i < storage.length; i++) {
+    const name = storage.key(i);
+    if (!name?.startsWith(legacyDeletedBeforePrefix)) continue;
+    const revision = markerRevision(
+      name.slice(legacyDeletedBeforePrefix.length),
+    );
+    if (revision !== null) minimum = Math.max(minimum, revision);
+  }
+  return minimum;
+};
+const appKeys = (storage: KeyValueStorage, start: string) => {
+  const keys: string[] = [];
+  for (let i = 0; i < storage.length; i++) {
+    const name = storage.key(i);
+    if (name?.startsWith(start)) keys.push(name);
+  }
+  return keys;
+};
+const parseRecord = (raw: string | null): SetDraft | null => {
+  if (!raw || raw.length > 3000) return null;
+  try {
+    const parsed = draftSchema.safeParse(JSON.parse(raw));
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
+};
+/** Valid drafts stored under their own key, with that key. */
+const records = (storage: KeyValueStorage) =>
+  appKeys(storage, prefix).flatMap((name) => {
+    const record = parseRecord(storage.getItem(name));
+    return record && name === key(record) ? [{ name, record }] : [];
+  });
 export function createDraftJournal(deps: {
   storage: () => KeyValueStorage;
   id: () => string;
@@ -49,44 +86,7 @@ export function createDraftJournal(deps: {
   rememberWriter?: (writer: string) => void;
 }): DraftJournal {
   const writer = deps.id();
-  const key = (draft: Pick<SetDraft, "id">) => prefix + draft.id;
   const owned = new Map<string, SetDraft>();
-  /** Malformed markers are ignored rather than blocking every write. */
-  const minimumRevision = (storage: KeyValueStorage) => {
-    let minimum = markerRevision(storage.getItem(deletedBeforeKey)) ?? 0;
-    for (let i = 0; i < storage.length; i++) {
-      const name = storage.key(i);
-      if (!name?.startsWith(legacyDeletedBeforePrefix)) continue;
-      const revision = markerRevision(
-        name.slice(legacyDeletedBeforePrefix.length),
-      );
-      if (revision !== null) minimum = Math.max(minimum, revision);
-    }
-    return minimum;
-  };
-  const appKeys = (storage: KeyValueStorage, start: string) => {
-    const keys: string[] = [];
-    for (let i = 0; i < storage.length; i++) {
-      const name = storage.key(i);
-      if (name?.startsWith(start)) keys.push(name);
-    }
-    return keys;
-  };
-  const parseRecord = (raw: string | null): SetDraft | null => {
-    if (!raw || raw.length > 3000) return null;
-    try {
-      const parsed = draftSchema.safeParse(JSON.parse(raw));
-      return parsed.success ? parsed.data : null;
-    } catch {
-      return null;
-    }
-  };
-  /** Valid drafts stored under their own key, with that key. */
-  const records = (storage: KeyValueStorage) =>
-    appKeys(storage, prefix).flatMap((name) => {
-      const record = parseRecord(storage.getItem(name));
-      return record && name === key(record) ? [{ name, record }] : [];
-    });
   const preferredFirst = (a: SetDraft, b: SetDraft) =>
     Number(b.writer === deps.preferredWriter) -
     Number(a.writer === deps.preferredWriter);

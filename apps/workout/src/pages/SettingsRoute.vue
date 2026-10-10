@@ -2,6 +2,7 @@
 import { BaseButton } from "@form/ui";
 import { WorkoutSettings } from "../features/workouts/ui";
 import { useWorkoutRouteContext } from "../app/workoutRouteContext";
+import AppearanceSettings from "../app/AppearanceSettings.vue";
 
 definePage({ name: "settings", path: "/settings" });
 const { workspace, installation } = useWorkoutRouteContext();
@@ -10,6 +11,7 @@ const { installed, offlineReady, install } = installation;
 
 <template>
   <WorkoutSettings :workspace="workspace">
+    <AppearanceSettings />
     <section class="settings-section">
       <h2>Install app</h2>
       <div class="settings-row">

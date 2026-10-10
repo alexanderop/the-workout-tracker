@@ -1,5 +1,4 @@
 import { createApp, h } from "vue";
-import "@fontsource-variable/inter";
 import { createWorkoutRouter } from "./app/router";
 import { createWebHashHistory } from "vue-router";
 import { usePwa } from "./usePwa";
@@ -8,7 +7,13 @@ import AppErrorBoundary from "./app/AppErrorBoundary.vue";
 import { createWorkoutApp, createWorkoutDrafts } from "./app/composition";
 import "@form/ui/tokens.css";
 import "./style.css";
+import {
+  appearanceKey,
+  browserAppearanceEnvironment,
+  createAppearance,
+} from "./app/appearance";
 
+const appearance = createAppearance(browserAppearanceEnvironment());
 const drafts = createWorkoutDrafts();
 const workouts = createWorkoutApp(drafts);
 const router = createWorkoutRouter(
@@ -25,7 +30,11 @@ const app = createApp({
         }),
     }),
 });
-app.onUnmount(() => workouts.close());
+app.provide(appearanceKey, appearance);
+app.onUnmount(() => {
+  appearance.stop();
+  workouts.close();
+});
 app.use(router);
 app.mount("#app");
 if (import.meta.hot) import.meta.hot.dispose(() => app.unmount());

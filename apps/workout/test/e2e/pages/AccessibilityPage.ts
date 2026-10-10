@@ -16,7 +16,10 @@ const axeSource = readFileSync(
  * app is fixed the scenario fails until the exception is removed.
  */
 export class AccessibilityPage {
-  constructor(readonly page: Page) {}
+  readonly page: Page;
+  constructor(page: Page) {
+    this.page = page;
+  }
 
   async openPage(name: string) {
     await this.page

@@ -13,7 +13,7 @@ export const draftSchema = z
     revision: z.number().int().nonnegative(),
     base: z
       .object({
-        weightKg: z.number().finite(),
+        weightKg: z.number(),
         reps: z.number().int(),
         completed: z.boolean(),
         targetReps: z.number().int().min(1).max(1000).optional(),

@@ -20,7 +20,7 @@ export const identifier = z
     (value) => !["__proto__", "prototype", "constructor"].includes(value),
   );
 export const name = z.string().trim().min(1).max(80);
-export const weight = z.number().finite().min(0).max(1000);
+export const weight = z.number().min(0).max(1000);
 export const reps = z.number().int().min(1).max(1000);
 export const actualReps = z.number().int().min(0).max(1000);
 export const timestamp = z.number().int().min(0).max(8640000000000000);
@@ -123,7 +123,6 @@ export type WorkoutSet = z.infer<typeof setSchema>;
 export type SessionExercise = z.infer<typeof sessionExerciseSchema>;
 export type ActiveSession = z.infer<typeof activeSchema>;
 export type CompletedSession = z.infer<typeof completedSchema>;
-export type Settings = z.infer<typeof settingsSchema>;
 
 const snapshotShape = z
   .object({
@@ -138,11 +137,12 @@ const snapshotShape = z
 type SnapshotShape = z.infer<typeof snapshotShape>;
 type ReportIssue = (message: string) => void;
 function validateRecords(snapshot: SnapshotShape, issue: ReportIssue) {
-  for (const records of [
+  const keyed: readonly Readonly<Record<string, { readonly id: string }>>[] = [
     snapshot.exercises,
     snapshot.routines,
     snapshot.completed,
-  ]) {
+  ];
+  for (const records of keyed) {
     if (Object.entries(records).some(([key, value]) => key !== value.id))
       issue("Record keys must match their IDs.");
   }

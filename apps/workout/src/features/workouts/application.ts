@@ -85,7 +85,12 @@ function canonical(value: unknown): string {
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([key, entry]) => `${JSON.stringify(key)}:${canonical(entry)}`)
       .join(",")}}`;
-  return JSON.stringify(value) ?? "null";
+  return stringifyJson(value) ?? "null";
+}
+
+/** JSON.stringify yields undefined for values JSON cannot express. */
+function stringifyJson(value: unknown): string | undefined {
+  return JSON.stringify(value);
 }
 
 function mergeSnapshots(
@@ -168,6 +173,8 @@ export function createWorkouts({
   reportError = () => undefined,
 }: WorkoutDependencies) {
   let closed = false;
+  // Reads the flag fresh: it changes while awaits are pending, which control-flow narrowing cannot see.
+  const isClosed = () => closed;
   const closedResult: Result = {
     kind: "unavailable",
     message: "Workout storage is closed.",
@@ -234,7 +241,7 @@ export function createWorkouts({
     if (typeof next === "string") return { kind: "invalid", message: next };
     const validated = validateWrite(next);
     if (validated.kind === "invalid") return validated;
-    if (closed) return closedResult;
+    if (isClosed()) return closedResult;
     return save(expectedRevision, validated.data);
   };
   return {

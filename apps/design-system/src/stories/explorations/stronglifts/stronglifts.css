@@ -1,4 +1,4 @@
-.sl-study { background:var(--ui-background); color:var(--ui-foreground); min-height:100vh; padding:40px 28px; font-family:Inter,sans-serif; }
+.sl-study { background:var(--ui-background); color:var(--ui-foreground); min-height:100vh; padding:40px 28px; font-family:"Geist Variable",system-ui,sans-serif; }
 .sl-intro,.sl-layout { max-width:970px; margin:auto; }
 .sl-intro { margin-bottom:32px; }
 .sl-eyebrow { font-size:10px; letter-spacing:.13em; color:var(--ui-muted-foreground); font-weight:600; }

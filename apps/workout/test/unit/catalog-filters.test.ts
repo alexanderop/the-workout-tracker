@@ -19,24 +19,27 @@ const exercises = [
 describe("catalog browsing", () => {
   it("intersects normalized search, equipment, muscle group and custom ownership", () => {
     expect(
-      filterCatalog(
-        exercises,
-        " PRESS ",
-        { equipment: "Barbell", category: "Chest", onlyCustom: true },
-        "ascending",
-      ).map((exercise) => exercise.id),
+      filterCatalog(exercises, {
+        search: " PRESS ",
+        filters: { equipment: "Barbell", category: "Chest", onlyCustom: true },
+        sort: "ascending",
+      }).map((exercise) => exercise.id),
     ).toEqual(["custom"]);
   });
   it("orders names in either direction without mutating the supplied catalog", () => {
     expect(
-      filterCatalog(exercises, "", emptyCatalogFilters, "ascending").map(
-        (exercise) => exercise.id,
-      ),
+      filterCatalog(exercises, {
+        search: "",
+        filters: emptyCatalogFilters,
+        sort: "ascending",
+      }).map((exercise) => exercise.id),
     ).toEqual(["arms", "built-in", "dumbbell", "custom"]);
     expect(
-      filterCatalog(exercises, "", emptyCatalogFilters, "descending").map(
-        (exercise) => exercise.id,
-      ),
+      filterCatalog(exercises, {
+        search: "",
+        filters: emptyCatalogFilters,
+        sort: "descending",
+      }).map((exercise) => exercise.id),
     ).toEqual(["custom", "dumbbell", "built-in", "arms"]);
     expect(exercises.map((exercise) => exercise.id)).toEqual([
       "built-in",
@@ -51,20 +54,18 @@ describe("catalog browsing", () => {
       equipment: "Towel",
     });
     expect(
-      filterCatalog(
-        [custom],
-        "towel",
-        { ...emptyCatalogFilters, category: "Mobility" },
-        "ascending",
-      ),
+      filterCatalog([custom], {
+        search: "towel",
+        filters: { ...emptyCatalogFilters, category: "Mobility" },
+        sort: "ascending",
+      }),
     ).toEqual([custom]);
     expect(
-      filterCatalog(
-        exercises,
-        "",
-        { ...emptyCatalogFilters, equipment: "Towel" },
-        "ascending",
-      ),
+      filterCatalog(exercises, {
+        search: "",
+        filters: { ...emptyCatalogFilters, equipment: "Towel" },
+        sort: "ascending",
+      }),
     ).toEqual([]);
   });
 });

@@ -15,7 +15,6 @@ import {
 } from "../domain/trainingDrafts";
 import { unionDrafts as union, useDetachedDrafts } from "./useDetachedDrafts";
 
-export type { DetachedDraft } from "./useDetachedDrafts";
 export type TrainingRow = TrainingDraftState & {
   exercise: SessionExercise;
   index: number;
@@ -102,7 +101,10 @@ export function useTrainingDrafts(options: {
       for (const [index, set] of exercise.sets.entries()) {
         present.add(set.id);
         if (session)
-          synchronizeRow(session.id, snapshot.revision, exercise, index, set);
+          synchronizeRow(
+            { session: session.id, revision: snapshot.revision },
+            { exercise, index, set },
+          );
       }
     return present;
   }
@@ -120,7 +122,11 @@ export function useTrainingDrafts(options: {
       if (
         sessionId &&
         hasPendingInput(row) &&
-        detached.detach(snapshot, sessionId, id, values, row.records)
+        detached.detach(
+          snapshot,
+          { sessionId, setId: id },
+          { values, records: row.records },
+        )
       )
         continue;
       for (const record of row.records) consumed.add(record.id);
@@ -157,11 +163,12 @@ export function useTrainingDrafts(options: {
     }
   }
   function synchronizeRow(
-    session: string,
-    revision: number,
-    exercise: SessionExercise,
-    index: number,
-    set: WorkoutSet,
+    { session, revision }: { session: string; revision: number },
+    { exercise, index, set }: {
+      exercise: SessionExercise;
+      index: number;
+      set: WorkoutSet;
+    },
   ) {
     const row = rows.get(set.id);
     if (row) {

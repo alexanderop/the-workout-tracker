@@ -6,6 +6,11 @@ export type CatalogFilters = Readonly<{
   onlyCustom: boolean;
 }>;
 export type CatalogSort = "ascending" | "descending";
+export type CatalogView = Readonly<{
+  search: string;
+  filters: CatalogFilters;
+  sort: CatalogSort;
+}>;
 export const emptyCatalogFilters: CatalogFilters = {
   equipment: "",
   category: "",
@@ -14,9 +19,7 @@ export const emptyCatalogFilters: CatalogFilters = {
 
 export function filterCatalog(
   exercises: readonly Exercise[],
-  search: string,
-  filters: CatalogFilters,
-  sort: CatalogSort,
+  { search, filters, sort }: CatalogView,
 ): Exercise[] {
   const query = search.trim().toLowerCase();
   return exercises

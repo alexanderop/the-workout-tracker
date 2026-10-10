@@ -19,8 +19,8 @@ const { open, equipment, categories } = defineProps<{
   equipment: readonly string[];
   categories: readonly string[];
 }>();
-const filters = defineModel<CatalogFilters>({ required: true });
 const emit = defineEmits<{ close: [] }>();
+const filters = defineModel<CatalogFilters>({ required: true });
 type Panel = "overview" | "equipment" | "muscle";
 const panel = ref<Panel>("overview");
 const content = useTemplateRef<HTMLElement>("content");

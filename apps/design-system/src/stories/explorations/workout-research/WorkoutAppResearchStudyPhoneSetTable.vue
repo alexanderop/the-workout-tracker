@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { BaseInputNumber, BaseButtonIcon } from "@form/ui";
 import { Check, Undo2 } from "@lucide/vue";
-export type DemoSet = { id: number; weight: string | number; reps: string | number; logged: boolean };
+import type { DemoSet } from "./demoSet";
 const { sets, name, previousWeight, prescription = false } = defineProps<{ sets: DemoSet[]; name: string; previousWeight: number; prescription?: boolean }>();
 const emit = defineEmits<{ edit: [id: number, field: "weight" | "reps", value: string | number]; toggle: [id: number] }>();
 </script>

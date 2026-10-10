@@ -13,7 +13,7 @@ const copyStatus = ref<"copied" | "unavailable" | null>(null);
 const diagnostics = JSON.stringify(
   {
     app: "The Workout Tracker",
-    version: __APP_VERSION__,
+    version: APP_VERSION,
     failure: "Unexpected interface error",
   },
   null,

@@ -1,7 +1,10 @@
 import { expect, type Page } from "@playwright/test";
 
 export class EditSafetyPage {
-  constructor(readonly page: Page) {}
+  readonly page: Page;
+  constructor(page: Page) {
+    this.page = page;
+  }
   name() {
     return this.page.getByRole("textbox", {
       name: "Workout name",

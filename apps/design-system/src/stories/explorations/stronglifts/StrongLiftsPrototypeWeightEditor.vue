@@ -11,7 +11,7 @@ const weight = ref(String(exercise.weight));
 function adjust(amount: number) { weight.value = String(Math.max(0, Number(weight.value) + amount)); }
 </script>
 <template>
-  <BaseSheet :open="true" :title="`Configure ${exercise.name}`" description="Set up the remaining work. Logged sets are preserved." @close="emit('close')">
+  <BaseSheet open :title="`Configure ${exercise.name}`" description="Set up the remaining work. Logged sets are preserved." @close="emit('close')">
     <div class="sl-editor">
       <BaseInputNumber v-model="count" label="Number of sets" title="Number of sets" :min="minimumSets" :max="20" />
       <BaseInputNumber v-model="target" label="Target reps per set" title="Target reps" :min="1" :max="100" />
