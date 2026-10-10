@@ -46,7 +46,6 @@ export const enShell = {
     cancelled: "Installation cancelled. You can keep using the app here.",
     failed: "The installer could not open. Use the browser instructions below.",
     settings: {
-      title: "Install app",
       home: "The Workout Tracker on your home screen",
       hint: "Open your journal like any other app.",
       installed: "Installed",
@@ -68,7 +67,6 @@ export const enShell = {
     diagnostics: "Diagnostics",
   },
   appearance: {
-    title: "Appearance",
     help: "Follow your device or pick a theme and an accent color. The choice stays on this device.",
     theme: "Theme",
     accent: "Accent color",
@@ -86,7 +84,6 @@ export const enShell = {
     },
   },
   language: {
-    title: "Language",
     legend: "App language",
     help: "Follow your browser or pick a language. The choice stays on this device.",
     system: "System",

@@ -53,7 +53,6 @@ export const deShell: Catalog["shell"] = {
     failed:
       "Das Installationsfenster ließ sich nicht öffnen. Nutze die Browser-Anleitung unten.",
     settings: {
-      title: "App installieren",
       home: "The Workout Tracker auf deinem Home-Bildschirm",
       hint: "Öffne dein Tagebuch wie jede andere App.",
       installed: "Installiert",
@@ -76,7 +75,6 @@ export const deShell: Catalog["shell"] = {
     diagnostics: "Diagnose",
   },
   appearance: {
-    title: "Darstellung",
     help: "Folge deinem Gerät oder wähle ein Design und eine Akzentfarbe. Die Auswahl bleibt auf diesem Gerät.",
     theme: "Design",
     accent: "Akzentfarbe",
@@ -94,7 +92,6 @@ export const deShell: Catalog["shell"] = {
     },
   },
   language: {
-    title: "Sprache",
     legend: "App-Sprache",
     help: "Folge deinem Browser oder wähle eine Sprache. Die Auswahl bleibt auf diesem Gerät.",
     system: "System",

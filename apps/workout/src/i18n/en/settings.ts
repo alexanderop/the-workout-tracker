@@ -1,7 +1,25 @@
 export const enSettings = {
   title: "Settings",
+  back: "Settings",
+  sections: {
+    training: "Training preferences",
+    appearance: "Appearance",
+    language: "Language",
+    install: "Install app",
+    export: "Export backup",
+    import: "Import backup",
+    delete: "Delete all data",
+  },
+  groups: { device: "This device", data: "Your data" },
+  hub: {
+    restOn: "Auto rest · {seconds} sec",
+    restOff: "Auto rest off",
+    offlineReady: "Offline ready",
+    offlinePending: "Preparing",
+    privacy: "Your workouts stay on this device. No account, no cloud sync.",
+  },
+  appearance: { summary: "{theme} · {accent}" },
   training: {
-    title: "Training preferences",
     autoRest: {
       label: "Automatic rest timer",
       hint: "Start counting down after a logged set.",
@@ -15,9 +33,10 @@ export const enSettings = {
     weightUnit: { label: "Weight unit", value: "Kilograms · kg" },
   },
   backup: {
-    title: "Keep a copy of your progress",
     intro:
       "Workouts live in this browser. Export a backup to keep them safe or move them to another device.",
+    importIntro:
+      "Restore workouts from a backup you exported earlier. The file is read on this device and never uploaded.",
     export: "Export backup",
     import: "Import backup",
     fileLabel: "Choose backup file",
@@ -37,7 +56,6 @@ export const enSettings = {
       "Import could not finish. Reload to check your saved workouts before trying again.",
   },
   deleteData: {
-    title: "Delete your data",
     intro:
       "Permanently delete your workouts, templates, custom exercises and preferences from this browser. Export a backup first if you want to keep a copy.",
     button: "Delete all data",

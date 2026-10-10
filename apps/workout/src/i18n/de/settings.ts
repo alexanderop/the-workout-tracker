@@ -2,8 +2,27 @@ import type { Catalog } from "../index";
 
 export const deSettings: Catalog["settings"] = {
   title: "Einstellungen",
+  back: "Einstellungen",
+  sections: {
+    training: "Trainingseinstellungen",
+    appearance: "Darstellung",
+    language: "Sprache",
+    install: "App installieren",
+    export: "Backup exportieren",
+    import: "Backup importieren",
+    delete: "Alle Daten löschen",
+  },
+  groups: { device: "Dieses Gerät", data: "Deine Daten" },
+  hub: {
+    restOn: "Auto-Pause · {seconds} Sek.",
+    restOff: "Auto-Pause aus",
+    offlineReady: "Offline bereit",
+    offlinePending: "Wird vorbereitet",
+    privacy:
+      "Deine Trainings bleiben auf diesem Gerät. Kein Konto, keine Cloud-Synchronisierung.",
+  },
+  appearance: { summary: "{theme} · {accent}" },
   training: {
-    title: "Trainingseinstellungen",
     autoRest: {
       label: "Automatischer Pausentimer",
       hint: "Starte den Countdown nach einem erfassten Satz.",
@@ -17,9 +36,10 @@ export const deSettings: Catalog["settings"] = {
     weightUnit: { label: "Gewichtseinheit", value: "Kilogramm · kg" },
   },
   backup: {
-    title: "Sichere deinen Fortschritt",
     intro:
       "Deine Trainings liegen in diesem Browser. Exportiere ein Backup, um sie zu sichern oder auf ein anderes Gerät zu übertragen.",
+    importIntro:
+      "Stelle Trainings aus einem Backup wieder her, das du zuvor exportiert hast. Die Datei wird auf diesem Gerät gelesen und nie hochgeladen.",
     export: "Backup exportieren",
     import: "Backup importieren",
     fileLabel: "Backup-Datei wählen",
@@ -41,7 +61,6 @@ export const deSettings: Catalog["settings"] = {
       "Der Import konnte nicht abgeschlossen werden. Lade neu und prüfe deine gespeicherten Trainings, bevor du es erneut versuchst.",
   },
   deleteData: {
-    title: "Daten löschen",
     intro:
       "Lösche deine Trainings, Vorlagen, eigenen Übungen und Einstellungen dauerhaft aus diesem Browser. Exportiere vorher ein Backup, wenn du eine Kopie behalten willst.",
     button: "Alle Daten löschen",

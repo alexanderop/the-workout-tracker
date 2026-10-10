@@ -32,6 +32,15 @@ export default defineConfig(({ mode, command }) => {
             if (filePath.endsWith(".webp")) return false;
             return undefined;
           },
+          rolldownOptions: {
+            output: {
+              // Code that several lazy routes and the entry use lives in one
+              // shared chunk instead of a chain of small ones. Each chunk is
+              // compressed on its own, so fewer chunks ship fewer bytes. Routes
+              // such as Settings stay lazy.
+              codeSplitting: { groups: [{ name: "shared", minShareCount: 2 }] },
+            },
+          },
         },
     plugins: [
       ...(preview

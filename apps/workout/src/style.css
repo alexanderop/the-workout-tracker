@@ -1045,50 +1045,131 @@ textarea::placeholder {
 .detail-status svg {
   color: var(--accent);
 }
-.settings-page {
-  max-width: 720px;
+.settings-hub,
+.settings-screen {
+  width: min(560px, 100%);
+  margin: 0 auto;
+  padding-block-end: 12px;
 }
-.settings-section {
-  padding: 0 0 24px;
-  margin-block-end: 24px;
-  border-block-end: 1px solid var(--border);
-}
-.settings-section h2 {
-  font-size: 16px;
-  margin-block-end: 17px;
-}
-.settings-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  font-size: 12px;
-}
-.settings-rows {
+.settings-hub {
   display: grid;
   gap: 22px;
-  margin-block-start: 22px;
 }
-.settings-row small {
-  display: block;
-  color: var(--muted);
-  font-size: 10px;
-  line-height: 1.6;
-  margin-block-start: 6px;
+.settings-hub h1 {
+  margin: 0 4px;
+  font-size: 32px;
+  letter-spacing: -1px;
 }
-.settings-row .rest-select {
-  width: 104px;
-  flex-shrink: 0;
-  font-size: 12px;
+.settings-body,
+.settings-section {
+  display: grid;
+  gap: 24px;
 }
-.backup-actions {
-  display: flex;
-  flex-wrap: wrap;
+.settings-section {
   gap: 10px;
-  margin-block-start: 20px;
+}
+.settings-label {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+.settings-help {
+  margin: 0 4px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.settings-action {
+  width: 100%;
+  min-height: 52px;
+}
+.settings-notice {
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--body);
+  font-size: 14px;
+  line-height: 1.5;
+}
+/* The live region stays in the document so a new message is announced. */
+.settings-notice:empty {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  overflow: clip;
+  clip-path: inset(50%);
+}
+.settings-app {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 1px 2px var(--ui-shadow-soft);
+}
+.settings-mark {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.settings-identity {
+  display: grid;
+  flex: 1;
+  gap: 3px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.settings-identity strong {
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.4px;
+}
+.settings-badge {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--muted) 10%, var(--surface));
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+.settings-badge[data-ready] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.settings-privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 0 4px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.settings-privacy svg {
+  margin-block-start: 2px;
 }
 .import-preview {
-  margin-block-start: 18px;
   padding: 16px;
   border: 1px solid var(--accent);
   border-radius: 8px;
@@ -1096,23 +1177,10 @@ textarea::placeholder {
   overflow-wrap: anywhere;
 }
 .import-preview strong {
-  font-size: 12px;
+  font-size: 14px;
 }
-.import-preview p {
-  margin-block-start: 10px;
-}
-.settings-section > p:last-child {
-  margin-block-start: 18px;
-}
-.settings-signoff {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 15px;
-}
-.settings-signoff .brand {
-  font-size: 19px;
-  gap: 0;
+.import-preview .settings-help {
+  margin: 10px 0 0;
 }
 @media (max-width: 1150px) {
   .set-row,
@@ -1325,9 +1393,6 @@ textarea::placeholder {
   }
   .finish-stats strong {
     font-size: 23px;
-  }
-  .settings-signoff .small {
-    font-size: 10px;
   }
   .detail-set {
     font-size: 10px;

@@ -19,11 +19,13 @@ import type {
 } from 'vue-router/experimental'
 
 // Custom route params parsers
+type Param_settingsSection = _ExtractParamParserType<typeof import('./app/route-params/settings-section.ts').parser>
 type Param_workoutView = _ExtractParamParserType<typeof import('./app/route-params/workout-view.ts').parser>
 
 declare module 'vue-router' {
   interface TypesConfig {
     _ParamParsers: {
+      'settings-section': { type: Param_settingsSection }
       'workout-view': { type: Param_workoutView }
     }
     RouteNamedMap: import('vue-router/auto-routes').RouteNamedMap
@@ -66,9 +68,9 @@ declare module 'vue-router/auto-routes' {
     >,
     'settings': RouteRecordInfo<
       'settings',
-      '/settings',
-      Record<never, never>,
-      Record<never, never>,
+      '/settings/:section?',
+      { section: Exclude<Param_settingsSection, unknown[] | null> | null },
+      { section: Exclude<Param_settingsSection, unknown[] | null> | null },
       | never
     >,
     'workouts': RouteRecordInfo<
@@ -123,13 +125,13 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
-    'src/pages/SettingsRoute.vue': {
+    'src/pages/settings/[[section=settings-section]].vue': {
       routes:
         | 'settings'
       views:
         | never
       pathParamNames:
-        | never
+        | 'section'
     }
     'src/pages/WorkoutsRoute.vue': {
       routes:
