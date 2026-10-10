@@ -29,6 +29,7 @@ jobs:
           BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: node tooling/lint/ratchet.mjs "${BASE:-HEAD~1}"
       - run: pnpm verify
+      - run: pnpm format:check
       - run: pnpm test:unit
       - run: pnpm --filter @form/workout exec playwright install --with-deps chrome
       - run: pnpm test:browser

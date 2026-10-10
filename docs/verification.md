@@ -4,12 +4,12 @@ What each automated check proves, how to run it, and what it does not claim. Com
 
 ## Commands
 
-| Command             | Result on the recorded run                                                                      |
-| ------------------- | ----------------------------------------------------------------------------------------------- |
-| `pnpm verify`       | Type checking, linting, architecture, boundary and dead-code checks passed                      |
-| `pnpm test:unit`    | 80 shared UI tests and 161 workout tests passed, above the coverage thresholds                  |
-| `pnpm test:browser` | 44 shared UI tests and 32 workout tests passed in Chrome                                        |
-| `pnpm test:e2e`     | 70 journeys passed: 61 in desktop Chrome, 3 in Pixel 7 Chrome, 6 service-worker update journeys |
+| Command             | Result on the recorded run                                                                    |
+| ------------------- | --------------------------------------------------------------------------------------------- |
+| `pnpm verify`       | Type checking, linting, architecture, boundary and dead-code checks passed                    |
+| `pnpm test:unit`    | 314 result, 91 shared UI and 1,487 workout tests passed, above the coverage thresholds        |
+| `pnpm test:browser` | 6 composables, 47 shared UI and 37 workout tests passed in Chrome                             |
+| `pnpm test:e2e`     | 74 journey runs passed in desktop Chrome, Pixel 7 Chrome and the service-worker update server |
 
 The recorded run was on macOS with Google Chrome. The e2e suite also passed with `--repeat-each 3` (207 runs, no failures), which is the check for flaky journeys; the suite itself does not retry.
 
@@ -73,7 +73,9 @@ The remaining Gherkin features cover drafts and finish rules, edit safety across
 
 Initial delivery baseline on 2026-10-05: the isolated performance change passed all six local Chrome Lighthouse runs and the offline artwork check. Its production build was 1,265,763 bytes, gzip JavaScript 167,847 bytes, and 46 exercise images totaled 401,144 bytes. The earlier working-tree audit included a separate, uncommitted artwork expansion with 77 images totaling 620,106 bytes; the image budget accommodates that measured expansion. These are local lab results, not a CI or real-device guarantee. The first GitHub run measured Workouts LCP at 2,524ms versus 2,448ms locally, with all other gates passing. The LCP regression budget is therefore 2,750ms (about 9% above the measured CI baseline); 2,500ms remains the improvement target. This small explicit runner margin avoids treating a 24ms target miss as a deployment regression.
 
-After the English and German catalogs on 2026-10-10: gzip JavaScript 199,919 bytes of the 200,000 budget (197,903 before), production build 1,607,543 bytes. The catalogs add about 19 kB gzipped and ship as JSON files, not scripts, because the budget sums every script the build emits; see [Language and text ownership](architecture.md#language-and-text-ownership). Only 81 bytes of JavaScript headroom remain. Lighthouse and the offline artwork check were not rerun for this change, so the cold-start cost of the catalog request (preloaded from `index.html`) is not measured.
+After the English and German catalogs on 2026-10-10: gzip JavaScript 199,919 bytes of the 200,000 budget (197,903 before), production build 1,607,543 bytes. The catalogs add about 19 kB gzipped and ship as JSON files, not scripts, because the budget sums every script the build emits; see [Language and text ownership](architecture.md#language-and-text-ownership). Only 81 bytes of JavaScript headroom remained. Lighthouse and the offline artwork check were not rerun for this change, so the cold-start cost of the catalog request (preloaded from `index.html`) is not measured.
+
+After the German decimal comma and the file splits on 2026-10-10: gzip JavaScript 199,942 bytes of the 200,000 budget, so 58 bytes of headroom remain. The new components and the comma handling cost about 240 bytes; storing the exercise artwork as `[id, name, src]` rows grouped by equipment, instead of one object per row, saved more than that. `pnpm format:check` passes and runs in CI.
 
 ## Not verified by any automated check
 

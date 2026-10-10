@@ -100,6 +100,8 @@ Husky installs the Git hooks through the root `prepare` script when you run `pnp
 
 `pnpm verify` runs only type checking and linting. Automated tests run through separate commands described in [Testing](#testing). `pnpm lint` also runs `pnpm check:architecture`, `pnpm check:boundaries` and `pnpm check:dead-code`, so they are part of verification. Build only when needed to run or deploy the application; offline and installation behavior require the production preview described in [README.md](../README.md).
 
+Formatting is Prettier's job, not a lint rule. Run `pnpm format` before committing; the hooks do not rewrite files. `pnpm format:check` verifies the whole repository, and CI runs it right after `pnpm verify`, so an unformatted commit fails the Verify job. The commit that first formatted the repository is listed in `.git-blame-ignore-revs`: GitHub skips it in blame automatically, and `git config blame.ignoreRevsFile .git-blame-ignore-revs` does the same locally. Add the hash of any later formatting-only commit to that file.
+
 For documentation-only changes, check links, referenced paths, command names, and consistency with the implementation. Report edits, checks, commits, pushes, and deployment separately; completing one does not establish the others.
 
 ## Testing
@@ -207,7 +209,7 @@ Oxlint owns JavaScript/TypeScript rules, supported Vue script rules, and custom 
 
 `tooling/lint/ratchet.mjs` compares the limit files with a base commit and fails when one was loosened: a raised file-size baseline entry or a new one, a raised or removed performance budget, or a lowered or removed coverage threshold. The pre-commit hook compares with `HEAD`; CI compares a push with the commit it replaced and a pull request with its base. Loosening a limit is the repository owner's decision, not an agent's.
 
-Run `pnpm lint:oxlint`, `pnpm lint:vue`, `pnpm lint:guards`, `pnpm check:architecture`, `pnpm check:boundaries` or `pnpm check:dead-code` for focused feedback. All stages reject warnings. No automated tests, formatting checks, or builds are added to verification.
+Run `pnpm lint:oxlint`, `pnpm lint:vue`, `pnpm lint:guards`, `pnpm check:architecture`, `pnpm check:boundaries` or `pnpm check:dead-code` for focused feedback. All stages reject warnings. Formatting is checked by the separate `pnpm format:check` in CI, and no automated tests or builds are added to verification.
 
 ## Maintain context
 
