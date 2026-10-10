@@ -36,21 +36,38 @@ The Histoire **00 Start here / Product brief** page presents this direction alon
 
 ## Visual foundation
 
-The Workout Tracker uses the approved five-color palette. Values live in [`packages/ui/src/tokens.css`](../packages/ui/src/tokens.css); [`packages/ui/src/workout-theme.css`](../packages/ui/src/workout-theme.css) maps them to shared component roles. App layout lives in [`apps/workout/src/style.css`](../apps/workout/src/style.css).
+The Workout Tracker adopts the visual identity of the [Vue PWA starter](prior-art.md#vue-pwa-starter-look-2026-10-10): a warm light theme by default, a dark theme, a choice of five accent colors, Geist and rounded 8px controls. The owner chose this identity on 2026-10-10, replacing the earlier dark-only, single purple accent, Inter design. See [the decision record](history/visual-identity-2026-10-10.md).
 
-| Token      | Color   | Role                                             |
-| ---------- | ------- | ------------------------------------------------ |
-| background | #141414 | Canvas and modal surfaces                        |
-| surface    | #232322 | Controls, borders, selected navigation           |
-| text       | #EEEEEC | Primary content                                  |
-| muted      | #A3A39E | Supporting labels and icons                      |
-| purple     | #A78BFA | Primary actions, logged sets, progress and focus |
+Values live in [`packages/ui/src/tokens.css`](../packages/ui/src/tokens.css). Each color is one `light-dark()` pair, so a theme change needs no second stylesheet. [`packages/ui/src/workout-theme.css`](../packages/ui/src/workout-theme.css) maps these roles to the shared component roles (`--ui-*`). App layout lives in [`apps/workout/src/style.css`](../apps/workout/src/style.css).
 
-There are no separate success or error colors. Status uses text, icons and shape with purple when emphasis is needed. The modal overlay reuses the background at partial opacity.
+| Token | Light | Dark | Role |
+| --- | --- | --- | --- |
+| `--background` | #F2F1EC | #121316 | Canvas and sheets |
+| `--surface` | #FFFFFF | #1B1D22 | Cards, fields, secondary buttons |
+| `--text` | #1B1D21 | #ECEDEF | Primary content and the selected navigation item |
+| `--body` | #3D424A | #C9CCD2 | Long-form text |
+| `--muted` | #5D636C | #9EA3AD | Supporting labels and icons |
+| `--border` | #DCDAD3 | #2E3138 | Outlines of cards, fields and dividers |
+| `--rule` | #ECEAE3 | #24272D | Quiet inner rules |
+| `--danger` | #B4382A | #FF9B8E | Errors and destructive actions |
+| `--accent` | per accent | per accent | Primary actions, logged sets, progress, selection and focus |
+| `--accent-hover`, `--accent-soft` | per accent | per accent | Hover for the primary action, soft background for selection and notices |
 
-Inter Variable is bundled locally for offline use. Lucide icons use a consistent light stroke. Content has a restrained type hierarchy, compact desktop navigation and generous space around workout controls. Mobile uses a persistent four-item bottom menu, large number inputs and a compact rest timer. Phones show one large page title per screen: the workspace topbar appears only to report offline status. The bottom menu and training dock are translucent with a background blur and tint the selected destination without a filled pill. Lists on phones use compact rows with hairline separators and 52px artwork; touch screens keep no hover tint after a tap. The installed app uses a translucent status bar and respects the top safe area. Dialogs use Reka focus trapping and explicitly return focus to their opener.
+The accents are Blue (default), Teal, Violet, Pink and Sand. Each defines `--accent`, `--accent-hover` and `--accent-soft` for light and dark. `--on-accent` (the surface color) is the text color on a filled accent. Status uses text, icons and shape; errors additionally use `--danger`. The modal overlay is a translucent tint with a slight blur.
 
-The interface uses a quiet visual hierarchy; empty states show actual data rather than fabricated statistics. [Prior art](prior-art.md) records the original reference and adaptations.
+### Theme and accent
+
+Settings has an **Appearance** section with a Theme choice (System, Light, Dark) and an Accent choice. Both are radio groups with 44px targets and visible labels. The choice stays on the device in `localStorage` (`workout-theme`, `workout-accent`); System is the default and follows the device, including while the app is open. [`app/appearance.ts`](../apps/workout/src/app/appearance.ts) owns the choice. It sets `data-theme` (resolved to `light` or `dark`) and `data-accent` on `<html>` before the app mounts, and updates the `theme-color` meta tags to the resolved background. An inline script in `index.html` and `preview.html` sets both attributes before first paint, so a saved dark theme does not flash light. Without script or storage the document follows `prefers-color-scheme`, in blue.
+
+The web manifest has one `theme_color` and `background_color` (light). An installed app that follows a dark system theme therefore shows the light splash screen. The iOS status bar style is `default`, because a translucent bar with light text would be unreadable on the light theme.
+
+### Type, shape and navigation
+
+Geist Variable is bundled by `@form/ui/styles.css`, which makes the package self-contained, and works offline. Headings use weight 600 with tight tracking; eyebrows, section labels and the active workout label use the system monospace font in small capitals. Controls are 44px high with an 8px radius; cards use an 8px radius and a hairline border; sheets round their top corners at 16px. The focus indicator is a 3px accent ring at 65% opacity with a 3px offset on every focusable control.
+
+On desktop the sidebar marks the current page with an inverted pill (text color on the background color). On phones the persistent four-item bottom menu keeps its labels, marks the current page with a short bar above its icon and a heavier stroke, and uses a translucent, blurred background. Lucide icons use a consistent light stroke. Mobile uses large number inputs and a compact rest timer. Phones show one large page title per screen: the workspace topbar appears only to report offline status. Lists on phones use compact rows with hairline separators and 52px artwork; touch screens keep no hover tint after a tap. Dialogs use Reka focus trapping and explicitly return focus to their opener.
+
+The interface uses a quiet visual hierarchy; empty states show actual data rather than fabricated statistics. [Prior art](prior-art.md) records the original reference and adaptations. Exercise artwork is dark charcoal with transparent backgrounds; check it on both themes when it changes.
 
 ## Mobile motion and feedback
 
@@ -72,7 +89,7 @@ The desktop sidebar installation action uses a left-aligned label with an icon c
 
 Settings is a full page at `/settings`, reached through the content footer on desktop and mobile (except during an active workout on phones, where the training dock replaces navigation) and through a gear icon with a Settings label in the mobile bottom navigation. The bottom navigation has four equally sized destinations: Workouts, Exercises, Progress, and Settings. Its Settings link uses the same selected styling and active-page announcement as the other destinations. During an active workout, the training dock replaces the mobile bottom navigation. The content footer uses a native navigation link with a visible focus outline and a minimum 44px touch target. The current Settings link announces its active page. Settings has no header or sidebar trigger and does not open an overlay. Desktop navigation keeps its three destinations.
 
-The page groups training preferences, backup controls, installation, and data deletion under the Settings heading. Delete all data uses a separate neutral section after backups and installation. Its confirmation names history, the active workout, drafts, templates, custom exercises, and preference reset. Downloaded backups remain on the device. Browser Back returns to the previous page. Leaving Settings clears an unsubmitted backup selection. Saved preferences and workout drafts remain in the shared workspace.
+The page groups training preferences, backup controls, appearance (theme and accent), installation, and data deletion under the Settings heading. Delete all data uses a separate neutral section after backups and installation. Its confirmation names history, the active workout, drafts, templates, custom exercises, and preference reset. Downloaded backups remain on the device. Browser Back returns to the previous page. Leaving Settings clears an unsubmitted backup selection. Saved preferences and workout drafts remain in the shared workspace.
 
 ## Destructive actions
 
@@ -86,9 +103,9 @@ Workouts Home summarizes the latest workout and links to full history and templa
 
 The compact workout header shows the saved title and a Rename workout action. Rename opens a sheet. Workout name changes use Save name or Enter. Moving focus to another control does not save the name or swallow the next action. Unsaved name input stays in the rename sheet and must be saved or cancelled before finishing. Conflicting names show explicit Keep my name and Use saved name choices.
 
-The session omits the duplicate workspace topbar while retaining offline status. On phones, a purple ‹ Workouts back link sits above the header, Finish is a purple text action in the header (muted while unavailable), and Discard workout is a quiet centred action below the exercise; the training dock carries only rest and next-set controls. The selected exercise shows its name, equipment, repetition prescription and optional note. Rounded set rows align set number, weight, repetitions and an explicit log button. Numeric confirmation updates the draft only. The action logs unfinished sets or saves corrections to logged sets. Unchanged logged rows show a non-mutating Logged state; set options expose Undo logging explicitly. The row options open a detailed editor with save-without-logging, explicit clear and discard-input actions. Inline rows are unmounted while that editor is open to avoid duplicate control IDs. Closing returns focus to the corresponding row, with the selected exercise or add control as a fallback.
+The session omits the duplicate workspace topbar while retaining offline status. On phones, an accent-colored ‹ Workouts back link sits above the header, Finish is an accent-colored text action in the header (muted while unavailable), and Discard workout is a quiet centred action below the exercise; the training dock carries only rest and next-set controls. The selected exercise shows its name, equipment, repetition prescription and optional note. Rounded set rows align set number, weight, repetitions and an explicit log button. Numeric confirmation updates the draft only. The action logs unfinished sets or saves corrections to logged sets. Unchanged logged rows show a non-mutating Logged state; set options expose Undo logging explicitly. The row options open a detailed editor with save-without-logging, explicit clear and discard-input actions. Inline rows are unmounted while that editor is open to avoid duplicate control IDs. Closing returns focus to the corresponding row, with the selected exercise or add control as a fallback.
 
-The exercise ellipsis opens grouped options for targets, set editing, notes, replacement and removal. Draft recovery and conflict choices remain visible with the affected row. Saved rest deadlines drive the compact mobile dock, with skip or dismiss controls. Rest uses the user's configured duration; corrections do not restart it. Controls retain at least 44px touch targets at narrow widths. The current row uses purple emphasis; logged rows retain a quiet purple check. A Last time card below the rows shows logged sets from the most recent completed workout containing this catalog exercise, combining repeated entries and preserving zero-repetition attempts. It is absent when no matching logged history exists. Review presents results, the exercise ledger, then repeat and template actions. The existing purple semantic accent applies to selection and logged work; there are no unsupported metrics or invented history.
+The exercise ellipsis opens grouped options for targets, set editing, notes, replacement and removal. Draft recovery and conflict choices remain visible with the affected row. Saved rest deadlines drive the compact mobile dock, with skip or dismiss controls. Rest uses the user's configured duration; corrections do not restart it. Controls retain at least 44px touch targets at narrow widths. The current row uses accent emphasis; logged rows retain a quiet accent check. A Last time card below the rows shows logged sets from the most recent completed workout containing this catalog exercise, combining repeated entries and preserving zero-repetition attempts. It is absent when no matching logged history exists. Review presents results, the exercise ledger, then repeat and template actions. The accent applies to selection and logged work; there are no unsupported metrics or invented history.
 
 For a fresh journal, the welcome card owns the only start action. Its copy wraps naturally and its height follows its content. Mobile uses a compact mark and a full-width action; the page header omits repeated introductory copy. Returning journals without an active workout show one start action below their training rhythm. An active workout instead has one outlined card with its name, exercise and logged-set counts, and a single Continue workout action. The mobile navigation divides the available width equally among its rendered links, without unused columns.
 
@@ -102,7 +119,7 @@ Completed-workout review offers Edit workout alongside repeat and template actio
 
 ### Training rhythm dashboard
 
-Workouts Home puts the title and calendar button in one row above the past seven local dates ending today. Each date shows its weekday, day number and a circular purple mark when it contains completed workouts. The outline identifies today. Empty dates remain visible without invented sessions.
+Workouts Home puts the title and calendar button in one row above the past seven local dates ending today. Each date shows its weekday, day number and a circular accent mark when it contains completed workouts. The outline identifies today. Empty dates remain visible without invented sessions.
 
 Home contains one Start action or a compact active-workout card with Continue, the latest completed workout with its date and logged metrics, a View history action and a Templates button. Standard fresh, returning and active states fit a 375 × 667 viewport above the fixed navigation. Larger text, long names and notices may scroll naturally; content is never clipped to enforce the compact layout. The duplicate Settings footer is omitted on Home, while save status remains announced.
 
@@ -148,9 +165,9 @@ The workout feature owns its production asset copies and mapping in `ui/assets/e
 
 ### Explorer review environment
 
-The explorer uses an iframe per preview so viewport presets exercise actual media queries and portaled overlays. Presets cover narrow, short and tall phones, desktop, both sides of 640px and 768px, and the Sheet transition at 650/651px. The explorer shell starts dark; shared UI tokens remain the source of component colors.
+The explorer uses an iframe per preview so viewport presets exercise actual media queries and portaled overlays. Presets cover narrow, short and tall phones, desktop, both sides of 640px and 768px, and the Sheet transition at 650/651px. The explorer follows the system color scheme and offers a Histoire light and dark toggle; the sandbox mirrors it into `data-theme`. Shared UI tokens remain the source of component colors.
 
-`apps/design-system/src/StoryPreview.vue` provides common surface, padding and typography through Histoire's setup wrapper. A full-screen story or variant can opt out with `:meta="{ wrapper: false }"` and own its layout. Inner story containers own only their composition. Background presets are intentionally not introduced while the product uses one dark surface.
+`apps/design-system/src/StoryPreview.vue` provides common surface, padding and typography through Histoire's setup wrapper. A full-screen story or variant can opt out with `:meta="{ wrapper: false }"` and own its layout. Inner story containers own only their composition. Background presets are intentionally not introduced; use the color scheme toggle and the Appearance page of the product preview to review both themes and every accent.
 
 Use Controls for long labels, disabled fields, wide sheets and long overlay content. Numeric Input includes decimal, empty, invalid and disabled examples. The Events panel records component updates and explicitly illustrative actions; draft typing and cancellation must not look like confirmed values. Copyable Numeric Input, Sheet and Dialog sources include consumer wiring. Pattern examples remain disconnected from workout storage.
 
@@ -158,7 +175,7 @@ For manual overlay review, use Phone · short and Desktop: open, Tab and Shift+T
 
 ### Muscle map component preview
 
-**02 Components / BaseMuscleMap** previews a reusable `@form/ui` component with original schematic front/back artwork, purple primary/supporting highlights and a visible muscle list. Consumers provide semantic muscle roles and own surrounding cards, headings and layout. Selection uses native text buttons with keyboard focus and changes only the outline; anatomy shapes are decorative rather than small touch targets. Both views appear by default, with front-only and back-only options whose text lists follow the visible regions. The [UI package guide](../packages/ui/README.md#muscle-map) owns the data, naming and selection API. The full examples use local sample data. The illustration presentation supplies decorative figures inside production muscle-group filter cards, whose parent buttons provide visible labels and selection. Per-exercise muscle mapping, workout coverage and recovery calculations are not integrated.
+**02 Components / BaseMuscleMap** previews a reusable `@form/ui` component with original schematic front/back artwork, accent primary/supporting highlights and a visible muscle list. Consumers provide semantic muscle roles and own surrounding cards, headings and layout. Selection uses native text buttons with keyboard focus and changes only the outline; anatomy shapes are decorative rather than small touch targets. Both views appear by default, with front-only and back-only options whose text lists follow the visible regions. The [UI package guide](../packages/ui/README.md#muscle-map) owns the data, naming and selection API. The full examples use local sample data. The illustration presentation supplies decorative figures inside production muscle-group filter cards, whose parent buttons provide visible labels and selection. Per-exercise muscle mapping, workout coverage and recovery calculations are not integrated.
 
 ## Active exercise options
 
@@ -178,7 +195,7 @@ Replacement previews the remaining set count, preserved logged work, and reset t
 
 ## Exercise catalog browsing
 
-The library and workout, template and replacement pickers share a rounded search field, purple filter/count toolbar, alphabetical sort and compact rows on one rounded surface. Rows show decorative artwork, the exercise name and equipment. Muscle group remains part of selectable rows' accessible names. The standalone page pairs its Exercises heading with Create. Picker selection and the sticky Start/Add action stay owned by the caller, including when filters hide selected rows.
+The library and workout, template and replacement pickers share a rounded search field, accent filter/count toolbar, alphabetical sort and compact rows on one rounded surface. Rows show decorative artwork, the exercise name and equipment. Muscle group remains part of selectable rows' accessible names. The standalone page pairs its Exercises heading with Create. Picker selection and the sticky Start/Add action stay owned by the caller, including when filters hide selected rows.
 
 Selected exercises remain visible by name in a compact review tray even when search or filters hide their result rows. Removing a selection changes caller-owned selection only. Applied filter chips name each active equipment, muscle-group or custom-only filter. Removing one chip preserves the other filters, search, sort and exercise selection.
 
@@ -187,6 +204,8 @@ Filters open one nested sheet with overview, equipment and muscle-group views. E
 Equipment cards reuse explicit local illustrations and EGYM photography. Unknown equipment retains its text label and a generic icon. Muscle cards illustrate the existing broad Chest, Back, Shoulders, Arms, Core and Legs groups through the public `BaseMuscleMap` illustration presentation. Custom groups use a generic figure. These highlights describe filter groups, not per-exercise anatomical involvement. No detailed anatomy classifications, gym profiles, usage counts or exercise-type taxonomy are inferred.
 
 ## Paper design workspace
+
+> **Out of date.** The Paper file predates the 2026-10-10 visual identity (dark only, purple accent, Inter). It still shows the old palette and type. Treat it as history until it is redrawn; the tokens, Vue components and Histoire stories are authoritative.
 
 The project has a Paper file named **The Workout Tracker — Product design**:
 [Open the project guide](https://app.paper.design/file/01M440C3G4G4K1P2R5FBR3JPKW/p-2-0).

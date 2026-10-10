@@ -2,7 +2,7 @@
 
 [Open the app](https://alexanderop.github.io/the-workout-tracker/) · [Source](https://github.com/alexanderop/the-workout-tracker)
 
-A quiet, local-first workout journal. Dark mode, five colors, purple as the primary accent. Built with Vue 3, strict TypeScript, Vite, Dexie, Reka UI, Lucide and a service worker.
+A quiet, local-first workout journal. Light and dark themes (following your device by default), five accent colors and Geist. Built with Vue 3, strict TypeScript, Vite, Dexie, Reka UI, Lucide and a service worker.
 
 ## Workspace
 
@@ -133,3 +133,7 @@ The explorer uses Histoire 1.0 beta with Vite 7; the workout app compiles its ow
 Stories live in `apps/design-system/src/stories/**/*.story.vue`. Complete pages render the production application through its preview document; do not copy page markup or move workout rules into the UI package for the explorer. Sample feedback in patterns and explorations must not imply a real save. Spacing examples are reference values, not additional global tokens.
 
 See [the design contract](docs/design.md#product-design-workspace) for presentation rules and [the preview workflow](docs/workflows.md#add-a-product-page-state-or-flow) for adding examples.
+
+## Design reference
+
+[Tilly](https://github.com/carlassmann/tilly) inspired the restrained colors, rounded controls, responsive navigation, and PWA interaction patterns. The Vue components and implementation are original. Geist and Lucide retain their respective package licenses.
