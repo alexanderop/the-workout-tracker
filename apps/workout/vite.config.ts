@@ -72,8 +72,8 @@ export default defineConfig(({ mode, command }) => {
                 short_name: "Workout Tracker",
                 description:
                   "Plan workouts, log sets, and track your progress offline.",
-                theme_color: "#141414",
-                background_color: "#141414",
+                theme_color: "#f2f1ec",
+                background_color: "#f2f1ec",
                 display: "standalone",
                 start_url: base,
                 scope: base,

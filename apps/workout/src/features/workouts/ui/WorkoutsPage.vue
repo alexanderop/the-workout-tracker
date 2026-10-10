@@ -204,7 +204,7 @@ h1 {
 .active-workout-card {
   margin: 20px 0;
   padding: 16px;
-  border: 1px solid var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
 }
 .active-label {
@@ -219,7 +219,7 @@ h1 {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--purple);
+  background: var(--accent);
 }
 .active-workout-card h2 {
   margin: 10px 0 6px;
@@ -292,7 +292,7 @@ h1 {
 .workout-history-card {
   padding: 12px 0;
   border: 0;
-  border-block-end: 1px solid var(--surface);
+  border-block-end: 1px solid var(--border);
   border-radius: 0;
   background: none;
 }

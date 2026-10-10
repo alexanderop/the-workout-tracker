@@ -465,14 +465,14 @@ function saveReplacement() {
   padding-inline: 8px;
 }
 .exercise-option-targets :deep(button) {
-  border-radius: 18px;
+  border-radius: 12px;
   min-height: 58px;
 }
 .exercise-option-group {
   display: grid;
   overflow: clip;
   background: var(--surface);
-  border-radius: 14px;
+  border-radius: 10px;
 }
 .exercise-option-group :deep(button) {
   justify-content: flex-start;

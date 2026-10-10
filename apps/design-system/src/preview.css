@@ -1,9 +1,8 @@
 body {
   margin: 0;
-  font-family: Inter, sans-serif;
+  font-family: "Geist Variable", system-ui, sans-serif;
   color: var(--ui-foreground);
   background: var(--ui-background);
-  color-scheme: dark;
 }
 .story-preview {
   background: var(--ui-background);

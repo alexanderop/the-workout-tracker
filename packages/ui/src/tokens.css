@@ -7,12 +7,55 @@
   --ui-destructive-foreground: white;
   --ui-shadow-soft: oklch(0 0 none / 0.05);
   --ui-shadow-dialog: oklch(0 0 none / 0.1);
-  --ui-overlay: oklch(0 0 none / 0.8);
-  --background: oklch(0.1913 0 none); /* #141414 */
-  --surface: oklch(0.2558 0.0018 106.53); /* #232322 */
-  --text: oklch(0.9486 0.0027 106.45); /* #eeeeec */
-  --muted: oklch(0.714 0.0071 106.58); /* #a3a39e */
-  --purple: oklch(0.709 0.1592 293.54); /* #a78bfa */
+  --ui-overlay: light-dark(oklch(0.25 0.01 265 / 0.4), oklch(0 0 none / 0.7));
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* App palette: warm light by default, dark when the system or the user asks.
+   Each color resolves from the element's color-scheme. Appearance settings set
+   data-theme (resolved to light or dark) and data-accent on <html>. */
+:root {
+  color-scheme: light dark;
+  --background: light-dark(#f2f1ec, #121316);
+  --surface: light-dark(#fff, #1b1d22);
+  --text: light-dark(#1b1d21, #ecedef);
+  --body: light-dark(#3d424a, #c9ccd2);
+  --muted: light-dark(#5d636c, #9ea3ad);
+  --border: light-dark(#dcdad3, #2e3138);
+  --rule: light-dark(#eceae3, #24272d);
+  --danger: light-dark(#b4382a, #ff9b8e);
+  --hover: color-mix(in srgb, var(--muted) 9%, var(--surface));
+  --on-accent: var(--surface);
+  --focus-ring: color-mix(in srgb, var(--accent) 65%, transparent);
+}
+
+/* Accent: blue unless data-accent says otherwise. The selectors also match
+   nested [data-accent] elements, such as the swatches in Appearance settings. */
+:root,
+[data-accent="blue"] {
+  --accent: light-dark(#2f4fd8, #8ea2ff);
+  --accent-hover: light-dark(#2340bc, #aebcff);
+  --accent-soft: light-dark(#e7ebfc, #232a4a);
+}
+[data-accent="teal"] {
+  --accent: light-dark(#11746a, #80d5bb);
+  --accent-hover: light-dark(#0c5f57, #a2e5d2);
+  --accent-soft: light-dark(#e5f3ed, #223e35);
+}
+[data-accent="violet"] {
+  --accent: light-dark(#6b4fbb, #b39dfb);
+  --accent-hover: light-dark(#5a40a3, #cbbcfc);
+  --accent-soft: light-dark(#efeafa, #30283f);
+}
+[data-accent="pink"] {
+  --accent: light-dark(#b4326a, #f59ac0);
+  --accent-hover: light-dark(#982857, #f8b8d3);
+  --accent-soft: light-dark(#fbe8f0, #42222f);
+}
+[data-accent="sand"] {
+  --accent: light-dark(#8a5a10, #efbc73);
+  --accent-hover: light-dark(#734b0c, #f4d09c);
+  --accent-soft: light-dark(#f7ecdb, #40311f);
 }
 
 /* One token set; each color resolves from the element's color-scheme.
@@ -56,13 +99,18 @@
   --ui-outline-hover: light-dark(var(--ui-accent), color-mix(in oklch, var(--ui-input) 50%, transparent));
 }
 
-[data-ui-theme="light"] {
+[data-theme="light"] {
   color-scheme: light;
   --ui-dark: 0;
 }
 
-.dark,
-[data-ui-theme="dark"] {
+[data-theme="dark"] {
   color-scheme: dark;
   --ui-dark: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --ui-dark: 1;
+  }
 }

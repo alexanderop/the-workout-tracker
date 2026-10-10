@@ -202,9 +202,10 @@ defineSlots<{ default?: () => unknown }>();
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
   background: var(--background);
-  border: 1px solid var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 28px;
+  box-shadow: 0 12px 60px var(--ui-shadow-dialog);
 }
 :global(.sheet.wide) {
   width: min(620px, calc(100% - 40px));
@@ -294,7 +295,7 @@ defineSlots<{ default?: () => unknown }>();
   cursor: pointer;
 }
 .icon-button:focus-visible {
-  outline: 2px solid var(--purple);
+  outline: 3px solid var(--focus-ring);
   outline-offset: 4px;
 }
 .sheet-grabber {
@@ -344,7 +345,7 @@ defineSlots<{ default?: () => unknown }>();
     inset-inline-start: 0;
     max-height: calc(100dvh - 30px);
     padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 0px));
-    border-radius: 14px 14px 0 0;
+    border-radius: 16px 16px 0 0;
   }
   .sheet-title {
     font-size: 21px;

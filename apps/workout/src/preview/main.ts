@@ -1,8 +1,12 @@
 import { createApp, ref } from "vue";
 import { createMemoryHistory } from "vue-router";
-import "@fontsource-variable/inter";
 import "@form/ui/tokens.css";
 import "../style.css";
+import {
+  appearanceKey,
+  browserAppearanceEnvironment,
+  createAppearance,
+} from "../app/appearance";
 import App from "../App.vue";
 import { createWorkoutRouter } from "../app/router";
 import type { Installation } from "../app/environment";
@@ -50,6 +54,7 @@ async function mountScenario(
     now,
     id: nextId,
   });
+  const appearance = createAppearance(browserAppearanceEnvironment());
   const router = createWorkoutRouter(createMemoryHistory());
   const app = createApp(App, {
     workouts,
@@ -57,6 +62,7 @@ async function mountScenario(
     initialExerciseSearch: scenario.initialExerciseSearch,
     environment: { now, useInstallation: usePreviewInstallation },
   });
+  app.provide(appearanceKey, appearance);
   let disposed = false;
   let mountStarted = false;
   function dispose() {
@@ -66,6 +72,7 @@ async function mountScenario(
     try {
       if (mountStarted) app.unmount();
     } finally {
+      appearance.stop();
       workouts.close();
     }
   }

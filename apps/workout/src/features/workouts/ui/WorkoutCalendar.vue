@@ -219,7 +219,7 @@ function afterClose(event: Event) {
 <style scoped>
 .training-rhythm {
   padding: 0 0 16px;
-  border-block-end: 1px solid var(--surface);
+  border-block-end: 1px solid var(--border);
 }
 .rhythm-heading {
   display: flex;
@@ -281,14 +281,14 @@ function afterClose(event: Event) {
 .month-days i {
   width: 9px;
   height: 9px;
-  background: var(--surface);
+  background: var(--border);
   border-radius: 50%;
 }
 .completed i {
-  background: var(--purple);
+  background: var(--accent);
 }
 button.today {
-  border-color: var(--purple);
+  border-color: var(--accent);
   color: var(--text);
 }
 button[aria-pressed="true"] {
@@ -313,7 +313,7 @@ button[aria-pressed="true"] {
   padding-block-end: 9px;
 }
 .calendar-day-detail {
-  border-block-start: 1px solid var(--surface);
+  border-block-start: 1px solid var(--border);
   margin-block-start: 20px;
   padding-block-start: 16px;
 }
@@ -354,7 +354,7 @@ button[aria-pressed="true"] {
   font-size: 12px;
 }
 button:focus-visible {
-  outline: 2px solid var(--purple);
+  outline: 3px solid var(--focus-ring);
   outline-offset: -2px;
 }
 </style>
