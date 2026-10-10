@@ -70,6 +70,14 @@ Finish confirmation captures the active session identity when opened and closes 
 
 Production composition supplies PWA capabilities to `App.vue`. The Settings route receives readonly installation state and an install action through `app/workoutRouteContext.ts`. The route owns the installation entry point. The shell opens a shared installation sheet; `usePwa` (`apps/workout/src/usePwa.ts`) owns native prompt availability, platform detection, standalone-mode listeners and installer result state. `BaseInstallInstructions` (`packages/ui/src/BaseInstallInstructions.vue`) receives presentation props and emits intent without browser access, so the workout feature does not depend on PWA infrastructure. It cannot import application wiring or select a storage adapter. The existing architecture checks enforce this boundary.
 
+### Error boundary
+
+`main.ts` renders `App` inside `app/AppErrorBoundary.vue`. When a descendant throws while rendering, in a lifecycle hook or in an event handler, the boundary replaces the interface with a recovery screen: focus moves to its heading, Reload app reloads the page, and Copy diagnostics copies fixed text (app name, `APP_VERSION` and a generic failure label). The exception, its stack and anything from the workout journal are never copied or shown. Reloading is the only recovery. Confirmed workouts are untouched in IndexedDB, and unlogged weight and repetitions are still in the draft journal, but the recovery screen cannot promise them: the page that failed may have held newer input, and a failure while recovering drafts would fail again. Unsaved name, note and template editors are lost. The boundary does not catch rejected promises outside Vue's handlers. `APP_VERSION` is defined at build time from `VITE_APP_VERSION` (default `development`) by `vite.config.ts` and `vitest.config.ts`, and the production page also carries it as a `build-version` meta tag.
+
+### Service worker updates and tabs
+
+The service worker is registered with `registerType: "prompt"` and `clientsClaim`. A new worker waits until a tab sends `SKIP_WAITING`, which only the Update app button does, and the shell withholds that button while a workout is active. The generated registration code attaches its reload listener in every tab that has seen the waiting worker, not only in the tab whose button was pressed. Accepting the update in one tab therefore also asks every other such tab to reload, active workout or not. Weight and repetition drafts come back after that reload from the draft journal. Unsaved name, note and template editors are protected only by the browser's native leave prompt. [Verification](verification.md#service-worker-updates) records which of these behaviors the update journeys check.
+
 ## Public entry points
 
 `features/workouts/index.ts` exports the domain and application API. `ui.ts` exports the components and composable. `infrastructure.ts` exports the adapter factory exclusively for the composition root.

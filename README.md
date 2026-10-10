@@ -89,6 +89,7 @@ Husky runs `pnpm verify` and the limit ratchet before each commit, and `pnpm tes
 | Which workspace or module owns a behavior? | [Architecture](docs/architecture.md) |
 | What are the visual and interaction rules? | [Design](docs/design.md) |
 | How do I add a command, component, or persistence change? | [Development workflows](docs/workflows.md) |
+| What does each test or check prove? | [Verification](docs/verification.md) |
 | Which references informed our choices? | [Prior art](docs/prior-art.md) |
 | What did earlier work decide or report? | [Implementation history](docs/history/README.md) |
 
@@ -137,3 +138,7 @@ See [the design contract](docs/design.md#product-design-workspace) for presentat
 ## Design reference
 
 [Tilly](https://github.com/carlassmann/tilly) inspired the restrained colors, rounded controls, responsive navigation, and PWA interaction patterns. The Vue components and implementation are original. Geist and Lucide retain their respective package licenses.
+
+## License
+
+[MIT](LICENSE) © 2026 Alexander Opalic. Third-party assets keep their own licenses.
