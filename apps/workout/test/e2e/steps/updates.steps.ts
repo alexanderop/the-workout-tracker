@@ -114,7 +114,20 @@ Then(
   },
 );
 
-When("I close the templates", async ({ page }) => {
+When("I open Settings in this tab", async ({ page }) => {
+  await page.getByRole("link", { name: "Settings", exact: true }).first().click();
+});
+
+Then(
+  "Settings cannot be opened because this tab's version is gone",
+  async ({ page }) => {
+    await expect(page.getByRole("alert")).toContainText(
+      "This page could not be opened.",
+    );
+  },
+);
+
+When("I close the templates",async ({ page }) => {
   await page
     .getByRole("dialog", { name: "Templates", exact: true })
     .getByRole("button", { name: "Close dialog", exact: true })

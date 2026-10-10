@@ -70,11 +70,6 @@ export function usePwa() {
     updateAccepted = true;
     return registered.updateServiceWorker();
   }
-  // A lazy chunk of this tab's version can disappear once a newer worker
-  // replaces the precache. The load fails; offer the reload instead of acting.
-  useEventListener(window, "vite:preloadError", () => {
-    reloadReady.value = true;
-  });
   const captureInstall = (event: Event) => {
     if (isInstallEvent(event) && !installed.value) {
       installEvent.value = event;

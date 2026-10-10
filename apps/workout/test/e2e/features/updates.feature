@@ -66,3 +66,12 @@ Feature: An app update never interrupts a workout
     Then this tab offers a reload
     When I reload from the update notice
     Then the app runs version 2
+
+  Scenario: A tab of the old version offers a reload when its next screen is gone
+    Given a second tab shows the workouts without an active workout
+    When version 2 is deployed
+    And I accept the update in the second tab
+    Then this tab was taken over by version 2 without reloading
+    When I open Settings in this tab
+    Then Settings cannot be opened because this tab's version is gone
+    And this tab offers a reload
