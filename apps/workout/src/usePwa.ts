@@ -1,8 +1,10 @@
 import { useEventListener, useMediaQuery, useOnline } from "@form/composables";
 import { ref, computed, onScopeDispose, watch } from "vue";
-import { useRegisterSW } from "virtual:pwa-register/vue";
+import { registerSW } from "virtual:pwa-register";
 import { watchServiceWorkerUpdates } from "./serviceWorkerUpdates";
 import { useTranslation } from "./i18n";
+
+const REGISTER_DELAY_MS = 1000;
 
 type InstallEvent = Event & {
   prompt: () => Promise<void>;
@@ -48,28 +50,45 @@ export function usePwa() {
   // controller reload this tab; in any other tab it only offers a reload.
   let updateAccepted = false;
   const reloadReady = ref(false);
-  const registered = useRegisterSW({
-    // The registration code reloads the page on a controller change in every
-    // tab that has seen the waiting worker unless it is given this hook.
-    onNeedReload() {
-      if (!updateAccepted) {
-        reloadReady.value = true;
-        return;
-      }
-      window.location.reload();
-    },
-    onRegisteredSW(swUrl, registration) {
-      if (!registration || unmounted) return;
-      stopUpdateChecks = watchServiceWorkerUpdates(swUrl, registration);
-    },
-  });
-  const { offlineReady } = registered;
+  const offlineReady = ref(false);
+  const registeredNeedRefresh = ref(false);
+  let updateWorker: ReturnType<typeof registerSW> | undefined;
+  // Registering installs the worker, which downloads the whole precache. That
+  // competes with the page's own startup for bandwidth, so it starts once the
+  // first screen has had time to appear.
+  function register() {
+    if (unmounted) return;
+    updateWorker = registerSW({
+      immediate: true,
+      onNeedRefresh() {
+        registeredNeedRefresh.value = true;
+      },
+      onOfflineReady() {
+        offlineReady.value = true;
+      },
+      // The registration code reloads the page on a controller change in
+      // every tab that has seen the waiting worker unless it is given this
+      // hook.
+      onNeedReload() {
+        if (!updateAccepted) {
+          reloadReady.value = true;
+          return;
+        }
+        window.location.reload();
+      },
+      onRegisteredSW(swUrl, registration) {
+        if (!registration || unmounted) return;
+        stopUpdateChecks = watchServiceWorkerUpdates(swUrl, registration);
+      },
+    });
+  }
+  const registerTimer = window.setTimeout(register, REGISTER_DELAY_MS);
   const needRefresh = computed(
-    () => registered.needRefresh.value && !reloadReady.value,
+    () => registeredNeedRefresh.value && !reloadReady.value,
   );
   function updateServiceWorker() {
     updateAccepted = true;
-    return registered.updateServiceWorker();
+    return updateWorker?.() ?? Promise.resolve();
   }
   const captureInstall = (event: Event) => {
     if (isInstallEvent(event) && !installed.value) {
@@ -84,6 +103,7 @@ export function usePwa() {
   useEventListener(window, "appinstalled", markInstalled);
   onScopeDispose(() => {
     unmounted = true;
+    window.clearTimeout(registerTimer);
     stopUpdateChecks?.();
   });
   function install() {
