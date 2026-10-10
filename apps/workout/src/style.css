@@ -1655,7 +1655,6 @@ textarea::placeholder {
 @media (max-width: 380px) {
   .training-bar {
     padding-inline: 10px;
-    grid-template-columns: 36px minmax(0, 1fr) auto;
     gap: 8px;
   }
 }
