@@ -26,7 +26,14 @@ function showMissingCatalog() {
 }
 
 async function start() {
-  const locale = await startupLocale(initialLocale());
+  const history = createWebHashHistory(import.meta.env.BASE_URL);
+  const router = createWorkoutRouter(history);
+  // The router ignores hash and history events until its first navigation
+  // finishes, so it starts while the catalog loads instead of after it.
+  const [locale] = await Promise.all([
+    startupLocale(initialLocale()),
+    router.replace(history.location),
+  ]);
   if (!locale) {
     showMissingCatalog();
     return;
@@ -34,9 +41,6 @@ async function start() {
   const appearance = createAppearance(browserAppearanceEnvironment());
   const drafts = createWorkoutDrafts();
   const workouts = createWorkoutApp(drafts);
-  const router = createWorkoutRouter(
-    createWebHashHistory(import.meta.env.BASE_URL),
-  );
   const app = createApp({
     render: () =>
       h(AppErrorBoundary, null, {
