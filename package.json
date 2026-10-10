@@ -12,7 +12,7 @@
     "build": "pnpm typecheck && pnpm --filter @form/workout build",
     "preview": "pnpm --filter @form/workout preview",
     "typecheck": "pnpm typecheck:pure && pnpm typecheck:native && pnpm -r typecheck",
-    "lint": "pnpm lint:oxlint && pnpm lint:vue && pnpm lint:guards",
+    "lint": "pnpm lint:oxlint && pnpm lint:vue && pnpm lint:guards && pnpm check:architecture && pnpm check:boundaries",
     "lint:guards": "node tooling/lint/no-suppressions.mjs",
     "check:ratchet": "node tooling/lint/ratchet.mjs",
     "check:boundaries": "node scripts/check-boundaries.mjs",

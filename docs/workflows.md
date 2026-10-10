@@ -85,7 +85,7 @@ Changes may be committed directly on `main` or merged from a working branch into
 
 Husky installs the Git hooks through the root `prepare` script when you run `pnpm install`. Before each commit, `.husky/pre-commit` runs `pnpm verify` and the [limit ratchet](#quality-limits-only-tighten), and blocks the commit if either fails. Before each push, `.husky/pre-push` runs `pnpm test:unit`, including its coverage thresholds. The checks read the current working tree, including unstaged changes. Run `pnpm prepare` to reinstall the hooks in an existing checkout. Do not bypass hooks with `--no-verify`; CI repeats every check on the pushed commit and reports a skipped hook as a failed run.
 
-`pnpm verify` runs only type checking and linting. Automated tests run through separate commands described in [Testing](#testing). Standalone architecture and workspace checks are optional and remain outside verification. Build only when needed to run or deploy the application; offline and installation behavior require the production preview described in [README.md](../README.md).
+`pnpm verify` runs only type checking and linting. Automated tests run through separate commands described in [Testing](#testing). `pnpm lint` also runs `pnpm check:architecture` and `pnpm check:boundaries`, so they are part of verification. Build only when needed to run or deploy the application; offline and installation behavior require the production preview described in [README.md](../README.md).
 
 For documentation-only changes, check links, referenced paths, command names, and consistency with the implementation. Report edits, checks, commits, pushes, and deployment separately; completing one does not establish the others.
 
@@ -190,7 +190,7 @@ Oxlint owns JavaScript/TypeScript rules, supported Vue script rules, and custom 
 
 `tooling/lint/ratchet.mjs` compares the limit files with a base commit and fails when one was loosened: a raised file-size baseline entry or a new one, a raised or removed performance budget, or a lowered or removed coverage threshold. The pre-commit hook compares with `HEAD`; CI compares a push with the commit it replaced and a pull request with its base. Loosening a limit is the repository owner's decision, not an agent's.
 
-Run `pnpm lint:oxlint`, `pnpm lint:vue` or `pnpm lint:guards` for focused feedback. All stages reject warnings. No automated tests, standalone architecture commands, formatting checks, or builds are added to verification.
+Run `pnpm lint:oxlint`, `pnpm lint:vue`, `pnpm lint:guards`, `pnpm check:architecture` or `pnpm check:boundaries` for focused feedback. All stages reject warnings. No automated tests, formatting checks, or builds are added to verification.
 
 ## Maintain context
 

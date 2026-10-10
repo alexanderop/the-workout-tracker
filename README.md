@@ -16,7 +16,7 @@ The app imports its buttons, form controls, dialogs and mobile numeric editor fr
 
 `@form/ui` is a private source package: Vite compiles its Vue source as part of the consuming app. It does not yet produce a standalone npm distribution. New component consumers import `@form/ui/styles.css` alongside the tokens. Its public API is limited by package exports; import paths into another workspace's source are forbidden.
 
-`pnpm check:boundaries` checks workspace manifests and imports in source and configuration. It rejects cross-workspace relative imports, private deep imports, undeclared dependencies and dependencies on applications. Source cannot rely on development-only dependencies. This standalone check is optional and is not part of `pnpm verify`.
+`pnpm check:boundaries` checks workspace manifests and imports in source and configuration. It rejects cross-workspace relative imports, private deep imports, undeclared dependencies and dependencies on applications. Source cannot rely on development-only dependencies. `pnpm lint`, and so `pnpm verify`, runs this check.
 
 Within the app, `src/features/workouts` contains the domain, application, storage port, Dexie adapter, and feature UI. The app composition root supplies concrete dependencies. Shared Oxlint and standalone rules enforce feature entry points and layer direction; `pnpm check:architecture` checks feature and layer boundaries.
 
