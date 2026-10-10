@@ -65,6 +65,10 @@ Not claimed: keyboard-only operation, screen reader output, dialogs and sheets, 
 
 `apps/workout/test/browser/AppErrorBoundary.test.ts` renders a screen that throws while rendering and proves that the boundary offers Reload app, moves focus to its heading, passes axe, and shows diagnostics with only the app name, build version and a generic label. It does not repeat the exception message or any workout content. Not claimed: recovery from errors outside Vue rendering, such as a rejected promise in storage code, or the copy button against a real clipboard.
 
+### Settings hub and pages
+
+`apps/workout/test/e2e/features/settings.feature` proves, in Chrome against the production build, that the hub lists every section with its current value; that opening a page focuses its heading and Back, by link or by the browser button, returns focus to the row that opened it; that the Settings tab stays selected on a page and returns to the hub; that `/settings/training` opens as a deep link and an unknown section does not open a page; and that every page passes axe in a light or a dark theme. The appearance, language and rest-timer journeys reach their controls through hub rows. `apps/workout/test/browser/settings.test.ts` proves the Delete all data confirmation (cancel keeps data, confirm deletes at the revision the dialog opened with, a conflict blocks the button, focus returns to the opener), that Import uses the revision captured when the file was read and drops a pending file on cancel, conflict or leaving the page, and that the rest timer switch runs the settings command. `packages/ui/test/browser` covers `BaseListGroup`, `BaseListRow`, `BaseSegmentedControl` and `BaseScreenHeader`. Not claimed: the visual match to the starter, a physical install, or that a download reaches the file system.
+
 ### Other journeys
 
 The remaining Gherkin features cover drafts and finish rules, edit safety across tabs, completed-workout editing, the calendar, the exercise catalog, compact Home and appearance settings. They establish functional behavior in Chrome. They do not establish visual parity, Safari or Firefox behavior, or physical installation.

@@ -12,8 +12,8 @@ export const enSettings = {
   },
   groups: { device: "This device", data: "Your data" },
   hub: {
-    restOn: "Auto rest · {seconds} sec",
-    restOff: "Auto rest off",
+    restOn: "Rest {seconds} sec",
+    restOff: "Rest off",
     offlineReady: "Offline ready",
     offlinePending: "Preparing",
     privacy: "Your workouts stay on this device. No account, no cloud sync.",

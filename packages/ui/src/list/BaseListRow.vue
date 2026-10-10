@@ -89,7 +89,8 @@ defineSlots<{ default?: () => unknown }>();
 }
 .ui-list-row-label {
   font-size: 16px;
-  overflow-wrap: anywhere;
+  hyphens: auto;
+  overflow-wrap: break-word;
 }
 .ui-list-row-description {
   color: var(--muted);

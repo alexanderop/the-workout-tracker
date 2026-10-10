@@ -7,7 +7,7 @@ Feature: Settings hub and detail pages
     When I open the Settings hub
     Then the hub lists these rows
       | row                  | value            |
-      | Training preferences | Auto rest        |
+      | Training preferences | Rest 90 sec      |
       | Appearance           | System · Blue    |
       | Language             | System           |
       | Install app          |                  |

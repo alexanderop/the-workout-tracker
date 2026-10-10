@@ -18,6 +18,8 @@ When AOP is explicitly requested, use the project [model configuration](../.aop-
 
 Routing belongs to the workout application. Add a PascalCase `*Route.vue` adapter under `apps/workout/src/pages`, with an explicit lowercase `path` and named route in `definePage`. Import feature UI through its public entry point and use `useWorkoutRouteContext` for the persistent workspace. Keep router imports out of feature components. Use generated route names for navigation. The fallback uses the file-routing convention `[...pathMatch].vue`; keep that dynamic filename so the experimental generator ranks it after static routes.
 
+A route with a path parameter takes its path from the file name, because `definePage` cannot add a path parameter to a static `*Route.vue` path: name the file `pages/<area>/[[param=parser-name]].vue` (double brackets make it optional) and give `definePage` only the route `name`. `pages/settings/[[section=settings-section]].vue` is the example. Make the parser nullish when the parameter is optional, otherwise building a link without it fails.
+
 Declare parsed query parameters in `definePage.params.query` and their Zod parsers in `src/app/route-params`. The experimental resolver exposes parsed query values through `route.params`; named navigation supplies them through `params`. Do not cast raw URL strings to domain values.
 
 Run `pnpm --filter @form/workout routes:generate` after changing routes or parsers and include the generated `src/route-map.d.ts` in the change. This runs the configured Vite plugin without a build or listening server. Development and builds also generate the declarations. Committed declarations let a clean checkout run `pnpm verify` before starting Vite. Verification remains type checking and linting only.

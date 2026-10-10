@@ -14,10 +14,10 @@ export const deSettings: Catalog["settings"] = {
   },
   groups: { device: "Dieses Gerät", data: "Deine Daten" },
   hub: {
-    restOn: "Auto-Pause · {seconds} Sek.",
-    restOff: "Auto-Pause aus",
+    restOn: "Pause {seconds} Sek.",
+    restOff: "Pause aus",
     offlineReady: "Offline bereit",
-    offlinePending: "Wird vorbereitet",
+    offlinePending: "Vorbereitung",
     privacy:
       "Deine Trainings bleiben auf diesem Gerät. Kein Konto, keine Cloud-Synchronisierung.",
   },

@@ -52,6 +52,7 @@ onMounted(() => heading.value?.focus({ preventScroll: true }));
 .ui-screen-header-title {
   max-width: none;
   margin: 0;
+  padding-inline: 8px;
   font-size: 17px;
   font-weight: 600;
   letter-spacing: -0.2px;
