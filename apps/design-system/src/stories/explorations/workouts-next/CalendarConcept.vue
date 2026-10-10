@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { ChevronLeft, ChevronRight, CalendarDays } from '@lucide/vue';
+import { ChevronRight, CalendarDays } from '@lucide/vue';
 import { BaseSheet } from '@form/ui';
+import CalendarMonth from './CalendarMonth.vue';
 const { mode, populated } = defineProps<{ mode: 'week' | 'month' | 'rhythm'; populated: boolean }>();
 const open = ref(false);
 const month = ref(new Date(2026, 9, 1));
@@ -26,6 +27,14 @@ const cells = computed(() => {
 });
 const selectedSession = computed(() => populated ? sessions.find(session => session.date === selected.value) : undefined);
 const selectedLabel = computed(() => new Date(`${selected.value}T12:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }));
+const monthProps = computed(() => ({
+  title: monthTitle.value,
+  weekdays,
+  cells: cells.value,
+  selected: selected.value,
+  selectedLabel: selectedLabel.value,
+  session: selectedSession.value,
+}));
 function showMonth() { open.value = true; }
 function closeMonth() { open.value = false; }
 function previousMonth() { month.value = new Date(month.value.getFullYear(), month.value.getMonth() - 1, 1); selected.value = dateKey(month.value); }
@@ -48,15 +57,10 @@ function openDay(key: string) { selected.value = key; month.value = new Date(`${
       <div class="rhythm-caption"><span>22 Sep — 5 Oct</span><span><i />Completed workout</span></div>
     </template>
     <template v-else>
-      <div class="calendar-heading month-heading"><h2>{{ monthTitle }}</h2><div><button type="button" aria-label="Previous month" @click="previousMonth"><ChevronLeft :size="17" /></button><button type="button" aria-label="Next month" @click="nextMonth"><ChevronRight :size="17" /></button></div></div>
-      <div class="month-scroll"><div class="month-grid"><span v-for="(label, index) in weekdays" :key="`label-${index}`" class="weekday">{{ label }}</span><template v-for="(date, index) in cells" :key="date?.key ?? `blank-${index}`"><button v-if="date" type="button" :aria-label="`${date.label}${date.logged ? ', workout completed' : ', no completed workout'}`" :aria-current="date.today ? 'date' : undefined" :aria-pressed="selected === date.key" :class="{ selected: selected === date.key, today: date.today }" @click="selectDay(date.key)">{{ date.number }}<i :class="{ logged: date.logged }" /></button><span v-else /></template></div></div>
-      <div class="date-detail" role="status"><span>{{ selectedLabel }}</span><strong>{{ selectedSession?.name ?? 'No completed workouts' }}</strong><small v-if="selectedSession">{{ selectedSession.detail }}</small></div>
+      <CalendarMonth v-bind="monthProps" :icon-size="17" @previous="previousMonth" @next="nextMonth" @select="selectDay" />
     </template>
     <BaseSheet :open="open" title="Training calendar" description="Illustrative completed workouts. Select a date to explore." @close="closeMonth">
-      <div class="calendar-modal"><div class="calendar-heading month-heading"><h2>{{ monthTitle }}</h2><div><button type="button" aria-label="Previous month" @click="previousMonth"><ChevronLeft :size="18" /></button><button type="button" aria-label="Next month" @click="nextMonth"><ChevronRight :size="18" /></button></div></div>
-        <div class="month-scroll"><div class="month-grid"><span v-for="(label, index) in weekdays" :key="`label-${index}`" class="weekday">{{ label }}</span><template v-for="(date, index) in cells" :key="date?.key ?? `blank-${index}`"><button v-if="date" type="button" :aria-label="`${date.label}${date.logged ? ', workout completed' : ', no completed workout'}`" :aria-current="date.today ? 'date' : undefined" :aria-pressed="selected === date.key" :class="{ selected: selected === date.key, today: date.today }" @click="selectDay(date.key)">{{ date.number }}<i :class="{ logged: date.logged }" /></button><span v-else /></template></div></div>
-        <div class="date-detail" role="status"><span>{{ selectedLabel }}</span><strong>{{ selectedSession?.name ?? 'No completed workouts' }}</strong><small v-if="selectedSession">{{ selectedSession.detail }}</small></div>
-      </div>
+      <div class="calendar-modal"><CalendarMonth v-bind="monthProps" :icon-size="18" @previous="previousMonth" @next="nextMonth" @select="selectDay" /></div>
     </BaseSheet>
   </section>
 </template>
@@ -76,21 +80,8 @@ button:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px
 .day-number.today { background: var(--accent); color: var(--background); }
 i { display: block; width: 4px; height: 4px; border-radius: 50%; background: none; }
 i.logged { background: var(--accent); }
-.month-heading h2 { margin: 0; font-size: 14px; letter-spacing: -.2px; font-weight: 500; }
-.month-heading > div { display: flex; }
-.month-heading button, .rhythm-heading button { display: grid; place-items: center; min-width: 44px; min-height: 44px; background: none; border: 0; }
-.month-scroll { overflow-x: auto; }
-.month-grid { display: grid; grid-template-columns: repeat(7, minmax(44px, 1fr)); min-width: 308px; }
-.weekday { text-align: center; font-size: 10px; padding: 10px 0; color: var(--muted); }
-.month-grid button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 44px; border: 1px solid transparent; background: none; font-size: 12px; border-radius: 10px; }
-.month-grid button.today { border-color: var(--accent); }
-.month-grid button.selected { background: var(--surface); }
-.month-grid button:hover { background: var(--surface); }
-.date-detail { display: grid; gap: 6px; margin-top: 15px; padding: 14px 0; border-top: 1px solid var(--border); }
-.date-detail > span { color: var(--muted); font-size: 10px; }
-.date-detail strong { font-size: 13px; font-weight: 500; }
-.date-detail small { color: var(--muted); font-size: 11px; }
 .calendar-kicker { font-size: 9px; letter-spacing: 1.3px; color: var(--muted); }
+.rhythm-heading button { display: grid; place-items: center; min-width: 44px; min-height: 44px; background: none; border: 0; }
 .rhythm-heading { display: flex; align-items: center; justify-content: space-between; }
 .rhythm-heading h2 { margin: 9px 0 18px; font-size: 40px; line-height: 1; letter-spacing: -2px; font-weight: 500; }
 .rhythm-heading h2 small { color: var(--muted); font-size: 13px; font-weight: 400; letter-spacing: 0; margin-left: 9px; }

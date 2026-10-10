@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { BaseButton, BaseInputNumber } from "@form/ui";
-import { ArrowRight, Check, Clock3 } from "@lucide/vue";
+import { BaseButton } from "@form/ui";
+import { ArrowRight, Clock3 } from "@lucide/vue";
+import ActiveWorkoutEntryStage from "./ActiveWorkoutEntryStage.vue";
+import type { Entry } from "./types";
 
 const { mode } = defineProps<{ mode: "focus" | "overview" | "rhythm" }>();
 const exercises = ["Bench press", "Seated row", "Shoulder press"];
-type Entry = { weight: string | number; reps: string | number; logged: boolean };
 function initialEntries(): Entry[][] {
   return [60, 45, 20].map((weight, exercise) =>
     Array.from({ length: 3 }, (_, set) => ({ weight, reps: 8, logged: exercise === 0 && set === 0 })),
@@ -80,26 +81,20 @@ function nextExercise() {
         <BaseButton @click="resting = false">Ready for next set <ArrowRight :size="16" /></BaseButton>
       </section>
 
-      <section v-else class="entry-stage" aria-label="Current exercise">
-        <div class="exercise-heading"><p class="eyebrow">{{ current ? `SET ${setNumber} OF 3` : 'EXERCISE COMPLETE' }}</p><h3>{{ exercises[selected] }}</h3></div>
-        <p class="previous">Last time <strong>{{ [60, 45, 20][selected] }} kg × 8</strong><span>Sample reference</span></p>
-        <div class="set-trail" aria-label="Exercise sets">
-          <div v-for="(set, index) in sets" :key="index" :class="{ logged: set.logged, upcoming: index + 1 === setNumber }">
-            <span><Check v-if="set.logged" :size="14" aria-hidden="true" /> Set {{ index + 1 }}</span>
-            <strong>{{ set.weight }} × {{ set.reps }}</strong><small>{{ set.logged ? 'Logged' : 'Draft' }}</small>
-          </div>
-        </div>
-        <template v-if="current">
-          <div class="entry-values">
-            <label>Weight · kg<BaseInputNumber v-model="current.weight" title="Weight" label="Current set weight" unit="kg" :decimals="2" :preset-step="2.5" /></label>
-            <label>Repetitions<BaseInputNumber v-model="current.reps" title="Repetitions" label="Current set repetitions" :min="1" /></label>
-          </div>
-          <p class="draft-note">Confirming a number edits this draft. Log when the set is done.</p>
-          <BaseButton class="log-action" :disabled="!valid" @click="log">Log set {{ setNumber }} <Check :size="18" aria-hidden="true" /></BaseButton>
-        </template>
-        <BaseButton v-else-if="total < 9" class="log-action" @click="nextExercise">Next exercise <ArrowRight :size="18" aria-hidden="true" /></BaseButton>
-        <p v-else class="complete-message">All 9 sets logged. Ready to review your workout.</p>
-      </section>
+      <ActiveWorkoutEntryStage
+        v-else
+        :name="exercises[selected] ?? ''"
+        :selected="selected"
+        :sets="sets"
+        :current="current"
+        :set-number="setNumber"
+        :total="total"
+        :valid="!!valid"
+        @weight="(value) => current && (current.weight = value)"
+        @reps="(value) => current && (current.reps = value)"
+        @log="log"
+        @next="nextExercise"
+      />
 
       <aside v-if="resting && mode !== 'rhythm'" class="rest-strip">
         <span><Clock3 :size="18" aria-hidden="true" /><strong>01:30</strong> Rest preview · paused</span>
@@ -114,7 +109,7 @@ function nextExercise() {
 .exploration { min-height: 100dvh; padding: 32px 20px; box-sizing: border-box; background: var(--ui-background); color: var(--ui-foreground); }
 .concept-caption { max-width: 720px; margin: 0 auto 28px; }
 .concept-caption h1 { font-size: 26px; font-weight: 500; letter-spacing: -1px; margin: 10px 0; }
-.concept-caption p, .draft-note, .preview-footer, .previous, .rest-stage p { color: var(--ui-muted-foreground); font-size: 12px; line-height: 1.6; }
+.concept-caption p, .preview-footer, .rest-stage p { color: var(--ui-muted-foreground); font-size: 12px; line-height: 1.6; }
 .workout-concept { max-width: 480px; margin: auto; border: 1px solid var(--ui-border); border-radius: 24px; padding: 28px; background: var(--ui-background); }
 .session-top, .session-progress, .rest-strip, .rest-strip > span { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .session-top h2 { margin: 8px 0 24px; font-size: 24px; font-weight: 550; letter-spacing: -.7px; }
@@ -130,23 +125,6 @@ progress::-webkit-progress-value { background: var(--ui-primary); border-radius:
 .exercise-list button:focus-visible { outline: 2px solid var(--ui-ring); outline-offset: -4px; }
 .exercise-list small { display: block; margin-top: 5px; color: var(--ui-muted-foreground); font-size: 10px; }
 .exercise-number { color: var(--ui-primary); font-variant-numeric: tabular-nums; }
-.entry-stage { padding-top: 24px; }
-.exercise-heading h3 { font-size: 32px; line-height: 1.1; font-weight: 500; letter-spacing: -1.3px; margin: 12px 0 18px; overflow-wrap: anywhere; }
-.previous { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
-.previous strong { color: var(--ui-foreground); font-weight: 500; }
-.previous span { font-size: 10px; }
-.set-trail { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 24px 0; }
-.set-trail > div { border-top: 2px solid var(--ui-border); padding-top: 10px; color: var(--ui-muted-foreground); display: grid; gap: 6px; }
-.set-trail span { display: flex; align-items: center; gap: 4px; font-size: 11px; }
-.set-trail strong { font-size: 13px; font-weight: 500; }
-.set-trail small { font-size: 10px; }
-.set-trail .logged { color: var(--ui-primary); border-color: var(--ui-primary); }
-.set-trail .upcoming { border-color: var(--ui-foreground); color: var(--ui-foreground); }
-.entry-values { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.entry-values label { display: grid; gap: 10px; font-size: 12px; color: var(--ui-muted-foreground); min-width: 0; }
-.entry-values :deep(.ui-numeric-trigger) { width: 100%; min-height: 76px; font-size: 32px; font-variant-numeric: tabular-nums; }
-.draft-note { font-size: 11px; margin: 16px 0 24px; }
-.log-action { width: 100%; min-height: 52px; }
 .rest-strip { flex-wrap: wrap; margin-top: 20px; border-top: 1px solid var(--ui-border); padding-top: 20px; font-size: 11px; }
 .rest-strip > span { justify-content: start; flex-wrap: wrap; }
 .rest-strip strong { color: var(--ui-primary); font-size: 20px; }
@@ -154,12 +132,9 @@ progress::-webkit-progress-value { background: var(--ui-primary); border-radius:
 .preview-footer > span { flex: 1 1 100%; }
 .concept-overview .exercise-list { display: grid; overflow: visible; }
 .concept-overview .exercise-list button > span:nth-child(2) { flex: 1; }
-.concept-overview .entry-stage { padding-top: 18px; }
-.concept-overview .exercise-heading h3 { font-size: 24px; }
 .rest-stage { text-align: center; padding: 36px 0 12px; }
 .rest-stage > strong { display: block; font-size: clamp(64px, 15vw, 96px); font-weight: 400; letter-spacing: -5px; color: var(--ui-primary); margin: 20px 0 0; font-variant-numeric: tabular-nums; }
 .rest-stage .ui-button { width: 100%; margin-top: 20px; min-height: 52px; }
-.complete-message { color: var(--ui-primary); line-height: 1.6; }
 @media (max-width: 480px) {
   .exploration { padding: 20px 12px; }
   .concept-caption h1 { font-size: 21px; }
