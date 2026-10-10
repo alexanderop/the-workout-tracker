@@ -15,3 +15,7 @@ apps/workout/dist-preview/
 apps/design-system/public/product-preview/
 .lighthouseci/
 coverage/
+
+*.local
+.env*
+.claude/worktrees/
