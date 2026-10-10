@@ -25,6 +25,7 @@ export default defineConfig(({ mode, command }) => {
       : {
           assetsInlineLimit(filePath) {
             if (filePath.endsWith(".webp")) return false;
+            return undefined;
           },
         },
     plugins: [

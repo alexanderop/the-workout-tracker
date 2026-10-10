@@ -1,7 +1,10 @@
 import { expect, type Page } from "@playwright/test";
 
 export class CompletedWorkoutPage {
-  constructor(readonly page: Page) {}
+  readonly page: Page;
+  constructor(page: Page) {
+    this.page = page;
+  }
   editor() {
     return this.page.getByRole("dialog", { name: "Edit workout", exact: true });
   }
