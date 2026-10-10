@@ -8,6 +8,8 @@ import {
   type LoadState,
 } from "../features/workouts";
 
+type Result = Awaited<ReturnType<WorkoutStorage["compareAndSave"]>>;
+
 /** Each document owns one validated journal; it never accesses browser storage. */
 export function createMemoryStorage(initial: Snapshot): WorkoutStorage {
   let snapshot = snapshotSchema.parse(initial);
@@ -17,31 +19,32 @@ export function createMemoryStorage(initial: Snapshot): WorkoutStorage {
     kind: "unavailable",
     message: "Preview storage is closed.",
   } as const;
-  return {
-    async read() {
-      return closed ? unavailable : { kind: "ready", snapshot };
-    },
-    async compareAndSave(expectedRevision, next) {
-      if (closed) return unavailable;
-      if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 0)
-        return { kind: "invalid", message: "Invalid preview revision." };
-      const parsed = snapshotSchema.safeParse(next);
-      if (!parsed.success)
-        return { kind: "invalid", message: "Invalid preview snapshot." };
-      if (expectedRevision !== snapshot.revision)
-        return { kind: "conflict", snapshot };
-      const unchanged = parsed.data.revision === snapshot.revision;
-      if (unchanged && JSON.stringify(parsed.data) === JSON.stringify(snapshot))
-        return { kind: "saved", snapshot };
-      if (parsed.data.revision !== snapshot.revision + 1)
-        return {
-          kind: "invalid",
-          message: "Snapshot revisions must advance by one.",
-        };
-      snapshot = parsed.data;
-      for (const listener of listeners) listener({ kind: "ready", snapshot });
+  function save(expectedRevision: number, next: unknown): Result {
+    if (closed) return unavailable;
+    if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 0)
+      return { kind: "invalid", message: "Invalid preview revision." };
+    const parsed = snapshotSchema.safeParse(next);
+    if (!parsed.success)
+      return { kind: "invalid", message: "Invalid preview snapshot." };
+    if (expectedRevision !== snapshot.revision)
+      return { kind: "conflict", snapshot };
+    const unchanged = parsed.data.revision === snapshot.revision;
+    if (unchanged && JSON.stringify(parsed.data) === JSON.stringify(snapshot))
       return { kind: "saved", snapshot };
-    },
+    if (parsed.data.revision !== snapshot.revision + 1)
+      return {
+        kind: "invalid",
+        message: "Snapshot revisions must advance by one.",
+      };
+    snapshot = parsed.data;
+    for (const listener of listeners) listener({ kind: "ready", snapshot });
+    return { kind: "saved", snapshot };
+  }
+  return {
+    read: () =>
+      Promise.resolve(closed ? unavailable : { kind: "ready", snapshot }),
+    compareAndSave: (expectedRevision, next) =>
+      Promise.resolve(save(expectedRevision, next)),
     subscribe(listener) {
       if (closed) {
         listener(unavailable);

@@ -1,4 +1,4 @@
-import Dexie, { liveQuery, type Table } from "dexie";
+import { Dexie, liveQuery, type Table } from "dexie";
 import { snapshotSchema, type Snapshot } from "../domain";
 import type { LoadState, Result, StorageState, WorkoutStorage } from "../ports";
 
@@ -37,6 +37,8 @@ export function openDexieWorkoutStorage(
   database.version(1).stores({ state: "" });
   const table: Table<unknown, string> = database.table("state");
   let closed = false;
+  // Reads the flag fresh: it changes while awaits are pending, which control-flow narrowing cannot see.
+  const isClosed = () => closed;
   let initialized: Promise<void> | undefined;
   let generation = 0;
   let observation: { unsubscribe: () => void } | undefined;
@@ -113,9 +115,9 @@ export function openDexieWorkoutStorage(
       if (closed) return closedState;
       try {
         const raw = await rawRead();
-        return closed ? closedState : decode(raw);
+        return isClosed() ? closedState : decode(raw);
       } catch {
-        return closed ? closedState : unavailable;
+        return isClosed() ? closedState : unavailable;
       }
     },
     async compareAndSave(expectedRevision, next): Promise<Result> {
@@ -128,15 +130,15 @@ export function openDexieWorkoutStorage(
       try {
         await initialize();
       } catch {
-        return closed ? closedState : unavailable;
+        return isClosed() ? closedState : unavailable;
       }
-      if (closed) return closedState;
+      if (isClosed()) return closedState;
       try {
         return await database.transaction("rw", table, () =>
           commit(expectedRevision, candidate.data),
         );
       } catch {
-        return closed ? closedState : unavailable;
+        return isClosed() ? closedState : unavailable;
       }
     },
     subscribe(listener) {

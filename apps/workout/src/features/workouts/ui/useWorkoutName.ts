@@ -129,6 +129,8 @@ export function useWorkoutName(
       draft.value.revision = workspace.snapshot.value.revision;
     }
   }
+  // Reads the draft fresh: it changes while the save is pending.
+  const draftSessionId = () => draft.value?.sessionId;
   async function save() {
     if (!draft.value || !canSave.value) return;
     const submitted = { ...draft.value };
@@ -142,7 +144,7 @@ export function useWorkoutName(
       submitted.revision,
     );
     submitting.value = false;
-    if (draft.value?.sessionId !== submitted.sessionId) return;
+    if (draftSessionId() !== submitted.sessionId) return;
     if (!saved) {
       issue.value = "Name not saved. Your input is still here.";
       return;

@@ -76,8 +76,8 @@ watch(
 );
 watch(
   () => disabled,
-  (disabled) => {
-    if (disabled) open.value = false;
+  (isDisabled) => {
+    if (isDisabled) open.value = false;
   },
 );
 function press(key: string) {

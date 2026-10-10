@@ -264,8 +264,8 @@ describe("numericPresets", () => {
       limits: limits({ presetStep: 0 }),
       expected: [],
     },
-  ])("should offer $name", ({ value, limits, expected }) => {
-    expect(numericPresets(value, limits)).toEqual(expected);
+  ])("should offer $name", ({ value, limits: bounds, expected }) => {
+    expect(numericPresets(value, bounds)).toEqual(expected);
   });
 
   it.each([

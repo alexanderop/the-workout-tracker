@@ -84,12 +84,12 @@ export function reduceActive(
     });
   }
   function addExercises(
-    command: Extract<Command, { type: "add-exercise" | "add-exercises" }>,
+    request: Extract<Command, { type: "add-exercise" | "add-exercises" }>,
   ): Transition {
     const ids =
-      command.type === "add-exercise"
-        ? [command.exerciseId]
-        : command.exerciseIds;
+      request.type === "add-exercise"
+        ? [request.exerciseId]
+        : request.exerciseIds;
     if (active.exercises.length + ids.length > 50)
       return reject("A workout can contain up to 50 exercises.");
     const additions = selectedExercises(ids);
@@ -100,7 +100,7 @@ export function reduceActive(
     });
   }
   function reduceExercise(
-    command: Extract<
+    request: Extract<
       Command,
       {
         type:
@@ -117,14 +117,14 @@ export function reduceActive(
     >,
   ): Transition {
     const candidateExercise =
-      command.type === "set-completed"
+      request.type === "set-completed"
         ? active.exercises.find((row) =>
-            row.sets.some((set) => set.id === command.setId),
+            row.sets.some((set) => set.id === request.setId),
           )
-        : active.exercises.find((row) => row.id === command.exerciseId);
+        : active.exercises.find((row) => row.id === request.exerciseId);
     if (!candidateExercise) return reject("Workout exercise was not found.");
     const exercise = candidateExercise;
-    if (command.type === "remove-exercise") {
+    if (request.type === "remove-exercise") {
       if (active.exercises.length === 1)
         return reject(
           "A workout needs at least one exercise. Discard the workout instead.",
@@ -148,14 +148,14 @@ export function reduceActive(
           row.id === next.id ? next : row,
         ),
       });
-    if (command.type === "set-exercise-note")
-      return setExerciseNote(command.note);
-    if (command.type === "replace-exercise")
-      return replaceExercise(command.replacementExerciseId);
-    if (command.type === "configure-exercise")
-      return configureExercise(command);
-    if (command.type === "add-set") return addSet(command);
-    return updateSet(command);
+    if (request.type === "set-exercise-note")
+      return setExerciseNote(request.note);
+    if (request.type === "replace-exercise")
+      return replaceExercise(request.replacementExerciseId);
+    if (request.type === "configure-exercise")
+      return configureExercise(request);
+    if (request.type === "add-set") return addSet(request);
+    return updateSet(request);
     function setExerciseNote(noteInput: string): Transition {
       const { note: previousNote, ...withoutNote } = exercise;
       const note = noteInput.trim();
@@ -200,34 +200,34 @@ export function reduceActive(
       });
     }
     function configureExercise(
-      command: Extract<Command, { type: "configure-exercise" }>,
+      configuration: Extract<Command, { type: "configure-exercise" }>,
     ): Transition {
       const logged = exercise.sets.filter((set) => set.completed).length;
-      if (command.setCount < logged)
+      if (configuration.setCount < logged)
         return reject(
           "The set count cannot remove logged work. Clear a set explicitly first.",
         );
-      let remaining = command.setCount - logged;
+      let remaining = configuration.setCount - logged;
       const retained = exercise.sets
         .filter((set) => {
           if (set.completed) return true;
           return remaining-- > 0;
         })
         .map((set) => {
-          if (set.completed || !command.values) return set;
+          if (set.completed || !configuration.values) return set;
           return {
             ...set,
-            ...command.values,
-            targetReps: command.values.reps,
+            ...configuration.values,
+            targetReps: configuration.values.reps,
           };
         });
       const previous = exercise.sets.at(-1);
       if (!previous) return reject("Exercise has no sets.");
-      const values = command.values ?? {
+      const values = configuration.values ?? {
         weightKg: previous.weightKg,
         reps: setTargetReps(previous),
       };
-      while (retained.length < command.setCount)
+      while (retained.length < configuration.setCount)
         retained.push({
           id: inputs.id(),
           ...values,
@@ -237,18 +237,18 @@ export function reduceActive(
       return saveExercise({ ...exercise, sets: retained });
     }
     function addSet(
-      command: Extract<Command, { type: "add-set" }>,
+      addition: Extract<Command, { type: "add-set" }>,
     ): Transition {
       const previous = exercise.sets.at(-1);
       if (!previous) return reject("Exercise has no sets.");
-      const reps = command.values?.reps ?? setTargetReps(previous);
+      const reps = addition.values?.reps ?? setTargetReps(previous);
       return saveExercise({
         ...exercise,
         sets: [
           ...exercise.sets,
           {
             id: inputs.id(),
-            weightKg: command.values?.weightKg ?? previous?.weightKg ?? 0,
+            weightKg: addition.values?.weightKg ?? previous.weightKg,
             reps: reps,
             targetReps: reps,
             completed: false,
@@ -257,14 +257,14 @@ export function reduceActive(
       });
     }
     function updateSet(
-      command: Extract<
+      update: Extract<
         Command,
         { type: "remove-set" | "set-entry" | "set-values" | "set-completed" }
       >,
     ): Transition {
-      const set = exercise.sets.find((row) => row.id === command.setId);
+      const set = exercise.sets.find((row) => row.id === update.setId);
       if (!set) return reject("Set was not found.");
-      if (command.type === "remove-set") {
+      if (update.type === "remove-set") {
         if (exercise.sets.length === 1)
           return reject("Keep at least one set per exercise.");
         return saveExercise(
@@ -275,7 +275,7 @@ export function reduceActive(
           active.rest?.setId === set.id ? null : active.rest,
         );
       }
-      const nextSet = changedSet(set, command);
+      const nextSet = changedSet(set, update);
       if (!nextSet.completed && nextSet.reps === 0)
         return reject("Planned sets need at least one target repetition.");
       const rest = nextRest(set, nextSet);

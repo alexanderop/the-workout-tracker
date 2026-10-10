@@ -27,13 +27,15 @@ function usePreviewInstallation(): Installation {
     offlineReady: ref(false),
     needRefresh: ref(false),
     installMessage: ref("Installation is unavailable in this design example."),
-    async install() {
+    install() {
       installOpen.value = true;
+      return Promise.resolve();
     },
     async requestInstall() {},
     async updateServiceWorker() {},
   };
 }
+const nextId = () => `preview-new-${crypto.randomUUID()}`;
 async function mountScenario(
   host: HTMLElement,
   id: ScenarioId,
@@ -42,7 +44,6 @@ async function mountScenario(
   const snapshot = snapshotSchema.parse(scenario.seed());
   const started = performance.now();
   const now = () => previewEpoch + Math.floor(performance.now() - started);
-  const nextId = () => `preview-new-${crypto.randomUUID()}`;
   const drafts = createMemoryDraftJournal(nextId);
   const workouts = createWorkouts({
     storage: createMemoryStorage(snapshot),
@@ -58,6 +59,8 @@ async function mountScenario(
     environment: { now, useInstallation: usePreviewInstallation },
   });
   let disposed = false;
+  // Reads the flag fresh: it changes while awaits are pending, which control-flow narrowing cannot see.
+  const isDisposed = () => disposed;
   let mountStarted = false;
   function dispose() {
     if (disposed) return;
@@ -81,14 +84,14 @@ async function mountScenario(
         ? { name: "workouts", params: { view: scenario.view } }
         : scenario.route,
     );
-    if (disposed) return;
+    if (isDisposed()) return;
     app.use(router);
     await router.isReady();
-    if (disposed) return;
+    if (isDisposed()) return;
     mountStarted = true;
     app.mount(host);
   } catch (error) {
-    if (disposed) return;
+    if (isDisposed()) return;
     dispose();
     throw error;
   }

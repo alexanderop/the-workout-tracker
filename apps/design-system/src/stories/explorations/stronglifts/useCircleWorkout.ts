@@ -69,7 +69,7 @@ export function useCircleWorkout(scenario: Scenario) {
     if (rest.value?.setId === set.id) rest.value = null;
     notice.value = "Set cleared. It no longer counts toward your workout.";
   }
-  function configure(exercise: CircleExercise, weight: number, target: number, count: number) {
+  function configure(exercise: CircleExercise, { weight, target, count }: { weight: number; target: number; count: number }) {
     const recorded = exercise.sets.filter((set) => set.reps !== null).length;
     const desired = Math.max(1, recorded, Math.min(20, Math.round(count)));
     exercise.weight = weight;

@@ -29,10 +29,10 @@ export function useTrainingSelection(options: {
     selected.value = pendingRow?.set.id ?? null;
   }
   const next = computed(() => {
-    const set = active.value?.exercises
+    const pending = active.value?.exercises
       .flatMap((exercise) => exercise.sets)
       .find((set) => !set.completed);
-    return set ? rows.get(set.id) : undefined;
+    return pending ? rows.get(pending.id) : undefined;
   });
   const currentExercise = computed(
     () =>

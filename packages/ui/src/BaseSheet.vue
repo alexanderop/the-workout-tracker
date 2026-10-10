@@ -31,8 +31,8 @@ const emit = defineEmits<{
 let opener: HTMLElement | null = null;
 watch(
   () => open,
-  (open) => {
-    if (open && document.activeElement instanceof HTMLElement)
+  (isOpen) => {
+    if (isOpen && document.activeElement instanceof HTMLElement)
       opener = document.activeElement;
   },
   { flush: "sync" },
@@ -116,10 +116,10 @@ function endDrag(event: PointerEvent) {
 }
 let settleFrame = 0;
 let stopSwallowing: (() => void) | null = null;
+const swallow = (click: Event) => click.stopPropagation();
 // Swallow the click a drag may end with, so it cannot press the close button.
 function swallowNextClick(sheet: HTMLElement) {
   stopSwallowing?.();
-  const swallow = (click: Event) => click.stopPropagation();
   sheet.addEventListener("click", swallow, { capture: true, once: true });
   const timer = setTimeout(() => stopSwallowing?.(), 60);
   stopSwallowing = () => {

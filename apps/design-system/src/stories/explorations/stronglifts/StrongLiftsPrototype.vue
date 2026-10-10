@@ -30,7 +30,7 @@ function clearSet() {
 }
 function saveWeight(weight: number, reps: number, count: number) {
   if (!weightExercise.value) return;
-  configure(weightExercise.value, weight, reps, count);
+  configure(weightExercise.value, { weight, target: reps, count });
   weightExercise.value = null;
 }
 function finish() {

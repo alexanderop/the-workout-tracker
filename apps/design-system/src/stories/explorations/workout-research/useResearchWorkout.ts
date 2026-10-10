@@ -1,18 +1,18 @@
 import { computed, ref } from "vue";
-import type { DemoSet } from "./WorkoutAppResearchStudyPhoneSetTable.vue";
+import type { DemoSet } from "./demoSet";
 import bench from "../../../assets/exercises/bench-press.png";
 import row from "../../../assets/exercises/seated-row.png";
 import press from "../../../assets/exercises/shoulder-press.png";
 
-function createExercise(name: string, weight: number, image: string, index: number) {
+function createExercise({ name, weight, image }: { name: string; weight: number; image: string }, index: number) {
   return { name, weight, image, sets: Array.from({ length: 3 }, (_, set): DemoSet => ({ id: index * 3 + set, weight, reps: 8, logged: index === 0 && set === 0 })) };
 }
 type DemoExercise = ReturnType<typeof createExercise>;
 function createExercises(): [DemoExercise, ...DemoExercise[]] {
   return [
-    createExercise("Bench press", 60, bench, 0),
-    createExercise("Seated row", 45, row, 1),
-    createExercise("Shoulder press", 20, press, 2),
+    createExercise({ name: "Bench press", weight: 60, image: bench }, 0),
+    createExercise({ name: "Seated row", weight: 45, image: row }, 1),
+    createExercise({ name: "Shoulder press", weight: 20, image: press }, 2),
   ];
 }
 function isValid(set: DemoSet) {

@@ -35,6 +35,10 @@ function setup() {
   return { editor, app, memory, active, scope };
 }
 
+function noPendingSave(): never {
+  throw new Error("No pending save");
+}
+
 describe("workout name editing", () => {
   it("preserves dirty text on a remote rename until an explicit choice", async () => {
     const { editor, app, active, scope } = setup();
@@ -225,90 +229,88 @@ describe("detached workout names", () => {
   });
 });
 
-it("does not acknowledge a newer recovery when an older save completes", async () => {
-  const factory = createWorkoutFactory("deferred-name");
-  const active = factory.activeSession();
-  const completed = factory.completedSession({
-    id: active.id,
-    name: active.name,
-  });
-  const snapshot = shallowRef<Snapshot>(factory.snapshot({ active }));
-  let release: (saved: Snapshot) => void = () => {
-    throw new Error("No pending save");
-  };
-  const scope = effectScope();
-  const editor = scope.run(() =>
-    useWorkoutName({
-      snapshot: computed(() => snapshot.value),
-      active: computed(() => snapshot.value.active),
-      saving: ref(false),
-      run: () =>
-        new Promise<Snapshot>((resolve) => {
-          release = resolve;
-        }),
-    }),
-  )!;
-  try {
-    editor.text.value = "First recovery";
-    snapshot.value = factory.snapshot({
-      revision: 1,
-      completed: { [active.id]: completed },
+describe("racing workout-name saves", () => {
+  it("does not acknowledge a newer recovery when an older save completes", async () => {
+    const factory = createWorkoutFactory("deferred-name");
+    const active = factory.activeSession();
+    const completed = factory.completedSession({
+      id: active.id,
+      name: active.name,
     });
-    const pending = editor.resolveRecovery(active.id, "save");
-    snapshot.value = factory.snapshot({ revision: 2, active });
-    editor.text.value = "Newer recovery";
-    snapshot.value = factory.snapshot({
-      revision: 3,
-      completed: { [active.id]: completed },
-    });
-    release(
-      factory.snapshot({
-        revision: 4,
-        completed: { [active.id]: { ...completed, name: "First recovery" } },
+    const snapshot = shallowRef<Snapshot>(factory.snapshot({ active }));
+    let release: (saved: Snapshot) => void = noPendingSave;
+    const scope = effectScope();
+    const editor = scope.run(() =>
+      useWorkoutName({
+        snapshot: computed(() => snapshot.value),
+        active: computed(() => snapshot.value.active),
+        saving: ref(false),
+        run: () =>
+          new Promise<Snapshot>((resolve) => {
+            release = resolve;
+          }),
       }),
-    );
-    await pending;
-    expect(editor.recoveries.value).toMatchObject([
-      { sessionId: active.id, text: "Newer recovery", state: "ready" },
-    ]);
-  } finally {
-    scope.stop();
-  }
-});
-
-it("does not offer recovery for a name that already reached the finished workout", async () => {
-  const factory = createWorkoutFactory("phantom-name");
-  const active = factory.activeSession();
-  const snapshot = shallowRef<Snapshot>(factory.snapshot({ active }));
-  let release: (saved: Snapshot | null) => void = () => {
-    throw new Error("No pending save");
-  };
-  const scope = effectScope();
-  const editor = scope.run(() =>
-    useWorkoutName({
-      snapshot: computed(() => snapshot.value),
-      active: computed(() => snapshot.value.active),
-      saving: ref(false),
-      run: () =>
-        new Promise<Snapshot | null>((resolve) => {
-          release = resolve;
+    )!;
+    try {
+      editor.text.value = "First recovery";
+      snapshot.value = factory.snapshot({
+        revision: 1,
+        completed: { [active.id]: completed },
+      });
+      const pending = editor.resolveRecovery(active.id, "save");
+      snapshot.value = factory.snapshot({ revision: 2, active });
+      editor.text.value = "Newer recovery";
+      snapshot.value = factory.snapshot({
+        revision: 3,
+        completed: { [active.id]: completed },
+      });
+      release(
+        factory.snapshot({
+          revision: 4,
+          completed: { [active.id]: { ...completed, name: "First recovery" } },
         }),
-    }),
-  )!;
-  try {
-    editor.text.value = "Renamed";
-    const pending = editor.save();
-    snapshot.value = factory.snapshot({
-      revision: 2,
-      completed: {
-        [active.id]: factory.completedSession({ id: active.id, name: "Renamed" }),
-      },
-    });
-    release(null);
-    await pending;
-    expect(editor.recoveries.value).toEqual([]);
-    expect(editor.issue.value).toBe("");
-  } finally {
-    scope.stop();
-  }
+      );
+      await pending;
+      expect(editor.recoveries.value).toMatchObject([
+        { sessionId: active.id, text: "Newer recovery", state: "ready" },
+      ]);
+    } finally {
+      scope.stop();
+    }
+  });
+
+  it("does not offer recovery for a name that already reached the finished workout", async () => {
+    const factory = createWorkoutFactory("phantom-name");
+    const active = factory.activeSession();
+    const snapshot = shallowRef<Snapshot>(factory.snapshot({ active }));
+    let release: (saved: Snapshot | null) => void = noPendingSave;
+    const scope = effectScope();
+    const editor = scope.run(() =>
+      useWorkoutName({
+        snapshot: computed(() => snapshot.value),
+        active: computed(() => snapshot.value.active),
+        saving: ref(false),
+        run: () =>
+          new Promise<Snapshot | null>((resolve) => {
+            release = resolve;
+          }),
+      }),
+    )!;
+    try {
+      editor.text.value = "Renamed";
+      const pending = editor.save();
+      snapshot.value = factory.snapshot({
+        revision: 2,
+        completed: {
+          [active.id]: factory.completedSession({ id: active.id, name: "Renamed" }),
+        },
+      });
+      release(null);
+      await pending;
+      expect(editor.recoveries.value).toEqual([]);
+      expect(editor.issue.value).toBe("");
+    } finally {
+      scope.stop();
+    }
+  });
 });

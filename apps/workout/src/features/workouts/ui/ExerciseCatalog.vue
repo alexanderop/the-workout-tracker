@@ -83,7 +83,11 @@ const equipmentOptions = computed(() =>
   [...new Set(exercises.map((exercise) => exercise.equipment))].sort(),
 );
 const results = computed(() =>
-  filterCatalog(exercises, search.value, filters.value, sort.value),
+  filterCatalog(exercises, {
+    search: search.value,
+    filters: filters.value,
+    sort: sort.value,
+  }),
 );
 watch([search, filters, sort], () => {
   if (list.value) list.value.scrollTop = 0;

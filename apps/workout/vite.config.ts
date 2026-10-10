@@ -18,7 +18,7 @@ export default defineConfig(({ mode, command }) => {
     build: preview
       ? {
           outDir: "dist-preview",
-          rollupOptions: {
+          rolldownOptions: {
             input: fileURLToPath(new URL("./preview.html", import.meta.url)),
           },
         }
