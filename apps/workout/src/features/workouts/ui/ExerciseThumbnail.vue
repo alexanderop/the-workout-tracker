@@ -1,11 +1,32 @@
+<script lang="ts">
+import { ref } from "vue";
+
+// The first screen paints before any artwork is requested, so the images do
+// not compete with the text and controls for the network.
+const painted = ref(false);
+let scheduled = false;
+function paintedAfterFirstFrame() {
+  if (!scheduled) {
+    scheduled = true;
+    requestAnimationFrame(() =>
+      setTimeout(() => {
+        painted.value = true;
+      }),
+    );
+  }
+  return painted;
+}
+</script>
+
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, watch } from "vue";
 import { Dumbbell } from "@lucide/vue";
 import type { Exercise } from "../domain";
 import { exerciseArtwork } from "./exerciseArtwork";
 const { exercise } = defineProps<{ exercise?: Exercise }>();
 const source = computed(() => exerciseArtwork(exercise));
 const failed = ref(false);
+const ready = paintedAfterFirstFrame();
 watch(source, () => {
   failed.value = false;
 });
@@ -14,7 +35,7 @@ watch(source, () => {
   <span class="exercise-thumbnail" aria-hidden="true">
     <img
       v-if="source && !failed"
-      :src="source"
+      :src="ready ? source : undefined"
       alt=""
       width="64"
       height="64"
