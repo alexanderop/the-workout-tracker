@@ -1,4 +1,5 @@
 import { defineConfig } from "vitest/config";
+import vue from "@vitejs/plugin-vue";
 import { playwright } from "@vitest/browser-playwright";
 import thresholds from "./coverage-thresholds.json" with { type: "json" };
 
@@ -27,6 +28,9 @@ export default defineConfig({
         },
       },
       {
+        plugins: [vue()],
+        // Mirrors the build-time constant that vite.config.ts defines.
+        define: { __APP_VERSION__: JSON.stringify("test-build") },
         test: {
           name: "browser",
           include: ["test/browser/**/*.test.ts"],

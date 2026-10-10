@@ -1,9 +1,10 @@
-import { createApp } from "vue";
+import { createApp, h } from "vue";
 import "@fontsource-variable/inter";
 import { createWorkoutRouter } from "./app/router";
 import { createWebHashHistory } from "vue-router";
 import { usePwa } from "./usePwa";
 import App from "./App.vue";
+import AppErrorBoundary from "./app/AppErrorBoundary.vue";
 import { createWorkoutApp, createWorkoutDrafts } from "./app/composition";
 import "@form/ui/tokens.css";
 import "./style.css";
@@ -13,10 +14,16 @@ const workouts = createWorkoutApp(drafts);
 const router = createWorkoutRouter(
   createWebHashHistory(import.meta.env.BASE_URL),
 );
-const app = createApp(App, {
-  workouts,
-  drafts,
-  environment: { now: Date.now, useInstallation: usePwa },
+const app = createApp({
+  render: () =>
+    h(AppErrorBoundary, null, {
+      default: () =>
+        h(App, {
+          workouts,
+          drafts,
+          environment: { now: Date.now, useInstallation: usePwa },
+        }),
+    }),
 });
 app.onUnmount(() => workouts.close());
 app.use(router);
