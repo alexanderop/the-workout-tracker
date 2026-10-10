@@ -7,7 +7,8 @@ import tseslint from "typescript-eslint";
 import oxlint from "eslint-plugin-oxlint";
 
 export default [
-  { ignores: ["apps/workout/src/route-map.d.ts"] },
+  // The route map is generated; packages/result is a vendored library (see its README).
+  { ignores: ["apps/workout/src/route-map.d.ts", "packages/result/**"] },
   { linterOptions: { reportUnusedDisableDirectives: "error" } },
   ...vue.configs["flat/essential"].map((config) => ({
     ...config,

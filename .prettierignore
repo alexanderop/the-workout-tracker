@@ -6,3 +6,5 @@ test-results
 .vitest
 docs/history/audit
 pnpm-lock.yaml
+packages/result/src
+packages/result/test
