@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useTemplateRef, watch } from "vue";
 import { BaseButton, BaseButtonIcon } from "@form/ui";
-import { Plus, Dumbbell, Ellipsis, Check, Pencil, ChevronLeft } from "@lucide/vue";
+import { Plus, Dumbbell, Ellipsis, Check, ChevronLeft } from "@lucide/vue";
 import { useFormat, useTranslation } from "../../../i18n";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import { setTargetReps, type SessionExercise } from "../domain";
 import type { Confirmation } from "./dialogTypes";
 import SetRow from "./SetRow.vue";
-import ExerciseThumbnail from "./ExerciseThumbnail.vue";
+import TrainingHeader from "./TrainingHeader.vue";
+import TrainingExerciseStrip from "./TrainingExerciseStrip.vue";
+import { isExerciseComplete } from "./presentation";
 import type { TrainingRow } from "./useTrainingSession";
 import ExerciseConfiguration from "./ExerciseConfiguration.vue";
 import TrainingSetEditor from "./TrainingSetEditor.vue";
@@ -32,9 +34,7 @@ const {
   active,
   snapshot,
   saving,
-  activeTotals,
   activeSetCount,
-  elapsed,
   training,
   canFinish,
 } = workspace;
@@ -91,8 +91,6 @@ watch(
     renameOpen.value = false;
   },
 );
-const isComplete = (exercise: SessionExercise) =>
-  exercise.sets.every((set) => set.completed);
 const allDone = computed(() => !!activeSetCount.value && !training.next.value);
 function pick() {
   emit("pick");
@@ -196,52 +194,14 @@ function discard() {
     <a class="training-back text-button" :href="workoutsHref" :aria-label="t('training.page.backLabel')" @click="emit('back', $event)"
       ><ChevronLeft :size="20" aria-hidden="true" /><span class="training-back-label">{{ t("training.page.backShort") }}</span></a
     >
-    <header class="active-workout-heading">
-      <div>
-        <p class="eyebrow">{{ t("training.page.eyebrow", { elapsed }) }}</p>
-        <div class="workout-title">
-          <h1>{{ active.name }}</h1>
-          <BaseButtonIcon :label="t('training.page.renameWorkout')" :disabled="saving" @click="renameOpen = true"><Pencil :size="16" /></BaseButtonIcon>
-        </div>
-      </div>
-      <BaseButton
-        variant="secondary"
-        class="active-workout-finish"
-        :disabled="!canFinish"
-        @click="emit('finish')"
-        >{{ t("training.page.finish") }}</BaseButton
-      >
-    </header>
-    <div class="active-workout-metrics">
-      <span v-if="!activeTotals.completedSets">{{ t("training.page.exerciseCount", active.exercises.length) }}</span
-      ><span v-else>{{ t("training.page.setsLogged", { logged: activeTotals.completedSets, total: activeSetCount }) }}</span
-      ><span v-if="activeTotals.completedSets">{{ t("training.page.lifted", { volume: format.number(activeTotals.volumeKg) }) }}</span>
-    </div>
-    <div class="workout-progress-space">
-      <progress
-        v-if="activeTotals.completedSets"
-        class="active-workout-progress"
-        :value="activeTotals.completedSets"
-        :max="activeSetCount"
-        :aria-label="t('training.page.loggedSetsProgress')"
-      />
-    </div>
+    <TrainingHeader
+      :workspace="workspace"
+      @finish="emit('finish')"
+      @rename="renameOpen = true"
+    />
     <div class="active-workout-layout">
       <div class="active-workout-content">
-        <nav v-if="active.exercises.length" class="workout-exercise-strip" :aria-label="t('training.page.exercisesNav')">
-          <BaseButton
-            v-for="exercise in active.exercises" :key="exercise.id" unstyled
-            class="workout-exercise-tab"
-            :aria-current="selectedExercise?.id === exercise.id ? 'true' : undefined"
-            :aria-label="isComplete(exercise) ? t('training.page.tabAllLogged', { exercise: exercise.name }) : exercise.name"
-            @click="training.selectExercise(exercise.id)"
-          >
-            <ExerciseThumbnail :exercise="snapshot?.exercises[exercise.exerciseId]" />
-            <span class="workout-exercise-tab-name">{{ exercise.name }}</span>
-            <Check v-if="isComplete(exercise)" class="workout-exercise-tab-check" :size="15" />
-          </BaseButton>
-          <BaseButton unstyled class="workout-exercise-tab workout-exercise-tab-add" :disabled="saving || active.exercises.length >= 50" :aria-label="t('training.page.addExercises')" @click="pick"><span><Plus :size="24" /></span><span class="workout-exercise-tab-name">{{ t("training.page.addShort") }}</span></BaseButton>
-        </nav>
+        <TrainingExerciseStrip :workspace="workspace" @pick="pick" />
         <div v-if="!active.exercises.length" class="workout-empty">
           <Dumbbell :size="28" />
           <h2>{{ t("training.page.emptyTitle") }}</h2>
@@ -266,7 +226,7 @@ function discard() {
             <header><h3>{{ t("training.page.lastTime") }}</h3><span>{{ format.longDate(lastTime.finishedAt) }}</span></header>
             <p v-for="(set, index) in lastTime.sets" :key="set.id"><span>{{ t("training.page.lastTimeSet", { n: index + 1 }) }}</span><strong>{{ t("training.page.lastTimeResult", { weight: format.number(set.weightKg), reps: set.reps }) }}</strong></p>
           </section>
-          <p v-if="isComplete(selectedExercise)" class="workout-exercise-complete"><Check :size="16" /> {{ t("training.page.setLogged", selectedExercise.sets.length) }}</p>
+          <p v-if="isExerciseComplete(selectedExercise)" class="workout-exercise-complete"><Check :size="16" /> {{ t("training.page.setLogged", selectedExercise.sets.length) }}</p>
         </article>
     <p v-if="training.notice.value" class="workout-guidance" role="status">{{ training.notice.value }}</p>
         <div v-if="allDone" class="workout-done">

@@ -1,4 +1,8 @@
-import { sessionTotals, type CompletedSession } from "../domain";
+import {
+  sessionTotals,
+  type CompletedSession,
+  type SessionExercise,
+} from "../domain";
 // Numbers and dates are formatted with the active locale: see useFormat().
 /** Clock-style minutes and seconds; the same in every language. */
 export const duration = (seconds: number) =>
@@ -7,6 +11,8 @@ export const duration = (seconds: number) =>
     .padStart(2, "0")}:${Math.floor(Math.max(0, seconds) % 60)
     .toString()
     .padStart(2, "0")}`;
+export const isExerciseComplete = (exercise: SessionExercise) =>
+  exercise.sets.every((set) => set.completed);
 export const sessionMinutes = (session: CompletedSession) =>
   Math.max(1, Math.round((session.finishedAt - session.startedAt) / 60000));
 
