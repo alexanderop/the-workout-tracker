@@ -1,31 +1,35 @@
+import { Result } from "@form/result";
 import { Dexie, liveQuery, type Table } from "dexie";
-import { snapshotSchema, type Snapshot } from "../domain";
-import type { LoadState, Result, StorageState, WorkoutStorage } from "../ports";
+import {
+  Conflict,
+  InvalidChange,
+  InvalidRevision,
+  loadState,
+  RecoveryRequired,
+  snapshotSchema,
+  StorageClosed,
+  StorageUnavailable,
+  StoredDataUnreadable,
+  type LoadState,
+  type ReadError,
+  type SaveError,
+  type Snapshot,
+} from "../domain";
+import type { WorkoutStorage } from "../ports";
 
-const unavailable = {
-  kind: "unavailable",
-  message:
-    "Your browser could not access workout storage. Try reopening this app.",
-} as const;
-const closedState = {
-  kind: "unavailable",
-  message: "Workout storage is closed.",
-} as const;
-
-function decode(raw: unknown): StorageState {
+function decode(raw: unknown): Result<Snapshot, StoredDataUnreadable> {
   const parsed = snapshotSchema.safeParse(raw);
   return parsed.success
-    ? { kind: "ready", snapshot: parsed.data }
-    : {
-        kind: "recovery",
-        message:
-          "Stored workout data could not be read. Export a recovery copy before changing browser storage.",
-        rawExport: JSON.stringify(
-          { format: "form-workout-recovery", raw },
-          null,
-          2,
-        ),
-      };
+    ? Result.ok(parsed.data)
+    : Result.err(
+        new StoredDataUnreadable({
+          rawExport: JSON.stringify(
+            { format: "form-workout-recovery", raw },
+            null,
+            2,
+          ),
+        }),
+      );
 }
 
 export function openDexieWorkoutStorage(
@@ -81,69 +85,66 @@ export function openDexieWorkoutStorage(
   const commit = async (
     expectedRevision: number,
     candidate: Snapshot,
-  ): Promise<Result> => {
+  ): Promise<Result<Snapshot, SaveError>> => {
     const current = snapshotSchema.safeParse(await table.get("snapshot"));
-    if (!current.success)
-      return {
-        kind: "invalid",
-        message: "Stored data needs recovery. Export it before making changes.",
-      };
+    if (!current.success) return Result.err(new RecoveryRequired());
     if (current.data.revision !== expectedRevision)
-      return { kind: "conflict", snapshot: current.data };
+      return Result.err(new Conflict({ snapshot: current.data }));
     if (candidate.revision === expectedRevision) {
       if (JSON.stringify(candidate) !== JSON.stringify(current.data))
-        return {
-          kind: "invalid",
-          message: "Changed workout data must advance its revision.",
-        };
-      return { kind: "saved", snapshot: current.data };
+        return Result.err(
+          new InvalidChange({
+            message: "Changed workout data must advance its revision.",
+          }),
+        );
+      return Result.ok(current.data);
     }
     if (candidate.revision !== expectedRevision + 1)
-      return {
-        kind: "invalid",
-        message: "Workout revisions must advance by one.",
-      };
+      return Result.err(
+        new InvalidChange({ message: "Workout revisions must advance by one." }),
+      );
     await table.put(candidate, "snapshot");
-    return { kind: "saved", snapshot: candidate };
+    return Result.ok(candidate);
   };
+  /** A failed effect is `closed` when the handle was closed meanwhile. */
+  const failure = () => (isClosed() ? new StorageClosed() : new StorageUnavailable());
   const rawRead = async () => {
     await initialize();
     return table.get("snapshot");
   };
   return {
-    async read() {
-      if (closed) return closedState;
-      try {
-        const raw = await rawRead();
-        return isClosed() ? closedState : decode(raw);
-      } catch {
-        return isClosed() ? closedState : unavailable;
-      }
+    async read(): Promise<Result<Snapshot, ReadError>> {
+      if (closed) return Result.err(new StorageClosed());
+      const raw = await Result.tryPromise({ try: rawRead, catch: failure });
+      if (isClosed()) return Result.err(new StorageClosed());
+      return raw.isOk() ? decode(raw.value) : Result.err(raw.error);
     },
-    async compareAndSave(expectedRevision, next): Promise<Result> {
-      if (closed) return closedState;
+    async compareAndSave(
+      expectedRevision,
+      next,
+    ): Promise<Result<Snapshot, SaveError>> {
+      if (closed) return Result.err(new StorageClosed());
       if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 0)
-        return { kind: "invalid", message: "Invalid workout revision." };
+        return Result.err(new InvalidRevision());
       const candidate = snapshotSchema.safeParse(next);
       if (!candidate.success)
-        return { kind: "invalid", message: "Invalid workout data." };
-      try {
-        await initialize();
-      } catch {
-        return isClosed() ? closedState : unavailable;
-      }
-      if (isClosed()) return closedState;
-      try {
-        return await database.transaction("rw", table, () =>
-          commit(expectedRevision, candidate.data),
-        );
-      } catch {
-        return isClosed() ? closedState : unavailable;
-      }
+        return Result.err(new InvalidChange({ message: "Invalid workout data." }));
+      const opened = await Result.tryPromise({ try: initialize, catch: failure });
+      if (opened.isErr()) return Result.err(opened.error);
+      if (isClosed()) return Result.err(new StorageClosed());
+      return Result.flatten(
+        await Result.tryPromise({
+          try: () =>
+            database.transaction("rw", table, () =>
+              commit(expectedRevision, candidate.data),
+            ),
+          catch: failure,
+        }),
+      );
     },
     subscribe(listener) {
       if (closed) {
-        listener(closedState);
+        listener(loadState(Result.err(new StorageClosed())));
         return () => undefined;
       }
       listeners.add(listener);
@@ -156,15 +157,18 @@ export function openDexieWorkoutStorage(
               return;
             observation = liveQuery(rawRead).subscribe({
               next(raw) {
-                if (currentGeneration === generation) emit(decode(raw));
+                if (currentGeneration === generation)
+                  emit(loadState(decode(raw)));
               },
               error() {
-                if (currentGeneration === generation) emit(unavailable);
+                if (currentGeneration === generation)
+                  emit(loadState(Result.err(new StorageUnavailable())));
               },
             });
           })
           .catch(() => {
-            if (currentGeneration === generation) emit(unavailable);
+            if (currentGeneration === generation)
+              emit(loadState(Result.err(new StorageUnavailable())));
           });
       }
       return () => {

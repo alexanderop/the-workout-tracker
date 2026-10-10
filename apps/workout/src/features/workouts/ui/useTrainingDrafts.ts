@@ -1,3 +1,4 @@
+import { matchError } from "@form/result";
 import { computed, reactive, type Ref } from "vue";
 import type { DraftJournal } from "../application";
 import type { Command, SessionExercise, Snapshot, WorkoutSet } from "../domain";
@@ -48,28 +49,20 @@ export function useTrainingDrafts(options: {
   /** Records of removed rows whose acknowledgement failed; retried later. */
   let stranded: SetDraft[] = [];
   function consume(row: TrainingRow, records = row.records) {
-    try {
-      options.journal.consume(records);
-      const acknowledged = new Set(records.map((record) => record.id));
-      row.records = row.records.filter(
-        (record) => !acknowledged.has(record.id),
-      );
-      row.storageIssue = "";
-      return true;
-    } catch {
+    if (options.journal.consume(records).isErr()) {
       row.storageIssue =
         "Draft recovery could not be cleared. Keep this page open and try again.";
       return false;
     }
+    const acknowledged = new Set(records.map((record) => record.id));
+    row.records = row.records.filter((record) => !acknowledged.has(record.id));
+    row.storageIssue = "";
+    return true;
   }
   function retryStranded() {
     if (!stranded.length) return;
-    try {
-      options.journal.consume(stranded);
-      stranded = [];
-    } catch {
-      // Still stranded; the issue was reported when it first failed.
-    }
+    // Still stranded on failure; the issue was reported when it first failed.
+    if (options.journal.consume(stranded).isOk()) stranded = [];
   }
   /**
    * Adopts a canonical snapshot: prunes the journal, syncs every row and
@@ -77,12 +70,8 @@ export function useTrainingDrafts(options: {
    * removed rows whose drafts could not be cleared, or "".
    */
   function synchronize(snapshot: Snapshot): string {
-    let finished: readonly SetDraft[] = [];
-    try {
-      finished = options.journal.prune(snapshot);
-    } catch {
-      // Pruning is best effort; recovery still filters stale records.
-    }
+    // Pruning is best effort; recovery still filters stale records.
+    const finished = options.journal.prune(snapshot).unwrapOr([]);
     retryStranded();
     const present = synchronizeRows(snapshot);
     const retired = retireRows(snapshot, present);
@@ -149,18 +138,14 @@ export function useTrainingDrafts(options: {
     session: string,
     setId: string,
   ): Pick<TrainingRow, "records" | "storageIssue"> {
-    try {
-      return {
-        records: [...options.journal.recover(session, setId)],
-        storageIssue: "",
-      };
-    } catch {
+    const recovered = options.journal.recover(session, setId);
+    if (recovered.isErr())
       return {
         records: [],
         storageIssue:
           "Draft recovery is unavailable. New edits may not survive closing this page.",
       };
-    }
+    return { records: [...recovered.value], storageIssue: "" };
   }
   function synchronizeRow(
     { session, revision }: { session: string; revision: number },
@@ -194,9 +179,7 @@ export function useTrainingDrafts(options: {
   }
   function persist(row: TrainingRow) {
     if (!active.value || !options.snapshot.value) return;
-    let saved: SetDraft;
-    try {
-      saved = options.journal.write({
+    const written = options.journal.write({
         sessionId: active.value.id,
         setId: row.set.id,
         weight: row.weight,
@@ -209,15 +192,15 @@ export function useTrainingDrafts(options: {
         },
         revision: row.revision,
       });
-    } catch (error) {
-      row.storageIssue =
-        error instanceof Error && error.name === "DraftsDeletedError"
-          ? deletedIssue
-          : unsavedIssue;
+    if (written.isErr()) {
+      row.storageIssue = matchError(written.error, {
+        DraftsDeleted: () => deletedIssue,
+        DraftStorageFailed: () => unsavedIssue,
+      });
       return;
     }
     const predecessors = row.records;
-    row.records = [saved];
+    row.records = [written.value];
     row.storageIssue = retainAlternatives(row, predecessors);
   }
   /** Returns a storage issue when superseded drafts could not be cleared. */
@@ -226,14 +209,10 @@ export function useTrainingDrafts(options: {
       row.records.unshift(...predecessors);
       return "";
     }
-    try {
-      options.journal.consume(predecessors);
-      return "";
-    } catch {
-      // Keep them so the next acknowledgement retries.
-      row.records.push(...predecessors);
-      return uncleanedIssue;
-    }
+    if (options.journal.consume(predecessors).isOk()) return "";
+    // Keep them so the next acknowledgement retries.
+    row.records.push(...predecessors);
+    return uncleanedIssue;
   }
   /** Returns whether the row accepted the input. */
   function edit(setId: string, values: Partial<RawValues>): boolean {
@@ -251,14 +230,12 @@ export function useTrainingDrafts(options: {
     const row = rows.get(setId);
     const session = active.value;
     if (!row || !session || options.saving.value) return;
-    try {
-      row.records = union(
-        row.records,
-        options.journal.recover(session.id, setId),
-      );
-    } catch {
-      // Consume what is already known; unseen records surface on next check.
-    }
+    // On failure, consume what is already known; unseen records surface on
+    // the next check.
+    row.records = union(
+      row.records,
+      options.journal.recover(session.id, setId).unwrapOr([]),
+    );
     if (!consume(row)) return;
     Object.assign(row, resetDraftToSaved(row.set));
     row.issue = "";
@@ -283,16 +260,14 @@ export function useTrainingDrafts(options: {
   /** Merges drafts written by other tabs since the rows were last read. */
   function recoverUnseen(session: string): DraftCheck {
     for (const row of rows.values()) {
-      let recovered: readonly SetDraft[];
-      try {
-        recovered = options.journal.recover(session, row.set.id);
-      } catch {
+      const recovery = options.journal.recover(session, row.set.id);
+      if (recovery.isErr()) {
         row.storageIssue =
           "Could not check saved drafts. Try again before saving.";
         return { kind: "unavailable", row };
       }
       const known = new Set(row.records.map((record) => record.id));
-      const unseen = recovered.filter((record) => !known.has(record.id));
+      const unseen = recovery.value.filter((record) => !known.has(record.id));
       if (!unseen.length) continue;
       Object.assign(row, mergeUnseenDrafts(row, unseen));
       row.issue =
@@ -314,24 +289,15 @@ export function useTrainingDrafts(options: {
       )
       .flatMap((row) => {
         if (command.type === "finish" || !session) return row.records;
-        try {
-          return [
-            ...row.records,
-            ...options.journal.recover(session.id, row.set.id),
-          ];
-        } catch {
-          return row.records;
-        }
+        return [
+          ...row.records,
+          ...options.journal.recover(session.id, row.set.id).unwrapOr([]),
+        ];
       });
   }
   /** Returns false when the journal could not acknowledge the records. */
   function acknowledge(records: readonly SetDraft[]): boolean {
-    try {
-      options.journal.consume(records);
-      return true;
-    } catch {
-      return false;
-    }
+    return options.journal.consume(records).isOk();
   }
   const pending = computed(() => orderedRows().filter(hasPendingInput));
   return {

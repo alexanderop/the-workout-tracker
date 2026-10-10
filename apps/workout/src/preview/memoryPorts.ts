@@ -1,6 +1,14 @@
+import { Result } from "@form/result";
 import {
   snapshotSchema,
   draftSchema,
+  Conflict,
+  DraftsDeleted,
+  InvalidChange,
+  InvalidRevision,
+  loadState,
+  StorageClosed,
+  type SaveError,
   type Snapshot,
   type WorkoutStorage,
   type DraftJournal,
@@ -8,50 +16,54 @@ import {
   type LoadState,
 } from "../features/workouts";
 
-type Result = Awaited<ReturnType<WorkoutStorage["compareAndSave"]>>;
-
 /** Each document owns one validated journal; it never accesses browser storage. */
 export function createMemoryStorage(initial: Snapshot): WorkoutStorage {
   let snapshot = snapshotSchema.parse(initial);
   let closed = false;
   const listeners = new Set<(state: LoadState) => void>();
-  const unavailable = {
-    kind: "unavailable",
-    message: "Preview storage is closed.",
-  } as const;
-  function save(expectedRevision: number, next: unknown): Result {
-    if (closed) return unavailable;
+  const closedState = loadState(Result.err(new StorageClosed()));
+  const ready = () => loadState(Result.ok(snapshot));
+  function save(
+    expectedRevision: number,
+    next: unknown,
+  ): Result<Snapshot, SaveError> {
+    if (closed) return Result.err(new StorageClosed());
     if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 0)
-      return { kind: "invalid", message: "Invalid preview revision." };
+      return Result.err(new InvalidRevision());
     const parsed = snapshotSchema.safeParse(next);
     if (!parsed.success)
-      return { kind: "invalid", message: "Invalid preview snapshot." };
+      return Result.err(
+        new InvalidChange({ message: "Invalid preview snapshot." }),
+      );
     if (expectedRevision !== snapshot.revision)
-      return { kind: "conflict", snapshot };
+      return Result.err(new Conflict({ snapshot }));
     const unchanged = parsed.data.revision === snapshot.revision;
     if (unchanged && JSON.stringify(parsed.data) === JSON.stringify(snapshot))
-      return { kind: "saved", snapshot };
+      return Result.ok(snapshot);
     if (parsed.data.revision !== snapshot.revision + 1)
-      return {
-        kind: "invalid",
-        message: "Snapshot revisions must advance by one.",
-      };
+      return Result.err(
+        new InvalidChange({
+          message: "Snapshot revisions must advance by one.",
+        }),
+      );
     snapshot = parsed.data;
-    for (const listener of listeners) listener({ kind: "ready", snapshot });
-    return { kind: "saved", snapshot };
+    for (const listener of listeners) listener(ready());
+    return Result.ok(snapshot);
   }
   return {
     read: () =>
-      Promise.resolve(closed ? unavailable : { kind: "ready", snapshot }),
+      Promise.resolve(
+        closed ? Result.err(new StorageClosed()) : Result.ok(snapshot),
+      ),
     compareAndSave: (expectedRevision, next) =>
       Promise.resolve(save(expectedRevision, next)),
     subscribe(listener) {
       if (closed) {
-        listener(unavailable);
+        listener(closedState);
         return () => {};
       }
       listeners.add(listener);
-      listener({ kind: "ready", snapshot });
+      listener(ready());
       return () => {
         listeners.delete(listener);
       };
@@ -61,13 +73,6 @@ export function createMemoryStorage(initial: Snapshot): WorkoutStorage {
       listeners.clear();
     },
   };
-}
-
-/** Same signal as the browser journal: a newer deletion obsoleted the draft. */
-export function draftsDeletedError() {
-  const error = new Error("This workout was deleted. Reload before editing.");
-  error.name = "DraftsDeletedError";
-  return error;
 }
 
 /** Drafts of a finished workout's set wait for explicit recovery. */
@@ -88,6 +93,7 @@ export function createMemoryDraftJournal(id: () => string): DraftJournal {
       minimumRevision = Math.max(minimumRevision, revision);
       drafts = drafts.filter((draft) => draft.revision >= minimumRevision);
       owned.clear();
+      return Result.ok(undefined);
     },
     prune(snapshot) {
       const finished = drafts.filter((draft) => finishedDraft(draft, snapshot));
@@ -100,17 +106,20 @@ export function createMemoryDraftJournal(id: () => string): DraftJournal {
               exercise.sets.some((set) => set.id === draft.setId),
             )),
       );
-      return finished.map((draft) => draftSchema.parse(draft));
+      return Result.ok(finished.map((draft) => draftSchema.parse(draft)));
     },
     recover(sessionId, setId) {
-      return drafts
-        .filter(
-          (draft) => draft.sessionId === sessionId && draft.setId === setId,
-        )
-        .map((draft) => draftSchema.parse(draft));
+      return Result.ok(
+        drafts
+          .filter(
+            (draft) => draft.sessionId === sessionId && draft.setId === setId,
+          )
+          .map((draft) => draftSchema.parse(draft)),
+      );
     },
     write(input) {
-      if (input.revision < minimumRevision) throw draftsDeletedError();
+      if (input.revision < minimumRevision)
+        return Result.err(new DraftsDeleted());
       const draft = draftSchema.parse({
         ...input,
         id: id(),
@@ -121,11 +130,12 @@ export function createMemoryDraftJournal(id: () => string): DraftJournal {
       drafts = drafts.filter((entry) => entry.id !== previous);
       owned.set(key, draft.id);
       drafts.push(draft);
-      return draftSchema.parse(draft);
+      return Result.ok(draftSchema.parse(draft));
     },
     consume(consumed) {
       const ids = new Set(consumed.map((draft) => draft.id));
       drafts = drafts.filter((draft) => !ids.has(draft.id));
+      return Result.ok(undefined);
     },
   };
 }

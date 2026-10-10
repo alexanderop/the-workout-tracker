@@ -1,7 +1,9 @@
+import { Result } from "@form/result";
 import { describe, expect, it } from "vitest";
 import { createWorkouts } from "../../src/features/workouts/application";
-import type { Snapshot } from "../../src/features/workouts/domain";
+import { DraftStorageFailed, StorageUnavailable, type Snapshot } from "../../src/features/workouts/domain";
 import { createWorkoutFactory, FIXED_NOW } from "../support/factories";
+import { errorTag, failure, success } from "../support/results";
 import {
   createMemoryJournal,
   createMemoryStorage,
@@ -41,13 +43,13 @@ describe("workout application", () => {
         equipment: "Barbell",
       },
     } as const;
-    expect(await app.execute(command, 0)).toMatchObject({
-      kind: "conflict",
+    expect(failure(await app.execute(command, 0))).toMatchObject({
+      _tag: "Conflict",
       snapshot: { revision: 1 },
     });
     expect(await app.execute(command, 1)).toMatchObject({
-      kind: "saved",
-      snapshot: { revision: 2 },
+      status: "ok",
+      value: { revision: 2 },
     });
     expect(memory.current().exercises["application-1"]).toEqual({
       id: "application-1",
@@ -73,8 +75,8 @@ describe("workout application", () => {
           },
           0,
         )
-      ).kind,
-    ).toBe("saved");
+      ).isOk(),
+    ).toBe(true);
     expect(memory.current().exercises["application-1"]).toEqual({
       id: "application-1",
       name: "Landmine press",
@@ -100,8 +102,8 @@ describe("workout application", () => {
           },
           1,
         )
-      ).kind,
-    ).toBe("saved");
+      ).isOk(),
+    ).toBe(true);
     expect(memory.current().routines["application-2"]).toEqual({
       id: "application-2",
       name: "Press day",
@@ -115,14 +117,14 @@ describe("workout application", () => {
   it("does not overwrite a change made after the caller's reviewed revision", async () => {
     const { app, memory } = setup();
     expect(
-      (await app.execute({ type: "start-selected", exerciseIds: ["bench-press"] }, 0)).kind,
-    ).toBe("saved");
+      (await app.execute({ type: "start-selected", exerciseIds: ["bench-press"] }, 0)).isOk(),
+    ).toBe(true);
     const stale = await app.execute(
       { type: "settings", settings: { restSeconds: 30, autoRest: false } },
       0,
     );
-    expect(stale).toMatchObject({
-      kind: "conflict",
+    expect(failure(stale)).toMatchObject({
+      _tag: "Conflict",
       snapshot: {
         revision: 1,
         active: { status: "active", startedAt: FIXED_NOW },
@@ -136,7 +138,7 @@ describe("workout application", () => {
     const { app, memory } = setup();
     const command = { type: "start-selected" as const, exerciseIds: ["bench-press", "squat"] };
     const results = await Promise.all([app.execute(command, 0), app.execute(command, 0)]);
-    expect(results.map((result) => result.kind).sort()).toEqual(["conflict", "saved"]);
+    expect(results.map((result) => errorTag(result) ?? "saved").sort()).toEqual(["Conflict", "saved"]);
     expect(memory.current().revision).toBe(1);
     expect(memory.current().active?.exercises.map((exercise) => exercise.exerciseId)).toEqual(["bench-press", "squat"]);
     const sets = memory.current().active?.exercises[0]?.sets;
@@ -148,9 +150,9 @@ describe("workout application", () => {
     const { dependencies, memory } = setup();
     const app = createWorkouts({ ...dependencies, storage: {
       ...dependencies.storage,
-      compareAndSave: () => Promise.resolve({ kind: "unavailable" as const, message: "Storage unavailable" }),
+      compareAndSave: () => Promise.resolve(Result.err(new StorageUnavailable())),
     } });
-    expect((await app.execute({ type: "start-selected", exerciseIds: ["bench-press"] }, 0)).kind).toBe("unavailable");
+    expect(errorTag(await app.execute({ type: "start-selected", exerciseIds: ["bench-press"] }, 0))).toBe("StorageUnavailable");
     expect(memory.current().active).toBeNull();
     expect(memory.current().revision).toBe(0);
   });
@@ -167,9 +169,9 @@ describe("workout application", () => {
         0,
       ),
     ]);
-    expect(changed.kind).toBe("saved");
-    expect(noOp).toMatchObject({
-      kind: "conflict",
+    expect(changed.isOk()).toBe(true);
+    expect(failure(noOp)).toMatchObject({
+      _tag: "Conflict",
       snapshot: { revision: 1, settings: { restSeconds: 30, autoRest: false } },
     });
     expect(memory.current().settings).toEqual({
@@ -201,9 +203,9 @@ describe("workout application", () => {
       }),
       0,
     );
-    expect(result).toEqual({
-      kind: "invalid",
-      message: `Backup contains a conflicting record (${existing.id}). No data was imported.`,
+    expect(failure(result)).toMatchObject({
+      _tag: "ConflictingRecord",
+      recordId: existing.id,
     });
     expect(memory.current()).toEqual(local);
   });
@@ -223,11 +225,11 @@ describe("workout application", () => {
       snapshot: incoming,
     });
     const { app, memory } = setup(local);
-    expect((await app.importBackup(backup, 0)).kind).toBe("saved");
+    expect((await app.importBackup(backup, 0)).isOk()).toBe(true);
     const repeated = await app.importBackup(backup, 1);
     expect(repeated).toMatchObject({
-      kind: "saved",
-      snapshot: { revision: 1, settings: { restSeconds: 15, autoRest: false } },
+      status: "ok",
+      value: { revision: 1, settings: { restSeconds: 15, autoRest: false } },
     });
     expect(memory.current().completed).toEqual({ [completed.id]: completed });
   });
@@ -243,7 +245,7 @@ describe("workout application", () => {
       snapshot: factory.snapshot({ active }),
     });
     const { app, memory } = setup(local);
-    expect((await app.importBackup(backup, 0)).kind).toBe("saved");
+    expect((await app.importBackup(backup, 0)).isOk()).toBe(true);
     expect(memory.current().active).toEqual(active);
   });
 
@@ -253,40 +255,40 @@ describe("workout application", () => {
     const { dependencies, memory, drafts } = setup(
       factory.snapshot({ active, revision: 4 }),
     );
-    const retainedDraft = dependencies.journal.write({
+    const retainedDraft = success(dependencies.journal.write({
       sessionId: active.id,
       setId: active.exercises[0]!.sets[0]!.id,
       weight: "60",
       reps: "8",
       revision: 4,
       base: { weightKg: 40, reps: 8, targetReps: 8, completed: false },
-    });
+    }));
     let cleanupAvailable = false;
     const app = createWorkouts({
       ...dependencies,
       journal: {
         ...dependencies.journal,
         clearBefore(revision) {
-          if (!cleanupAvailable) throw new Error("Draft storage unavailable");
-          dependencies.journal.clearBefore(revision);
+          if (!cleanupAvailable) return Result.err(new DraftStorageFailed({ cause: new Error("Draft storage unavailable") }));
+          return dependencies.journal.clearBefore(revision);
         },
       },
     });
     const partial = await app.deleteAllData(4);
-    expect(partial).toMatchObject({
-      kind: "cleanup-pending",
+    expect(failure(partial)).toMatchObject({
+      _tag: "DraftCleanupPending",
       snapshot: { revision: 5, active: null, completed: {} },
     });
     expect(drafts.current()).toEqual([retainedDraft]);
     cleanupAvailable = true;
-    expect(await app.deleteAllData(4)).toMatchObject({
-      kind: "conflict",
+    expect(failure(await app.deleteAllData(4))).toMatchObject({
+      _tag: "Conflict",
       snapshot: { revision: 5 },
     });
     expect(drafts.current()).toEqual([retainedDraft]);
     expect(await app.deleteAllData(5)).toMatchObject({
-      kind: "saved",
-      snapshot: { revision: 6, active: null },
+      status: "ok",
+      value: { revision: 6, active: null },
     });
     expect(drafts.current()).toEqual([]);
     expect(memory.current().settings).toEqual({
@@ -315,8 +317,8 @@ describe("given a storage write that throws", () => {
       },
     });
     expect(await app.execute(settings, 0)).toMatchObject({
-      kind: "saved",
-      snapshot: { revision: 1, settings: { restSeconds: 45 } },
+      status: "ok",
+      value: { revision: 1, settings: { restSeconds: 45 } },
     });
   });
 
@@ -329,9 +331,7 @@ describe("given a storage write that throws", () => {
         compareAndSave: () => Promise.reject(new Error("Quota exceeded.")),
       },
     });
-    expect(await app.execute(settings, 0)).toMatchObject({
-      kind: "unavailable",
-    });
+    expect(errorTag(await app.execute(settings, 0))).toBe("StorageUnavailable");
     expect(memory.current().revision).toBe(0);
   });
 
@@ -343,16 +343,15 @@ describe("given a storage write that throws", () => {
         throw new Error("Identity source failed.");
       },
     });
-    expect(
-      await app.execute(
-        {
-          type: "create-exercise",
-          exercise: { name: "Dip", category: "Chest", equipment: "Bodyweight" },
-        },
-        0,
-      ),
-    ).toEqual({
-      kind: "invalid",
+    const result = await app.execute(
+      {
+        type: "create-exercise",
+        exercise: { name: "Dip", category: "Chest", equipment: "Bodyweight" },
+      },
+      0,
+    );
+    expect(failure(result)).toMatchObject({
+      _tag: "InvalidChange",
       message: "This change failed unexpectedly. Nothing was saved.",
     });
   });

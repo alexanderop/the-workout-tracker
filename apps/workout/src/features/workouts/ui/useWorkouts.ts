@@ -1,6 +1,14 @@
 import { computed, onScopeDispose, ref, shallowRef } from "vue";
-import type { Workouts, LoadState, ApplicationCommand } from "../application";
-import type { Snapshot } from "../domain";
+import type { Result } from "@form/result";
+import type { Workouts, ApplicationCommand } from "../application";
+import {
+  Conflict,
+  DraftCleanupPending,
+  StoredDataUnreadable,
+  type LoadState,
+  type Snapshot,
+} from "../domain";
+import { describeFailure, describeReadFailure } from "./errorMessages";
 
 /**
  * The outcome shown after the latest action. A save confirmation and an error
@@ -10,6 +18,13 @@ export type SaveNotice =
   | { kind: "none" }
   | { kind: "saved"; message: string }
   | { kind: "failed"; message: string; reload: boolean };
+
+/** The newer snapshot a conflict or a partial deletion carries, if any. */
+function reportedSnapshot(failure: Error): Snapshot | undefined {
+  return Conflict.is(failure) || DraftCleanupPending.is(failure)
+    ? failure.snapshot
+    : undefined;
+}
 
 export function useWorkouts(service: Workouts) {
   const state = shallowRef<LoadState>({ kind: "loading" });
@@ -41,6 +56,17 @@ export function useWorkouts(service: Workouts) {
   const snapshot = computed(() =>
     state.value.kind === "ready" ? state.value.snapshot : null,
   );
+  /** Why the journal cannot be shown; a recovery export when data is unreadable. */
+  const loadFailure = computed(() => {
+    const current = state.value;
+    if (current.kind !== "failed") return null;
+    return {
+      message: describeReadFailure(current.error),
+      recoveryExport: StoredDataUnreadable.is(current.error)
+        ? current.error.rawExport
+        : null,
+    };
+  });
   const stop = service.subscribe((value) => {
     state.value = value;
   });
@@ -56,20 +82,15 @@ export function useWorkouts(service: Workouts) {
     notice.value = { kind: "none" };
     try {
       const result = await service.execute(command, expectedRevision);
-      if (result.kind === "saved") {
-        state.value = { kind: "ready", snapshot: result.snapshot };
+      if (result.isOk()) {
+        state.value = { kind: "ready", snapshot: result.value };
         notify("Saved on this device");
-        return result.snapshot;
+        return result.value;
       }
-      if (result.kind === "conflict") {
-        state.value = { kind: "ready", snapshot: result.snapshot };
-        fail(
-          "This workout changed in another tab. Your draft is still visible. Reload to use the latest saved values.",
-          true,
-        );
-        return null;
-      }
-      fail(result.message, result.kind === "unavailable");
+      if (Conflict.is(result.error))
+        state.value = { kind: "ready", snapshot: result.error.snapshot };
+      const failure = describeFailure(result.error);
+      fail(failure.message, failure.reload);
       return null;
     } catch {
       fail(
@@ -83,16 +104,18 @@ export function useWorkouts(service: Workouts) {
   }
   /**
    * Runs a data-management command under the shared saving lock and adopts
-   * the snapshot it reports. Returns null while another save is running.
+   * the snapshot it reports, also from a conflict or a partial deletion.
+   * Returns null while another save is running.
    */
-  async function guarded<R extends { kind: string; snapshot?: Snapshot }>(
-    task: () => Promise<R>,
-  ): Promise<R | null> {
+  async function guarded<E extends Error>(
+    task: () => Promise<Result<Snapshot, E>>,
+  ): Promise<Result<Snapshot, E> | null> {
     if (saving.value) return null;
     saving.value = true;
     try {
       const result = await task();
-      if (result.snapshot) state.value = { kind: "ready", snapshot: result.snapshot };
+      const reported = result.isOk() ? result.value : reportedSnapshot(result.error);
+      if (reported) state.value = { kind: "ready", snapshot: reported };
       return result;
     } finally {
       saving.value = false;
@@ -101,6 +124,7 @@ export function useWorkouts(service: Workouts) {
   return {
     service: { exportBackup: () => service.exportBackup() },
     state: computed(() => state.value),
+    loadFailure,
     snapshot,
     saving: computed(() => saving.value),
     notice: computed(() => notice.value),

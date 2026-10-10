@@ -1,8 +1,13 @@
+import { readStorage, writeStorage } from "@form/composables";
+import { z } from "zod";
 import { createWorkouts, initialSnapshot, type DraftJournal } from "../features/workouts";
 import {
   openDexieWorkoutStorage,
   createDraftJournal,
 } from "../features/workouts/infrastructure";
+
+const writerKey = "form-workout:draft-writer";
+const sessionStorageOfTab = () => sessionStorage;
 
 export function createWorkoutApp(journal: DraftJournal) {
   return createWorkouts({
@@ -15,16 +20,14 @@ export function createWorkoutApp(journal: DraftJournal) {
 }
 
 export function createWorkoutDrafts() {
-  let preferredWriter: string | undefined;
-  try {
-    preferredWriter =
-      sessionStorage.getItem("form-workout:draft-writer") ?? undefined;
-  } catch {}
+  // This tab's previous writer, so reloads keep the same input first.
+  const remembered = readStorage(sessionStorageOfTab, writerKey, z.string());
   return createDraftJournal({
     storage: () => localStorage,
     id: () => crypto.randomUUID(),
-    preferredWriter,
-    rememberWriter: (writer) =>
-      sessionStorage.setItem("form-workout:draft-writer", writer),
+    preferredWriter: remembered.isOk() ? remembered.value : undefined,
+    rememberWriter: (writer) => {
+      writeStorage(sessionStorageOfTab, writerKey, writer);
+    },
   });
 }

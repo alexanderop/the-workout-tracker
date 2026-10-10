@@ -9,7 +9,7 @@ When AOP is explicitly requested, use the project [model configuration](../.aop-
 ## Add or change a workout command
 
 1. Identify the domain transition in `apps/workout/src/features/workouts/domain/`. Add the command to the validated command model in `domain/commands.ts`, allow it in the phase table in `domain/session.ts`, and implement it in `domain/reducer.ts` (journal-level commands) or `domain/activeReducer.ts` (commands on the active workout). Persisted shapes live in `domain/schemas.ts`. `domain.ts` only re-exports; add new public symbols there and nothing else. Keep time and generated identities explicit.
-2. Use `application.ts` for orchestration, revision handling, and explicit results. Keep database access behind `ports.ts`; the UI must not select adapters.
+2. Use `application.ts` for orchestration, revision handling, and `Result`s. Add one `TaggedError` class per new expected failure (`domain/errors.ts`) and its message in `ui/errorMessages.ts`; TypeScript rejects the table until you do. Keep database access behind `ports.ts`; the UI must not select adapters.
 3. Expose only the necessary API through `index.ts` or `ui.ts`. Wire user actions through the feature UI and its existing shared controllers. Preserve one `useWorkoutWorkspace` instance across navigation.
 4. Handle invalid input, unavailable storage, and conflicts without discarding visible user input. Update the domain context if product meaning changes and architecture if ownership changes.
 5. Run `pnpm verify` for code changes. When interaction changes, inspect the affected flow in the running app, including keyboard use and focus where relevant. Report what was actually checked.
@@ -95,8 +95,8 @@ Choose a test by the failure it must expose. Keep `pnpm verify` as type checking
 
 | Command | Proof |
 | --- | --- |
-| `pnpm test:unit` | Pure rules and application orchestration in Node |
-| `pnpm test:browser` | Shared UI components and real browser storage adapters in Chrome |
+| `pnpm test:unit` | Pure rules, application orchestration and the vendored `@form/result` suite in Node |
+| `pnpm test:browser` | Shared UI components, `@form/composables` and real browser storage adapters in Chrome |
 | `pnpm test:e2e` | Executable Gherkin journeys against production builds in desktop Chrome (390 px wide), Pixel 7 Chrome for `@mobile` features, and a two-version server for `@updates` features |
 
 `test:unit` measures coverage. The workout logic layers (`domain/`, `application.ts`, `ui/*.ts`) and the pure `@form/ui` modules must stay at or above the thresholds in `apps/workout/coverage-thresholds.json` and `packages/ui/coverage-thresholds.json`. Raise a threshold when coverage rises; never lower one. Skipped or focused tests (`.skip`, `.only`, `.fixme`, `.todo`, `@skip`/`@only` tags) fail lint: fix or delete a test explicitly.

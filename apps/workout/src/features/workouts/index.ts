@@ -1,8 +1,5 @@
 export { createWorkouts } from "./application";
-export type {
-  Workouts,
-  LoadState,
-} from "./application";
+export type { Workouts } from "./application";
 export * from "./domain";
 export type { DraftJournal } from "./application";
 export * from "./domain/drafts";

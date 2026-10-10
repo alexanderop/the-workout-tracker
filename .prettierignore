@@ -7,3 +7,5 @@ test-results
 docs/history/audit
 pnpm-lock.yaml
 .test-builds
+packages/result/src
+packages/result/test

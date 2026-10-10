@@ -28,3 +28,33 @@ export {
   type WorkoutPhase,
 } from "./domain/session";
 export { reduceWorkout } from "./domain/reducer";
+export { canonical } from "./domain/canonical";
+export {
+  ActiveWorkoutFinished,
+  ActiveWorkoutInProgress,
+  BackupTooLarge,
+  BackupUnreadable,
+  ConflictingRecord,
+  InvalidBackup,
+  mergeSnapshots,
+  parseBackup,
+  serializeBackup,
+  type BackupError,
+} from "./domain/backup";
+export {
+  Conflict,
+  DraftCleanupPending,
+  DraftsDeleted,
+  DraftStorageFailed,
+  InvalidChange,
+  InvalidRevision,
+  RecoveryRequired,
+  SaveUnconfirmed,
+  StorageClosed,
+  StorageUnavailable,
+  StoredDataUnreadable,
+  type DraftWriteError,
+  type ReadError,
+  type SaveError,
+} from "./domain/errors";
+export { loadState, type LoadState } from "./domain/loadState";

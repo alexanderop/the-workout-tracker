@@ -1,3 +1,4 @@
+import { useEventListener } from "@form/composables";
 import { watchEffect } from "vue";
 
 function warn(event: BeforeUnloadEvent) {
@@ -7,7 +8,6 @@ function warn(event: BeforeUnloadEvent) {
 export function useUnsavedChangesWarning(dirty: () => boolean): void {
   watchEffect((onCleanup) => {
     if (!dirty()) return;
-    window.addEventListener("beforeunload", warn);
-    onCleanup(() => window.removeEventListener("beforeunload", warn));
+    onCleanup(useEventListener(window, "beforeunload", warn));
   });
 }

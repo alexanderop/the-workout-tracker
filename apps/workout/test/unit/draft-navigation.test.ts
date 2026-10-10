@@ -22,10 +22,10 @@ function setup(initial: Snapshot, drafts: readonly SetDraft[] = [], loaded = tru
     journal,
     async run(command, revision = snapshot.value?.revision ?? 0) {
       const result = await service.execute(command, revision);
-      if (result.kind !== "saved") return null;
-      snapshot.value = result.snapshot;
+      if (result.isErr()) return null;
+      snapshot.value = result.value;
       await nextTick();
-      return result.snapshot;
+      return result.value;
     },
   }))!;
   return { training, snapshot };

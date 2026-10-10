@@ -1,3 +1,4 @@
+import { Result } from "@form/result";
 import { afterEach, describe, expect, it } from "vitest";
 import type { Snapshot } from "../../src/features/workouts/domain";
 import type {
@@ -5,6 +6,7 @@ import type {
   WorkoutStorage,
 } from "../../src/features/workouts/ports";
 import { createWorkoutFactory } from "./factories";
+import { errorTag, failure } from "./results";
 
 export type OpenStorage = (initial: Snapshot) => {
   readonly storage: WorkoutStorage;
@@ -39,76 +41,59 @@ export function describeWorkoutStorageContract(
 
     it("reads the initial snapshot", async () => {
       const { storage, initial } = setup();
-      expect(await storage.read()).toEqual({
-        kind: "ready",
-        snapshot: initial,
-      });
+      expect(await storage.read()).toEqual(Result.ok(initial));
     });
 
     it("saves a changed snapshot that advances the revision by one", async () => {
       const { storage, changed } = setup();
       const next = changed(1);
-      expect(await storage.compareAndSave(0, next)).toEqual({
-        kind: "saved",
-        snapshot: next,
-      });
-      expect(await storage.read()).toEqual({ kind: "ready", snapshot: next });
+      expect(await storage.compareAndSave(0, next)).toEqual(Result.ok(next));
+      expect(await storage.read()).toEqual(Result.ok(next));
     });
 
     it("returns a conflict with the current snapshot for a stale revision", async () => {
       const { storage, changed } = setup();
       const next = changed(1);
       await storage.compareAndSave(0, next);
-      expect(await storage.compareAndSave(0, changed(1))).toEqual({
-        kind: "conflict",
-        snapshot: next,
-      });
-      expect(await storage.read()).toEqual({ kind: "ready", snapshot: next });
+      const conflict = failure(await storage.compareAndSave(0, changed(1)));
+      expect(conflict).toMatchObject({ _tag: "Conflict", snapshot: next });
+      expect(await storage.read()).toEqual(Result.ok(next));
     });
 
     it("rejects a revision jump without writing", async () => {
       const { storage, initial, changed } = setup();
-      expect((await storage.compareAndSave(0, changed(2))).kind).toBe(
-        "invalid",
+      expect(errorTag(await storage.compareAndSave(0, changed(2)))).toBe(
+        "InvalidChange",
       );
-      expect(await storage.read()).toEqual({
-        kind: "ready",
-        snapshot: initial,
-      });
+      expect(await storage.read()).toEqual(Result.ok(initial));
     });
 
     it("treats an identical snapshot at the same revision as a no-op", async () => {
       const { storage, initial } = setup();
-      expect(await storage.compareAndSave(0, { ...initial })).toEqual({
-        kind: "saved",
-        snapshot: initial,
-      });
-      expect(await storage.read()).toEqual({
-        kind: "ready",
-        snapshot: initial,
-      });
+      expect(await storage.compareAndSave(0, { ...initial })).toEqual(
+        Result.ok(initial),
+      );
+      expect(await storage.read()).toEqual(Result.ok(initial));
     });
 
     it("rejects changed content that keeps the same revision", async () => {
       const { storage, initial, changed } = setup();
-      expect((await storage.compareAndSave(0, changed(0))).kind).toBe(
-        "invalid",
+      expect(errorTag(await storage.compareAndSave(0, changed(0)))).toBe(
+        "InvalidChange",
       );
-      expect(await storage.read()).toEqual({
-        kind: "ready",
-        snapshot: initial,
-      });
+      expect(await storage.read()).toEqual(Result.ok(initial));
     });
 
     it("rejects invalid snapshots and revisions", async () => {
       const { storage, initial } = setup();
       const broken = { ...initial, revision: -1 };
-      expect((await storage.compareAndSave(0, broken)).kind).toBe("invalid");
-      expect((await storage.compareAndSave(-1, initial)).kind).toBe("invalid");
-      expect(await storage.read()).toEqual({
-        kind: "ready",
-        snapshot: initial,
-      });
+      expect(errorTag(await storage.compareAndSave(0, broken))).toBe(
+        "InvalidChange",
+      );
+      expect(errorTag(await storage.compareAndSave(-1, initial))).toBe(
+        "InvalidRevision",
+      );
+      expect(await storage.read()).toEqual(Result.ok(initial));
     });
 
     it("notifies subscribers of saved snapshots until they unsubscribe", async () => {
@@ -132,13 +117,15 @@ export function describeWorkoutStorageContract(
     it("refuses reads, writes and subscriptions after closing", async () => {
       const { storage, changed } = setup();
       storage.close();
-      expect((await storage.read()).kind).toBe("unavailable");
-      expect((await storage.compareAndSave(0, changed(1))).kind).toBe(
-        "unavailable",
+      expect(errorTag(await storage.read())).toBe("StorageClosed");
+      expect(errorTag(await storage.compareAndSave(0, changed(1)))).toBe(
+        "StorageClosed",
       );
       const states: LoadState[] = [];
       storage.subscribe((state) => states.push(state));
-      expect(states.map((state) => state.kind)).toEqual(["unavailable"]);
+      expect(states).toMatchObject([
+        { kind: "failed", error: { _tag: "StorageClosed" } },
+      ]);
     });
   });
 }

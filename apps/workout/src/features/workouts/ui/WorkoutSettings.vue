@@ -3,6 +3,9 @@ import { useTemplateRef, ref } from "vue";
 import { BaseButton, BaseSelectNative, BaseSwitch, BaseSheet } from "@form/ui";
 import { ArrowDownToLine, Upload, Trash2 } from "@lucide/vue";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
+import type { DeleteError } from "../application";
+import { Conflict, DraftCleanupPending } from "../domain";
+import { describeFailure } from "./errorMessages";
 import { download } from "./presentation";
 const { workspace } = defineProps<{
   workspace: Pick<
@@ -28,6 +31,29 @@ function requestDeletion() {
   };
   deletionMessage.value = "";
 }
+function completeDeletion(
+  request: Deletion,
+  pending: DraftCleanupPending | null,
+) {
+  backupFile.value = null;
+  backupMessage.value = "";
+  deletionMessage.value = "All your data has been deleted from this browser.";
+  if (pending) {
+    request.revision = pending.snapshot.revision;
+    request.issue = describeFailure(pending).message;
+    return;
+  }
+  deletion.value = null;
+}
+function rejectDeletion(request: Deletion, failure: DeleteError) {
+  if (Conflict.is(failure)) {
+    request.conflict = true;
+    request.issue =
+      "Your data changed in another tab. Close this dialog and review the deletion again.";
+    return;
+  }
+  request.issue = describeFailure(failure).message;
+}
 async function deleteAllData() {
   const request = deletion.value;
   // The workspace command owns the saving lock and returns null while busy.
@@ -36,26 +62,12 @@ async function deleteAllData() {
   try {
     const result = await deleteData(request.revision);
     if (!result) return;
-    if (result.kind === "saved" || result.kind === "cleanup-pending") {
-      backupFile.value = null;
-      backupMessage.value = "";
-      deletionMessage.value =
-        "All your data has been deleted from this browser.";
-      if (result.kind === "cleanup-pending") {
-        request.revision = result.snapshot.revision;
-        request.issue = result.message;
-        return;
-      }
-      deletion.value = null;
+    const failure = result.isErr() ? result.error : null;
+    if (failure && !DraftCleanupPending.is(failure)) {
+      rejectDeletion(request, failure);
       return;
     }
-    if (result.kind === "conflict") {
-      request.conflict = true;
-      request.issue =
-        "Your data changed in another tab. Close this dialog and review the deletion again.";
-      return;
-    }
-    request.issue = result.message;
+    completeDeletion(request, failure);
   } catch {
     request.issue = "Deletion could not finish. Try again.";
   }
@@ -67,8 +79,13 @@ async function exportBackup() {
   backupBusy.value = true;
   backupMessage.value = "";
   try {
+    const exported = await service.exportBackup();
+    if (exported.isErr()) {
+      backupMessage.value = "Could not export your backup. Try again.";
+      return;
+    }
     download(
-      await service.exportBackup(),
+      exported.value,
       `the-workout-tracker-backup-${new Date().toISOString().slice(0, 10)}.json`,
     );
     backupMessage.value = "Backup downloaded.";
@@ -107,19 +124,19 @@ async function importBackup() {
   try {
     const result = await importData(file.json, file.revision);
     if (!result) return;
-    if (result.kind === "saved") {
+    if (result.isOk()) {
       backupFile.value = null;
       backupMessage.value =
         "Backup imported. Your existing workouts are preserved.";
       return;
     }
-    if (result.kind === "conflict") {
+    if (Conflict.is(result.error)) {
       backupFile.value = null;
       backupMessage.value =
         "Your data changed. Select the backup again to review the current import.";
       return;
     }
-    backupMessage.value = result.message;
+    backupMessage.value = describeFailure(result.error).message;
   } catch {
     backupMessage.value =
       "Import could not finish. Reload to check your saved workouts before trying again.";

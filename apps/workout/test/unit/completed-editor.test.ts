@@ -4,6 +4,7 @@ import { createWorkouts } from "../../src/features/workouts/application";
 import { useWorkouts } from "../../src/features/workouts/ui/useWorkouts";
 import { useCompletedWorkoutEditor } from "../../src/features/workouts/ui/useCompletedWorkoutEditor";
 import { createWorkoutFactory, FIXED_NOW } from "../support/factories";
+import { errorTag } from "../support/results";
 import {
   createMemoryJournal,
   createMemoryStorage,
@@ -128,7 +129,7 @@ describe("completed editor", () => {
         },
         0,
       );
-      expect(result.kind).toBe("conflict");
+      expect(errorTag(result)).toBe("Conflict");
       expect(memory.current().completed[completed.id]).toEqual(completed);
       expect(memory.current().active?.name).toBe("New active name");
     } finally {
