@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import BaseInputNumber from "../../src/numeric-input/BaseInputNumber.vue";
+import { defaultUiText, provideUiText } from "../../src/ui-text";
 
 // Shows the confirmed value next to the input, so tests can tell a draft
 // from a value the component actually emitted.
@@ -13,8 +14,10 @@ const {
   decimals = 2,
   presetStep = 2.5,
   triggerLabel,
+  separator = ".",
 } = defineProps<{
   triggerLabel?: string;
+  separator?: string;
   initial?: string | number;
   title?: string;
   label?: string;
@@ -24,6 +27,12 @@ const {
   presetStep?: number;
 }>();
 const value = ref(initial);
+provideUiText(
+  computed(() => ({
+    ...defaultUiText,
+    numeric: { ...defaultUiText.numeric, decimalSeparator: separator },
+  })),
+);
 </script>
 
 <template>

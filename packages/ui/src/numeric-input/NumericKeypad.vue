@@ -27,7 +27,7 @@ const digits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
       class="ui-numeric-key"
       :aria-label="text.decimalPoint"
       @click="emit('press', '.')"
-      >.</BaseButton
+      >{{ text.decimalSeparator }}</BaseButton
     >
     <span v-else />
     <BaseButton

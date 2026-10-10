@@ -4,7 +4,7 @@ import { useNumericText } from "./useNumericText";
 
 defineProps<{ presets: number[]; unit: string }>();
 const emit = defineEmits<{ pick: [preset: number] }>();
-const { text } = useNumericText();
+const { text, show } = useNumericText();
 </script>
 
 <template>
@@ -19,7 +19,7 @@ const { text } = useNumericText();
         class="ui-numeric-preset"
         :aria-label="text.usePreset({ value: preset, unit })"
         @click="emit('pick', preset)"
-        >{{ preset }}<small v-if="unit">{{ unit }}</small></BaseButton
+        >{{ show(preset) }}<small v-if="unit">{{ unit }}</small></BaseButton
       >
     </div>
   </section>

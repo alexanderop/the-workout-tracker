@@ -18,6 +18,8 @@ export type NumericText = Readonly<{
   editor: string;
   keypad: string;
   decimalPoint: string;
+  /** The mark that splits whole and fraction digits, such as "," in German. */
+  decimalSeparator: string;
   backspace: string;
   /** The button that confirms the draft, named after the field. */
   confirm: (title: string) => string;
@@ -90,6 +92,7 @@ export const defaultUiText: UiText = {
     editor: "Number editor",
     keypad: "Numeric keypad",
     decimalPoint: "Decimal point",
+    decimalSeparator: ".",
     backspace: "Backspace",
     confirm: (title) => `Use ${title.toLowerCase()}`,
     announce: ({ title, value, unit }) =>

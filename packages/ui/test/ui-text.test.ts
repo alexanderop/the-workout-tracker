@@ -69,12 +69,13 @@ describe("given an app that translates the text", () => {
       replace: "ersetzen",
       ready: "bereit",
       pasteWhole: () => "einfügen",
+      decimalSeparator: ",",
     },
     closeDialog: "Dialog schließen",
   };
   const Probe = defineComponent({
     setup() {
-      const { text, hint, pasteHint: paste } = useNumericText();
+      const { text, hint, pasteHint: paste, show } = useNumericText();
       const ui = useUiText();
       const limits = { min: 0, max: 9, decimals: 0, presetStep: 1 };
       return () =>
@@ -85,6 +86,7 @@ describe("given an app that translates the text", () => {
             text.value.replace,
             hint.value(beginEditing("5"), limits, ""),
             paste(limits),
+            show(42.5),
           ].join("|"),
         );
     },
@@ -98,7 +100,7 @@ describe("given an app that translates the text", () => {
       },
     });
     const html = await renderToString(createSSRApp(Root));
-    expect(html).toBe("<p>Dialog schließen|ersetzen|ersetzen|einfügen</p>");
+    expect(html).toBe("<p>Dialog schließen|ersetzen|ersetzen|einfügen|42,5</p>");
   });
 
   it("should fall back to English without a provider", async () => {

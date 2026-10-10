@@ -20,6 +20,11 @@ export function beginEditing(value: string | number): NumericDraft {
   return { text: String(value).replace(",", "."), fresh: true };
 }
 
+/** Shows a value with the locale's decimal mark; drafts and stored values keep ".". */
+export function localizeNumber(value: string | number, separator: string): string {
+  return String(value).replace(".", separator);
+}
+
 export function editNumber(
   draft: NumericDraft,
   key: string,

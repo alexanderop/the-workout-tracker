@@ -54,7 +54,7 @@ const pasteIssue = ref("");
 // focus leaves the trigger so idle inputs add no status regions to the page.
 const announcement = ref("");
 const attrs = useAttrs();
-const { text, hint, pasteHint } = useNumericText();
+const { text, hint, pasteHint, show } = useNumericText();
 const display = useTemplateRef<HTMLElement>("display");
 const hintId = useId();
 const limits = computed(() => ({ min, max, decimals, presetStep }));
@@ -101,7 +101,7 @@ function confirm(next = value.value) {
 // A consumer's aria-label wins over the generated "label: value" name.
 function triggerLabel() {
   const own = attrs["aria-label"];
-  const name = text.value.trigger({ label, value: modelValue, unit });
+  const name = text.value.trigger({ label, value: show(modelValue), unit });
   return typeof own === "string" && own ? own : name;
 }
 function keyboard(event: KeyboardEvent) {
@@ -140,7 +140,7 @@ function focusDisplay(event: Event) {
         :disabled="disabled"
         :aria-label="triggerLabel()"
         @blur="announcement = ''"
-        >{{ modelValue === "" ? "—" : modelValue }}</BaseButton
+        >{{ modelValue === "" ? "—" : show(modelValue) }}</BaseButton
       >
     </BaseDialogTrigger>
     <span v-if="announcement" role="status" class="ui-visually-hidden">{{ announcement }}</span>
@@ -182,7 +182,7 @@ function focusDisplay(event: Event) {
           class="ui-numeric-display"
         >
           <div>
-            <span>{{ draft.text || "—" }}</span
+            <span>{{ show(draft.text) || "—" }}</span
             ><small v-if="unit">{{ unit }}</small>
           </div>
           <p

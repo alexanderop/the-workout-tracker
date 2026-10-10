@@ -217,3 +217,43 @@ describe("given a repetitions input with a minimum of one", () => {
     });
   });
 });
+
+async function openCommaEditor() {
+  await render(NumberInput, { props: { separator: "," } });
+  await trigger().click();
+  await expect.element(dialog()).toBeVisible();
+}
+
+describe("given a language with a decimal comma", () => {
+  it("should show the comma on the trigger, the draft, the keypad and the suggestions", async () => {
+    await render(NumberInput, { props: { separator: "," } });
+    await expect.element(trigger()).toHaveTextContent("70,25");
+    await trigger().click();
+    await expect.element(draft().getByText("70,25", { exact: true })).toBeVisible();
+    await expect
+      .element(page.getByRole("button", { name: "Decimal point" }))
+      .toHaveTextContent(",");
+    await expect
+      .element(page.getByRole("button", { name: "Use 62.5 kg" }))
+      .toHaveTextContent("62,5kg");
+  });
+
+  it("should accept a comma or a point from the keyboard and store a number", async () => {
+    await openCommaEditor();
+    await userEvent.keyboard("42,5");
+    await expect.element(draft().getByText("42,5", { exact: true })).toBeVisible();
+    await userEvent.keyboard("{Backspace}{Backspace}.5");
+    await expect.element(draft().getByText("42,5", { exact: true })).toBeVisible();
+    await confirm().click();
+    await expect.element(confirmed()).toHaveTextContent("42.5");
+    await expect.element(trigger()).toHaveTextContent("42,5");
+  });
+
+  it("should press the decimal key as a comma", async () => {
+    await openCommaEditor();
+    await page.getByRole("button", { name: "4" }).click();
+    await page.getByRole("button", { name: "Decimal point" }).click();
+    await page.getByRole("button", { name: "5" }).click();
+    await expect.element(draft().getByText("4,5", { exact: true })).toBeVisible();
+  });
+});

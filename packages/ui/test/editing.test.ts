@@ -3,6 +3,7 @@ import {
   beginEditing,
   editNumber,
   exceedsPrecision,
+  localizeNumber,
   numericHint,
   numericPresets,
   pasteHint,
@@ -31,6 +32,25 @@ describe("given an opening value", () => {
     expect(beginEditing(70.25)).toEqual({ text: "70.25", fresh: true });
     expect(beginEditing("70,5")).toEqual({ text: "70.5", fresh: true });
     expect(beginEditing("")).toEqual({ text: "", fresh: true });
+  });
+});
+
+describe("localizeNumber", () => {
+  it("should show the locale's decimal mark and keep whole numbers as they are", () => {
+    expect(localizeNumber("42.5", ",")).toBe("42,5");
+    expect(localizeNumber(42.5, ",")).toBe("42,5");
+    expect(localizeNumber("42.", ",")).toBe("42,");
+    expect(localizeNumber("", ",")).toBe("");
+    expect(localizeNumber(42, ",")).toBe("42");
+    expect(localizeNumber("42.5", ".")).toBe("42.5");
+  });
+
+  it("should round-trip with the draft, which always stores a point", () => {
+    const draft = type(["4", "2", ",", "5"], weight, "0");
+    expect(draft.text).toBe("42.5");
+    expect(localizeNumber(draft.text, ",")).toBe("42,5");
+    expect(beginEditing(localizeNumber(draft.text, ",")).text).toBe("42.5");
+    expect(validNumber(draft.text, weight)).toBe(42.5);
   });
 });
 
@@ -137,6 +157,18 @@ describe("validNumber", () => {
 });
 
 describe("replaceNumber", () => {
+  it("should accept a pasted decimal comma or point alike", () => {
+    expect(replaceNumber("42,5", weight)).toEqual(replaceNumber("42.5", weight));
+    expect(replaceNumber("42,5", weight)).toEqual({
+      text: "42.5",
+      fresh: false,
+    });
+  });
+
+  it("should reject a pasted value with both marks", () => {
+    expect(replaceNumber("1,000.5", weight)).toBeNull();
+  });
+
   it("should accept a pasted value as an edited draft", () => {
     expect(replaceNumber(" 55,25 ", weight)).toEqual({
       text: "55.25",
