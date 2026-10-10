@@ -123,6 +123,9 @@ export class WorkoutPage {
       .getByRole("navigation", { name: "Mobile navigation" })
       .getByRole("link", { name: "Settings", exact: true })
       .click();
+    await this.page
+      .getByRole("link", { name: "Training preferences", exact: false })
+      .click();
     const autoRest = this.page.getByRole("switch", {
       name: "Automatic rest timer",
     });

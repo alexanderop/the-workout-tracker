@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test";
 import { createBdd } from "playwright-bdd";
 import { test } from "../fixtures";
+import { SettingsPage } from "../pages/SettingsPage";
 
 const { Given, When, Then } = createBdd(test);
 
@@ -15,9 +16,7 @@ Given(
 
 Given("I open the appearance settings", async ({ page }) => {
   await page.goto("/#/settings");
-  await expect(
-    page.getByRole("heading", { name: "Appearance", exact: true }),
-  ).toBeVisible();
+  await new SettingsPage(page).openSection("Appearance");
 });
 
 When(

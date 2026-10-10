@@ -80,7 +80,7 @@ describe("given a browser language list", () => {
 describe("given a translator", () => {
   it("should read the message of the active locale", () => {
     expect(translator("en").t("shell.language.system")).toBe("System");
-    expect(translator("de").t("shell.language.title")).toBe("Sprache");
+    expect(translator("de").t("settings.sections.language")).toBe("Sprache");
   });
 });
 

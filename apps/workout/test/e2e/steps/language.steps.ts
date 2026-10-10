@@ -3,6 +3,7 @@ import { createBdd } from "playwright-bdd";
 import { t, translator } from "../../../src/i18n/testing";
 import { languageStorageKey } from "../../../src/app/language";
 import { test } from "../fixtures";
+import { SettingsPage } from "../pages/SettingsPage";
 import { readFirstLoggedWeight, seedWorkoutStorage } from "../seed";
 import { createWorkoutFactory } from "../../support/factories";
 
@@ -13,7 +14,7 @@ async function expectGerman(page: Page) {
   await expect(page.locator("html")).toHaveAttribute("lang", "de");
   await expect(
     page.getByRole("heading", {
-      name: de("shell.language.title"),
+      name: de("settings.sections.language"),
       exact: true,
     }),
   ).toBeVisible();
@@ -30,9 +31,7 @@ async function expectGerman(page: Page) {
 
 Given("I open the language settings", async ({ page }) => {
   await page.goto("/#/settings");
-  await expect(
-    page.getByRole("heading", { name: t("shell.language.title"), exact: true }),
-  ).toBeVisible();
+  await new SettingsPage(page).openSection("Language");
 });
 
 When("I switch the language to German", async ({ page }) => {
@@ -54,7 +53,7 @@ Then(
     if (!baseURL) throw new Error("The e2e config sets no baseURL");
     const context = await browser.newContext({ locale: "de-DE", baseURL });
     const page = await context.newPage();
-    await page.goto("/#/settings");
+    await page.goto("/#/settings/language");
     await expect(page.locator("html")).toHaveAttribute("lang", "de");
     expect(
       await page.evaluate(
@@ -73,13 +72,13 @@ Then(
     if (!baseURL) throw new Error("The e2e config sets no baseURL");
     const context = await browser.newContext({ locale: "de-DE", baseURL });
     const page = await context.newPage();
-    await page.goto("/#/settings");
+    await page.goto("/#/settings/language");
     await page.getByRole("radio", { name: "English", exact: true }).check();
     await page.reload({ waitUntil: "commit" });
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(
       page.getByRole("heading", {
-        name: t("shell.language.title"),
+        name: t("settings.sections.language"),
         exact: true,
       }),
     ).toBeVisible();
@@ -96,7 +95,7 @@ const weightButton = (page: Page) =>
 
 Given("my active workout is open in German", async ({ workout, page }) => {
   await workout.open();
-  await page.goto("/#/settings");
+  await page.goto("/#/settings/language");
   await page.getByRole("radio", { name: "Deutsch", exact: true }).check();
   const factory = createWorkoutFactory("german-decimal");
   await seedWorkoutStorage(
