@@ -19,3 +19,4 @@ coverage/
 *.local
 .env*
 .claude/worktrees/
+.test-builds/

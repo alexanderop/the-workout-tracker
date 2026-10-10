@@ -97,11 +97,11 @@ Choose a test by the failure it must expose. Keep `pnpm verify` as type checking
 | --- | --- |
 | `pnpm test:unit` | Pure rules and application orchestration in Node |
 | `pnpm test:browser` | Shared UI components and real browser storage adapters in Chrome |
-| `pnpm test:e2e` | Executable Gherkin journeys against the production app build in Chrome |
+| `pnpm test:e2e` | Executable Gherkin journeys against production builds in desktop Chrome (390 px wide), Pixel 7 Chrome for `@mobile` features, and a two-version server for `@updates` features |
 
 `test:unit` measures coverage. The workout logic layers (`domain/`, `application.ts`, `ui/*.ts`) and the pure `@form/ui` modules must stay at or above the thresholds in `apps/workout/coverage-thresholds.json` and `packages/ui/coverage-thresholds.json`. Raise a threshold when coverage rises; never lower one. Skipped or focused tests (`.skip`, `.only`, `.fixme`, `.todo`, `@skip`/`@only` tags) fail lint: fix or delete a test explicitly.
 
-Install Chrome with `pnpm --filter @form/workout exec playwright install chrome`. CI installs it before browser execution. The E2E command generates Playwright specs, builds the app with the root base path, and serves it on port 4197. Keep that port free. Generated specs, reports, and traces are ignored by Git. Failed journeys retain traces and screenshots.
+Install Chrome with `pnpm --filter @form/workout exec playwright install chrome`. CI installs it before browser execution. The E2E command generates Playwright specs, builds the app with the root base path, and serves it on port 4197. A second server builds the app twice (versions 1 and 2) and serves port 4199 for the `@updates` journeys. Keep both ports free, or set `E2E_PORT` and `E2E_UPDATE_PORT`. Playwright starts both servers itself. Generated specs, reports, and traces are ignored by Git. Failed journeys retain traces and screenshots. The suite does not retry: a retry would turn a flaky journey into a pass. Run a new journey several times (`--repeat-each 3`) before delivering it. [Verification](verification.md) lists what each journey proves and what it does not claim.
 
 ### Performance and offline guardrails
 
@@ -122,7 +122,7 @@ The last three commands require a fresh `pnpm performance:build` with the same b
 
 The separate Chrome regression installs the service worker from Workouts, switches offline, closes the page and opens Exercises in a new page, then fetches and decodes every emitted WebP plus the rendered catalog images, including offscreen artwork. Exercises without matched illustrations may still use their intentional icon fallback. This verifies the first offline visit to the catalog rather than warming its images online first. It does not simulate browser cache eviction, an OS process restart, or iOS installation.
 
-Initial delivery baseline on 2026-10-05: the isolated performance change passed all six local Chrome Lighthouse runs and the offline artwork check. Its production build was 1,265,763 bytes, gzip JavaScript 167,847 bytes, and 46 exercise images totaled 401,144 bytes. The earlier working-tree audit included a separate, uncommitted artwork expansion with 77 images totaling 620,106 bytes; the image budget accommodates that measured expansion. These are local lab results, not a CI or real-device guarantee. Keep this baseline distinct from later changes to limits. The first GitHub run measured Workouts LCP at 2,524ms versus 2,448ms locally, with all other gates passing. The LCP regression budget is therefore 2,750ms (about 9% above the measured CI baseline); 2,500ms remains the improvement target. This small explicit runner margin avoids treating a 24ms target miss as a deployment regression.
+Recorded results and the performance baseline live in [Verification](verification.md#performance-baseline). Keep that baseline distinct from later changes to limits.
 
 CI runs these checks on pushes and pull requests before uploading the Pages artifact. A failed check blocks deployment. Lighthouse and offline browser diagnostics are retained as the `workout-performance-results` artifact for 14 days, including on failure. Repository branch protection is a separate setting; this workflow alone does not block Git pushes or merges.
 
@@ -162,7 +162,7 @@ Put product-language scenarios under `apps/workout/test/e2e`. Keep semantic loca
 
 Use the test fixtures to seed prerequisites into an isolated browser context. Seeding is test-only and uses actual browser storage. Never seed the outcome of the action being tested. A fresh-user journey must create its workout through the UI. A reload journey must read the data the application saved. Do not add production seed endpoints or replace persistence with fixtures.
 
-Browser adapter tests use unique database names and close handles before cleanup. Each application scenario gets an isolated browser context. Chrome is the default browser. Functional tests do not establish visual parity, full accessibility, offline availability, or cross-browser compatibility.
+Browser adapter tests use unique database names and close handles before cleanup. Each application scenario gets an isolated browser context. Chrome is the default browser. Tag a feature `@mobile` to also run it in the Pixel 7 project (touch, mobile user agent). Tag a feature `@updates` to run it against the two-version server, which holds one active version at a time, so those scenarios run one by one. Wait for observable state, never fixed delays: an update journey waits for the browser's registration to hold the waiting worker, and an offline journey waits for the worker to control the page before it goes offline. Accessibility scans use `axe-core` through `AccessibilityPage`; a known issue names its rule and fails once fixed. Functional tests do not establish visual parity, full accessibility, real-device offline availability, or cross-browser compatibility.
 
 ## Lint and TypeScript policy
 

@@ -6,6 +6,9 @@ import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 const base = process.env.VITE_BASE_PATH ?? "/";
+// Identifies the build in the error-recovery diagnostics and, as a meta tag,
+// to the update journey. Release builds may set VITE_APP_VERSION.
+const appVersion = process.env.VITE_APP_VERSION ?? "development";
 function previewBase(command: string) {
   return command === "serve" ? "/product-preview/" : "./";
 }
@@ -14,6 +17,7 @@ export default defineConfig(({ mode, command }) => {
   const preview = mode === "design-preview";
   return {
     base: preview ? previewBase(command) : base,
+    define: { APP_VERSION: JSON.stringify(appVersion) },
     server: preview ? { strictPort: true, hmr: { port: 4187 } } : undefined,
     build: preview
       ? {
@@ -62,6 +66,16 @@ export default defineConfig(({ mode, command }) => {
       }),
       vue(),
       tailwindcss(),
+      {
+        name: "build-version-meta",
+        transformIndexHtml: () => [
+          {
+            tag: "meta",
+            attrs: { name: "build-version", content: appVersion },
+            injectTo: "head",
+          },
+        ],
+      } satisfies Plugin,
       ...(!preview
         ? [
             VitePWA({

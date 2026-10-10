@@ -1,3 +1,4 @@
+@mobile
 Feature: Mobile training controls
   Scenario: Numeric confirmation remains reachable on a short phone
     Given I have a workout on a short phone

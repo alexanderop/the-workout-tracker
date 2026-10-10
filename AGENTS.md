@@ -11,6 +11,7 @@ Start with [README.md](README.md) for the product overview and run commands. Rea
 | Which module owns this behavior or dependency? | [Architecture](docs/architecture.md) |
 | How should the interface look and behave? | [Design](docs/design.md) |
 | How do I add a command, component, or storage change? | [Development workflows](docs/workflows.md) |
+| What does each test or check prove, and what does it not claim? | [Verification](docs/verification.md) |
 | Which references informed our choices? | [Prior art](docs/prior-art.md) |
 | Why did an earlier implementation take this approach? | [History](docs/history/README.md) |
 
