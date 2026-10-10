@@ -85,7 +85,7 @@ Changes may be committed directly on `main` or merged from a working branch into
 
 Husky installs the Git hooks through the root `prepare` script when you run `pnpm install`. Before each commit, `.husky/pre-commit` runs `pnpm verify` and the [limit ratchet](#quality-limits-only-tighten), and blocks the commit if either fails. Before each push, `.husky/pre-push` runs `pnpm test:unit`, including its coverage thresholds. The checks read the current working tree, including unstaged changes. Run `pnpm prepare` to reinstall the hooks in an existing checkout. Do not bypass hooks with `--no-verify`; CI repeats every check on the pushed commit and reports a skipped hook as a failed run.
 
-`pnpm verify` runs only type checking and linting. Automated tests run through separate commands described in [Testing](#testing). `pnpm lint` also runs `pnpm check:architecture` and `pnpm check:boundaries`, so they are part of verification. Build only when needed to run or deploy the application; offline and installation behavior require the production preview described in [README.md](../README.md).
+`pnpm verify` runs only type checking and linting. Automated tests run through separate commands described in [Testing](#testing). `pnpm lint` also runs `pnpm check:architecture`, `pnpm check:boundaries` and `pnpm check:dead-code`, so they are part of verification. Build only when needed to run or deploy the application; offline and installation behavior require the production preview described in [README.md](../README.md).
 
 For documentation-only changes, check links, referenced paths, command names, and consistency with the implementation. Report edits, checks, commits, pushes, and deployment separately; completing one does not establish the others.
 
@@ -181,6 +181,7 @@ Oxlint owns JavaScript/TypeScript rules, supported Vue script rules, and custom 
 - Product logging permits `console.warn` and `console.error`, not debug logging.
 - Do not use non-null assertions (`value!`) in source, including Vue templates. Handle the missing case with an early return or an explicit fallback. Tests may use them.
 - Do not silence a check. `eslint-disable`, `oxlint-disable`, `@ts-ignore`, `@ts-expect-error` and `@ts-nocheck` fail `pnpm lint:guards`, which runs outside both linters so a comment cannot switch it off. The generated `apps/workout/src/route-map.d.ts` is the only exception.
+- Remove dead code. Knip (`knip.config.ts`, run by `pnpm check:dead-code`) fails on unused files, exports, types and dependencies. Real entry points (Histoire stories, `preview.html`, route parsers, Playwright steps, scripts) are declared as entries in the config; delete everything else instead of listing it as an exception.
 - Keep source files at most 400 lines (`design/file-size`). Files that were already larger are listed at their current size in `tooling/lint/file-size-baseline.json`. That limit only goes down: growing past it fails, and shrinking a file fails until you lower its entry to the new size, or remove the entry once the file is at most 400 lines. Never raise an entry; split the file instead.
 - Keep each awaited effect in application and adapter code in its own `try` (`code-policy/one-effect-per-try`), so a failed read, transition and write produce different results.
 - Do not assign through props or values destructured from them (`code-policy/no-prop-ref-writes`). Call the owner's command or emit an event.
@@ -190,7 +191,7 @@ Oxlint owns JavaScript/TypeScript rules, supported Vue script rules, and custom 
 
 `tooling/lint/ratchet.mjs` compares the limit files with a base commit and fails when one was loosened: a raised file-size baseline entry or a new one, a raised or removed performance budget, or a lowered or removed coverage threshold. The pre-commit hook compares with `HEAD`; CI compares a push with the commit it replaced and a pull request with its base. Loosening a limit is the repository owner's decision, not an agent's.
 
-Run `pnpm lint:oxlint`, `pnpm lint:vue`, `pnpm lint:guards`, `pnpm check:architecture` or `pnpm check:boundaries` for focused feedback. All stages reject warnings. No automated tests, formatting checks, or builds are added to verification.
+Run `pnpm lint:oxlint`, `pnpm lint:vue`, `pnpm lint:guards`, `pnpm check:architecture`, `pnpm check:boundaries` or `pnpm check:dead-code` for focused feedback. All stages reject warnings. No automated tests, formatting checks, or builds are added to verification.
 
 ## Maintain context
 

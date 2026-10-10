@@ -15,7 +15,6 @@ import {
 } from "../domain/trainingDrafts";
 import { unionDrafts as union, useDetachedDrafts } from "./useDetachedDrafts";
 
-export type { DetachedDraft } from "./useDetachedDrafts";
 export type TrainingRow = TrainingDraftState & {
   exercise: SessionExercise;
   index: number;

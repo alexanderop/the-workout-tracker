@@ -53,6 +53,6 @@ Write clear, maintainable production code. Keep changes focused and dependencies
 
 - `pnpm dev`: run the workout app.
 - `pnpm dev:ui`: run the Histoire component explorer.
-- `pnpm verify`: type checking and linting only.
+- `pnpm verify`: type checking and linting only (includes architecture, boundary and dead-code checks).
 
 See [README.md](README.md) for installation, preview, and deployment commands. Run only the checks appropriate to the change; documentation-only edits need link, path, and consistency review.

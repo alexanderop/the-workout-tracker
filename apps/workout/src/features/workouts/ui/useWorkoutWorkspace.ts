@@ -13,7 +13,7 @@ export type TrainingMode =
   | { kind: "all-logged" }
   | { kind: "empty" };
 /** Explains input that a finish overtook; the drafts stay recoverable. */
-export function detachedDraftMessage(entries: readonly DetachedDraft[]) {
+function detachedDraftMessage(entries: readonly DetachedDraft[]) {
   const sets = entries
     .map(
       (entry) =>

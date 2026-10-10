@@ -123,7 +123,6 @@ export type WorkoutSet = z.infer<typeof setSchema>;
 export type SessionExercise = z.infer<typeof sessionExerciseSchema>;
 export type ActiveSession = z.infer<typeof activeSchema>;
 export type CompletedSession = z.infer<typeof completedSchema>;
-export type Settings = z.infer<typeof settingsSchema>;
 
 const snapshotShape = z
   .object({
