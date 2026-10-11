@@ -3,7 +3,10 @@ export {
   exerciseSchema,
   routineSchema,
   snapshotSchema,
+  barWeightsKg,
+  plateSizesKg,
   type ActiveSession,
+  type Barbell,
   type CompletedSession,
   type Exercise,
   type Routine,
@@ -28,6 +31,7 @@ export {
   type WorkoutPhase,
 } from "./domain/session";
 export { reduceWorkout } from "./domain/reducer";
+export { barbellSettings, loadBarbell } from "./domain/plates";
 export { canonical } from "./domain/canonical";
 export {
   ActiveWorkoutFinished,

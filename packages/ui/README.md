@@ -159,7 +159,7 @@ The first increment delivers the families above. Remaining pinned registry famil
 
 ## Mobile numeric input
 
-`BaseInputNumber` adapts the calculator-style numeric editor from our workoutTracker app. It uses the shared BaseDialog and BaseButton components with the consumer's `--ui-*` theme. On phones it opens at the bottom of the screen; on larger screens it is a centered dialog. It is used for weight and repetitions in both active sets and routine templates.
+`BaseInputNumber` adapts the calculator-style numeric editor from our workoutTracker app. It uses the shared BaseDialog and BaseButton components with the consumer's `--ui-*` theme. On phones it fills the screen; on larger screens it is a centered dialog. Like a picker wheel, a scrolling list of quick picks sits above a row with the draft and an icon-only confirm button (named "Use <title>"), followed by the keypad. The list opens centred on the current value, marks the value matching the draft with `aria-current` and scrolls to a typed value; a typed value outside the list moves the list around it. The optional `aside` slot renders left of the draft and receives `{ value }`, the valid draft as a number or null; the workout app shows barbell plates there. It is used for weight and repetitions in both active sets and routine templates.
 
 ```vue
 <BaseInputNumber

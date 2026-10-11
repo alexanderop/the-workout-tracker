@@ -14,6 +14,8 @@ Use these terms in our conversations, product copy, and documentation. This docu
 | **Draft**             | Weight or reps being edited. Recoverable input that does not count toward progress.                               |
 | **Logged set**        | A set explicitly recorded as attempted; it counts toward progress. Represented by `WorkoutSet.completed` in code. |
 | **Volume**            | Weight × recorded reps, summed over logged sets.                                                                  |
+| **Bar weight**        | The empty barbell's weight, 20 kg unless changed in Training settings.                                            |
+| **Plates**            | The plate sizes a lifter owns. A **plate load** lists the plates for each side that make up a barbell weight.     |
 
 ## Three distinct actions
 
@@ -43,5 +45,7 @@ The app ships English and German catalogs. German copy uses the informal "du" an
 | Progress                         | Fortschritt                                                         |
 | Muscle group                     | Muskelgruppe                                                        |
 | Equipment                        | Gerät                                                               |
+| Barbell, bar weight              | Langhantel, Langhantelgewicht (the bar itself: Stange)              |
+| Plate                            | Scheibe                                                             |
 
 Built-in exercise names stay English because they are stored in snapshots and backups; muscle groups and equipment are translated for display only. Weights stay in kilograms (`kg`).

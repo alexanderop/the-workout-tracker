@@ -24,6 +24,13 @@ export const enTrainingSets = {
     retainedUnlogged:
       "Input retained on this device. It is not logged. Log when you finish this set.",
   },
+  plates: {
+    plate: "{weight} kg",
+    load: "Per side: {plates} on a {bar} kg bar",
+    emptyBar: "Empty {bar} kg bar",
+    belowBar: "Lighter than the {bar} kg bar",
+    remainder: "{weight} kg more than your plates can load",
+  },
   discardInput: {
     title: "Discard input changes?",
     description:

@@ -47,6 +47,10 @@ const emit = defineEmits<{
   open: [];
   close: [];
 }>();
+defineSlots<{
+  /** Beside the draft, such as a plate breakdown; `value` is the valid draft or null. */
+  aside?: (props: { value: number | null }) => unknown;
+}>();
 const open = ref(false);
 const draft = ref(beginEditing(modelValue));
 const pasteIssue = ref("");
@@ -59,7 +63,11 @@ const display = useTemplateRef<HTMLElement>("display");
 const hintId = useId();
 const limits = computed(() => ({ min, max, decimals, presetStep }));
 const presets = ref<number[]>([]);
+const anchor = ref<number | null>(null);
+// Enough values to scroll through, as in a picker wheel.
+const presetCount = 41;
 const value = computed(() => validNumber(draft.value.text, limits.value));
+const invalid = computed(() => value.value === null || pasteIssue.value !== "");
 watch(
   open,
   (isOpen) => {
@@ -70,11 +78,21 @@ watch(
     draft.value = beginEditing(modelValue);
     pasteIssue.value = "";
     announcement.value = "";
-    presets.value = numericPresets(modelValue, limits.value);
+    presets.value = numericPresets(modelValue, limits.value, presetCount);
+    anchor.value = validNumber(draft.value.text, limits.value);
     emit("open");
   },
   { flush: "sync" },
 );
+// A typed value outside the listed range moves the list to it.
+watch(value, (typed) => {
+  const listed = presets.value;
+  const first = listed[0];
+  const last = listed.at(-1);
+  if (typed === null || first === undefined || last === undefined) return;
+  if (typed < first || typed > last)
+    presets.value = numericPresets(typed, limits.value, presetCount);
+});
 watch(
   () => disabled,
   (isDisabled) => {
@@ -155,51 +173,59 @@ function focusDisplay(event: Event) {
       @paste="paste"
     >
       <header class="ui-numeric-header">
-        <div>
-          <BaseDialogTitle class="ui-numeric-title">{{
-            title
-          }}</BaseDialogTitle>
-          <BaseDialogDescription class="ui-numeric-description">{{
-            label
-          }}</BaseDialogDescription>
-        </div>
         <BaseDialogClose as-child>
           <BaseButton type="button" variant="ghost" class="ui-numeric-cancel">{{
             text.cancel
           }}</BaseButton>
         </BaseDialogClose>
+        <BaseDialogTitle class="ui-numeric-title">{{ title }}</BaseDialogTitle>
+        <BaseDialogDescription class="ui-numeric-description">{{
+          label
+        }}</BaseDialogDescription>
       </header>
-      <div class="ui-numeric-body">
-        <NumericPresets :presets="presets" :unit="unit" @pick="confirm" />
-        <div
-          ref="display"
-          tabindex="-1"
-          role="group"
-          :aria-label="text.editor"
-          :aria-describedby="hintId"
-          class="ui-numeric-display"
-        >
-          <div>
+      <NumericPresets
+        class="ui-numeric-body"
+        :presets="presets"
+        :unit="unit"
+        :selected="value"
+        :anchor="anchor"
+        @pick="confirm"
+      />
+      <div class="ui-numeric-pad">
+        <div class="ui-numeric-entry">
+          <div class="ui-numeric-aside">
+            <slot name="aside" :value="value" />
+          </div>
+          <div
+            ref="display"
+            tabindex="-1"
+            role="group"
+            :aria-label="text.editor"
+            :aria-describedby="hintId"
+            class="ui-numeric-display"
+            :class="{ 'is-long': draft.text.length > 4 }"
+          >
             <span>{{ show(draft.text) || "—" }}</span
             ><small v-if="unit">{{ unit }}</small>
           </div>
-          <p
-            :id="hintId"
-            :class="{ 'ui-numeric-error': value === null || pasteIssue !== '' }"
+          <BaseButton
+            type="button"
+            class="ui-numeric-confirm"
+            :aria-label="text.confirm(title)"
+            :disabled="value === null || disabled"
+            @click="confirm()"
           >
-            {{ pasteIssue || hint(draft, limits, unit) }}
-          </p>
+            <Check :stroke-width="3" />
+          </BaseButton>
         </div>
+        <p
+          :id="hintId"
+          :class="invalid ? 'ui-numeric-error' : 'ui-visually-hidden'"
+        >
+          {{ pasteIssue || hint(draft, limits, unit) }}
+        </p>
         <NumericKeypad :decimals="decimals" @press="press" />
       </div>
-      <BaseButton
-        type="button"
-        class="ui-numeric-confirm"
-        :disabled="value === null || disabled"
-        @click="confirm()"
-      >
-        <Check :size="18" />{{ text.confirm(title) }}
-      </BaseButton>
     </BaseDialogContent>
   </DialogRoot>
 </template>
@@ -213,13 +239,13 @@ function focusDisplay(event: Event) {
   z-index: 54;
   width: min(420px, calc(100% - 32px));
   max-width: none;
-  max-height: calc(100dvh - 32px);
+  height: min(760px, calc(100dvh - 32px));
   overflow: clip;
   overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 24px;
+  gap: 12px;
+  padding: 16px;
   background: var(--ui-background);
   color: var(--ui-foreground);
   border: 1px solid var(--ui-border);
@@ -229,119 +255,138 @@ function focusDisplay(event: Event) {
 :global(.ui-numeric-overlay) {
   z-index: 53;
 }
-.ui-numeric-body {
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
 .ui-numeric-header,
-.ui-numeric-confirm {
+.ui-numeric-pad {
   flex-shrink: 0;
 }
+.ui-numeric-body {
+  flex: 1;
+}
+/* Cancel and the title share the first row; the field label spans the second. */
 .ui-numeric-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 8px;
 }
 .ui-numeric-title {
-  font-size: 22px;
-  font-weight: 550;
-  letter-spacing: -0.6px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  text-align: center;
 }
 .ui-numeric-description {
-  margin-block-start: 8px;
-  font-size: 12px;
-  line-height: 1.5;
-}
-.ui-numeric-cancel {
-  padding: 0 10px;
-  min-height: 44px;
+  grid-column: 1 / -1;
   color: var(--ui-muted-foreground);
   font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+}
+.ui-numeric-cancel {
+  justify-self: start;
+  padding: 0 4px;
+  min-height: 44px;
+  color: var(--ui-primary);
+  font-size: 16px;
+  font-weight: 500;
+}
+.ui-numeric-pad {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-block-start: 12px;
+  border-block-start: 1px solid var(--ui-border);
+}
+.ui-numeric-entry {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+}
+.ui-numeric-aside {
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
 }
 .ui-numeric-display {
-  padding: 16px 0;
-  text-align: center;
-  border-block: 1px solid var(--ui-border);
-}
-.ui-numeric-display > div {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: 10px;
-  overflow-wrap: anywhere;
+  gap: 4px;
+  min-width: 0;
+  white-space: nowrap;
+  border-radius: 8px;
 }
 .ui-numeric-display span {
   min-width: 0;
-  font-size: clamp(30px, 9vw, 46px);
+  font-size: 36px;
   line-height: 1.2;
-  font-weight: 550;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   letter-spacing: -1px;
 }
 .ui-numeric-display small {
   color: var(--ui-muted-foreground);
-  font-size: 16px;
+  font-size: 14px;
 }
-.ui-numeric-display p {
-  margin: 10px 0 0;
-  min-height: 18px;
-  color: var(--ui-muted-foreground);
-  font-size: 11px;
+/* Values such as 142.5 stay on one line beside the plates. */
+.ui-numeric-display.is-long span {
+  font-size: 26px;
+  letter-spacing: -0.5px;
 }
-.ui-numeric-display .ui-numeric-error {
+.ui-numeric-error {
+  margin: 0;
   color: var(--ui-destructive);
+  font-size: 12px;
+  text-align: center;
 }
 .ui-numeric-confirm {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   width: 100%;
-  min-height: 48px;
+  min-height: 54px;
   border-radius: 8px;
-  background: var(--ui-primary);
-  color: var(--ui-primary-foreground);
-  font-size: 13px;
-  font-weight: 550;
+  background: var(--ui-secondary);
+  color: var(--ui-primary);
+  --ui-button-icon-size: 28px;
 }
 .ui-numeric-confirm:disabled {
   opacity: 0.5;
 }
+@media (hover: hover) and (pointer: fine) {
+  .ui-numeric-confirm:not(:disabled):hover {
+    background: color-mix(
+      in oklch,
+      var(--ui-secondary) 85%,
+      var(--ui-foreground)
+    );
+  }
+}
 @media (max-width: 650px) {
   :global(.ui-numeric-dialog) {
-    inset-block-start: auto;
-    inset-block-end: 0;
-    inset-inline-start: 0;
+    inset: 0;
     transform: none;
     width: 100%;
-    max-height: 100dvh;
-    border-radius: 18px 18px 0 0;
-    padding: 22px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+    height: 100dvh;
+    max-height: none;
+    border: 0;
+    border-radius: 0;
+    padding: calc(8px + env(safe-area-inset-top, 0px)) 12px
+      calc(12px + env(safe-area-inset-bottom, 0px));
   }
 }
-@media (max-height: 700px) {
-  :global(.ui-numeric-dialog),
-  .ui-numeric-body {
-    gap: 12px;
-  }
-  .ui-numeric-display {
-    padding-block: 4px;
-  }
-}
-@media (max-height: 600px) and (max-width: 650px) {
-  :global(.ui-numeric-dialog) {
-    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
-  }
+@media (max-height: 600px) {
   .ui-numeric-description {
-    margin-block-start: 4px;
+    display: none;
   }
-  .ui-numeric-display span {
-    font-size: 30px;
+  .ui-numeric-entry {
+    min-height: 46px;
+  }
+  .ui-numeric-confirm {
+    min-height: 46px;
   }
 }
 </style>

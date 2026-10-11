@@ -58,6 +58,8 @@ Personal bests and weight trends include only logged sets with positive repetiti
 
 The active workout exposes weight and repetitions in each set row. Its action logs an unfinished set or saves corrections to a logged set. An unchanged logged set displays a non-mutating Logged state. Undo logging is an explicit set-options action. Corrections do not restart rest. Clearing is explicit and restores the repetition target. Entering a number, confirming a numeric editor, logging a set, and finishing a workout are distinct actions. Confirming the numeric editor updates the containing input draft; it does not mark a set logged. Cancel leaves the prior input unchanged.
 
+For barbell exercises (equipment `Barbell`), the weight editor shows the **plate load**: the plates for each side that make up the draft weight on the configured bar, heaviest first and as many of each owned size as needed. A weight lighter than the bar shows the bar alone; weight the owned plates cannot make up is shown as a remainder. Bar weight and owned plates are workout settings (`settings.barbell`). Journals saved before these settings existed have no `barbell` field and use the default: a 20 kg bar with 20, 15, 10, 5, 2.5 and 1.25 kg plates. 25 kg plates are opt-in, so 20 kg plates come first by default. The plate load is a display aid; it never changes the recorded weight.
+
 ## Draft
 
 A **draft** is recoverable raw weight or repetition input, separate from the confirmed workout snapshot. Drafts survive page navigation and can recover after reload. They may be incomplete or invalid and do not contribute to totals or backups.

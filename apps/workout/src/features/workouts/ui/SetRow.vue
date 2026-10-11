@@ -10,9 +10,13 @@ import { computed, useTemplateRef, watch, nextTick, ref } from "vue";
 import { Check, MoreHorizontal, Save } from "@lucide/vue";
 import type { TrainingRow } from "./useTrainingSession";
 import type { RawValues, SetDraft } from "../domain/drafts";
+import type { Barbell } from "../domain";
+import BarbellPlates from "./BarbellPlates.vue";
 import { useFormat, useTranslation } from "../../../i18n";
-const { row, busy, current, dirty, conflict } = defineProps<{
+const { row, barbell, busy, current, dirty, conflict } = defineProps<{
   row: TrainingRow;
+  /** The lifter's bar and plates, for barbell exercises only. */
+  barbell?: Barbell | null;
   busy: boolean;
   current: boolean;
   dirty: boolean;
@@ -121,7 +125,11 @@ defineExpose({
         :disabled="busy"
         @update:model-value="emit('edit', { weight: $event })"
         @open="emit('select')"
-      />
+      >
+        <template v-if="barbell" #aside="{ value }">
+          <BarbellPlates :total-kg="value" :barbell="barbell" />
+        </template>
+      </BaseInputNumber>
       <BaseInputNumber
         :model-value="row.reps"
         :title="t('training.setRow.reps')"

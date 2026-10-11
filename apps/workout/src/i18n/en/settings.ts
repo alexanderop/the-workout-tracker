@@ -31,6 +31,18 @@ export const enSettings = {
       option: "{seconds} sec",
     },
     weightUnit: { label: "Weight unit", value: "Kilograms · kg" },
+    bar: {
+      label: "Barbell weight",
+      hint: "The empty bar used to show plates for barbell exercises.",
+      ariaLabel: "Barbell weight",
+      option: "{weight} kg",
+    },
+    plates: {
+      label: "Available plates",
+      hint: "Choose the plates you own. Barbell exercises show which to load on each side.",
+      toggle: "{weight} kg",
+      toggleLabel: "{weight} kg plate",
+    },
   },
   backup: {
     intro:

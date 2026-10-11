@@ -15,7 +15,10 @@ const {
   presetStep = 2.5,
   triggerLabel,
   separator = ".",
+  aside = false,
 } = defineProps<{
+  /** Renders the aside slot with the draft value it receives. */
+  aside?: boolean;
   triggerLabel?: string;
   separator?: string;
   initial?: string | number;
@@ -46,7 +49,11 @@ provideUiText(
       :decimals="decimals"
       :preset-step="presetStep"
       :aria-label="triggerLabel"
-    />
+    >
+      <template v-if="aside" #aside="{ value: draft }">
+        <span data-testid="aside-value">{{ draft ?? "none" }}</span>
+      </template>
+    </BaseInputNumber>
     <output aria-label="Confirmed value" data-testid="confirmed-value">{{
       value
     }}</output>

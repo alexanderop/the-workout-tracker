@@ -30,8 +30,6 @@ describe("given the default English text", () => {
     expect(numeric.trigger({ label: "Reps", value: 8, unit: "" })).toBe(
       "Reps: 8",
     );
-    expect(numeric.usePreset({ value: 5, unit: "kg" })).toBe("Use 5 kg");
-    expect(numeric.usePreset({ value: 5, unit: "" })).toBe("Use 5");
   });
 
   it("should phrase hints with a unit and singular or plural places", () => {

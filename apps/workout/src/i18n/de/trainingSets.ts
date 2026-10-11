@@ -4,7 +4,7 @@ type Training = Catalog["training"];
 
 export const deTrainingSets: Pick<
   Training,
-  "setRow" | "discardInput" | "setEditor"
+  "setRow" | "plates" | "discardInput" | "setEditor"
 > = {
   setRow: {
     select: "Satz {n} von {exercise} auswählen",
@@ -30,6 +30,13 @@ export const deTrainingSets: Pick<
       "Eingabe auf diesem Gerät aufbewahrt. Speichere sie, um sie auf diesen erfassten Satz anzuwenden.",
     retainedUnlogged:
       "Eingabe auf diesem Gerät aufbewahrt. Sie ist nicht erfasst. Erfasse den Satz, wenn du ihn beendest.",
+  },
+  plates: {
+    plate: "{weight} kg",
+    load: "Pro Seite: {plates} auf einer {bar}-kg-Stange",
+    emptyBar: "Leere {bar}-kg-Stange",
+    belowBar: "Leichter als die {bar}-kg-Stange",
+    remainder: "{weight} kg mehr, als deine Scheiben laden können",
   },
   discardInput: {
     title: "Eingabeänderungen verwerfen?",

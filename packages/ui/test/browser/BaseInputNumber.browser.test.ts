@@ -17,11 +17,24 @@ const draft = () => editor();
 const announcement = () =>
   page.getByRole("status").filter({ hasText: "Weight set to" });
 const confirm = () => page.getByRole("button", { name: "Use weight" });
+const suggestions = () =>
+  page.getByRole("region", { name: "Suggested values" });
+const seventyFive = () =>
+  suggestions().getByRole("button", { name: "75 kg", exact: true });
+const asideValue = () => page.getByTestId("aside-value");
 
 async function openEditor() {
   await render(NumberInput);
   await trigger().click();
   await expect.element(dialog()).toBeVisible();
+}
+
+// axe reads colours from the rendered page, which is unreliable while the
+// dialog is still sliding in over its scrolled value list.
+async function settled() {
+  await expect
+    .poll(() => document.getAnimations().length, { timeout: 2000 })
+    .toBe(0);
 }
 
 describe("given a weight input", () => {
@@ -46,22 +59,54 @@ describe("given a weight input", () => {
       await expect.element(dialog()).toMatchAriaInlineSnapshot(`
         - dialog "Weight":
           - banner:
+            - button "Cancel"
             - heading "Weight" [level=2]
             - paragraph: Set 1 weight for Bench press
-            - button "Cancel"
           - region "Suggested values":
-            - paragraph: Quick pick Tap to use
-            - button "Use 62.5 kg": 62.5 kg
-            - button "Use 65 kg": 65 kg
-            - button "Use 67.5 kg": 67.5 kg
-            - button "Use 70 kg": 70 kg
-            - button "Use 72.5 kg": 72.5 kg
-            - button "Use 75 kg": 75 kg
-            - button "Use 77.5 kg": 77.5 kg
-            - button "Use 80 kg": 80 kg
-          - group "Number editor":
-            - text: 70.25 kg
-            - paragraph: Type a new value to replace this one.
+            - button "20 kg"
+            - button "22.5 kg"
+            - button "25 kg"
+            - button "27.5 kg"
+            - button "30 kg"
+            - button "32.5 kg"
+            - button "35 kg"
+            - button "37.5 kg"
+            - button "40 kg"
+            - button "42.5 kg"
+            - button "45 kg"
+            - button "47.5 kg"
+            - button "50 kg"
+            - button "52.5 kg"
+            - button "55 kg"
+            - button "57.5 kg"
+            - button "60 kg"
+            - button "62.5 kg"
+            - button "65 kg"
+            - button "67.5 kg"
+            - button "70 kg"
+            - button "72.5 kg"
+            - button "75 kg"
+            - button "77.5 kg"
+            - button "80 kg"
+            - button "82.5 kg"
+            - button "85 kg"
+            - button "87.5 kg"
+            - button "90 kg"
+            - button "92.5 kg"
+            - button "95 kg"
+            - button "97.5 kg"
+            - button "100 kg"
+            - button "102.5 kg"
+            - button "105 kg"
+            - button "107.5 kg"
+            - button "110 kg"
+            - button "112.5 kg"
+            - button "115 kg"
+            - button "117.5 kg"
+            - button "120 kg"
+          - group "Number editor": 70.25 kg
+          - button "Use weight"
+          - paragraph: Type a new value to replace this one.
           - group "Numeric keypad":
             - button "1"
             - button "2"
@@ -72,15 +117,15 @@ describe("given a weight input", () => {
             - button "7"
             - button "8"
             - button "9"
-            - button "Decimal point": .
+            - button "Decimal point"
             - button "0"
             - button "Backspace"
-          - button "Use weight"
       `);
     });
 
     it("should have no axe violations", async () => {
       await openEditor();
+      await settled();
       await expectNoAxeViolations(dialog().element());
     });
   });
@@ -158,18 +203,49 @@ describe("given a weight input", () => {
   describe("when choosing a suggested value", () => {
     it("should confirm it immediately", async () => {
       await openEditor();
-      const suggestions = page.getByRole("region", {
-        name: "Suggested values",
-      });
-      const first = suggestions.getByRole("button").first();
-      const label = first.element().getAttribute("aria-label") ?? "";
-      await first.click();
-      const value = label.replace(/^Use | kg$/g, "");
-      await expect.element(confirmed()).toHaveTextContent(value);
+      await suggestions()
+        .getByRole("button", { name: "72.5 kg", exact: true })
+        .click();
+      await expect.element(confirmed()).toHaveTextContent("72.5");
       await expect
         .element(announcement())
-        .toHaveTextContent(`Weight set to ${value} kg`);
+        .toHaveTextContent("Weight set to 72.5 kg");
     });
+
+    it("should open scrolled to the values around the current one", async () => {
+      await openEditor();
+      await expect
+        .element(
+          suggestions().getByRole("button", { name: "70 kg", exact: true }),
+        )
+        .toBeInViewport();
+      await expect
+        .element(
+          suggestions().getByRole("button", { name: "20 kg", exact: true }),
+        )
+        .not.toBeInViewport();
+    });
+
+    it("should highlight the value that matches the draft", async () => {
+      await openEditor();
+      await expect.element(seventyFive()).not.toHaveAttribute("aria-current");
+      await userEvent.keyboard("75");
+      await expect
+        .element(seventyFive())
+        .toHaveAttribute("aria-current", "true");
+    });
+  });
+});
+
+describe("given content beside the draft", () => {
+  it("should pass it the valid draft value, or null", async () => {
+    await render(NumberInput, { props: { aside: true } });
+    await trigger().click();
+    await expect.element(asideValue()).toHaveTextContent("70.25");
+    await userEvent.keyboard("82.5");
+    await expect.element(asideValue()).toHaveTextContent("82.5");
+    await userEvent.keyboard("{Backspace}{Backspace}{Backspace}{Backspace}");
+    await expect.element(asideValue()).toHaveTextContent("none");
   });
 });
 
@@ -241,11 +317,15 @@ describe("given a language with a decimal comma", () => {
       .element(draft().getByText("70,25", { exact: true }))
       .toBeVisible();
     await expect
-      .element(page.getByRole("button", { name: "Decimal point" }))
-      .toHaveTextContent(",");
+      .element(
+        page
+          .getByRole("button", { name: "Decimal point" })
+          .getByText(",", { exact: true }),
+      )
+      .toBeVisible();
     await expect
-      .element(page.getByRole("button", { name: "Use 62.5 kg" }))
-      .toHaveTextContent("62,5kg");
+      .element(page.getByRole("button", { name: "62,5 kg", exact: true }))
+      .toBeInTheDocument();
   });
 
   it("should accept a comma or a point from the keyboard and store a number", async () => {

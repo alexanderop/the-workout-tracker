@@ -4,7 +4,12 @@ import { BaseButton, BaseButtonIcon } from "@form/ui";
 import { Plus, Dumbbell, Ellipsis, Check, ChevronLeft } from "@lucide/vue";
 import { useFormat, useTranslation } from "../../../i18n";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
-import { setTargetReps, type SessionExercise } from "../domain";
+import {
+  barbellSettings,
+  setTargetReps,
+  type Barbell,
+  type SessionExercise,
+} from "../domain";
 import type { Confirmation } from "./dialogTypes";
 import SetRow from "./SetRow.vue";
 import TrainingHeader from "./TrainingHeader.vue";
@@ -72,6 +77,13 @@ const definition = computed(() =>
     ? snapshot.value?.exercises[selectedExercise.value.exerciseId]
     : undefined,
 );
+// Barbell exercises show which plates make up the weight being entered.
+function barbellFor(exerciseId: string): Barbell | null {
+  const current = snapshot.value;
+  if (!current || current.exercises[exerciseId]?.equipment !== "Barbell")
+    return null;
+  return barbellSettings(current.settings);
+}
 const lastTime = computed(() => {
   const exercise = selectedExercise.value;
   return exercise
@@ -272,6 +284,7 @@ function discard() {
               :key="row.set.id"
               ref="setRows"
               :row="row"
+              :barbell="barbellFor(row.exercise.exerciseId)"
               :busy="saving"
               :current="training.current.value?.set.id === row.set.id"
               :dirty="training.dirty(row)"
@@ -367,6 +380,7 @@ function discard() {
     <TrainingSetEditor
       :set-id="editorSet"
       :training="training"
+      :barbell-for="barbellFor"
       :busy="saving"
       @close="closeEditor"
       @cleared="closeEditor"

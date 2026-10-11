@@ -110,13 +110,40 @@ const completedSchema = z
   })
   .strict()
   .readonly();
+/** Plate sizes a lifter can choose to own, heaviest first. */
+export const plateSizesKg = [
+  50, 25, 20, 15, 10, 5, 2.5, 2, 1.25, 1, 0.5, 0.25,
+] as const;
+export const barWeightsKg = [0, 5, 7.5, 10, 15, 20, 25] as const;
+/** 20 kg plates come first by default; 25 kg plates are opt-in. */
+export const defaultBarbell = {
+  barKg: 20,
+  platesKg: [20, 15, 10, 5, 2.5, 1.25],
+} as const;
+const barbellSchema = z
+  .object({
+    barKg: z.number().min(0).max(100),
+    platesKg: z
+      .array(z.number().positive().max(100))
+      .max(plateSizesKg.length)
+      .refine(
+        (plates) => new Set(plates).size === plates.length,
+        "Plate sizes must be unique.",
+      )
+      .readonly(),
+  })
+  .strict()
+  .readonly();
 export const settingsSchema = z
   .object({
     restSeconds: z.number().int().min(0).max(600),
     autoRest: z.boolean(),
+    // Absent until changed; journals saved before plate settings still load.
+    barbell: barbellSchema.optional(),
   })
   .strict()
   .readonly();
+export type Barbell = z.infer<typeof barbellSchema>;
 export type Exercise = z.infer<typeof exerciseSchema>;
 export type Routine = z.infer<typeof routineSchema>;
 export type WorkoutSet = z.infer<typeof setSchema>;

@@ -8,8 +8,6 @@ export const deCommon: Catalog["common"] = {
     numeric: {
       cancel: "Abbrechen",
       suggestions: "Vorgeschlagene Werte",
-      quickPick: "Schnellwahl",
-      tapToUse: "Tippen zum Übernehmen",
       editor: "Zahleneingabe",
       keypad: "Zifferntastatur",
       decimalPoint: "Dezimalkomma",
@@ -18,7 +16,6 @@ export const deCommon: Catalog["common"] = {
       confirm: "{title} übernehmen",
       announce: "{title} auf {value}{unit} gesetzt",
       trigger: "{label}: {value}{unit}",
-      usePreset: "{value}{unit} verwenden",
       replace: "Gib einen neuen Wert ein, um diesen zu ersetzen.",
       ready: "Bereit zum Übernehmen.",
       range: "von {min} bis {max}{unit}",

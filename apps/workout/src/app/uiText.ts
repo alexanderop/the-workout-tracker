@@ -25,8 +25,6 @@ function numericText(t: Translate, locale: Locale): UiText["numeric"] {
   return {
     cancel: t("common.ui.numeric.cancel"),
     suggestions: t("common.ui.numeric.suggestions"),
-    quickPick: t("common.ui.numeric.quickPick"),
-    tapToUse: t("common.ui.numeric.tapToUse"),
     editor: t("common.ui.numeric.editor"),
     keypad: t("common.ui.numeric.keypad"),
     decimalPoint: t("common.ui.numeric.decimalPoint"),
@@ -44,11 +42,6 @@ function numericText(t: Translate, locale: Locale): UiText["numeric"] {
       t("common.ui.numeric.trigger", {
         label,
         value: value === "" ? t("common.ui.numeric.empty") : value,
-        unit: spaced(unit),
-      }),
-    usePreset: ({ value, unit }) =>
-      t("common.ui.numeric.usePreset", {
-        value: num(value),
         unit: spaced(unit),
       }),
     replace: t("common.ui.numeric.replace"),

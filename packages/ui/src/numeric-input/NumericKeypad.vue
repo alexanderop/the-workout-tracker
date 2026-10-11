@@ -25,9 +25,11 @@ const digits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
       type="button"
       variant="secondary"
       class="ui-numeric-key"
-      :aria-label="text.decimalPoint"
       @click="emit('press', '.')"
-      >{{ text.decimalSeparator }}</BaseButton
+      ><span aria-hidden="true">{{ text.decimalSeparator }}</span
+      ><span class="ui-visually-hidden">{{
+        text.decimalPoint
+      }}</span></BaseButton
     >
     <span v-else />
     <BaseButton

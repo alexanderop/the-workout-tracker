@@ -302,6 +302,17 @@ describe("numericPresets", () => {
     expect(numericPresets(value, bounds)).toEqual(expected);
   });
 
+  it("should centre a longer list on the value when asked for more picks", () => {
+    expect(numericPresets(10, reps, 5)).toEqual([8, 9, 10, 11, 12]);
+    expect(numericPresets(2, reps, 5)).toEqual([1, 2, 3, 4, 5]);
+    expect(numericPresets(998, reps, 5)).toEqual([995, 996, 997, 998, 999]);
+  });
+
+  it("should offer nothing for a count that is not a positive whole number", () => {
+    expect(numericPresets(10, reps, 0)).toEqual([]);
+    expect(numericPresets(10, reps, 2.5)).toEqual([]);
+  });
+
   it.each([
     [2.5, 0],
     [0.5, 0],

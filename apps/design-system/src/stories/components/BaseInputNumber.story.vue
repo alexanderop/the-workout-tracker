@@ -7,6 +7,7 @@ const weight = ref<string | number>(70.25);
 const reps = ref<string | number>(8);
 const empty = ref<string | number>("");
 const invalid = ref<string | number>(0);
+const aside = ref<string | number>(100);
 const disabled = ref(false);
 const label = ref("Set 1 weight for Bench press");
 </script>
@@ -85,6 +86,29 @@ const label = ref("Set 1 weight for Bench press");
         </p>
       </div></Variant
     >
+    <Variant title="With aside"
+      ><div class="stack">
+        <BaseInputNumber
+          v-model="aside"
+          title="Weight"
+          label="Set 1 weight for Squat"
+          unit="kg"
+          :decimals="2"
+          :preset-step="2.5"
+          @update:model-value="logEvent('Aside: confirmed', { value: $event })"
+        >
+          <template #aside="{ value }">
+            <small class="note">{{
+              value === null ? "No value" : `${value} kg draft`
+            }}</small>
+          </template>
+        </BaseInputNumber>
+        <p class="note">
+          The aside slot sits left of the draft and receives the valid draft or
+          null. The workout app renders barbell plates here.
+        </p>
+      </div></Variant
+    >
     <Variant title="Disabled"
       ><BaseInputNumber
         :model-value="70.25"
@@ -105,7 +129,7 @@ Quick weight and repetition entry with large touch targets.
 
 ## Variants
 
-Decimal weights, whole-number repetitions, empty, invalid and disabled examples.
+Decimal weights, whole-number repetitions, empty, invalid, aside-slot and disabled examples.
 
 ## States
 
@@ -113,9 +137,9 @@ Open the empty and invalid examples to inspect actual draft validation. Weight s
 
 ## Behavior
 
-The first digit replaces the value. Quick picks apply immediately. Confirming applies the draft; Cancel, Escape and outside dismissal discard it. Focus returns to the trigger. The Events panel records opening and confirmed values; cancellation must not emit a model update.
+The editor follows a picker layout: a scrolling list of values above, then the draft with its confirm button, then the keypad. The list opens centred on the current value, highlights the value matching the draft and follows a typed value. The first digit replaces the value. Listed values apply immediately. Confirming applies the draft; Cancel, Escape and outside dismissal discard it. Focus returns to the trigger. The Events panel records opening and confirmed values; cancellation must not emit a model update.
 
 ## Examples and limitations
 
-Applying changes only the field value; logging a set is separate. Header and confirmation stay visible while the editor body scrolls on short screens. Inspect Phone · short (320 × 568) and Desktop, including keyboard entry and focus restoration. Source shows the consumer wiring; import the shared styles once in your application entry point.
+Applying changes only the field value; logging a set is separate. Header, draft, confirmation and keypad stay visible while the value list scrolls on short screens. Phones show the editor full screen. Inspect Phone · short (320 × 568) and Desktop, including keyboard entry and focus restoration. Source shows the consumer wiring; import the shared styles once in your application entry point.
 </docs>

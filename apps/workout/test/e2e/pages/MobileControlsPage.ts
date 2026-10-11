@@ -42,7 +42,10 @@ export class MobileControlsPage {
         if (!box || !confirmationBox)
           throw new Error("Numeric controls must have visible bounds");
         expect(box.height).toBeGreaterThanOrEqual(44);
-        expect(box.y + box.height).toBeLessThanOrEqual(confirmationBox.y - 12);
+        // Confirmation sits in the row above the keypad, as in a calculator.
+        expect(confirmationBox.y + confirmationBox.height).toBeLessThanOrEqual(
+          box.y,
+        );
       }).toPass();
     }
     await dialog.getByRole("group", { name: "Number editor" }).press("5");

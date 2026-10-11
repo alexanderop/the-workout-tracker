@@ -8,8 +8,6 @@ export const enCommon = {
     numeric: {
       cancel: "Cancel",
       suggestions: "Suggested values",
-      quickPick: "Quick pick",
-      tapToUse: "Tap to use",
       editor: "Number editor",
       keypad: "Numeric keypad",
       decimalPoint: "Decimal point",
@@ -18,7 +16,6 @@ export const enCommon = {
       confirm: "Use {title}",
       announce: "{title} set to {value}{unit}",
       trigger: "{label}: {value}{unit}",
-      usePreset: "Use {value}{unit}",
       replace: "Type a new value to replace this one.",
       ready: "Ready when you are.",
       range: "from {min} to {max}{unit}",

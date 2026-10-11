@@ -114,7 +114,7 @@ function greatestCommonDivisor(a: number, b: number): number {
 }
 
 /**
- * Up to eight quick picks around `value`. Every preset is a multiple of
+ * Up to `count` quick picks around `value`. Every preset is a multiple of
  * `presetStep` and representable with `decimals`: when the step is finer than
  * the precision allows (2.5 with whole numbers), the grid widens to the
  * smallest common multiple (5), so presets never round off the grid or repeat.
@@ -122,7 +122,9 @@ function greatestCommonDivisor(a: number, b: number): number {
 export function numericPresets(
   value: string | number,
   limits: NumericLimits,
+  count = 8,
 ): number[] {
+  if (!Number.isInteger(count) || count < 1) return [];
   if (!Number.isFinite(limits.presetStep) || limits.presetStep <= 0) return [];
   const scale = Math.max(decimalPlaces(limits.presetStep), limits.decimals);
   const step = Math.round(limits.presetStep * 10 ** scale);
@@ -134,8 +136,12 @@ export function numericPresets(
   const lowest = Math.ceil((limits.min * 10 ** scale) / grid - 1e-9);
   const highest = Math.floor((limits.max * 10 ** scale) / grid + 1e-9);
   const center = Math.round((parsed * 10 ** scale) / grid);
-  const first = Math.max(lowest, Math.min(center - 3, highest - 7));
-  const last = Math.min(highest, first + 7);
+  const below = Math.floor((count - 1) / 2);
+  const first = Math.max(
+    lowest,
+    Math.min(center - below, highest - (count - 1)),
+  );
+  const last = Math.min(highest, first + count - 1);
   const presets = Array.from(
     { length: Math.max(0, last - first + 1) },
     (_, i) => at(first + i),

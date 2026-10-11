@@ -3,11 +3,13 @@ import { computed, ref, watch } from "vue";
 import { BaseSheet, BaseButton } from "@form/ui";
 import SetRow from "./SetRow.vue";
 import type { useTrainingSession } from "./useTrainingSession";
+import type { Barbell } from "../domain";
 import { useTranslation } from "../../../i18n";
-const { setId, training, busy } = defineProps<{
+const { setId, training, busy, barbellFor } = defineProps<{
   setId: string | null;
   training: ReturnType<typeof useTrainingSession>;
   busy: boolean;
+  barbellFor: (exerciseId: string) => Barbell | null;
 }>();
 const emit = defineEmits<{
   close: [];
@@ -69,6 +71,7 @@ async function clear() {
       </nav>
       <SetRow
         :row="row"
+        :barbell="barbellFor(row.exercise.exerciseId)"
         :busy="busy"
         current
         :dirty="training.dirty(row)"

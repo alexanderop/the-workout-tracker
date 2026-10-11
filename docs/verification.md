@@ -41,7 +41,9 @@ Not claimed: offline behavior after the browser evicts its caches, after an oper
 
 ### Mobile
 
-Features tagged `@mobile` (currently `mobile-controls.feature`) also run in a Pixel 7 Chrome project: touch input, a mobile user agent and a phone-sized viewport. Not claimed: real phone keyboards, Android browsers other than Chrome, or physical touch latency.
+Features tagged `@mobile` (currently `mobile-controls.feature` and `barbell-plates.feature`) also run in a Pixel 7 Chrome project: touch input, a mobile user agent and a phone-sized viewport. Not claimed: real phone keyboards, Android browsers other than Chrome, or physical touch latency.
+
+`barbell-plates.feature` types a Bench press weight and checks the plate diagram's accessible description, confirms a value by tapping it in the value list, and shows that turning off a plate size in Training preferences changes the plates. Not claimed: the plate colours or diagram layout; `apps/workout/test/unit/barbell-plates.test.ts` covers the plate arithmetic and settings compatibility.
 
 ### Accessibility
 

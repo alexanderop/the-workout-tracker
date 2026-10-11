@@ -34,6 +34,18 @@ export const deSettings: Catalog["settings"] = {
       option: "{seconds} Sek.",
     },
     weightUnit: { label: "Gewichtseinheit", value: "Kilogramm · kg" },
+    bar: {
+      label: "Langhantelgewicht",
+      hint: "Die leere Stange, mit der Scheiben für Langhantelübungen angezeigt werden.",
+      ariaLabel: "Langhantelgewicht",
+      option: "{weight} kg",
+    },
+    plates: {
+      label: "Verfügbare Scheiben",
+      hint: "Wähle die Scheiben, die du besitzt. Langhantelübungen zeigen, welche du pro Seite auflegst.",
+      toggle: "{weight} kg",
+      toggleLabel: "{weight}-kg-Scheibe",
+    },
   },
   backup: {
     intro:

@@ -13,8 +13,6 @@ export type NumericRange = Readonly<{
 export type NumericText = Readonly<{
   cancel: string;
   suggestions: string;
-  quickPick: string;
-  tapToUse: string;
   editor: string;
   keypad: string;
   decimalPoint: string;
@@ -31,7 +29,6 @@ export type NumericText = Readonly<{
     value: string | number;
     unit: string;
   }) => string;
-  usePreset: (value: { value: number; unit: string }) => string;
   replace: string;
   ready: string;
   wholeNumber: (range: NumericRange) => string;
@@ -87,8 +84,6 @@ export const defaultUiText: UiText = {
   numeric: {
     cancel: "Cancel",
     suggestions: "Suggested values",
-    quickPick: "Quick pick",
-    tapToUse: "Tap to use",
     editor: "Number editor",
     keypad: "Numeric keypad",
     decimalPoint: "Decimal point",
@@ -99,7 +94,6 @@ export const defaultUiText: UiText = {
       `${title} set to ${value}${inUnit(unit)}`,
     trigger: ({ label, value, unit }) =>
       `${label}: ${value === "" ? "empty" : value}${inUnit(unit)}`,
-    usePreset: ({ value, unit }) => `Use ${value}${inUnit(unit)}`,
     replace: "Type a new value to replace this one.",
     ready: "Ready when you are.",
     wholeNumber: (range) => `Enter a whole number ${rangeText(range)}.`,
