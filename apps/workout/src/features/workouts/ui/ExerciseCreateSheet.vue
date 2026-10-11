@@ -69,13 +69,18 @@ const highlights = computed(() =>
 const secondaryOptions = computed(() =>
   muscleGroups.filter((group) => group !== draft.value.category),
 );
-const secondarySummary = computed(() =>
-  draft.value.secondaryCategories.length
-    ? draft.value.secondaryCategories
-        .map((group) => categoryLabel(group, t))
-        .join(", ")
-    : t("dialogs.picker.none"),
+const secondaryNames = computed(() =>
+  draft.value.secondaryCategories.map((group) => categoryLabel(group, t)),
 );
+// The row shows the first group and a count so the label keeps its width;
+// the accessible name lists every group.
+const secondarySummary = computed(() => {
+  const [first, ...rest] = secondaryNames.value;
+  if (!first) return t("dialogs.picker.none");
+  return rest.length
+    ? t("dialogs.picker.secondaryMore", { first, count: rest.length })
+    : first;
+});
 watch(
   () => open,
   (value) => {
@@ -83,10 +88,18 @@ watch(
   },
 );
 
+// A sub-view opens at the top, so Back is never under the sticky header, and
+// the overview comes back where it was left.
+let overviewScroll = 0;
 async function showPanel(next: Panel, focus: Panel | "back") {
+  const sheet = content.value?.closest<HTMLElement>(".sheet");
+  if (panel.value === "overview" && sheet) overviewScroll = sheet.scrollTop;
   panel.value = next;
   await nextTick();
-  content.value?.querySelector<HTMLElement>(`[data-focus="${focus}"]`)?.focus();
+  if (sheet) sheet.scrollTop = next === "overview" ? overviewScroll : 0;
+  content.value
+    ?.querySelector<HTMLElement>(`[data-focus="${focus}"]`)
+    ?.focus({ preventScroll: true });
 }
 function update(next: ExerciseDraft, from: Panel) {
   draft.value = next;
@@ -125,77 +138,83 @@ defineExpose({
     "
     @close="emit('close')"
   >
-    <div ref="content" class="exercise-filters exercise-create">
-      <form
-        v-if="panel === 'overview'"
-        class="exercise-create-form"
-        @submit.prevent="submit"
-      >
-        <div class="exercise-create-preview" aria-hidden="true">
-          <BaseMuscleMap
-            v-if="highlights.length"
-            presentation="illustration"
-            :highlights="highlights"
-          />
-          <Dumbbell v-else :size="40" />
-        </div>
-        <label class="exercise-create-name">
-          <span>{{ t("dialogs.picker.nameLabel") }}</span>
-          <BaseInput
-            :model-value="draft.name"
-            class="exercise-create-name-input"
-            required
-            maxlength="80"
-            :placeholder="t('dialogs.picker.namePlaceholder')"
-            @update:model-value="draft = { ...draft, name: String($event) }"
-          />
-        </label>
-        <BaseListGroup>
-          <BaseListRow
-            as="button"
-            chevron
-            data-focus="equipment"
-            :icon="Dumbbell"
-            :label="t('dialogs.picker.equipment')"
-            :value="equipmentLabel(draft.equipment, t)"
-            @click="showPanel('equipment', 'back')"
-          />
-          <BaseListRow
-            as="button"
-            chevron
-            data-focus="muscle"
-            :icon="PersonStanding"
-            :label="t('dialogs.picker.muscleGroup')"
-            :value="categoryLabel(draft.category, t)"
-            @click="showPanel('muscle', 'back')"
-          />
-          <BaseListRow
-            as="button"
-            chevron
-            data-focus="secondary"
-            :icon="Layers"
-            :label="t('dialogs.picker.secondaryMuscles')"
-            :value="secondarySummary"
-            @click="showPanel('secondary', 'back')"
-          />
-          <BaseListRow
-            as="button"
-            chevron
-            data-focus="kind"
-            :icon="Shapes"
-            :label="t('dialogs.picker.kind')"
-            :value="kindLabel(draft.kind, t)"
-            @click="showPanel('kind', 'back')"
-          />
-        </BaseListGroup>
-        <BaseActions>
-          <BaseButton type="submit" :disabled="saving || !draft.name.trim()">
-            <Check :size="17" />{{ t("dialogs.picker.createSubmit") }}
-          </BaseButton>
-        </BaseActions>
-        <BaseNotice v-if="error" tone="danger">{{ error }}</BaseNotice>
-      </form>
-      <template v-else>
+    <form
+      v-if="panel === 'overview'"
+      ref="content"
+      class="exercise-create-form"
+      @submit.prevent="submit"
+    >
+      <div class="exercise-create-preview" aria-hidden="true">
+        <BaseMuscleMap
+          v-if="highlights.length"
+          presentation="illustration"
+          :highlights="highlights"
+        />
+        <Dumbbell v-else :size="40" />
+      </div>
+      <label class="exercise-create-name">
+        <span>{{ t("dialogs.picker.nameLabel") }}</span>
+        <BaseInput
+          :model-value="draft.name"
+          class="exercise-create-name-input"
+          required
+          maxlength="80"
+          :placeholder="t('dialogs.picker.namePlaceholder')"
+          @update:model-value="draft = { ...draft, name: String($event) }"
+        />
+      </label>
+      <BaseListGroup>
+        <BaseListRow
+          as="button"
+          chevron
+          data-focus="equipment"
+          :icon="Dumbbell"
+          :label="t('dialogs.picker.equipment')"
+          :value="equipmentLabel(draft.equipment, t)"
+          @click="showPanel('equipment', 'back')"
+        />
+        <BaseListRow
+          as="button"
+          chevron
+          data-focus="muscle"
+          :icon="PersonStanding"
+          :label="t('dialogs.picker.muscleGroup')"
+          :value="categoryLabel(draft.category, t)"
+          @click="showPanel('muscle', 'back')"
+        />
+        <BaseListRow
+          as="button"
+          chevron
+          data-focus="secondary"
+          :icon="Layers"
+          :label="t('dialogs.picker.secondaryMuscles')"
+          :value="secondarySummary"
+          :aria-label="
+            secondaryNames.length > 1
+              ? `${t('dialogs.picker.secondaryMuscles')} ${secondaryNames.join(', ')}`
+              : undefined
+          "
+          @click="showPanel('secondary', 'back')"
+        />
+        <BaseListRow
+          as="button"
+          chevron
+          data-focus="kind"
+          :icon="Shapes"
+          :label="t('dialogs.picker.kind')"
+          :value="kindLabel(draft.kind, t)"
+          @click="showPanel('kind', 'back')"
+        />
+      </BaseListGroup>
+      <BaseNotice v-if="error" tone="danger">{{ error }}</BaseNotice>
+      <BaseActions sticky>
+        <BaseButton type="submit" :disabled="saving || !draft.name.trim()">
+          <Check :size="17" />{{ t("dialogs.picker.createSubmit") }}
+        </BaseButton>
+      </BaseActions>
+    </form>
+    <template v-else>
+      <div ref="content" class="exercise-filters">
         <div class="filter-subview-actions">
           <BaseBackLink
             as="button"
@@ -282,20 +301,13 @@ defineExpose({
               {{ categoryLabel(option, t) }}
             </BaseChoiceChip>
           </div>
-          <BaseActions v-if="panel === 'secondary'">
-            <BaseButton
-              type="button"
-              @click="showPanel('overview', 'secondary')"
-            >
-              {{ t("dialogs.picker.done") }}
-            </BaseButton>
-          </BaseActions>
         </template>
         <div v-else class="filter-card-grid">
           <BaseChoiceChip
             v-for="option in exerciseKinds"
             :key="option"
             size="card"
+            class="exercise-kind-card"
             :model-value="draft.kind === option"
             @update:model-value="update({ ...draft, kind: option }, 'kind')"
           >
@@ -309,8 +321,13 @@ defineExpose({
             </span>
           </BaseChoiceChip>
         </div>
-      </template>
-    </div>
+      </div>
+      <BaseActions v-if="panel === 'secondary'" sticky>
+        <BaseButton type="button" @click="showPanel('overview', 'secondary')">
+          {{ t("dialogs.picker.done") }}
+        </BaseButton>
+      </BaseActions>
+    </template>
   </BaseSheet>
 </template>
 
@@ -334,14 +351,21 @@ defineExpose({
   max-width: 100%;
   max-height: 100%;
 }
+/* The label carries the large size: on touch screens inputs take
+   max(16px, 100%) of their parent, so the name stays large there too. */
 .exercise-create-name {
   display: grid;
   gap: var(--space-2);
   justify-items: center;
+  font-size: var(--text-xl);
+}
+.exercise-create-name > span {
   color: var(--muted);
   font-size: var(--text-xs);
 }
 .exercise-create-name-input {
+  height: auto;
+  min-height: 44px;
   border-color: transparent;
   background: transparent;
   color: var(--text);
@@ -354,6 +378,10 @@ defineExpose({
   margin: 0;
   color: var(--muted);
   font-size: var(--text-sm);
+}
+/* Type cards have no artwork: titles start at the top so they line up. */
+.exercise-kind-card {
+  justify-content: flex-start;
 }
 .exercise-kind-text {
   display: grid;

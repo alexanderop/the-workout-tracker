@@ -37,6 +37,11 @@ const toggle = (id: string) => {
         @click.prevent="opened = 'language'"
       />
       <BaseListRow label="Version" description="Installed build" value="1.0" />
+      <BaseListRow
+        label="Secondary muscles"
+        value="Back, Shoulders, Arms, Core and Legs"
+        data-testid="long-value"
+      />
     </BaseListGroup>
     <BaseListGroup label="Workouts" data-testid="workouts">
       <template #action

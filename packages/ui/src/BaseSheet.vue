@@ -227,6 +227,12 @@ onBeforeUnmount(() => {
   padding: var(--space-6) var(--space-6) 0;
   background: var(--background);
 }
+/* Focus scrolling keeps the focused control clear of a sticky footer. */
+:global(
+  .sheet:has(> .ui-actions[data-sticky], > form > .ui-actions[data-sticky])
+) {
+  scroll-padding-block-end: calc(var(--space-8) * 2);
+}
 :global(.sheet > .ui-actions[data-sticky]),
 :global(.sheet > form > .ui-actions[data-sticky]) {
   position: sticky;

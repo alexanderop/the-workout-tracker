@@ -69,6 +69,17 @@ describe("given a radio group of card chips", () => {
     await expect.element(page.getByText("dumbbell art")).toBeVisible();
   });
 
+  it("should line the labels up whatever the artwork's height", async () => {
+    const { container } = await render(Chips);
+    const tops = [
+      ...container.querySelectorAll(
+        ".ui-choice-chip[data-size=card] .ui-choice-chip-label",
+      ),
+    ].map((label) => label.getBoundingClientRect().top);
+    expect(tops).toHaveLength(3);
+    expect(new Set(tops).size).toBe(1);
+  });
+
   describe("when choosing a chip", () => {
     it("should select it alone and update the model", async () => {
       await render(Chips);

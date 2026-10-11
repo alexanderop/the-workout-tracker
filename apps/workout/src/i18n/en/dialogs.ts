@@ -101,6 +101,7 @@ export const enDialogs = {
     muscleGroup: "Muscle group",
     secondaryMuscles: "Secondary muscles",
     secondaryHint: "Choose every group that also works.",
+    secondaryMore: "{first} +{count}",
     kind: "Exercise type",
     equipment: "Equipment",
     none: "None",

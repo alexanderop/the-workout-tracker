@@ -20,3 +20,9 @@ Feature: Browsing exercises without losing a workout selection
     And the hidden selection and named active filters remain visible
     And I can remove each filter without losing my search sort or selection
     And I can remove a hidden selection on a short phone
+
+  Scenario: Creating an exercise on a short phone keeps every action in reach
+    Given my exercise catalog includes a custom barbell press
+    When I open Create exercise on a short phone
+    Then secondary muscles open at the top and Done stays in view
+    And the overview summarises them and Create stays in view

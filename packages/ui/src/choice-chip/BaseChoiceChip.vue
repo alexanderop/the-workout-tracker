@@ -165,6 +165,11 @@ const selected = computed(() =>
   max-height: calc(var(--space-8) * 2);
   object-fit: contain;
 }
+/* A card's artwork fills the space above the label, so labels line up across
+   a grid row whatever the artwork's own height. */
+.ui-choice-chip[data-size="card"] .ui-choice-chip-media {
+  flex: 1 1 auto;
+}
 /* A card's artwork gets one height, so labels line up across a grid. */
 .ui-choice-chip[data-size="card"] .ui-choice-chip-media :deep(img) {
   height: calc(var(--space-8) * 2);

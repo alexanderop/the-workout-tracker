@@ -80,3 +80,25 @@ describe("given an open sheet", () => {
     });
   });
 });
+
+describe("given a long sheet with a sticky footer", () => {
+  describe("when tabbing through its fields", () => {
+    it("should keep each focused field clear of the footer", async () => {
+      await page.viewport(320, 568);
+      await render(Sheet, { props: { long: true } });
+      await opener().click();
+      await expect.element(sheet()).toBeVisible();
+      const footer = page
+        .getByRole("button", { name: "Done" })
+        .element()
+        .getBoundingClientRect();
+      for (let n = 1; n <= 12; n += 1) {
+        const field = page.getByRole("textbox", { name: `Exercise ${n}` });
+        field.element().focus();
+        await expect.element(field).toHaveFocus();
+        const box = field.element().getBoundingClientRect();
+        expect(box.bottom).toBeLessThanOrEqual(footer.top);
+      }
+    });
+  });
+});

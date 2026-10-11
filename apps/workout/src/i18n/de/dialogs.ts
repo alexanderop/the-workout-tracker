@@ -107,6 +107,7 @@ export const deDialogs: Catalog["dialogs"] = {
     muscleGroup: "Muskelgruppe",
     secondaryMuscles: "Hilfsmuskeln",
     secondaryHint: "Wähle jede Gruppe, die mitarbeitet.",
+    secondaryMore: "{first} +{count}",
     kind: "Übungsart",
     equipment: "Geräte",
     none: "Keine",

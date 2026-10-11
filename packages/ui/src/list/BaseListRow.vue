@@ -153,7 +153,9 @@ const interactive = (chevron: boolean | undefined) =>
   font-size: var(--text-sm);
   line-height: 1.45;
 }
+/* At most half the row, so a long value never squeezes the label. */
 .ui-list-row-value {
+  max-width: 50%;
   color: var(--muted);
   font-size: var(--text-sm);
   text-align: end;

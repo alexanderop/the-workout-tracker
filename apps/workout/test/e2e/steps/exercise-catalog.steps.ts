@@ -1,6 +1,7 @@
 import { createBdd } from "playwright-bdd";
 import { test } from "../fixtures";
 import { ExerciseCatalogPage } from "../pages/ExerciseCatalogPage";
+import { ExerciseCreatePage } from "../pages/ExerciseCreatePage";
 import { seedWorkoutStorage } from "../seed";
 import { createWorkoutFactory } from "../../support/factories";
 const { Given, When, Then } = createBdd(test);
@@ -77,3 +78,18 @@ Then(
 Then("I can remove a hidden selection on a short phone", async ({ page }) => {
   await new ExerciseCatalogPage(page).removeHiddenSelection();
 });
+When("I open Create exercise on a short phone", async ({ page }) => {
+  await new ExerciseCreatePage(page).open();
+});
+Then(
+  "secondary muscles open at the top and Done stays in view",
+  async ({ page }) => {
+    await new ExerciseCreatePage(page).chooseSecondaryFromScrolledOverview();
+  },
+);
+Then(
+  "the overview summarises them and Create stays in view",
+  async ({ page }) => {
+    await new ExerciseCreatePage(page).expectSummaryAndCreate("Landmine row");
+  },
+);

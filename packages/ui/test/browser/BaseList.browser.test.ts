@@ -189,3 +189,15 @@ describe("given a group with an action and a scrolling card", () => {
     expect(card.scrollTop).toBeGreaterThan(0);
   });
 });
+
+describe("given a row with a long value", () => {
+  it("should cap the value at half the row so the label keeps its width", async () => {
+    await page.viewport(320, 568);
+    await render(List);
+    const row = page.getByTestId("long-value").element();
+    const label = find(row, ".ui-list-row-label").getBoundingClientRect();
+    const value = find(row, ".ui-list-row-value").getBoundingClientRect();
+    expect(value.width).toBeLessThanOrEqual(row.clientWidth / 2);
+    expect(label.right).toBeLessThanOrEqual(value.left);
+  });
+});

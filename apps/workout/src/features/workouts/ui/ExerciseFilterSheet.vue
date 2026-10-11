@@ -51,10 +51,18 @@ watch(
     if (value) panel.value = "overview";
   },
 );
+// A sub-view opens at the top, so Back is never under the sticky header, and
+// the overview comes back where it was left.
+let overviewScroll = 0;
 async function showPanel(next: Panel, focus: Panel | "back") {
+  const sheet = content.value?.closest<HTMLElement>(".sheet");
+  if (panel.value === "overview" && sheet) overviewScroll = sheet.scrollTop;
   panel.value = next;
   await nextTick();
-  content.value?.querySelector<HTMLElement>(`[data-focus="${focus}"]`)?.focus();
+  if (sheet) sheet.scrollTop = next === "overview" ? overviewScroll : 0;
+  content.value
+    ?.querySelector<HTMLElement>(`[data-focus="${focus}"]`)
+    ?.focus({ preventScroll: true });
 }
 function selected(option: string): boolean {
   return (

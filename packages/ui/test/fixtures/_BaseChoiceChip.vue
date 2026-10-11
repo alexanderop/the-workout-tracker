@@ -21,7 +21,9 @@ const equipment = ref("barbell");
         :value="item"
       >
         <template #media
-          ><span class="art">{{ item }} art</span></template
+          ><span class="art" :class="{ tall: item === 'cable' }"
+            >{{ item }} art</span
+          ></template
         >
         {{ item }}
       </BaseChoiceChip>
@@ -38,6 +40,14 @@ main {
   gap: var(--space-3);
   background: var(--ui-background);
   color: var(--ui-foreground);
+}
+/* Artwork of different heights, like a fallback icon beside a figure. */
+.art {
+  display: block;
+  height: calc(var(--space-8) * 1);
+}
+.art.tall {
+  height: calc(var(--space-8) * 2);
 }
 fieldset {
   display: grid;
