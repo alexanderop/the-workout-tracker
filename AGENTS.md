@@ -23,7 +23,7 @@ When changing terminology, behavior, ownership, or a workflow, update its author
 
 ## Paper design workspace
 
-For visual design tasks only, use the Paper file described in [Design › Paper design workspace](docs/design.md#paper-design-workspace). Code-only tasks do not need Paper.
+For visual design tasks, the design tokens, Vue components and Histoire stories are authoritative. The Paper file described in [Design › Paper design workspace](docs/design.md#paper-design-workspace) predates the current visual identity; consult it only as history until it is redrawn. Code-only tasks do not need Paper.
 
 ## Priorities
 
