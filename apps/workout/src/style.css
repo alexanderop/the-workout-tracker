@@ -109,7 +109,7 @@ button:disabled svg {
   background: var(--surface);
   border: 1px solid var(--muted);
 }
-.ui-switch[data-state="checked"] {
+.ui-switch:checked {
   background: var(--accent);
   border-color: var(--accent);
 }
