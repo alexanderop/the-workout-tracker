@@ -16,8 +16,8 @@ const { label = "Opening your training journal" } = defineProps<{
 .ui-loading {
   display: grid;
   justify-items: center;
-  gap: 16px;
-  padding: 48px 20px;
+  gap: var(--space-4);
+  padding: var(--space-8) var(--space-5);
   color: var(--text);
   text-align: center;
 }
@@ -26,12 +26,12 @@ const { label = "Opening your training journal" } = defineProps<{
   place-items: center;
   width: 56px;
   height: 56px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: var(--surface);
   color: var(--accent);
 }
 .ui-loading p {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--text-base);
 }
 </style>

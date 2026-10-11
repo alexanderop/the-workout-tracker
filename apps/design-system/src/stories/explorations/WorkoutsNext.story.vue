@@ -96,44 +96,44 @@ const concepts = [
 
 <style scoped>
 .direction-board {
-  padding: 40px 28px 56px;
+  padding: var(--space-7) var(--space-6) var(--space-8);
   background: var(--background);
   color: var(--text);
 }
 .board-heading {
   max-width: 1200px;
-  margin: 0 auto 38px;
+  margin: 0 auto var(--space-7);
 }
 .board-heading p {
   color: var(--accent);
-  font-size: 10px;
+  font-size: var(--text-xs);
   letter-spacing: 2px;
-  margin: 0 0 12px;
+  margin: 0 0 var(--space-3);
 }
 .board-heading h1 {
-  font-size: 34px;
+  font-size: var(--text-2xl);
   font-weight: 550;
   letter-spacing: -1.3px;
   line-height: 1.2;
-  margin: 0 0 13px;
+  margin: 0 0 var(--space-3);
 }
 .board-heading > span {
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--muted);
   line-height: 1.6;
 }
 .board-controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 24px;
-  margin-top: 18px;
+  gap: var(--space-2) var(--space-6);
+  margin-top: var(--space-4);
 }
 .board-controls label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   min-height: 44px;
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: var(--muted);
   cursor: pointer;
 }
@@ -143,7 +143,7 @@ const concepts = [
 .direction-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 28px;
+  gap: var(--space-6);
   max-width: 1200px;
   margin: auto;
 }
@@ -154,34 +154,34 @@ const concepts = [
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 12px;
+  gap: var(--space-2) var(--space-3);
 }
 .direction-caption h2 {
-  font-size: 15px;
+  font-size: var(--text-base);
   font-weight: 500;
   margin: 0;
 }
 .direction-caption span {
-  font-size: 9px;
+  font-size: var(--text-xs);
   color: var(--accent);
 }
 .direction-caption p {
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--text-xs);
   line-height: 1.6;
   max-width: 270px;
-  margin: 10px 0 18px;
+  margin: var(--space-2) 0 var(--space-4);
 }
 .phone-frame {
   overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 25px;
+  border-radius: var(--radius-lg);
 }
 @media (max-width: 1000px) {
   .direction-grid {
     grid-template-columns: 1fr;
     max-width: 390px;
-    gap: 40px;
+    gap: var(--space-7);
   }
   .board-heading {
     max-width: 390px;

@@ -39,7 +39,7 @@ const steps = computed(() => text.value[platform]);
 <style scoped>
 .ui-install {
   display: grid;
-  gap: 20px;
+  gap: var(--space-5);
   line-height: 1.6;
 }
 .ui-install p {
@@ -48,12 +48,12 @@ const steps = computed(() => text.value[platform]);
 .ui-install ol {
   list-style: decimal;
   display: grid;
-  gap: 12px;
+  gap: var(--space-3);
   margin: 0;
-  padding-inline-start: 24px;
+  padding-inline-start: var(--space-6);
 }
 .ui-install-note {
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--text-sm);
 }
 </style>

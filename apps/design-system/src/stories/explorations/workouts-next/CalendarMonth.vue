@@ -78,7 +78,7 @@ button:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-2);
 }
 i {
   display: block;
@@ -92,7 +92,7 @@ i.logged {
 }
 .month-heading h2 {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--text-sm);
   letter-spacing: -0.2px;
   font-weight: 500;
 }
@@ -117,8 +117,8 @@ i.logged {
 }
 .weekday {
   text-align: center;
-  font-size: 10px;
-  padding: 10px 0;
+  font-size: var(--text-xs);
+  padding: var(--space-2) 0;
   color: var(--muted);
 }
 .month-grid button {
@@ -126,12 +126,12 @@ i.logged {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: var(--space-1);
   height: 44px;
   border: 1px solid transparent;
   background: none;
-  font-size: 12px;
-  border-radius: 10px;
+  font-size: var(--text-sm);
+  border-radius: var(--radius-md);
 }
 .month-grid button.today {
   border-color: var(--accent);
@@ -144,21 +144,21 @@ i.logged {
 }
 .date-detail {
   display: grid;
-  gap: 6px;
-  margin-top: 15px;
-  padding: 14px 0;
+  gap: var(--space-1);
+  margin-top: var(--space-4);
+  padding: var(--space-3) 0;
   border-top: 1px solid var(--border);
 }
 .date-detail > span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 .date-detail strong {
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 500;
 }
 .date-detail small {
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--text-xs);
 }
 </style>

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import {
-  BaseButtonIcon,
+  BaseActions,
   BaseButton,
+  BaseEmptyState,
   BaseLoading,
+  BaseNotice,
   BaseSheet,
   BaseInstallInstructions,
 } from "@form/ui";
@@ -10,14 +12,12 @@ import { computed, onScopeDispose, ref, useTemplateRef, watch } from "vue";
 import {
   ArrowDownToLine,
   ChevronRight,
-  CircleHelp,
   Dumbbell,
   Library,
   Settings,
   ShieldCheck,
   TrendingUp,
   WifiOff,
-  X,
 } from "@lucide/vue";
 import {
   useWorkoutWorkspace,
@@ -92,6 +92,15 @@ const {
   () => workspace.fail(t("shell.notice.pageNotOpened"), true),
   focusMain,
 );
+// A save confirmation belongs to one event: it ends when the route changes,
+// unless it names the page being entered (Finish posts one for Workouts home).
+watch(page, workspace.enterPage, { flush: "sync" });
+// The footer line is ambient save feedback. A workout session has its own: the
+// training notice names each event and the rest panel shows the save state.
+const saveStatus = computed(() => {
+  if (page.value === "session") return "";
+  return saving.value ? t("shell.saving") : message.value;
+});
 const progressExercise = ref("");
 const {
   installOpen,
@@ -190,8 +199,9 @@ const title = computed(() => {
         >
       </nav>
       <BaseButton
-        unstyled
         v-if="active"
+        variant="ghost"
+        size="row"
         class="active-sidebar"
         @click="navigate('session')"
       >
@@ -203,8 +213,9 @@ const title = computed(() => {
       </BaseButton>
       <div class="sidebar-bottom">
         <BaseButton
-          unstyled
           v-if="!installed"
+          variant="ghost"
+          size="row"
           class="sidebar-action"
           @click="install"
         >
@@ -222,9 +233,7 @@ const title = computed(() => {
 
     <div class="workspace">
       <header
-        v-if="
-          (page !== 'workouts' && page !== 'session') || !snapshot || !online
-        "
+        v-if="page !== 'session' || !snapshot || !online"
         class="topbar"
         :class="{ 'is-offline': !online }"
       >
@@ -247,6 +256,7 @@ const title = computed(() => {
         :class="{
           'journal-ready': snapshot && page !== 'exercises',
           'compact-home': page === 'workouts' && workoutView !== 'history',
+          'tab-column': page !== 'session',
         }"
         tabindex="-1"
       >
@@ -254,58 +264,66 @@ const title = computed(() => {
           v-if="state.kind === 'loading'"
           :label="t('shell.loading')"
         />
-        <div v-else-if="loadFailure" class="empty-state">
-          <ShieldCheck :size="32" />
-          <h1>{{ t("shell.loadFailure.title") }}</h1>
-          <p>{{ loadFailure.message }}</p>
-          <BaseButton
-            unstyled
-            v-if="loadFailure.recoveryExport"
-            class="btn secondary"
-            @click="
-              download(
-                loadFailure.recoveryExport,
-                'the-workout-tracker-recovery.json',
-              )
-            "
-          >
-            {{ t("shell.loadFailure.export") }}</BaseButton
-          ><BaseButton unstyled class="btn primary" @click="reload">{{
-            t("shell.loadFailure.tryAgain")
-          }}</BaseButton>
-        </div>
+        <BaseEmptyState
+          v-else-if="loadFailure"
+          :title="t('shell.loadFailure.title')"
+          :body="loadFailure.message"
+          :heading-level="1"
+        >
+          <template #icon><ShieldCheck :size="32" /></template>
+          <template #action>
+            <BaseActions>
+              <BaseButton
+                v-if="loadFailure.recoveryExport"
+                variant="secondary"
+                @click="
+                  download(
+                    loadFailure.recoveryExport,
+                    'the-workout-tracker-recovery.json',
+                  )
+                "
+              >
+                {{ t("shell.loadFailure.export") }}</BaseButton
+              ><BaseButton @click="reload">{{
+                t("shell.loadFailure.tryAgain")
+              }}</BaseButton>
+            </BaseActions>
+          </template>
+        </BaseEmptyState>
         <template v-else-if="snapshot">
-          <div v-if="error" class="notice" role="alert">
-            <CircleHelp :size="18" /><span>{{ error }}</span
-            ><BaseButton
-              v-if="notice.kind === 'failed' && notice.reload"
-              unstyled
-              class="text-button"
-              @click="reload"
-              >{{ t("shell.notice.reload") }}</BaseButton
-            ><BaseButtonIcon
-              :label="t('shell.notice.dismiss')"
-              @click="workspace.clearError()"
-            >
-              <X :size="16" />
-            </BaseButtonIcon>
-          </div>
-          <div v-if="needRefresh && !active" class="notice" role="status">
-            <span>{{ t("shell.notice.updateReady") }}</span
-            ><BaseButton
-              unstyled
-              class="text-button"
-              @click="updateServiceWorker(true)"
-            >
-              {{ t("shell.notice.updateApp") }}
-            </BaseButton>
-          </div>
-          <div v-if="reloadReady && !active" class="notice" role="status">
-            <span>{{ t("shell.notice.updated") }}</span
-            ><BaseButton unstyled class="text-button" @click="reload">
-              {{ t("shell.notice.reloadApp") }}
-            </BaseButton>
-          </div>
+          <BaseNotice
+            v-if="error"
+            class="shell-notice"
+            tone="danger"
+            :dismiss-label="t('shell.notice.dismiss')"
+            @dismiss="workspace.clearError()"
+          >
+            {{ error }}
+            <template v-if="notice.kind === 'failed' && notice.reload" #action>
+              <BaseButton variant="link" size="sm" @click="reload">{{
+                t("shell.notice.reload")
+              }}</BaseButton>
+            </template>
+          </BaseNotice>
+          <BaseNotice v-if="needRefresh && !active" class="shell-notice">
+            {{ t("shell.notice.updateReady") }}
+            <template #action>
+              <BaseButton
+                variant="link"
+                size="sm"
+                @click="updateServiceWorker(true)"
+                >{{ t("shell.notice.updateApp") }}</BaseButton
+              >
+            </template>
+          </BaseNotice>
+          <BaseNotice v-if="reloadReady && !active" class="shell-notice">
+            {{ t("shell.notice.updated") }}
+            <template #action>
+              <BaseButton variant="link" size="sm" @click="reload">{{
+                t("shell.notice.reloadApp")
+              }}</BaseButton>
+            </template>
+          </BaseNotice>
           <RouterView />
           <footer class="main-footer">
             <nav :aria-label="t('shell.nav.footer')">
@@ -316,9 +334,7 @@ const title = computed(() => {
                 >{{ t("shell.nav.settings") }}</RouterLink
               >
             </nav>
-            <span class="save-status" role="status">{{
-              saving ? t("shell.saving") : message || ""
-            }}</span>
+            <span class="save-status" role="status">{{ saveStatus }}</span>
           </footer>
         </template>
       </main>

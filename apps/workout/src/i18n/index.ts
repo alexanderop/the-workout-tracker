@@ -3,6 +3,9 @@ import type { App, InjectionKey, Ref } from "vue";
 import type { en } from "./en";
 import { createFormat } from "./format";
 
+/** The locale-aware number, date and duration formatters `useFormat()` returns. */
+export type Format = ReturnType<typeof createFormat>;
+
 /**
  * A small typed message catalog in place of vue-i18n: the library alone would
  * spend the whole JavaScript budget (performance-budgets.json), and the app

@@ -1,8 +1,21 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, useTemplateRef, watch } from "vue";
-import { BaseButton, BaseButtonIcon } from "@form/ui";
-import { Plus, Dumbbell, Ellipsis, Check, ChevronLeft } from "@lucide/vue";
-import { useFormat, useTranslation } from "../../../i18n";
+import {
+  computed,
+  nextTick,
+  onScopeDispose,
+  ref,
+  useTemplateRef,
+  watch,
+} from "vue";
+import {
+  BaseBackLink,
+  BaseButton,
+  BaseButtonIcon,
+  BaseEmptyState,
+  BaseNotice,
+} from "@form/ui";
+import { Plus, Dumbbell, Ellipsis } from "@lucide/vue";
+import { useTranslation } from "../../../i18n";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import {
   barbellSettings,
@@ -14,14 +27,13 @@ import type { Confirmation } from "./dialogTypes";
 import SetRow from "./SetRow.vue";
 import TrainingHeader from "./TrainingHeader.vue";
 import TrainingExerciseStrip from "./TrainingExerciseStrip.vue";
-import { isExerciseComplete } from "./presentation";
 import type { TrainingRow } from "./useTrainingSession";
 import ExerciseConfiguration from "./ExerciseConfiguration.vue";
+import TrainingLastTime from "./TrainingLastTime.vue";
 import TrainingSetEditor from "./TrainingSetEditor.vue";
 import TrainingRenameSheets from "./TrainingRenameSheets.vue";
 import TrainingRestPanel from "./TrainingRestPanel.vue";
 import { equipmentLabel } from "./exerciseLabels";
-import { lastExercisePerformance } from "../domain/exerciseHistory";
 import "./training.css";
 const { workspace, workoutsHref } = defineProps<{
   workspace: WorkoutWorkspace;
@@ -38,7 +50,6 @@ const emit = defineEmits<{
 const { active, snapshot, saving, activeSetCount, training, canFinish } =
   workspace;
 const { t } = useTranslation();
-const format = useFormat();
 const renameOpen = ref(false);
 const renameSheets =
   useTemplateRef<InstanceType<typeof TrainingRenameSheets>>("renameSheets");
@@ -84,15 +95,6 @@ function barbellFor(exerciseId: string): Barbell | null {
     return null;
   return barbellSettings(current.settings);
 }
-const lastTime = computed(() => {
-  const exercise = selectedExercise.value;
-  return exercise
-    ? lastExercisePerformance(
-        snapshot.value?.completed ?? {},
-        exercise.exerciseId,
-      )
-    : null;
-});
 const prescription = computed(() => {
   const sets = selectedExercise.value?.sets ?? [];
   const targets = new Set(sets.map(setTargetReps));
@@ -109,6 +111,15 @@ watch(
     renameOpen.value = false;
   },
 );
+// The training notice is a toast above the dock, so it never moves the set rows
+// or Discard workout. Like the footer save line it ends after eight seconds.
+const NOTICE_MS = 8000;
+let noticeTimer: ReturnType<typeof setTimeout> | undefined;
+watch(training.notice, (text) => {
+  clearTimeout(noticeTimer);
+  if (text) noticeTimer = setTimeout(() => training.announce(""), NOTICE_MS);
+});
+onScopeDispose(() => clearTimeout(noticeTimer));
 const allDone = computed(() => !!activeSetCount.value && !training.next.value);
 function pick() {
   emit("pick");
@@ -169,6 +180,7 @@ function remove(exercise: SessionExercise) {
   configId.value = null;
   if (!active.value) return;
   emit("confirm", {
+    intent: "destructive",
     title: t("training.removeExercise.title"),
     description: t("training.removeExercise.description", {
       exercise: exercise.name,
@@ -206,6 +218,7 @@ watch(configuration, (value) => {
 function discard() {
   if (!active.value) return;
   emit("confirm", {
+    intent: "destructive",
     title: t("training.discardWorkout.title"),
     description: t("training.discardWorkout.description"),
     actionLabel: t("training.discardWorkout.action"),
@@ -215,29 +228,40 @@ function discard() {
 </script>
 <template>
   <section v-if="active" class="active-workout">
-    <a
-      class="training-back text-button"
-      :href="workoutsHref"
-      :aria-label="t('training.page.backLabel')"
-      @click="emit('back', $event)"
-      ><ChevronLeft :size="20" aria-hidden="true" /><span
-        class="training-back-label"
-        >{{ t("training.page.backShort") }}</span
-      ></a
-    >
     <TrainingHeader
       :workspace="workspace"
       @finish="emit('finish')"
       @rename="renameOpen = true"
-    />
+    >
+      <template #back>
+        <BaseBackLink
+          :href="workoutsHref"
+          :aria-label="t('training.page.backLabel')"
+          @click="emit('back', $event)"
+          >{{ t("training.page.backShort") }}</BaseBackLink
+        >
+      </template>
+    </TrainingHeader>
     <div class="active-workout-layout">
       <div class="active-workout-content">
         <TrainingExerciseStrip :workspace="workspace" @pick="pick" />
-        <div v-if="!active.exercises.length" class="workout-empty">
-          <Dumbbell :size="28" />
-          <h2>{{ t("training.page.emptyTitle") }}</h2>
-          <p>{{ t("training.page.emptyText") }}</p>
-        </div>
+        <BaseEmptyState
+          v-if="!active.exercises.length"
+          :title="t('training.page.emptyTitle')"
+          :body="t('training.page.emptyText')"
+        >
+          <template #icon><Dumbbell :size="28" /></template>
+          <template #action
+            ><BaseButton
+              ref="addButton"
+              :disabled="saving || active.exercises.length >= 50"
+              @click="pick"
+              ><Plus :size="18" />{{
+                t("training.page.addExercises")
+              }}</BaseButton
+            ></template
+          >
+        </BaseEmptyState>
         <article v-if="selectedExercise" class="workout-selected-exercise">
           <header>
             <h2>{{ selectedExercise.name }}</h2>
@@ -254,7 +278,8 @@ function discard() {
             /></BaseButtonIcon>
           </header>
           <BaseButton
-            unstyled
+            variant="ghost"
+            size="row"
             class="workout-prescription"
             :disabled="saving"
             @click="configure(selectedExercise.id)"
@@ -305,36 +330,16 @@ function discard() {
               ><Plus :size="18" />{{ t("training.page.addSet") }}</BaseButton
             >
           </div>
-          <section
-            v-if="lastTime"
-            class="workout-last-time"
-            :aria-label="t('training.page.lastTime')"
-          >
-            <header>
-              <h3>{{ t("training.page.lastTime") }}</h3>
-              <span>{{ format.longDate(lastTime.finishedAt) }}</span>
-            </header>
-            <p v-for="(set, index) in lastTime.sets" :key="set.id">
-              <span>{{ t("training.page.lastTimeSet", { n: index + 1 }) }}</span
-              ><strong>{{
-                t("training.page.lastTimeResult", {
-                  weight: format.number(set.weightKg),
-                  reps: set.reps,
-                })
-              }}</strong>
-            </p>
-          </section>
-          <p
-            v-if="isExerciseComplete(selectedExercise)"
-            class="workout-exercise-complete"
-          >
-            <Check :size="16" />
-            {{ t("training.page.setLogged", selectedExercise.sets.length) }}
-          </p>
+          <TrainingLastTime
+            :exercise-id="selectedExercise.exerciseId"
+            :completed="snapshot?.completed ?? {}"
+          />
         </article>
-        <p v-if="training.notice.value" class="workout-guidance" role="status">
-          {{ training.notice.value }}
-        </p>
+        <div class="workout-feedback">
+          <BaseNotice v-if="training.notice.value">{{
+            training.notice.value
+          }}</BaseNotice>
+        </div>
         <div v-if="allDone" class="workout-done">
           <p class="eyebrow">{{ t("training.page.allLoggedEyebrow") }}</p>
           <h2>{{ t("training.page.allLoggedTitle") }}</h2>
@@ -343,15 +348,6 @@ function discard() {
             t("training.page.finishWorkout")
           }}</BaseButton>
         </div>
-        <BaseButton
-          v-if="!active.exercises.length"
-          ref="addButton"
-          class="workout-add"
-          variant="secondary"
-          :disabled="saving || active.exercises.length >= 50"
-          @click="pick"
-          ><Plus :size="18" />{{ t("training.page.addExercises") }}</BaseButton
-        >
         <BaseButton
           variant="ghost"
           class="workout-discard"
@@ -388,11 +384,16 @@ function discard() {
       @options="emit('options', $event)"
     />
   </section>
-  <div v-else class="empty-state">
-    <Dumbbell :size="32" />
-    <h1>{{ t("training.page.readyTitle") }}</h1>
-    <BaseButton @click="emit('navigate', 'workouts')">{{
-      t("training.page.chooseWorkout")
-    }}</BaseButton>
-  </div>
+  <BaseEmptyState
+    v-else
+    :title="t('training.page.readyTitle')"
+    :heading-level="1"
+  >
+    <template #icon><Dumbbell :size="32" /></template>
+    <template #action
+      ><BaseButton @click="emit('navigate', 'workouts')">{{
+        t("training.page.chooseWorkout")
+      }}</BaseButton></template
+    >
+  </BaseEmptyState>
 </template>

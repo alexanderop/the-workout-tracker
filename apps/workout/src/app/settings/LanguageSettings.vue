@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { BaseSegmentedControl } from "@form/ui";
+import { BaseNotice, BaseSegmentedControl } from "@form/ui";
 import { useTranslation } from "../../i18n";
 import { languages } from "../language";
 import { useLanguageSetting } from "../useLanguage";
@@ -22,7 +22,7 @@ const options = computed(() =>
     @update:model-value="setLanguage"
   />
   <p class="settings-help">{{ t("shell.language.help") }}</p>
-  <p v-if="loadFailed" class="field-error" role="alert">
-    {{ t("shell.language.loadFailed") }}
-  </p>
+  <BaseNotice v-if="loadFailed" tone="danger">{{
+    t("shell.language.loadFailed")
+  }}</BaseNotice>
 </template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { BaseButton, BaseInput, BaseSheet } from "@form/ui";
+import { BaseButton, BaseInput, BaseNotice, BaseSheet } from "@form/ui";
 import { useTranslation } from "../../../i18n";
 import type { useWorkoutName } from "./useWorkoutName";
 import { useUnsavedChangesWarning } from "./useUnsavedChangesWarning";
@@ -26,10 +26,14 @@ watch(
     class="name-recovery-notice"
     :aria-label="t('training.recovery.label')"
   >
-    <p role="status">{{ t("training.recovery.stillHere") }}</p>
-    <BaseButton size="sm" @click="open = true">{{
-      t("training.recovery.review")
-    }}</BaseButton>
+    <BaseNotice>
+      {{ t("training.recovery.stillHere") }}
+      <template #action>
+        <BaseButton size="sm" @click="open = true">{{
+          t("training.recovery.review")
+        }}</BaseButton>
+      </template>
+    </BaseNotice>
   </aside>
   <BaseSheet
     :open="open"
@@ -54,13 +58,9 @@ watch(
         {{ t("training.recovery.conflict", { savedName: entry.savedName }) }}
       </p>
       <p v-else class="muted">{{ t("training.recovery.ready") }}</p>
-      <p
-        v-if="recoveryIssues.get(entry.sessionId)"
-        class="field-error"
-        role="alert"
-      >
+      <BaseNotice v-if="recoveryIssues.get(entry.sessionId)" tone="danger">
         {{ recoveryIssues.get(entry.sessionId) }}
-      </p>
+      </BaseNotice>
       <div class="name-recovery-actions">
         <BaseButton
           v-if="entry.state !== 'missing'"
@@ -88,35 +88,31 @@ watch(
   </BaseSheet>
 </template>
 <style scoped>
+/* Positions the notice; BaseNotice draws the surface. */
 .name-recovery-notice {
   position: fixed;
   z-index: 40;
-  inset-block-end: calc(5rem + env(safe-area-inset-bottom, 0px));
-  inset-inline-start: 1rem;
-  inset-inline-end: 1rem;
+  inset-block-end: calc(
+    var(--space-8) + var(--space-7) + env(safe-area-inset-bottom, 0px)
+  );
+  inset-inline: var(--space-4);
   margin-inline: auto;
-  max-width: 30rem;
-  padding: 1rem;
-  border: 1px solid var(--muted);
-  border-radius: 1rem;
-  background: var(--surface);
+  max-width: calc(var(--space-8) * 10);
+  border-radius: var(--radius-md);
   box-shadow: 0 4px 24px var(--ui-shadow-dialog);
-}
-.name-recovery-notice p {
-  margin: 0 0 0.5rem;
 }
 .name-recovery-entry {
   display: grid;
-  gap: 0.75rem;
-  padding-block: 1rem;
+  gap: var(--space-3);
+  padding-block: var(--space-3);
 }
 .name-recovery-entry label {
   display: grid;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 .name-recovery-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 </style>

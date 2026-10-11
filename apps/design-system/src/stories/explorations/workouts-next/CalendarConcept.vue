@@ -208,7 +208,7 @@ function openDay(key: string) {
 
 <style scoped>
 .calendar-study {
-  margin-bottom: 26px;
+  margin-bottom: var(--space-6);
   color: var(--text);
 }
 button {
@@ -223,7 +223,7 @@ button:focus-visible {
 .week-opener {
   display: block;
   width: 100%;
-  padding: 0 0 23px;
+  padding: 0 0 var(--space-6);
   border: 0;
   border-bottom: 1px solid var(--border);
   background: none;
@@ -233,40 +233,40 @@ button:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-2);
 }
 .calendar-heading strong {
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 500;
 }
 .calendar-heading > span {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--space-1);
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 .week-strip {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  margin-top: 17px;
+  margin-top: var(--space-4);
 }
 .week-day {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 7px;
+  gap: var(--space-2);
 }
 .week-day small {
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 .day-number {
   display: grid;
   place-items: center;
   width: 32px;
   height: 32px;
-  font-size: 13px;
+  font-size: var(--text-sm);
   border-radius: 50%;
 }
 .day-number.today {
@@ -284,7 +284,7 @@ i.logged {
   background: var(--accent);
 }
 .calendar-kicker {
-  font-size: 9px;
+  font-size: var(--text-xs);
   letter-spacing: 1.3px;
   color: var(--muted);
 }
@@ -302,18 +302,18 @@ i.logged {
   justify-content: space-between;
 }
 .rhythm-heading h2 {
-  margin: 9px 0 18px;
-  font-size: 40px;
+  margin: var(--space-2) 0 var(--space-4);
+  font-size: var(--text-3xl);
   line-height: 1;
   letter-spacing: -2px;
   font-weight: 500;
 }
 .rhythm-heading h2 small {
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 400;
   letter-spacing: 0;
-  margin-left: 9px;
+  margin-left: var(--space-2);
 }
 .rhythm-scroll {
   overflow-x: auto;
@@ -322,22 +322,22 @@ i.logged {
   display: grid;
   grid-template-columns: repeat(7, minmax(44px, 1fr));
   min-width: 308px;
-  gap: 3px 0;
+  gap: var(--space-1) 0;
 }
 .rhythm-rail button {
   position: relative;
   height: 44px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: none;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 7px;
+  gap: var(--space-2);
   justify-content: center;
 }
 .rhythm-rail button span {
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--muted);
 }
 .rhythm-rail button i {
@@ -354,15 +354,15 @@ i.logged {
 .rhythm-caption {
   display: flex;
   justify-content: space-between;
-  gap: 8px;
-  margin-top: 12px;
-  font-size: 9px;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  font-size: var(--text-xs);
   color: var(--muted);
 }
 .rhythm-caption > span {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--space-1);
 }
 .rhythm-caption i {
   background: var(--accent);
@@ -371,7 +371,7 @@ i.logged {
   color: var(--text);
 }
 .calendar-study--rhythm {
-  padding-bottom: 23px;
+  padding-bottom: var(--space-6);
   border-bottom: 1px solid var(--border);
 }
 </style>

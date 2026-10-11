@@ -183,34 +183,34 @@ function nextExercise() {
 <style scoped>
 .exploration {
   min-height: 100dvh;
-  padding: 32px 20px;
+  padding: var(--space-7) var(--space-5);
   box-sizing: border-box;
   background: var(--ui-background);
   color: var(--ui-foreground);
 }
 .concept-caption {
   max-width: 720px;
-  margin: 0 auto 28px;
+  margin: 0 auto var(--space-6);
 }
 .concept-caption h1 {
-  font-size: 26px;
+  font-size: var(--text-xl);
   font-weight: 500;
   letter-spacing: -1px;
-  margin: 10px 0;
+  margin: var(--space-2) 0;
 }
 .concept-caption p,
 .preview-footer,
 .rest-stage p {
   color: var(--ui-muted-foreground);
-  font-size: 12px;
+  font-size: var(--text-sm);
   line-height: 1.6;
 }
 .workout-concept {
   max-width: 480px;
   margin: auto;
   border: 1px solid var(--ui-border);
-  border-radius: 24px;
-  padding: 28px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
   background: var(--ui-background);
 }
 .session-top,
@@ -220,27 +220,27 @@ function nextExercise() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 }
 .session-top h2 {
-  margin: 8px 0 24px;
-  font-size: 24px;
+  margin: var(--space-2) 0 var(--space-6);
+  font-size: var(--text-xl);
   font-weight: 550;
   letter-spacing: -0.7px;
 }
 .elapsed {
   display: flex;
-  gap: 6px;
+  gap: var(--space-1);
   align-items: center;
   color: var(--ui-muted-foreground);
-  font-size: 12px;
+  font-size: var(--text-sm);
 }
 .eyebrow {
   margin: 0;
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 .session-progress {
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--ui-muted-foreground);
 }
 progress {
@@ -248,36 +248,36 @@ progress {
   height: 4px;
   border: 0;
   display: block;
-  margin: 12px 0 24px;
+  margin: var(--space-3) 0 var(--space-6);
   accent-color: var(--ui-primary);
 }
 progress::-webkit-progress-bar {
   background: var(--ui-secondary);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 progress::-webkit-progress-value {
   background: var(--ui-primary);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 .exercise-list {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   overflow-x: auto;
-  padding-bottom: 12px;
+  padding-bottom: var(--space-3);
 }
 .exercise-list button {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   flex: 0 0 auto;
   background: var(--ui-background);
   color: var(--ui-muted-foreground);
   border: 1px solid var(--ui-border);
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
   text-align: left;
   font: inherit;
-  font-size: 12px;
+  font-size: var(--text-sm);
   cursor: pointer;
   min-height: 48px;
 }
@@ -291,9 +291,9 @@ progress::-webkit-progress-value {
 }
 .exercise-list small {
   display: block;
-  margin-top: 5px;
+  margin-top: var(--space-1);
   color: var(--ui-muted-foreground);
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 .exercise-number {
   color: var(--ui-primary);
@@ -301,10 +301,10 @@ progress::-webkit-progress-value {
 }
 .rest-strip {
   flex-wrap: wrap;
-  margin-top: 20px;
+  margin-top: var(--space-5);
   border-top: 1px solid var(--ui-border);
-  padding-top: 20px;
-  font-size: 11px;
+  padding-top: var(--space-5);
+  font-size: var(--text-xs);
 }
 .rest-strip > span {
   justify-content: start;
@@ -312,17 +312,17 @@ progress::-webkit-progress-value {
 }
 .rest-strip strong {
   color: var(--ui-primary);
-  font-size: 20px;
+  font-size: var(--text-lg);
 }
 .preview-footer {
   border-top: 1px solid var(--ui-border);
-  margin-top: 24px;
-  padding-top: 12px;
+  margin-top: var(--space-6);
+  padding-top: var(--space-3);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  font-size: 10px;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
 }
 .preview-footer > span {
   flex: 1 1 100%;
@@ -336,38 +336,38 @@ progress::-webkit-progress-value {
 }
 .rest-stage {
   text-align: center;
-  padding: 36px 0 12px;
+  padding: var(--space-7) 0 var(--space-3);
 }
 .rest-stage > strong {
   display: block;
-  font-size: clamp(64px, 15vw, 96px);
+  font-size: clamp(var(--text-3xl), 15vw, var(--text-3xl));
   font-weight: 400;
   letter-spacing: -5px;
   color: var(--ui-primary);
-  margin: 20px 0 0;
+  margin: var(--space-5) 0 0;
   font-variant-numeric: tabular-nums;
 }
 .rest-stage .ui-button {
   width: 100%;
-  margin-top: 20px;
+  margin-top: var(--space-5);
   min-height: 52px;
 }
 @media (max-width: 480px) {
   .exploration {
-    padding: 20px 12px;
+    padding: var(--space-5) var(--space-3);
   }
   .concept-caption h1 {
-    font-size: 21px;
+    font-size: var(--text-lg);
   }
   .workout-concept {
-    padding: 20px 16px;
-    border-radius: 18px;
+    padding: var(--space-5) var(--space-4);
+    border-radius: var(--radius-lg);
   }
   .exercise-heading h3 {
-    font-size: 28px;
+    font-size: var(--text-2xl);
   }
   .entry-values {
-    gap: 10px;
+    gap: var(--space-2);
   }
 }
 </style>

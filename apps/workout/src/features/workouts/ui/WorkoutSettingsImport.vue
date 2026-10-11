@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { ref, useTemplateRef } from "vue";
-import { BaseButton } from "@form/ui";
+import {
+  BaseActions,
+  BaseButton,
+  BaseFileInput,
+  BaseNotice,
+  type NoticeTone,
+} from "@form/ui";
 import { Upload } from "@lucide/vue";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import { Conflict } from "../domain";
@@ -18,17 +24,16 @@ const { snapshot, saving, importBackup: importData } = workspace;
 const backupFile = ref<{ name: string; json: string; revision: number } | null>(
   null,
 );
-const message = ref("");
-const importInput = useTemplateRef<HTMLInputElement>("importInput");
+const status = ref<{ tone: NoticeTone; text: string } | null>(null);
+const report = (tone: NoticeTone, text: string) => {
+  status.value = { tone, text };
+};
+const importInput =
+  useTemplateRef<InstanceType<typeof BaseFileInput>>("importInput");
 
-async function selectBackup(event: Event) {
-  const input = event.target;
-  if (!(input instanceof HTMLInputElement)) return;
-  const file = input.files?.[0];
-  if (!file) return;
+async function selectBackup(file: File) {
   if (file.size > 20_000_000) {
-    message.value = t("settings.backup.tooLarge");
-    input.value = "";
+    report("danger", t("settings.backup.tooLarge"));
     return;
   }
   try {
@@ -37,11 +42,10 @@ async function selectBackup(event: Event) {
       json: await file.text(),
       revision: snapshot.value?.revision ?? 0,
     };
-    message.value = "";
+    status.value = null;
   } catch {
-    message.value = t("settings.backup.unreadableFile");
+    report("danger", t("settings.backup.unreadableFile"));
   }
-  input.value = "";
 }
 async function importBackup() {
   const file = backupFile.value;
@@ -52,17 +56,17 @@ async function importBackup() {
     if (!result) return;
     if (result.isOk()) {
       backupFile.value = null;
-      message.value = t("settings.backup.imported");
+      report("success", t("settings.backup.imported"));
       return;
     }
     if (Conflict.is(result.error)) {
       backupFile.value = null;
-      message.value = t("settings.backup.changed");
+      report("info", t("settings.backup.changed"));
       return;
     }
-    message.value = describeFailure(result.error, t).message;
+    report("danger", describeFailure(result.error, t).message);
   } catch {
-    message.value = t("settings.backup.importFailed");
+    report("danger", t("settings.backup.importFailed"));
   } finally {
     onBusyChange(false);
   }
@@ -75,23 +79,20 @@ async function importBackup() {
     variant="secondary"
     class="settings-action"
     :disabled="busy || saving"
-    @click="importInput?.click()"
+    @click="importInput?.open()"
   >
     <Upload :size="17" aria-hidden="true" />{{ t("settings.backup.import") }}
   </BaseButton>
-  <input
+  <BaseFileInput
     ref="importInput"
-    class="sr-only"
-    tabindex="-1"
-    type="file"
     accept="application/json,.json"
-    :aria-label="t('settings.backup.fileLabel')"
-    @change="selectBackup"
+    :label="t('settings.backup.fileLabel')"
+    @select="selectBackup"
   />
   <div v-if="backupFile" class="import-preview">
     <strong>{{ backupFile.name }}</strong>
     <p class="settings-help">{{ t("settings.backup.previewHint") }}</p>
-    <div class="form-actions">
+    <BaseActions>
       <BaseButton
         variant="secondary"
         :disabled="busy"
@@ -106,7 +107,7 @@ async function importBackup() {
             : t("settings.backup.importThis")
         }}
       </BaseButton>
-    </div>
+    </BaseActions>
   </div>
-  <p role="status" class="settings-notice">{{ message }}</p>
+  <BaseNotice v-if="status" :tone="status.tone">{{ status.text }}</BaseNotice>
 </template>

@@ -90,7 +90,7 @@ const concepts = [
 </template>
 <style scoped>
 .calendar-board {
-  padding: 40px 24px 56px;
+  padding: var(--space-7) var(--space-6) var(--space-8);
   background: var(--background);
   color: var(--text);
 }
@@ -101,28 +101,28 @@ const concepts = [
 }
 .board-intro > span {
   color: var(--accent);
-  font-size: 10px;
+  font-size: var(--text-xs);
   letter-spacing: 1.7px;
 }
 .board-intro h1 {
-  font-size: 34px;
+  font-size: var(--text-2xl);
   font-weight: 550;
   letter-spacing: -1.2px;
   line-height: 1.2;
-  margin: 13px 0;
+  margin: var(--space-3) 0;
 }
 .board-intro p {
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--muted);
   line-height: 1.6;
 }
 .board-intro label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   min-height: 44px;
-  font-size: 12px;
-  margin: 20px 0 30px;
+  font-size: var(--text-sm);
+  margin: var(--space-5) 0 var(--space-7);
   cursor: pointer;
 }
 .board-intro input {
@@ -131,44 +131,44 @@ const concepts = [
 .concept-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 26px;
+  gap: var(--space-6);
 }
 .concept-caption {
   min-height: 143px;
 }
 .concept-caption > span {
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--accent);
 }
 .concept-caption h2 {
-  font-size: 17px;
+  font-size: var(--text-base);
   font-weight: 500;
   letter-spacing: -0.3px;
-  margin: 10px 0;
+  margin: var(--space-2) 0;
 }
 .concept-caption p {
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--text-sm);
   line-height: 1.6;
   max-width: 330px;
 }
 .concept-phone {
   border: 1px solid var(--border);
-  border-radius: 22px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 @media (max-width: 1100px) {
   .concept-grid {
     grid-template-columns: 1fr;
     max-width: 390px;
-    gap: 36px;
+    gap: var(--space-7);
   }
   .board-intro {
     max-width: 390px;
   }
   .concept-caption {
     min-height: auto;
-    margin-bottom: 22px;
+    margin-bottom: var(--space-5);
   }
 }
 </style>

@@ -89,7 +89,7 @@ export class WorkoutPage {
       await editor.getByRole("group", { name: "Number editor" }).press(digit);
     }
     await editor
-      .getByRole("button", { name: "Use weight", exact: true })
+      .getByRole("button", { name: "Done: weight", exact: true })
       .click();
     await expect(this.weight()).toHaveText(value);
   }
@@ -147,6 +147,32 @@ export class WorkoutPage {
     await expect(
       this.page.getByRole("progressbar", { name: "Logged sets" }),
     ).toHaveAttribute("value", "1");
+  }
+
+  /** The set log is reported by one visible message, not two. */
+  async expectSetLoggedReportedOnce() {
+    await expect(
+      this.page.getByText("Bench press · set 1 logged.", { exact: true }),
+    ).toHaveCount(1);
+    await expect(
+      this.page.getByText(/^(Set logged|All \d+ sets logged)$/),
+    ).toHaveCount(0);
+  }
+
+  savedMessage() {
+    return this.page
+      .getByRole("status")
+      .filter({ hasText: "Workout saved. Another session in the books." });
+  }
+
+  async openProgress() {
+    await this.page
+      .getByRole("navigation", { name: "Mobile navigation" })
+      .getByRole("link", { name: "Progress", exact: true })
+      .click();
+    await expect(
+      this.page.getByRole("heading", { name: "Progress", exact: true }),
+    ).toBeVisible();
   }
 
   trainingControls() {
@@ -215,11 +241,16 @@ export class WorkoutPage {
     ).toBeVisible();
   }
 
+  /** A history row's name is the workout name, its date and summary, then the exercises. */
+  private historyRows() {
+    return this.page.getByRole("button", { name: /· \d+ sets? · / });
+  }
+
   async expectHistory(volume: number) {
     await expect(
       this.page.getByRole("heading", { name: "History", exact: true }),
     ).toBeVisible();
-    const record = this.page.getByRole("article");
+    const record = this.historyRows();
     await expect(record).toHaveCount(1);
     await expect(record).toContainText("Bench press");
     await expect(record).toContainText("1 set");
@@ -227,7 +258,7 @@ export class WorkoutPage {
   }
 
   async repeatHistory() {
-    await this.page.getByRole("article").getByRole("button").click();
+    await this.historyRows().click();
     await this.page
       .getByRole("button", { name: "Repeat workout", exact: true })
       .click();
@@ -311,11 +342,12 @@ export class WorkoutPage {
     await expect(
       this.page.getByRole("dialog", { name: "Templates", exact: true }),
     ).toBeVisible();
-    const card = this.page.getByRole("article");
-    await expect(card).toHaveCount(1);
+    const row = this.page
+      .getByRole("dialog", { name: "Templates", exact: true })
+      .getByRole("button", { name: `Start ${name}`, exact: true });
+    await expect(row).toHaveCount(1);
     await expect(
-      card.getByRole("heading", { name, exact: true }),
+      this.page.getByText(exercise, { exact: false }).first(),
     ).toBeVisible();
-    await expect(card).toContainText(exercise);
   }
 }

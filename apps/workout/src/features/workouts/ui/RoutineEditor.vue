@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import {
+  BaseActions,
   BaseButtonIcon,
   BaseButton,
   BaseInput,
   BaseTextarea,
   BaseInputNumber,
+  BaseNotice,
 } from "@form/ui";
 import { computed, ref } from "vue";
 import { Plus, Trash2 } from "@lucide/vue";
@@ -260,9 +262,10 @@ function save() {
           </BaseButtonIcon>
         </div>
         <BaseButton
-          unstyled
+          variant="ghost"
+          size="sm"
           type="button"
-          class="text-button add-set"
+          class="add-set"
           :disabled="entry.sets.length >= 30"
           @click="addSet(entry)"
         >
@@ -270,9 +273,9 @@ function save() {
         </BaseButton>
       </section>
       <BaseButton
-        unstyled
+        variant="secondary"
         type="button"
-        class="btn secondary full-width"
+        class="full-width"
         :disabled="entries.length >= 50"
         @click="pickerOpen = !pickerOpen"
       >
@@ -289,9 +292,8 @@ function save() {
           :busy="busy"
           @toggle="toggle"
         /><BaseButton
-          unstyled
           type="button"
-          class="btn primary full-width"
+          class="full-width"
           :disabled="!selected.length"
           @click="addExercises"
         >
@@ -299,22 +301,22 @@ function save() {
         </BaseButton>
       </div>
     </fieldset>
-    <p v-if="error" class="field-error" role="alert">{{ error }}</p>
-    <div class="form-actions">
+    <BaseNotice v-if="error" tone="danger">{{ error }}</BaseNotice>
+    <BaseActions>
       <BaseButton
-        unstyled
         type="button"
-        class="btn secondary"
+        variant="secondary"
         :disabled="busy"
         @click="requestClose"
       >
-        {{ t("dialogs.actions.cancel") }}</BaseButton
-      ><BaseButton unstyled type="submit" class="btn primary" :disabled="busy">
+        {{ t("dialogs.actions.cancel") }}
+      </BaseButton>
+      <BaseButton type="submit" :disabled="busy">
         {{
           busy ? t("dialogs.actions.saving") : t("dialogs.routineEditor.save")
         }}
       </BaseButton>
-    </div>
+    </BaseActions>
   </form>
   <RoutineEditorConfirmations
     :discard-open="discardOpen"
@@ -337,18 +339,18 @@ function save() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 .exercise-heading h3 {
-  font-size: 14px;
+  font-size: var(--text-sm);
   margin: 0;
 }
 .template-set {
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr) minmax(0, 1fr) 40px;
-  gap: 10px;
+  gap: var(--space-2);
   align-items: center;
-  margin-block-start: 12px;
+  margin-block-start: var(--space-3);
 }
 .input {
   width: 100%;
@@ -357,37 +359,35 @@ function save() {
 }
 .template-picker {
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
 }
 .template-picker :deep(.catalog-list) {
   max-height: 320px;
-  overflow: auto;
-  overscroll-behavior: contain;
 }
 .skipped-label {
   display: block;
-  font-size: 9px;
-  margin-block-start: 4px;
+  font-size: var(--text-xs);
+  margin-block-start: var(--space-1);
 }
 @media (max-width: 380px) {
   .template-set {
     grid-template-columns: 20px minmax(0, 1fr) minmax(0, 1fr) 44px;
-    gap: 6px;
+    gap: var(--space-1);
     align-items: end;
   }
   .template-set > .muted {
     align-self: center;
   }
   .template-set .field > span {
-    font-size: 11px;
+    font-size: var(--text-xs);
     white-space: nowrap;
   }
   .template-set .input {
-    padding-inline: 6px;
+    padding-inline: var(--space-1);
   }
   .routine-exercise {
-    padding: 12px;
+    padding: var(--space-3);
   }
 }
 </style>

@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useTemplateRef, watch } from "vue";
-import { BaseButton, BaseInputNumber, BaseSheet, BaseTextarea } from "@form/ui";
+import {
+  BaseButton,
+  BaseCheckbox,
+  BaseConfirmSheet,
+  BaseInputNumber,
+  BaseSheet,
+  BaseTextarea,
+  BaseNotice,
+} from "@form/ui";
 import { setTargetReps, type Command, type SessionExercise } from "../domain";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import { useFormat, useTranslation } from "../../../i18n";
@@ -269,12 +277,10 @@ function saveReplacement() {
             :max="30"
             :disabled="workspace.saving.value"
         /></label>
-        <label class="workout-config-toggle"
-          ><input
-            v-model="replaceTargets"
-            type="checkbox"
-            :disabled="workspace.saving.value"
-          />{{ t("training.config.replaceTargets") }}</label
+        <BaseCheckbox
+          v-model="replaceTargets"
+          :disabled="workspace.saving.value"
+          >{{ t("training.config.replaceTargets") }}</BaseCheckbox
         >
         <template v-if="replaceTargets">
           <BaseInputNumber
@@ -334,7 +340,7 @@ function saveReplacement() {
         @add="emit('add')"
         @save="saveReplacement"
       />
-      <p v-if="issue" class="field-error" role="alert">{{ issue }}</p>
+      <BaseNotice v-if="issue" tone="danger">{{ issue }}</BaseNotice>
       <BaseButton
         v-if="issue"
         variant="secondary"
@@ -347,42 +353,29 @@ function saveReplacement() {
         variant="ghost"
         :disabled="workspace.saving.value"
         @click="close"
-        >{{ t("training.config.cancel") }}</BaseButton
+        >{{ t("dialogs.actions.cancel") }}</BaseButton
       >
     </div>
   </BaseSheet>
-  <BaseSheet
+  <BaseConfirmSheet
     :open="dismiss"
+    intent="destructive"
     :title="t('training.config.discardTitle')"
     :description="t('training.config.discardDescription')"
-    @close="settleExit(false)"
-  >
-    <div class="form-actions">
-      <BaseButton
-        variant="secondary"
-        :disabled="workspace.saving.value"
-        @click="settleExit(false)"
-      >
-        {{ t("training.config.keepEditing") }}
-      </BaseButton>
-      <BaseButton :disabled="workspace.saving.value" @click="settleExit(true)">
-        {{ t("training.config.discardAction") }}
-      </BaseButton>
-    </div>
-  </BaseSheet>
-  <BaseSheet
-    :open="removalOpen"
+    :cancel-label="t('dialogs.actions.keepEditing')"
+    :confirm-label="t('dialogs.actions.discardChanges')"
+    :busy="workspace.saving.value"
+    @cancel="settleExit(false)"
+    @confirm="settleExit(true)"
+  />
+  <BaseConfirmSheet
+    v-model:open="removalOpen"
+    intent="destructive"
     :title="t('training.config.removeSetsTitle')"
     :description="t('training.config.removeSetsDescription')"
-    @close="removalOpen = false"
-  >
-    <div class="form-actions">
-      <BaseButton variant="secondary" @click="removalOpen = false">
-        {{ t("training.config.cancel") }}
-      </BaseButton>
-      <BaseButton :disabled="workspace.saving.value" @click="saveConfiguration">
-        {{ t("training.config.removeSets") }}
-      </BaseButton>
-    </div>
-  </BaseSheet>
+    :cancel-label="t('dialogs.actions.cancel')"
+    :confirm-label="t('training.config.removeSets')"
+    :busy="workspace.saving.value"
+    @confirm="saveConfiguration"
+  />
 </template>

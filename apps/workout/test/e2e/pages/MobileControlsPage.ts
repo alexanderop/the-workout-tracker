@@ -25,7 +25,7 @@ export class MobileControlsPage {
       exact: true,
     });
     const confirm = dialog.getByRole("button", {
-      name: "Use weight",
+      name: "Done: weight",
       exact: true,
     });
     await expect(confirm).toBeInViewport({ ratio: 1 });

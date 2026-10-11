@@ -101,17 +101,17 @@ function storyLink(id: string, variant: string): string {
 <style scoped>
 .workspace-guide {
   display: grid;
-  gap: 28px;
+  gap: var(--space-6);
   max-width: 860px;
   line-height: 1.6;
 }
 .workspace-guide h1 {
-  font-size: clamp(28px, 4vw, 42px);
+  font-size: clamp(var(--text-2xl), 4vw, var(--text-3xl));
   line-height: 1.15;
   max-width: 620px;
 }
 .workspace-guide h2 {
-  font-size: 20px;
+  font-size: var(--text-lg);
 }
 .workspace-guide p,
 .workspace-guide h2 {
@@ -120,12 +120,12 @@ function storyLink(id: string, variant: string): string {
 .workspace-sections {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: var(--space-4);
 }
 .workspace-sections a {
   display: grid;
-  gap: 12px;
-  padding: 24px;
+  gap: var(--space-3);
+  padding: var(--space-6);
   border: 1px solid var(--ui-border);
   border-radius: var(--ui-radius);
   color: var(--ui-foreground);
@@ -142,13 +142,13 @@ function storyLink(id: string, variant: string): string {
 }
 .workspace-sections p {
   color: var(--ui-muted-foreground);
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 .workspace-sections span {
   color: var(--ui-primary);
 }
 .workspace-guide li + li {
-  margin-block-start: 12px;
+  margin-block-start: var(--space-3);
 }
 @media (max-width: 540px) {
   .workspace-sections {

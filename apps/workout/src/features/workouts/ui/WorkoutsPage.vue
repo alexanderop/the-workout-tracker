@@ -1,22 +1,24 @@
 <script setup lang="ts">
-import { BaseButton, BaseInput } from "@form/ui";
-import { computed, ref } from "vue";
 import {
-  Plus,
-  ArrowLeft,
-  ArrowRight,
-  Bookmark,
-  ChevronRight,
-  Search,
-} from "@lucide/vue";
+  BaseBackLink,
+  BaseButton,
+  BaseButtonIcon,
+  BaseEmptyState,
+  BaseInput,
+  BaseListGroup,
+  BaseListRow,
+  BasePageHeader,
+} from "@form/ui";
+import { computed, ref, useTemplateRef } from "vue";
+import { Plus, ArrowRight, Bookmark, CalendarDays, Search } from "@lucide/vue";
 import {
   sessionTotals,
   type Snapshot,
   type Routine,
   type CompletedSession,
 } from "../domain";
-import { useFormat, useTranslation } from "../../../i18n";
-import { sessionMinutes } from "./presentation";
+import { useTranslation } from "../../../i18n";
+import SessionRow from "./SessionRow.vue";
 import WorkoutCalendar from "./WorkoutCalendar.vue";
 const {
   routines,
@@ -40,8 +42,11 @@ const tab = defineModel<"home" | "history" | "templates">("view", {
   default: "home",
 });
 const { t } = useTranslation();
-const format = useFormat();
 const search = ref("");
+const calendar =
+  useTemplateRef<InstanceType<typeof WorkoutCalendar>>("calendar");
+const calendarAction =
+  useTemplateRef<InstanceType<typeof BaseButtonIcon>>("calendarAction");
 const latest = computed(() => allHistory[0]);
 const isFreshJournal = computed(
   () => !active && !routines.length && !allHistory.length,
@@ -55,13 +60,23 @@ const history = computed(() =>
 <template>
   <div class="workouts-dashboard">
     <template v-if="tab !== 'history'">
+      <BasePageHeader variant="root" :title="t('workouts.home.title')">
+        <template #action>
+          <BaseButtonIcon
+            ref="calendarAction"
+            :label="t('workouts.calendar.open')"
+            @click="calendar?.open()"
+            ><CalendarDays :size="21"
+          /></BaseButtonIcon>
+        </template>
+      </BasePageHeader>
       <WorkoutCalendar
+        ref="calendar"
         :sessions="allHistory"
         :now="now"
+        :action="() => calendarAction?.$el"
         @detail="emit('detail', $event)"
-      >
-        <h1>{{ t("workouts.home.title") }}</h1>
-      </WorkoutCalendar>
+      />
       <section v-if="active" class="active-workout-card">
         <span class="active-label"
           ><i aria-hidden="true" />{{ t("workouts.home.inProgress") }}</span
@@ -82,8 +97,7 @@ const history = computed(() =>
           }}
         </p>
         <BaseButton
-          unstyled
-          class="btn primary"
+          class="continue-workout"
           @click="emit('navigate', 'session')"
           >{{ t("workouts.home.continueWorkout") }}<ArrowRight :size="18"
         /></BaseButton>
@@ -93,8 +107,8 @@ const history = computed(() =>
           {{ t("workouts.home.firstHint") }}
         </p>
         <BaseButton
-          unstyled
-          class="btn primary dashboard-start"
+          size="lg"
+          class="dashboard-start"
           :disabled="saving"
           @click="emit('start', null)"
           ><Plus :size="18" />{{
@@ -104,64 +118,50 @@ const history = computed(() =>
           }}</BaseButton
         >
       </section>
-      <section class="latest-workout" :aria-label="t('workouts.home.latest')">
-        <div class="latest-heading">
-          <h2>{{ t("workouts.home.latest") }}</h2>
-          <BaseButton unstyled class="text-button" @click="tab = 'history'"
-            >{{ t("workouts.home.viewHistory") }}<ChevronRight :size="16"
-          /></BaseButton>
-        </div>
-        <article v-if="latest" class="workout-history-card">
-          <BaseButton
-            unstyled
-            class="history-card-title"
+      <div class="home-lists">
+        <BaseListGroup :label="t('workouts.home.latest')">
+          <template #action>
+            <BaseButton variant="link" size="sm" @click="tab = 'history'">{{
+              t("workouts.home.viewHistory")
+            }}</BaseButton>
+          </template>
+          <SessionRow
+            v-if="latest"
+            :session="latest"
+            with-date
             @click="emit('detail', latest.id)"
-            ><span
-              ><small class="muted">{{
-                format.shortDate(latest.finishedAt)
-              }}</small
-              ><strong>{{ latest.name }}</strong></span
-            ><ChevronRight :size="18"
-          /></BaseButton>
-          <div class="history-metrics">
-            <span
-              >{{ sessionMinutes(latest) }}
-              <small>{{ t("workouts.metrics.minutes") }}</small></span
-            ><span
-              >{{ sessionTotals(latest).completedSets }}
-              <small>{{
-                t("workouts.metrics.sets", sessionTotals(latest).completedSets)
-              }}</small></span
-            ><span
-              >{{ format.number(sessionTotals(latest).volumeKg) }}
-              <small>{{ t("workouts.metrics.kilograms") }}</small></span
-            >
-          </div>
-        </article>
-        <p v-else class="muted home-empty">
-          {{ t("workouts.home.latestEmpty") }}
-        </p>
-      </section>
-      <BaseButton
-        unstyled
-        id="workout-templates"
-        class="btn secondary templates-link"
-        @click="tab = 'templates'"
-        ><Bookmark :size="18" />{{ t("workouts.home.templates") }}
-        <span>{{ routines.length }}</span
-        ><ChevronRight :size="16"
-      /></BaseButton>
+          />
+          <BaseEmptyState
+            v-else
+            size="compact"
+            :heading-level="3"
+            :title="t('workouts.home.latestEmpty')"
+          />
+        </BaseListGroup>
+        <BaseListGroup>
+          <BaseListRow
+            id="workout-templates"
+            as="button"
+            chevron
+            :icon="Bookmark"
+            :label="t('workouts.home.templates')"
+            :value="String(routines.length)"
+            @click="tab = 'templates'"
+          />
+        </BaseListGroup>
+      </div>
     </template>
     <template v-if="tab === 'history'">
-      <BaseButton
-        unstyled
-        class="text-button history-back"
-        @click="tab = 'home'"
-        ><ArrowLeft :size="18" />{{ t("workouts.history.back") }}</BaseButton
-      >
-      <header class="dashboard-heading">
-        <h1>{{ t("workouts.history.title") }}</h1>
-      </header>
+      <BasePageHeader variant="detail" :title="t('workouts.history.title')">
+        <template #back>
+          <BaseBackLink
+            as="button"
+            :aria-label="t('workouts.history.back')"
+            @click="tab = 'home'"
+            >{{ t("shell.nav.workouts") }}</BaseBackLink
+          >
+        </template>
+      </BasePageHeader>
       <div v-if="allHistory.length" class="search-field history-search">
         <Search :size="17" /><BaseInput
           v-model="search"
@@ -169,82 +169,44 @@ const history = computed(() =>
           :placeholder="t('workouts.history.searchPlaceholder')"
         />
       </div>
-      <div v-if="!allHistory.length" class="overview-empty">
-        <p class="muted">
-          {{ t("workouts.history.empty") }}
-        </p>
-      </div>
-      <div v-else class="workout-history-grid">
-        <article
+      <BaseEmptyState
+        v-if="!allHistory.length"
+        :title="t('workouts.history.emptyTitle')"
+        :body="t('workouts.history.empty')"
+      />
+      <BaseListGroup v-else>
+        <SessionRow
           v-for="session in history"
           :key="session.id"
-          class="workout-history-card"
-        >
-          <BaseButton
-            unstyled
-            class="history-card-title"
-            @click="emit('detail', session.id)"
-          >
-            <span
-              ><small class="muted">{{
-                format.shortDate(session.finishedAt)
-              }}</small
-              ><strong>{{ session.name }}</strong></span
-            ><ChevronRight :size="18" />
-          </BaseButton>
-          <p class="muted small">
-            {{ session.exercises.map((exercise) => exercise.name).join(" · ") }}
-          </p>
-          <div class="history-metrics">
-            <span
-              >{{ sessionMinutes(session) }}
-              <small>{{ t("workouts.metrics.minutes") }}</small></span
-            ><span
-              >{{ sessionTotals(session).completedSets }}
-              <small>{{
-                t("workouts.metrics.sets", sessionTotals(session).completedSets)
-              }}</small></span
-            ><span
-              >{{ format.number(sessionTotals(session).volumeKg) }}
-              <small>{{ t("workouts.metrics.kilograms") }}</small></span
-            >
-          </div>
-        </article>
-        <p v-if="!history.length" class="muted">
+          :session="session"
+          with-date
+          exercises
+          @click="emit('detail', session.id)"
+        />
+        <p v-if="!history.length" class="history-empty muted">
           {{ t("workouts.history.noMatches") }}
         </p>
-      </div>
+      </BaseListGroup>
     </template>
   </div>
 </template>
 
 <style scoped>
 .workouts-dashboard {
-  max-width: 760px;
-  margin-inline: auto;
   min-width: 0;
 }
-h1 {
-  margin: 0;
-  font-size: 27px;
-  font-weight: 550;
-  letter-spacing: -1px;
-}
-.dashboard-heading {
-  margin: 16px 0 24px;
-}
 .active-workout-card {
-  margin: 20px 0;
-  padding: 16px;
+  margin: var(--space-5) 0;
+  padding: var(--space-4);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 .active-label {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: var(--space-2);
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--text-xs);
   letter-spacing: 1.5px;
 }
 .active-label i {
@@ -254,120 +216,42 @@ h1 {
   background: var(--accent);
 }
 .active-workout-card h2 {
-  margin: 10px 0 6px;
-  font-size: 20px;
+  margin: var(--space-2) 0 var(--space-1);
+  font-size: var(--text-lg);
   font-weight: 500;
   overflow-wrap: anywhere;
 }
 .active-workout-card p {
   margin: 0;
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--text-sm);
 }
-.active-workout-card .btn {
+.continue-workout {
   width: 100%;
-  margin-block-start: 14px;
-  min-height: 44px;
+  margin-block-start: var(--space-3);
   justify-content: space-between;
 }
 .home-start {
-  margin: 20px 0;
+  margin: var(--space-5) 0;
 }
 .home-start p {
-  margin: 0 0 14px;
-  font-size: 14px;
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-sm);
   line-height: 1.5;
 }
 .dashboard-start {
   width: 100%;
   min-height: 48px;
 }
-.latest-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-.latest-heading h2 {
-  font-size: 14px;
-  font-weight: 500;
-  margin: 0;
-}
-.latest-heading .text-button,
-.history-back {
-  min-height: 44px;
-}
-.latest-heading .text-button {
-  font-size: 12px;
-}
-.home-empty {
-  margin: 8px 0 20px;
-  font-size: 13px;
-  line-height: 1.5;
-}
-.templates-link {
-  margin-block-start: 18px;
-  width: 100%;
-  min-height: 48px;
-  justify-content: flex-start;
-}
-.templates-link span {
-  color: var(--muted);
-  margin-inline-start: auto;
+.home-lists {
+  display: grid;
+  gap: var(--space-4);
 }
 .history-search {
-  margin-block-end: 8px;
+  margin-block-end: var(--space-2);
 }
-.workout-history-grid {
-  display: block;
-}
-.workout-history-card {
-  padding: 12px 0;
-  border: 0;
-  border-block-end: 1px solid var(--border);
-  border-radius: 0;
-  background: none;
-}
-.history-card-title {
-  min-height: 44px;
-  width: 100%;
-}
-.history-card-title > span {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.history-card-title strong {
+.history-empty {
   margin: 0;
-  font-size: 15px;
-  font-weight: 500;
-  overflow-wrap: anywhere;
-}
-.history-card-title small {
-  font-size: 11px;
-}
-.workout-history-card > p {
-  min-height: 0;
-  margin: 8px 0;
-  font-size: 12px;
-  overflow-wrap: anywhere;
-}
-.history-metrics {
-  margin: 10px 0 0;
-  padding: 0;
-  gap: 18px;
-  border: 0;
-}
-.history-metrics > span {
-  font-size: 12px;
-  color: var(--muted);
-}
-.history-metrics small {
-  font-size: 11px;
-}
-.overview-empty {
-  min-height: 0;
-  padding: 28px 8px;
+  padding: var(--space-4);
 }
 </style>

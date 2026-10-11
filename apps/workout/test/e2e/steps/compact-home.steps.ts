@@ -85,19 +85,21 @@ When("I open and search the full workout history", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "History", exact: true }),
   ).toBeVisible();
-  await expect(page.getByRole("article")).toHaveCount(2);
+  const workouts = page.getByRole("button", { name: /strength/ });
+  await expect(workouts).toHaveCount(2);
   await page
     .getByRole("textbox", { name: "Search workout history" })
     .fill("Morning");
-  await expect(page.getByRole("article")).toHaveCount(1);
-  await expect(page.getByRole("article")).toContainText("Morning strength");
+  await expect(workouts).toHaveCount(1);
+  await expect(workouts).toContainText("Morning strength");
   await page.getByRole("button", { name: "Back to workouts" }).click();
 });
 Then(
   "returning home restores the latest workout and calendar",
   async ({ page }) => {
-    await expect(page.getByRole("article")).toHaveCount(1);
-    await expect(page.getByRole("article")).toContainText("Evening strength");
+    const latest = page.getByRole("button", { name: /strength/ });
+    await expect(latest).toHaveCount(1);
+    await expect(latest).toContainText("Evening strength");
     await expect(
       page.getByRole("group", { name: "Past 7 days" }).getByRole("button"),
     ).toHaveCount(7);
@@ -225,11 +227,7 @@ Then(
 );
 When("I save a history workout as a template", async ({ page }) => {
   await page.getByRole("button", { name: "View history", exact: true }).click();
-  await page
-    .getByRole("article")
-    .filter({ hasText: "Evening strength" })
-    .getByRole("button")
-    .click();
+  await page.getByRole("button", { name: /^Evening strength/ }).click();
   await page
     .getByRole("button", { name: "Save as template", exact: true })
     .click();
@@ -259,7 +257,7 @@ Then(
 );
 
 When("I save the latest home workout as a template", async ({ page }) => {
-  await page.getByRole("article").getByRole("button").click();
+  await page.getByRole("button", { name: /^Evening strength/ }).click();
   await page
     .getByRole("button", { name: "Save as template", exact: true })
     .click();

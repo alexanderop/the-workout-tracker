@@ -18,17 +18,19 @@ export const deWorkouts: Catalog["workouts"] = {
     templates: "Vorlagen",
   },
   history: {
-    back: "Zurück zum Training",
+    back: "Zurück zu den Trainings",
     title: "Verlauf",
     searchLabel: "Trainingsverlauf durchsuchen",
     searchPlaceholder: "Vergangenes Training finden",
+    emptyTitle: "Noch keine Trainings",
     empty:
       "Deine abgeschlossenen Trainings erscheinen hier und lassen sich wiederholen.",
     noMatches: "Kein Training passt zu deiner Suche.",
+    rowMeta: "{date} · {meta}",
   },
   metrics: {
-    minutes: "Min.",
-    sets: "Satz | Sätze",
+    line: "{duration} · {sets} · {volume}",
+    sets: "{n} Satz | {n} Sätze",
     kilograms: "kg",
   },
   calendar: {
@@ -45,7 +47,5 @@ export const deWorkouts: Catalog["workouts"] = {
     workoutCount: "{n} Training | {n} Trainings",
     selectedDay: "{date} · {count}",
     noWorkouts: "Keine abgeschlossenen Trainings.",
-    sessionSummary: "{minutes} Min. · {sets}",
-    sessionSets: "{n} Satz | {n} Sätze",
   },
 };

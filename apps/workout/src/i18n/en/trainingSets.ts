@@ -35,7 +35,6 @@ export const enTrainingSets = {
     title: "Discard input changes?",
     description:
       "This deletes the input drafts for this set and restores its saved values.",
-    keepEditing: "Keep editing",
     action: "Discard input",
   },
   setEditor: {
@@ -53,7 +52,6 @@ export const enTrainingSets = {
     clearTitle: "Clear logged set?",
     clearDescription:
       "This removes the logged result and returns the set to unfinished work.",
-    cancel: "Cancel",
     clearAction: "Clear set",
   },
 } as const;

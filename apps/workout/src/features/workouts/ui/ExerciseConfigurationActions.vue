@@ -79,29 +79,29 @@ const { t } = useTranslation();
 .exercise-option-targets {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: var(--space-2);
 }
 .exercise-option-targets :deep(button) {
-  padding-inline: 8px;
+  padding-inline: var(--space-2);
 }
 .exercise-option-targets :deep(button) {
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   min-height: 58px;
 }
 .exercise-option-group {
   display: grid;
   overflow: clip;
   background: var(--surface);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
 }
 .exercise-option-group :deep(button) {
   justify-content: flex-start;
-  gap: 14px;
+  gap: var(--space-3);
   min-height: 52px;
-  padding-inline: 18px;
+  padding-inline: var(--space-4);
   border: 0;
   border-radius: 0;
-  font-size: 16px;
+  font-size: var(--text-base);
   font-weight: 450;
 }
 .exercise-option-group :deep(button + button) {

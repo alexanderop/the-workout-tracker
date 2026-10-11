@@ -2,6 +2,7 @@ export const enProgress = {
   title: "Progress",
   range: "All time",
   metrics: {
+    group: "Progress totals",
     completedWorkouts: "Completed workouts",
     sessions: "session | sessions",
     totalVolume: "Total volume",

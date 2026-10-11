@@ -82,7 +82,7 @@ const emit = defineEmits<{
   width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: var(--text-sm);
 }
 caption {
   position: absolute;
@@ -96,11 +96,11 @@ th {
 }
 thead {
   color: var(--ui-muted-foreground);
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 th,
 td {
-  padding: 5px 2px;
+  padding: var(--space-1) calc(var(--space-1) / 2);
   text-align: center;
 }
 th:first-child {
@@ -111,7 +111,7 @@ th:last-child {
 }
 .reference-value {
   color: var(--ui-muted-foreground);
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 .is-logged {
   background: var(--ui-secondary);
@@ -120,7 +120,7 @@ th:last-child {
 td :deep(.ui-numeric-trigger) {
   width: 100%;
   min-height: 44px;
-  padding: 4px;
-  font-size: 15px;
+  padding: var(--space-1);
+  font-size: var(--text-base);
 }
 </style>

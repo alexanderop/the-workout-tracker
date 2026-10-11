@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, useTemplateRef, watch } from "vue";
-import { BaseSheet, BaseButton } from "@form/ui";
+import { BaseConfirmSheet } from "@form/ui";
 import CompletedWorkoutEditor from "./CompletedWorkoutEditor.vue";
 import WorkoutNameRecovery from "./WorkoutNameRecovery.vue";
 import DetachedInputNotice from "./DetachedInputNotice.vue";
@@ -34,7 +34,7 @@ const { workspace, templatesOpen = false } = defineProps<{
     | "catalog"
     | "workoutName"
     | "activeTotals"
-    | "elapsed"
+    | "elapsedMs"
   >;
 }>();
 const emit = defineEmits<{
@@ -65,6 +65,7 @@ function removeOptionSet() {
   optionSetId.value = null;
   clearError();
   confirmation.value = {
+    intent: "destructive",
     title: t("dialogs.removeSet.title"),
     description: t("dialogs.removeSet.description"),
     actionLabel: t("dialogs.removeSet.action"),
@@ -147,7 +148,7 @@ async function finishWorkout() {
     finishSessionId.value = null;
     navigate("workouts");
     selectedSession.value = id;
-    notify(t("dialogs.notices.workoutSaved"));
+    notify(t("dialogs.notices.workoutSaved"), "workouts");
   }
 }
 
@@ -243,7 +244,7 @@ defineExpose({
   <WorkoutDialogsFinish
     :open="finishSessionId !== null"
     :totals="workspace.activeTotals.value"
-    :elapsed="workspace.elapsed.value"
+    :elapsed-ms="workspace.elapsedMs.value"
     :pending="training.pending.value"
     :saving="saving"
     :error="error"
@@ -253,31 +254,18 @@ defineExpose({
     @review="reviewSets"
     @finish="finishWorkout"
   />
-  <BaseSheet
+  <BaseConfirmSheet
     :open="confirmation !== null"
+    :intent="confirmation?.intent ?? 'destructive'"
     :title="confirmation?.title ?? t('dialogs.confirm.fallbackTitle')"
     :description="confirmation?.description"
-    @close="!saving && (confirmation = null)"
-  >
-    <p v-if="error" class="field-error" role="alert">{{ error }}</p>
-    <div class="form-actions">
-      <BaseButton
-        unstyled
-        class="btn secondary"
-        :disabled="saving"
-        @click="confirmation = null"
-      >
-        {{ t("dialogs.actions.cancel") }}</BaseButton
-      ><BaseButton
-        unstyled
-        class="btn primary"
-        :disabled="saving"
-        @click="confirmAction"
-      >
-        {{ confirmation?.actionLabel }}
-      </BaseButton>
-    </div></BaseSheet
-  >
+    :cancel-label="t('dialogs.actions.cancel')"
+    :confirm-label="confirmation?.actionLabel ?? ''"
+    :busy="saving"
+    :error="error"
+    @cancel="confirmation = null"
+    @confirm="confirmAction"
+  />
   <WorkoutDialogsCompletedDetail
     :detail="detail"
     :open="!!detail && !editingCompleted"

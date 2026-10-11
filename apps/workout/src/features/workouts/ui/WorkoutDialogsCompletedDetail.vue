@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { BaseSheet, BaseButton } from "@form/ui";
+import { BaseActions, BaseButton, BaseSheet } from "@form/ui";
 import { Check, Repeat2, BookmarkPlus } from "@lucide/vue";
 import { sessionTotals, type CompletedSession } from "../domain";
-import { sessionMinutes } from "./presentation";
+import { sessionDurationMs } from "./presentation";
+import SessionStats from "./SessionStats.vue";
 import { useFormat, useTranslation } from "../../../i18n";
 
 const { detail, open, saving, active } = defineProps<{
@@ -29,20 +30,10 @@ const format = useFormat();
     wide
     @close="emit('close')"
     ><template v-if="detail"
-      ><div class="finish-stats">
-        <div>
-          <strong>{{ sessionTotals(detail).completedSets }}</strong
-          ><span>{{ t("dialogs.stats.setsLogged") }}</span>
-        </div>
-        <div>
-          <strong>{{ format.number(sessionTotals(detail).volumeKg) }}</strong
-          ><span>{{ t("dialogs.stats.kgVolume") }}</span>
-        </div>
-        <div>
-          <strong>{{ sessionMinutes(detail) }}</strong
-          ><span>{{ t("dialogs.stats.minutes") }}</span>
-        </div>
-      </div>
+      ><SessionStats
+        :totals="sessionTotals(detail)"
+        :duration-ms="sessionDurationMs(detail)"
+      />
       <section
         v-for="exercise in detail.exercises"
         :key="exercise.id"
@@ -75,32 +66,25 @@ const format = useFormat();
           >
         </div>
       </section>
-      <div class="detail-actions">
+      <BaseActions>
         <BaseButton
           variant="secondary"
           :disabled="saving"
           @click="emit('edit', detail)"
           >{{ t("dialogs.completedDetail.edit") }}</BaseButton
         >
-        <BaseButton
-          unstyled
-          class="btn primary"
-          :disabled="saving || active"
-          @click="emit('repeat', detail.id)"
-        >
-          <Repeat2 :size="17" />{{
-            t("dialogs.completedDetail.repeat")
-          }}</BaseButton
-        ><BaseButton
-          unstyled
-          class="btn secondary"
-          @click="emit('convert', detail.id)"
-        >
+        <BaseButton variant="secondary" @click="emit('convert', detail.id)">
           <BookmarkPlus :size="17" />{{
             t("dialogs.completedDetail.saveAsTemplate")
           }}
         </BaseButton>
-      </div>
+        <BaseButton
+          :disabled="saving || active"
+          @click="emit('repeat', detail.id)"
+        >
+          <Repeat2 :size="17" />{{ t("dialogs.completedDetail.repeat") }}
+        </BaseButton>
+      </BaseActions>
     </template></BaseSheet
   >
 </template>
@@ -109,6 +93,6 @@ const format = useFormat();
 .exercise-history-note {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  margin-block: 12px;
+  margin-block: var(--space-3);
 }
 </style>

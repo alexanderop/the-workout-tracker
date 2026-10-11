@@ -17,7 +17,7 @@ describe("given the default English text", () => {
   });
 
   it("should phrase the numeric editor's names with and without a unit", () => {
-    expect(numeric.confirm("Weight")).toBe("Use weight");
+    expect(numeric.confirm("Weight")).toBe("Done: weight");
     expect(numeric.announce({ title: "Weight", value: 5, unit: "" })).toBe(
       "Weight set to 5",
     );

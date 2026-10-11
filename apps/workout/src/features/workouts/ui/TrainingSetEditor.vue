@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { BaseSheet, BaseButton } from "@form/ui";
+import { BaseSheet, BaseButton, BaseConfirmSheet } from "@form/ui";
 import SetRow from "./SetRow.vue";
 import type { useTrainingSession } from "./useTrainingSession";
 import type { Barbell } from "../domain";
@@ -115,8 +115,9 @@ async function clear() {
       }}</BaseButton>
     </div>
   </BaseSheet>
-  <BaseSheet
+  <BaseConfirmSheet
     :open="confirmation !== null"
+    intent="destructive"
     :title="
       confirmation === 'clear'
         ? t('training.setEditor.clearTitle')
@@ -127,23 +128,14 @@ async function clear() {
         ? t('training.setEditor.clearDescription')
         : t('training.discardInput.description')
     "
-    @close="confirmation = null"
-  >
-    <div class="form-actions">
-      <BaseButton
-        variant="secondary"
-        :disabled="busy"
-        @click="confirmation = null"
-      >
-        {{ t("training.setEditor.cancel") }}
-      </BaseButton>
-      <BaseButton :disabled="busy" @click="confirm">
-        {{
-          confirmation === "clear"
-            ? t("training.setEditor.clearAction")
-            : t("training.discardInput.action")
-        }}
-      </BaseButton>
-    </div>
-  </BaseSheet>
+    :cancel-label="t('dialogs.actions.cancel')"
+    :confirm-label="
+      confirmation === 'clear'
+        ? t('training.setEditor.clearAction')
+        : t('training.discardInput.action')
+    "
+    :busy="busy"
+    @cancel="confirmation = null"
+    @confirm="confirm"
+  />
 </template>

@@ -34,12 +34,9 @@ export const enTrainingConfig = {
   replaceRemaining: "Replace remaining sets",
   saveFailed: "Could not save. Your input is still here.",
   reload: "Reload saved values",
-  cancel: "Cancel",
   discardTitle: "Discard unsaved changes?",
   discardDescription:
     "This deletes your unsaved note or configuration changes. Saved workout values stay unchanged.",
-  keepEditing: "Keep editing",
-  discardAction: "Discard changes",
   removeSetsTitle: "Remove unfinished sets?",
   removeSetsDescription:
     "Reducing the set count removes unfinished sets and their target values. Logged sets stay in your workout.",

@@ -23,7 +23,14 @@ import { computed, watch } from "vue";
 import { Dumbbell } from "@lucide/vue";
 import type { Exercise } from "../domain";
 import { exerciseArtwork } from "./exerciseArtwork";
-const { exercise } = defineProps<{ exercise?: Exercise }>();
+// `size` is the edge of the square in px; the strip uses the 64px default and
+// list rows the 52px artwork of the list-row contract.
+const { exercise, size = 64 } = defineProps<{
+  exercise?: Exercise;
+  size?: number;
+  /** No surface of its own, for a tile that draws the background. */
+  plain?: boolean;
+}>();
 const source = computed(() => exerciseArtwork(exercise));
 const failed = ref(false);
 const ready = paintedAfterFirstFrame();
@@ -32,7 +39,12 @@ watch(source, () => {
 });
 </script>
 <template>
-  <span class="exercise-thumbnail" aria-hidden="true">
+  <span
+    class="exercise-thumbnail"
+    :style="{ '--thumb': `${size}px` }"
+    :data-plain="plain ? '' : undefined"
+    aria-hidden="true"
+  >
     <img
       v-if="source && !failed"
       :src="ready ? source : undefined"
@@ -48,15 +60,19 @@ watch(source, () => {
 </template>
 <style scoped>
 .exercise-thumbnail {
+  --thumb: 64px;
   display: grid;
   place-items: center;
-  flex: 0 0 64px;
-  width: 64px;
-  height: 64px;
+  flex: 0 0 var(--thumb);
+  width: var(--thumb);
+  height: var(--thumb);
   overflow: clip;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: var(--surface);
   color: var(--muted);
+}
+.exercise-thumbnail[data-plain] {
+  background: transparent;
 }
 .exercise-thumbnail img {
   width: 100%;

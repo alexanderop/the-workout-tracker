@@ -29,6 +29,42 @@ const namedColors = new Set(
     " ",
   ),
 );
+// Declarations whose lengths must come from the type, radius and spacing scales
+// in packages/ui/src/tokens.css. Longhands such as padding-inline-start and
+// border-start-start-radius are covered by the same patterns.
+const scaleProperty =
+  /^(?:font-size|border-radius|border-(?:top|bottom)-(?:left|right)-radius|border-(?:start|end)-(?:start|end)-radius|(?:grid-)?(?:row-|column-)?gap|padding(?:-[a-z-]+)?|margin(?:-[a-z-]+)?)$/;
+const lengthLiteral = /(?<![\w.-])-?(?:\d+\.?\d*|\.\d+)(?:px|rem|em)\b/gi;
+
+// Remove var(...) and env(...) calls, including nested parentheses, so their
+// fallbacks and safe-area offsets are not mistaken for literals.
+function withoutReferences(value) {
+  let out = "";
+  for (let i = 0; i < value.length;) {
+    const match = /^(?:var|env)\(/i.exec(value.slice(i));
+    const previous = value[i - 1];
+    if (match && !(previous && /[\w-]/.test(previous))) {
+      let depth = 0;
+      let j = i + match[0].length - 1;
+      for (; j < value.length; j++) {
+        if (value[j] === "(") depth++;
+        else if (value[j] === ")" && --depth === 0) break;
+      }
+      i = j + 1;
+      out += " ";
+    } else out += value[i++];
+  }
+  return out;
+}
+
+// 0 and the 1px hairline are allowed; every other px, rem or em literal is not.
+function scaleLiterals(value) {
+  return (withoutReferences(value).match(lengthLiteral) ?? []).filter(
+    (literal) =>
+      !/^-?(?:0+(?:\.0*)?|\.0+|1(?:\.0*)?px)(?:px|rem|em)?$/i.test(literal),
+  );
+}
+
 const meta = {
   type: "problem",
   schema: [],
@@ -110,6 +146,34 @@ export default {
           },
           "Declaration > Value Identifier"(node) {
             if (namedColors.has(node.name.toLowerCase())) report(node);
+          },
+        };
+      },
+    },
+    "css-scales": {
+      meta: {
+        type: "problem",
+        schema: [],
+        messages: {
+          scale:
+            "Raw length {{literal}} in {{property}}. Use the type (--text-*), radius (--radius-*) or spacing (--space-*, --page-gutter-phone) tokens from packages/ui/src/tokens.css. 0, auto, percentages and the 1px hairline are allowed.",
+        },
+      },
+      create(context) {
+        if (context.physicalFilename.endsWith("/packages/ui/src/tokens.css"))
+          return {};
+        return {
+          Declaration(node) {
+            if (!scaleProperty.test(node.property.toLowerCase())) return;
+            const [literal] = scaleLiterals(
+              context.sourceCode.getText(node.value),
+            );
+            if (literal)
+              context.report({
+                node,
+                messageId: "scale",
+                data: { literal, property: node.property },
+              });
           },
         };
       },

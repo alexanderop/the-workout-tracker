@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, useTemplateRef } from "vue";
-import { BaseSheet, BaseButton } from "@form/ui";
+import { BaseActions, BaseSheet, BaseButton, BaseNotice } from "@form/ui";
 import { Plus, Check } from "@lucide/vue";
 import ExerciseCatalog from "./ExerciseCatalog.vue";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
@@ -113,27 +113,27 @@ defineExpose({
       @toggle="toggleExercise"
     />
     <div class="picker-actions">
-      <BaseButton
-        unstyled
-        class="text-button"
-        :disabled="saving"
-        @click="createOpen = true"
-      >
-        <Plus :size="16" />{{ t("dialogs.picker.createOwn") }}</BaseButton
-      ><BaseButton
-        unstyled
-        class="btn primary full-width"
-        :disabled="saving || !selectedExercises.length"
-        @click="addExercises"
-      >
-        {{
-          picker?.kind === "start"
-            ? t("dialogs.picker.start", { count: selectedExercises.length })
-            : t("dialogs.picker.add", { count: selectedExercises.length })
-        }}<Check :size="17" />
-      </BaseButton>
+      <BaseActions>
+        <BaseButton
+          variant="ghost"
+          :disabled="saving"
+          @click="createOpen = true"
+        >
+          <Plus :size="16" />{{ t("dialogs.picker.createOwn") }}
+        </BaseButton>
+        <BaseButton
+          :disabled="saving || !selectedExercises.length"
+          @click="addExercises"
+        >
+          {{
+            picker?.kind === "start"
+              ? t("dialogs.picker.start", { count: selectedExercises.length })
+              : t("dialogs.picker.add", { count: selectedExercises.length })
+          }}<Check :size="17" />
+        </BaseButton>
+      </BaseActions>
     </div>
-    <p v-if="error" class="field-error" role="alert">{{ error }}</p>
+    <BaseNotice v-if="error" tone="danger">{{ error }}</BaseNotice>
   </BaseSheet>
   <ExerciseCreateSheet
     ref="createSheet"

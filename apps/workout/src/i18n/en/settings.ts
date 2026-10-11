@@ -10,7 +10,7 @@ export const enSettings = {
     import: "Import backup",
     delete: "Delete all data",
   },
-  groups: { device: "This device", data: "Your data" },
+  groups: { preferences: "General", device: "This device", data: "Your data" },
   hub: {
     restOn: "Rest {seconds} sec",
     restOff: "Rest off",
@@ -72,7 +72,6 @@ export const enSettings = {
       "Permanently delete your workouts, templates, custom exercises and preferences from this browser. Export a backup first if you want to keep a copy.",
     button: "Delete all data",
     deleting: "Deleting…",
-    cancel: "Cancel",
     done: "All your data has been deleted from this browser.",
     conflict:
       "Your data changed in another tab. Close this dialog and review the deletion again.",

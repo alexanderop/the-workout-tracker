@@ -14,8 +14,7 @@ export class CompletedWorkoutPage {
       .getByRole("button", { name: "View history", exact: true })
       .click();
     await this.page
-      .getByRole("article")
-      .getByRole("button", { name: new RegExp(name) })
+      .getByRole("button", { name: new RegExp(`^${name}`) })
       .click();
     await this.page
       .getByRole("button", { name: "Edit workout", exact: true })
@@ -38,7 +37,7 @@ export class CompletedWorkoutPage {
     const keys = keypad.getByRole("group", { name: "Number editor" });
     for (const digit of value) await keys.press(digit);
     await keypad
-      .getByRole("button", { name: "Use weight", exact: true })
+      .getByRole("button", { name: "Done: weight", exact: true })
       .click();
     await expect(keypad).toHaveCount(0);
     await expect(

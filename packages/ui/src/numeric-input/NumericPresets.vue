@@ -72,8 +72,8 @@ watch(
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding-block: 4px;
+  gap: var(--space-2);
+  padding-block: var(--space-1);
   scrollbar-width: none;
   scroll-behavior: smooth;
 }
@@ -87,11 +87,11 @@ watch(
   flex-shrink: 0;
   width: min(100%, 220px);
   min-height: 56px;
-  padding: 8px 12px;
-  border-radius: 14px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
   background: var(--ui-secondary);
   color: var(--ui-foreground);
-  font-size: 20px;
+  font-size: var(--text-lg);
   font-weight: 550;
   font-variant-numeric: tabular-nums;
   touch-action: manipulation;
@@ -103,14 +103,13 @@ watch(
 }
 
 .ui-numeric-preset[aria-current="true"] {
-  background: color-mix(
-    in oklch,
-    var(--ui-secondary) 75%,
-    var(--ui-foreground)
-  );
+  border-color: var(--ui-selected-border);
+  box-shadow: inset 0 0 0 1px var(--ui-selected-border);
+  background: var(--ui-selected-bg);
+  color: var(--ui-selected-text);
 }
 @media (hover: hover) and (pointer: fine) {
-  .ui-numeric-preset:hover {
+  .ui-numeric-preset:not([aria-current="true"]):hover {
     background: color-mix(
       in oklch,
       var(--ui-secondary) 85%,
@@ -121,7 +120,7 @@ watch(
 @media (max-height: 600px) {
   .ui-numeric-preset {
     min-height: 48px;
-    font-size: 18px;
+    font-size: var(--text-lg);
   }
 }
 </style>

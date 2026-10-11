@@ -141,11 +141,11 @@ const legs: readonly MuscleHighlight[] = [
 <style scoped>
 .muscle-map-filter-example {
   width: 160px;
-  padding: 16px;
+  padding: var(--space-4);
   color: var(--ui-foreground);
   background: var(--ui-muted);
   border: 2px solid transparent;
-  border-radius: 24px;
+  border-radius: var(--radius-lg);
   font: inherit;
 }
 .muscle-map-filter-example[aria-pressed="true"] {
@@ -158,28 +158,28 @@ const legs: readonly MuscleHighlight[] = [
 .muscle-map-example {
   width: 100%;
   max-width: 560px;
-  padding: 24px;
+  padding: var(--space-6);
   box-sizing: border-box;
   color: var(--ui-foreground);
   background: var(--ui-background);
   border: 1px solid var(--ui-border);
-  border-radius: 24px;
+  border-radius: var(--radius-lg);
 }
 .muscle-map-example-eyebrow {
   color: var(--ui-primary);
-  font-size: 10px;
+  font-size: var(--text-xs);
   font-weight: 700;
   letter-spacing: 0.18em;
 }
 .muscle-map-example h3 {
-  margin: 8px 0;
-  font-size: 23px;
+  margin: var(--space-2) 0;
+  font-size: var(--text-xl);
   letter-spacing: -0.035em;
 }
 .muscle-map-example p,
 .muscle-map-example footer {
   color: var(--ui-muted-foreground);
-  font-size: 13px;
+  font-size: var(--text-sm);
   line-height: 1.6;
 }
 .muscle-map-example footer {
@@ -187,13 +187,13 @@ const legs: readonly MuscleHighlight[] = [
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-block-start: 20px;
+  gap: var(--space-3);
+  margin-block-start: var(--space-5);
 }
 .muscle-map-example-pair {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: var(--space-5);
 }
 </style>
 <docs lang="md">

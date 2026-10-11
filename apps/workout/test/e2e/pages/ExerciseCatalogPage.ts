@@ -24,7 +24,7 @@ export class ExerciseCatalogPage {
   rows() {
     return this.picker()
       .getByRole("button", { pressed: undefined })
-      .filter({ has: this.page.locator(".catalog-row-name") });
+      .filter({ has: this.page.locator(".ui-list-row-label") });
   }
   async capture(info: TestInfo, name: string) {
     const path = info.outputPath(`${name}.png`);

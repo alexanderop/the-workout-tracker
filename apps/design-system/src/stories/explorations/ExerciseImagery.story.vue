@@ -103,13 +103,13 @@ const matches = computed(() =>
 }
 .imagery-header {
   display: grid;
-  gap: 12px;
-  margin-bottom: 28px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
   max-width: 580px;
 }
 .imagery-eyebrow {
   color: var(--ui-primary);
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 600;
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -117,11 +117,11 @@ const matches = computed(() =>
 .imagery-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  gap: var(--space-4);
 }
 .imagery-card {
   border: 1px solid var(--ui-border);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 .imagery-stage {
@@ -136,16 +136,16 @@ const matches = computed(() =>
 }
 .imagery-card figcaption {
   display: grid;
-  gap: 6px;
-  padding: 18px 20px 22px;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-5) var(--space-5);
 }
 .imagery-meta {
   color: var(--ui-muted-foreground);
-  font-size: 12px;
+  font-size: var(--text-sm);
   line-height: 1.5;
 }
 .imagery-footer {
-  margin-top: 24px;
+  margin-top: var(--space-6);
 }
 .imagery-picker {
   max-width: 560px;
@@ -153,22 +153,22 @@ const matches = computed(() =>
 }
 .imagery-options {
   display: grid;
-  gap: 10px;
+  gap: var(--space-2);
   border: 0;
   padding: 0;
-  margin: 24px 0;
+  margin: var(--space-6) 0;
   min-width: 0;
 }
 .imagery-options legend {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 .imagery-option {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 8px 16px 8px 8px;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4) var(--space-2) var(--space-2);
   border: 1px solid var(--ui-border);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
 }
 .imagery-option:hover,
@@ -186,15 +186,15 @@ const matches = computed(() =>
   flex: 0 0 88px;
   object-fit: contain;
   background: var(--ui-secondary);
-  border-radius: 9px;
+  border-radius: var(--radius-md);
 }
 .imagery-option-copy {
   display: grid;
-  gap: 5px;
+  gap: var(--space-1);
   flex: 1;
 }
 .imagery-option-copy strong {
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: 550;
 }
 .imagery-option input {
@@ -204,8 +204,8 @@ const matches = computed(() =>
   accent-color: var(--ui-primary);
 }
 .imagery-selection {
-  font-size: 13px;
-  margin-bottom: 12px;
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-3);
 }
 @media (max-width: 700px) {
   .imagery-grid {
@@ -215,7 +215,7 @@ const matches = computed(() =>
 @media (max-width: 420px) {
   .imagery-preview,
   .imagery-picker {
-    padding: 20px 16px;
+    padding: var(--space-5) var(--space-4);
   }
   .imagery-grid {
     grid-template-columns: 1fr;

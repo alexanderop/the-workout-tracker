@@ -21,6 +21,11 @@ const limits = [
     newKeys: false,
   },
   {
+    path: "tooling/lint/design-baseline.json",
+    direction: "max",
+    newKeys: false,
+  },
+  {
     path: "apps/workout/performance-budgets.json",
     direction: "max",
     newKeys: true,

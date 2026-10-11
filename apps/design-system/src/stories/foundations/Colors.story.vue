@@ -33,6 +33,21 @@ const colors = [
     use: "Quiet backgrounds that mark a selection or a notice.",
   },
   {
+    name: "Selected surface",
+    token: "ui-selected-bg",
+    use: "The background of every selected control: choice chips, calendar day, picker row, thumbnail, value.",
+  },
+  {
+    name: "Selected border",
+    token: "ui-selected-border",
+    use: "The outline of a selected control. Today's date uses a neutral outline instead.",
+  },
+  {
+    name: "Selected text",
+    token: "ui-selected-text",
+    use: "Text and check marks on a selected control.",
+  },
+  {
     name: "Error",
     token: "danger",
     use: "Invalid inputs and destructive actions.",

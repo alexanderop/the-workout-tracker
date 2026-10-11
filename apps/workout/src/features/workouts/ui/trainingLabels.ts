@@ -1,10 +1,10 @@
 import type { Translate } from "../../../i18n";
-import { duration } from "./presentation";
+import { clockTime } from "./presentation";
 
 /** The rest timer line: remaining time, or that the rest is over. */
 export function restLabel(remaining: number, t: Translate): string {
   return remaining > 0
-    ? t("training.rest.remaining", { time: duration(remaining) })
+    ? t("training.rest.remaining", { time: clockTime(remaining) })
     : t("training.rest.complete");
 }
 

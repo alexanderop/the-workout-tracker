@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useTemplateRef, watch } from "vue";
-import { BaseSheet, BaseMuscleMap } from "@form/ui";
 import {
-  ArrowLeft,
-  ChevronRight,
-  Dumbbell,
-  PersonStanding,
-  Check,
-} from "@lucide/vue";
+  BaseBackLink,
+  BaseButton,
+  BaseChoiceChip,
+  BaseListGroup,
+  BaseListRow,
+  BaseMuscleMap,
+  BaseSheet,
+  BaseSwitch,
+} from "@form/ui";
+import { Dumbbell, PersonStanding } from "@lucide/vue";
 import { useTranslation } from "../../../i18n";
 import { emptyCatalogFilters, type CatalogFilters } from "./catalogFilters";
 import { categoryLabel, equipmentLabel } from "./exerciseLabels";
@@ -73,126 +76,114 @@ function choose(option: string) {
   <BaseSheet :open="open" :title="title" @close="emit('close')">
     <div ref="content" class="exercise-filters">
       <template v-if="panel === 'overview'">
-        <div class="filter-overview-group">
-          <button
-            type="button"
-            class="filter-overview-row"
+        <BaseListGroup>
+          <BaseListRow
+            as="button"
+            chevron
             data-focus="equipment"
-            @click="showPanel('equipment', 'back')"
-          >
-            <Dumbbell aria-hidden="true" :size="22" /><span>{{
-              t("exercises.filters.equipment")
-            }}</span
-            ><small>{{
+            :icon="Dumbbell"
+            :label="t('exercises.filters.equipment')"
+            :value="
               filters.equipment
                 ? equipmentLabel(filters.equipment, t)
-                : t("exercises.filters.all")
-            }}</small
-            ><ChevronRight aria-hidden="true" :size="18" />
-          </button>
-          <button
-            type="button"
-            class="filter-overview-row"
+                : t('exercises.filters.all')
+            "
+            @click="showPanel('equipment', 'back')"
+          />
+          <BaseListRow
+            as="button"
+            chevron
             data-focus="muscle"
-            @click="showPanel('muscle', 'back')"
-          >
-            <PersonStanding aria-hidden="true" :size="22" /><span>{{
-              t("exercises.filters.muscleGroup")
-            }}</span
-            ><small>{{
+            :icon="PersonStanding"
+            :label="t('exercises.filters.muscleGroup')"
+            :value="
               filters.category
                 ? categoryLabel(filters.category, t)
-                : t("exercises.filters.all")
-            }}</small
-            ><ChevronRight aria-hidden="true" :size="18" />
-          </button>
-        </div>
-        <label class="filter-custom-toggle">
-          <span>{{ t("exercises.catalog.onlyCustom") }}</span>
-          <input
-            type="checkbox"
-            role="switch"
-            :checked="filters.onlyCustom"
-            @change="filters = { ...filters, onlyCustom: !filters.onlyCustom }"
+                : t('exercises.filters.all')
+            "
+            @click="showPanel('muscle', 'back')"
           />
-        </label>
+          <BaseListRow as="label" :label="t('exercises.catalog.onlyCustom')">
+            <template #trailing>
+              <BaseSwitch
+                :model-value="filters.onlyCustom"
+                @update:model-value="
+                  filters = { ...filters, onlyCustom: $event }
+                "
+              />
+            </template>
+          </BaseListRow>
+        </BaseListGroup>
         <div class="filter-sheet-actions">
-          <button
+          <BaseButton
             type="button"
-            class="text-button"
+            variant="link"
+            size="sm"
             @click="filters = emptyCatalogFilters"
           >
             {{ t("exercises.filters.reset") }}
-          </button>
-          <button type="button" class="btn primary" @click="emit('close')">
+          </BaseButton>
+          <BaseButton type="button" @click="emit('close')">
             {{ t("exercises.filters.done") }}
-          </button>
+          </BaseButton>
         </div>
       </template>
       <template v-else>
         <div class="filter-subview-actions">
-          <button
-            type="button"
-            class="text-button"
+          <BaseBackLink
+            as="button"
             data-focus="back"
             @click="showPanel('overview', panel)"
+            >{{ t("exercises.filters.back") }}</BaseBackLink
           >
-            <ArrowLeft aria-hidden="true" :size="18" />{{
-              t("exercises.filters.back")
-            }}
-          </button>
-          <button
+          <BaseButton
             type="button"
-            class="text-button"
+            variant="link"
+            size="sm"
             :aria-pressed="selected('')"
             @click="choose('')"
           >
             {{ t("exercises.filters.all") }}
-          </button>
+          </BaseButton>
         </div>
         <div class="filter-card-grid">
-          <button
+          <BaseChoiceChip
             v-for="option in options"
             :key="option"
-            type="button"
-            class="filter-choice-card"
-            :aria-pressed="selected(option)"
-            @click="choose(option)"
+            size="card"
+            :model-value="selected(option)"
+            @update:model-value="choose(option)"
           >
-            <template v-if="panel === 'equipment'">
-              <img
-                v-if="equipmentIllustrations.get(option)"
-                :src="equipmentIllustrations.get(option)"
-                alt=""
-                loading="lazy"
+            <template #media>
+              <template v-if="panel === 'equipment'">
+                <img
+                  v-if="equipmentIllustrations.get(option)"
+                  :src="equipmentIllustrations.get(option)"
+                  alt=""
+                  loading="lazy"
+                />
+                <Dumbbell
+                  v-else
+                  class="filter-fallback"
+                  aria-hidden="true"
+                  :size="48"
+                />
+              </template>
+              <BaseMuscleMap
+                v-else-if="muscleIllustrations.has(option)"
+                presentation="illustration"
+                :view="muscleIllustrations.get(option)?.view"
+                :highlights="muscleIllustrations.get(option)?.highlights"
               />
-              <Dumbbell
+              <PersonStanding
                 v-else
                 class="filter-fallback"
                 aria-hidden="true"
                 :size="48"
               />
             </template>
-            <BaseMuscleMap
-              v-else-if="muscleIllustrations.has(option)"
-              presentation="illustration"
-              :view="muscleIllustrations.get(option)?.view"
-              :highlights="muscleIllustrations.get(option)?.highlights"
-            />
-            <PersonStanding
-              v-else
-              class="filter-fallback"
-              aria-hidden="true"
-              :size="48"
-            />
-            <span>{{ optionLabel(option) }}</span
-            ><Check
-              v-if="selected(option)"
-              class="filter-choice-check"
-              aria-hidden="true"
-              :size="18"
-            />
-          </button>
+            {{ optionLabel(option) }}
+          </BaseChoiceChip>
         </div>
       </template>
     </div>

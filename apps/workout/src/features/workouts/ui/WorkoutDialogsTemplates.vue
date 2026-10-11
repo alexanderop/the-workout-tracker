@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useTemplateRef, watch } from "vue";
-import { BaseSheet, BaseButton } from "@form/ui";
-import { Plus, BookmarkPlus, Dumbbell, ArrowRight } from "@lucide/vue";
+import {
+  BaseButton,
+  BaseEmptyState,
+  BaseListGroup,
+  BaseListRow,
+  BaseNotice,
+  BaseSheet,
+} from "@form/ui";
+import { Plus, BookmarkPlus, Dumbbell } from "@lucide/vue";
 import RoutineEditor from "./RoutineEditor.vue";
 import type { CompletedSession, Routine } from "../domain";
 import {
@@ -39,6 +46,16 @@ const routineOpen = ref(false);
 const templateContent = useTemplateRef<HTMLElement>("templateContent");
 const routines = computed(() => Object.values(snapshot.value?.routines ?? {}));
 const exercises = computed(() => snapshot.value?.exercises ?? {});
+const previewLimit = 3;
+/** The first exercise names of a template, with how many more it holds. */
+function preview(routine: Routine): string {
+  const names = routine.exercises
+    .slice(0, previewLimit)
+    .flatMap((entry) => exercises.value[entry.exerciseId]?.name ?? []);
+  const more = routine.exercises.length - previewLimit;
+  if (more > 0) names.push(t("dialogs.templates.more", { count: more }));
+  return names.join(" · ");
+}
 let templateFocus: string | null = null;
 async function focusTemplateContent() {
   await nextTick();
@@ -176,110 +193,114 @@ defineExpose({ editRoutine });
         @save="saveRoutine"
         @cancel="cancelRoutine"
       />
-      <div v-if="routineOpen && routineConflict" class="draft-finish-notice">
-        <p role="alert">
-          {{
-            routineState === "deleted"
-              ? t("dialogs.templates.deleted")
-              : t("dialogs.templates.changed")
-          }}
-        </p>
-        <div v-if="routineState !== 'deleted'" class="form-actions">
+      <BaseNotice
+        v-if="routineOpen && routineConflict"
+        tone="danger"
+        class="conflict-notice"
+      >
+        {{
+          routineState === "deleted"
+            ? t("dialogs.templates.deleted")
+            : t("dialogs.templates.changed")
+        }}
+        <template v-if="routineState !== 'deleted'" #action>
           <BaseButton
             variant="secondary"
+            size="sm"
             :disabled="saving"
             @click="useSavedRoutine"
             >{{ t("dialogs.templates.useSaved") }}</BaseButton
           >
-          <BaseButton :disabled="saving" @click="keepRoutineChanges">{{
-            t("dialogs.templates.keepMine")
-          }}</BaseButton>
-        </div>
-      </div>
+          <BaseButton
+            size="sm"
+            :disabled="saving"
+            @click="keepRoutineChanges"
+            >{{ t("dialogs.templates.keepMine") }}</BaseButton
+          >
+        </template>
+      </BaseNotice>
       <template v-if="!routineOpen">
         <BaseButton
           v-if="routines.length"
-          unstyled
-          class="btn secondary"
+          class="new-template"
+          variant="secondary"
           @click="editRoutine(null)"
           ><Plus :size="17" />{{
             t("dialogs.templates.newTemplate")
           }}</BaseButton
         >
-        <div v-if="!routines.length" class="overview-empty">
-          <BookmarkPlus :size="26" />
-          <h2>{{ t("dialogs.templates.emptyTitle") }}</h2>
-          <p class="muted">
-            {{ t("dialogs.templates.emptyDescription") }}
-          </p>
-          <BaseButton unstyled class="btn secondary" @click="editRoutine(null)">
-            <Plus :size="17" />{{ t("dialogs.templates.createTemplate") }}
-          </BaseButton>
-        </div>
-        <div v-else class="routine-grid">
-          <article
+        <BaseEmptyState
+          v-if="!routines.length"
+          :title="t('dialogs.templates.emptyTitle')"
+          :body="t('dialogs.templates.emptyDescription')"
+        >
+          <template #icon><BookmarkPlus :size="26" /></template>
+          <template #action
+            ><BaseButton variant="secondary" @click="editRoutine(null)">
+              <Plus :size="17" />{{ t("dialogs.templates.createTemplate") }}
+            </BaseButton></template
+          >
+        </BaseEmptyState>
+        <BaseListGroup v-else>
+          <BaseListRow
             v-for="routine in routines"
             :key="routine.id"
-            class="routine-card panel"
+            :icon="Dumbbell"
+            :label="routine.name"
           >
-            <header>
-              <span class="routine-symbol"><Dumbbell :size="20" /></span
-              ><BaseButton
-                unstyled
-                class="text-button"
-                :aria-label="
-                  t('dialogs.templates.editAria', { name: routine.name })
-                "
-                :data-template-id="routine.id"
-                @click="editRoutine(routine)"
-              >
-                {{ t("dialogs.templates.edit") }}
-              </BaseButton>
-            </header>
-            <h2>{{ routine.name }}</h2>
-            <p class="muted small routine-description">
-              {{
-                routine.description || t("dialogs.templates.defaultDescription")
-              }}
-            </p>
-            <ul class="exercise-preview">
-              <li
-                v-for="(entry, index) in routine.exercises.slice(0, 4)"
-                :key="index"
-              >
-                <span>{{ exercises[entry.exerciseId]?.name }}</span
-                ><span class="muted">{{
-                  t("dialogs.templates.setCount", entry.sets.length)
-                }}</span>
-              </li>
-              <li v-if="routine.exercises.length > 4" class="muted">
-                {{
-                  t("dialogs.templates.more", {
-                    count: routine.exercises.length - 4,
-                  })
-                }}
-              </li>
-            </ul>
-            <footer>
-              <span class="muted small">{{
+            <template #subtitle>
+              <span v-if="routine.description">{{ routine.description }}</span>
+              <span class="template-preview">{{ preview(routine) }}</span>
+              <span>{{
                 t("dialogs.templates.exerciseCount", routine.exercises.length)
-              }}</span
-              ><BaseButton
-                unstyled
-                class="btn secondary"
-                :disabled="saving || !!active"
-                :aria-label="
-                  t('dialogs.templates.startAria', { name: routine.name })
-                "
-                @click="emit('start', routine.id)"
-              >
-                {{ t("dialogs.templates.start") }}<ArrowRight :size="16" />
-              </BaseButton>
-            </footer>
-          </article>
-        </div>
+              }}</span>
+              <span class="template-actions">
+                <BaseButton
+                  variant="ghost"
+                  size="sm"
+                  :aria-label="
+                    t('dialogs.templates.editAria', { name: routine.name })
+                  "
+                  :data-template-id="routine.id"
+                  @click="editRoutine(routine)"
+                >
+                  {{ t("dialogs.templates.edit") }}
+                </BaseButton>
+                <BaseButton
+                  variant="secondary"
+                  size="sm"
+                  :disabled="saving || !!active"
+                  :aria-label="
+                    t('dialogs.templates.startAria', { name: routine.name })
+                  "
+                  @click="emit('start', routine.id)"
+                >
+                  {{ t("dialogs.templates.start") }}
+                </BaseButton>
+              </span>
+            </template>
+          </BaseListRow>
+        </BaseListGroup>
       </template>
     </div>
-    <p v-if="error" class="field-error" role="alert">{{ error }}</p></BaseSheet
+    <BaseNotice v-if="error" tone="danger">{{ error }}</BaseNotice></BaseSheet
   >
 </template>
+
+<style scoped>
+.conflict-notice {
+  margin-block-start: var(--space-5);
+}
+.new-template {
+  margin-block-end: var(--space-4);
+}
+.template-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-block-start: var(--space-2);
+}
+.template-preview {
+  overflow-wrap: anywhere;
+}
+</style>

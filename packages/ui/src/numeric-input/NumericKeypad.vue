@@ -54,7 +54,7 @@ const digits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 .ui-numeric-keypad {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .ui-numeric-key {
@@ -62,11 +62,11 @@ const digits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
   align-items: center;
   justify-content: center;
   min-height: 54px;
-  padding: 8px;
-  border-radius: 8px;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
   background: var(--ui-secondary);
   color: var(--ui-foreground);
-  font-size: 22px;
+  font-size: var(--text-xl);
   font-weight: 500;
   touch-action: manipulation;
 }

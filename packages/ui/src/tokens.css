@@ -1,3 +1,36 @@
+/* Type, radius and spacing scales. Stylesheets and style blocks reference these
+   instead of literal lengths (see "Enforced token policy" in docs/design.md).
+   Lengths are px on purpose: the app root font-size is 14px, so rem would not
+   match the documented values. 12px is the smallest readable size; there is no
+   smaller token. */
+:root {
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 20px;
+  --text-xl: 24px;
+  --text-2xl: 32px;
+  --text-3xl: 40px; /* display numerals such as the rest timer */
+
+  --radius-sm: 4px;
+  --radius-md: 8px; /* controls and cards */
+  --radius-lg: 16px; /* sheets */
+  --radius-pill: 999px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 48px;
+
+  /* Horizontal page gutter on phones. The app also declares a fluid
+     --page-gutter for wide layouts in apps/workout/src/style.css. */
+  --page-gutter-phone: 20px;
+}
+
 :root {
   --ui-motion-press: 120ms;
   --ui-motion-exit: 180ms;
@@ -58,6 +91,19 @@
   --accent-soft: light-dark(#f7ecdb, #40311f);
 }
 
+/* The one "selected" look: a soft accent surface with an accent border and
+   text. Every selected control (choice chips, calendar day, picker row, exercise
+   thumbnail, numeric value, accent swatch) reads these three tokens. They sit on
+   `[data-accent]` as well as :root so a subtree with its own accent, such as a
+   swatch, resolves them from that accent. A filled --accent stays reserved for
+   the primary action. */
+:root,
+[data-accent] {
+  --ui-selected-bg: var(--accent-soft);
+  --ui-selected-border: var(--accent);
+  --ui-selected-text: var(--accent);
+}
+
 /* One token set; each color resolves from the element's color-scheme.
    --ui-dark stays a number because calc() cannot read light-dark(). */
 :root {
@@ -104,7 +150,7 @@
   --ui-plate-steel: oklch(0.74 0 none);
   --ui-plate-ink-light: oklch(0.985 0 none);
   --ui-plate-ink-dark: oklch(0.2 0 none);
-  --ui-radius: 0.625rem;
+  --ui-radius: var(--radius-md);
   --ui-sidebar: light-dark(oklch(0.985 0 none), oklch(0.205 0 none));
   --ui-sidebar-foreground: light-dark(oklch(0.145 0 none), oklch(0.985 0 none));
   --ui-sidebar-primary: light-dark(

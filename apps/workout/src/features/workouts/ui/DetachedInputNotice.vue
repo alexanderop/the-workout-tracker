@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { BaseButton } from "@form/ui";
+import { BaseButton, BaseNotice } from "@form/ui";
 import { useTranslation } from "../../../i18n";
 import type { DetachedDraft } from "./useDetachedDrafts";
 const { entries, dismiss } = defineProps<{
@@ -19,46 +19,47 @@ function dismissAll() {
     class="detached-input-notice"
     :aria-label="t('training.detached.label')"
   >
-    <p role="status">{{ t("training.detached.intro") }}</p>
-    <ul>
-      <li v-for="entry in entries" :key="entry.key">
-        {{
-          t("training.detached.entry", {
-            exercise: entry.exerciseName,
-            set: entry.index + 1,
-            weight: entry.weight,
-            reps: entry.reps,
-          })
-        }}
-      </li>
-    </ul>
-    <p class="muted">{{ t("training.detached.hint") }}</p>
-    <p v-if="issue" class="field-error" role="alert">{{ issue }}</p>
-    <BaseButton size="sm" variant="secondary" @click="dismissAll">{{
-      t("training.detached.dismiss")
-    }}</BaseButton>
+    <BaseNotice>
+      <p>{{ t("training.detached.intro") }}</p>
+      <ul>
+        <li v-for="entry in entries" :key="entry.key">
+          {{
+            t("training.detached.entry", {
+              exercise: entry.exerciseName,
+              set: entry.index + 1,
+              weight: entry.weight,
+              reps: entry.reps,
+            })
+          }}
+        </li>
+      </ul>
+      <p class="muted">{{ t("training.detached.hint") }}</p>
+      <BaseNotice v-if="issue" tone="danger">{{ issue }}</BaseNotice>
+      <template #action>
+        <BaseButton size="sm" variant="secondary" @click="dismissAll">{{
+          t("training.detached.dismiss")
+        }}</BaseButton>
+      </template>
+    </BaseNotice>
   </aside>
 </template>
 <style scoped>
+/* Positions the notice; BaseNotice draws the surface. */
 .detached-input-notice {
   position: fixed;
   z-index: 40;
-  inset-block-start: calc(1rem + env(safe-area-inset-top, 0px));
-  inset-inline-start: 1rem;
-  inset-inline-end: 1rem;
+  inset-block-start: calc(var(--space-4) + env(safe-area-inset-top, 0px));
+  inset-inline: var(--space-4);
   margin-inline: auto;
-  max-width: 30rem;
-  padding: 1rem;
-  border: 1px solid var(--muted);
-  border-radius: 1rem;
-  background: var(--surface);
+  max-width: calc(var(--space-8) * 10);
+  border-radius: var(--radius-md);
   box-shadow: 0 4px 24px var(--ui-shadow-dialog);
 }
 .detached-input-notice p,
 .detached-input-notice ul {
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--space-2);
 }
 .detached-input-notice ul {
-  padding-inline-start: 1.25rem;
+  padding-inline-start: var(--space-5);
 }
 </style>

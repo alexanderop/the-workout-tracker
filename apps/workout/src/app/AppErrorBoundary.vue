@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BaseButton } from "@form/ui";
+import { BaseActions, BaseButton, BaseEmptyState } from "@form/ui";
 import { ShieldCheck } from "@lucide/vue";
 import { nextTick, onErrorCaptured, ref, useTemplateRef } from "vue";
 import { useTranslation } from "../i18n";
@@ -9,7 +9,8 @@ defineSlots<{ default(): unknown }>();
 const { t } = useTranslation();
 
 const failed = ref(false);
-const heading = useTemplateRef<HTMLElement>("recovery-heading");
+const heading =
+  useTemplateRef<InstanceType<typeof BaseEmptyState>>("recovery-heading");
 const copyStatus = ref<"copied" | "unavailable" | null>(null);
 // Diagnostics are fixed text. They never include the exception, its stack or
 // anything from the training journal.
@@ -44,19 +45,26 @@ async function copyDiagnostics() {
 </script>
 
 <template>
-  <div v-if="failed" class="empty-state" role="alert">
-    <ShieldCheck :size="32" aria-hidden="true" />
-    <h1 ref="recovery-heading" tabindex="-1">
-      {{ t("shell.errorBoundary.title") }}
-    </h1>
-    <p>{{ t("shell.errorBoundary.body") }}</p>
-    <BaseButton unstyled class="btn primary" @click="reload">{{
-      t("shell.errorBoundary.reload")
-    }}</BaseButton>
-    <BaseButton unstyled class="btn secondary" @click="copyDiagnostics">{{
-      t("shell.errorBoundary.copy")
-    }}</BaseButton>
-    <p role="status">
+  <div v-if="failed" class="error-boundary" role="alert">
+    <BaseEmptyState
+      ref="recovery-heading"
+      :title="t('shell.errorBoundary.title')"
+      :body="t('shell.errorBoundary.body')"
+      :heading-level="1"
+    >
+      <template #icon><ShieldCheck :size="32" /></template>
+      <template #action>
+        <BaseActions>
+          <BaseButton variant="secondary" @click="copyDiagnostics">{{
+            t("shell.errorBoundary.copy")
+          }}</BaseButton>
+          <BaseButton @click="reload">{{
+            t("shell.errorBoundary.reload")
+          }}</BaseButton>
+        </BaseActions>
+      </template>
+    </BaseEmptyState>
+    <p class="error-boundary-status" role="status">
       <template v-if="copyStatus === 'copied'">{{
         t("shell.errorBoundary.copied")
       }}</template>
@@ -71,3 +79,18 @@ async function copyDiagnostics() {
   </div>
   <slot v-else />
 </template>
+
+<style scoped>
+.error-boundary {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--page-gutter-phone);
+}
+.error-boundary-status {
+  margin: 0;
+  text-align: center;
+}
+.error-boundary pre {
+  overflow-x: auto;
+}
+</style>

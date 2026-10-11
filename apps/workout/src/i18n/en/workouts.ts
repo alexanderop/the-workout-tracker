@@ -20,12 +20,14 @@ export const enWorkouts = {
     title: "History",
     searchLabel: "Search workout history",
     searchPlaceholder: "Find a past workout",
+    emptyTitle: "No workouts yet",
     empty: "Your completed workouts will appear here, ready to repeat.",
     noMatches: "No workouts match your search.",
+    rowMeta: "{date} · {meta}",
   },
   metrics: {
-    minutes: "min",
-    sets: "set | sets",
+    line: "{duration} · {sets} · {volume}",
+    sets: "{n} set | {n} sets",
     kilograms: "kg",
   },
   calendar: {
@@ -41,7 +43,5 @@ export const enWorkouts = {
     workoutCount: "{n} workout | {n} workouts",
     selectedDay: "{date} · {count}",
     noWorkouts: "No completed workouts.",
-    sessionSummary: "{minutes} min · {sets}",
-    sessionSets: "{n} set | {n} sets",
   },
 } as const;

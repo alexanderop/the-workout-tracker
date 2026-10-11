@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, useAttrs, useId, useTemplateRef, watch } from "vue";
 import { DialogRoot } from "reka-ui";
-import { Check } from "@lucide/vue";
 import BaseButton from "../button/BaseButton.vue";
 import NumericKeypad from "./NumericKeypad.vue";
 import NumericPresets from "./NumericPresets.vue";
@@ -215,7 +214,7 @@ function focusDisplay(event: Event) {
             :disabled="value === null || disabled"
             @click="confirm()"
           >
-            <Check :stroke-width="3" />
+            {{ text.done }}
           </BaseButton>
         </div>
         <p
@@ -244,12 +243,12 @@ function focusDisplay(event: Event) {
   overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px;
+  gap: var(--space-3);
+  padding: var(--space-4);
   background: var(--ui-background);
   color: var(--ui-foreground);
   border: 1px solid var(--ui-border);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   font-family: inherit;
 }
 :global(.ui-numeric-overlay) {
@@ -267,10 +266,10 @@ function focusDisplay(event: Event) {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  column-gap: 8px;
+  column-gap: var(--space-2);
 }
 .ui-numeric-title {
-  font-size: 17px;
+  font-size: var(--text-base);
   font-weight: 600;
   letter-spacing: -0.3px;
   text-align: center;
@@ -278,30 +277,30 @@ function focusDisplay(event: Event) {
 .ui-numeric-description {
   grid-column: 1 / -1;
   color: var(--ui-muted-foreground);
-  font-size: 12px;
+  font-size: var(--text-sm);
   line-height: 1.4;
   text-align: center;
 }
 .ui-numeric-cancel {
   justify-self: start;
-  padding: 0 4px;
+  padding: 0 var(--space-1);
   min-height: 44px;
   color: var(--ui-primary);
-  font-size: 16px;
+  font-size: var(--text-base);
   font-weight: 500;
 }
 .ui-numeric-pad {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding-block-start: 12px;
+  gap: var(--space-2);
+  padding-block-start: var(--space-3);
   border-block-start: 1px solid var(--ui-border);
 }
 .ui-numeric-entry {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   min-height: 56px;
 }
 .ui-numeric-aside {
@@ -314,14 +313,14 @@ function focusDisplay(event: Event) {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: 4px;
+  gap: var(--space-1);
   min-width: 0;
   white-space: nowrap;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 .ui-numeric-display span {
   min-width: 0;
-  font-size: 36px;
+  font-size: var(--text-3xl);
   line-height: 1.2;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -329,40 +328,39 @@ function focusDisplay(event: Event) {
 }
 .ui-numeric-display small {
   color: var(--ui-muted-foreground);
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 /* Values such as 142.5 stay on one line beside the plates. */
 .ui-numeric-display.is-long span {
-  font-size: 26px;
+  font-size: var(--text-xl);
   letter-spacing: -0.5px;
 }
 .ui-numeric-error {
   margin: 0;
   color: var(--ui-destructive);
-  font-size: 12px;
+  font-size: var(--text-sm);
   text-align: center;
 }
+/* A labelled "Done", not the check that logs a set: the glyph stays exclusive
+   to the set row. The editor's primary action, so it is filled accent. */
 .ui-numeric-confirm {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
   min-height: 54px;
-  border-radius: 8px;
-  background: var(--ui-secondary);
-  color: var(--ui-primary);
-  --ui-button-icon-size: 28px;
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: var(--text-base);
+  font-weight: 600;
 }
 .ui-numeric-confirm:disabled {
   opacity: 0.5;
 }
 @media (hover: hover) and (pointer: fine) {
   .ui-numeric-confirm:not(:disabled):hover {
-    background: color-mix(
-      in oklch,
-      var(--ui-secondary) 85%,
-      var(--ui-foreground)
-    );
+    background: var(--accent-hover);
   }
 }
 @media (max-width: 650px) {
@@ -374,8 +372,9 @@ function focusDisplay(event: Event) {
     max-height: none;
     border: 0;
     border-radius: 0;
-    padding: calc(8px + env(safe-area-inset-top, 0px)) 12px
-      calc(12px + env(safe-area-inset-bottom, 0px));
+    padding: calc(var(--space-2) + env(safe-area-inset-top, 0px))
+      var(--page-gutter-phone)
+      calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
   }
 }
 @media (max-height: 600px) {

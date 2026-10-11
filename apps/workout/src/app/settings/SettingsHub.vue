@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, useTemplateRef } from "vue";
 import type { Component } from "vue";
-import { BaseListGroup, BaseListRow } from "@form/ui";
+import { BaseListGroup, BaseListRow, BasePageHeader } from "@form/ui";
 import type { ListRowTone } from "@form/ui";
 import {
   ArrowDownToLine,
@@ -40,9 +40,13 @@ const sectionLink = useSectionLink();
 const { theme, accent } = useAppearance();
 const { language } = useLanguageSetting();
 const hub = useTemplateRef<HTMLElement>("hub");
+// Tile tones follow what a row is: `primary` changes how the app trains or
+// looks (the General group), `muted` is device and data housekeeping (Install,
+// Export, Import) and `destructive` erases data.
 const groups = computed<{ id: string; label?: string; rows: Row[] }[]>(() => [
   {
     id: "preferences",
+    label: t("settings.groups.preferences"),
     rows: [
       {
         id: "training",
@@ -76,7 +80,7 @@ const groups = computed<{ id: string; label?: string; rows: Row[] }[]>(() => [
       {
         id: "install",
         icon: ArrowDownToLine,
-        tone: "primary",
+        tone: "muted",
         value: installed ? t("shell.install.settings.installed") : undefined,
       },
     ],
@@ -105,38 +109,44 @@ onMounted(() => {
 
 <template>
   <section ref="hub" class="settings-hub">
-    <h1>{{ t("settings.title") }}</h1>
-    <div class="settings-app">
-      <span class="settings-mark"
-        ><Dumbbell :size="28" aria-hidden="true"
-      /></span>
-      <div class="settings-identity">
-        <strong>{{ t("settings.signoff.brand") }}</strong>
-        <span>{{ t("settings.signoff.tagline") }}</span>
+    <BasePageHeader variant="root" :title="t('settings.title')" />
+    <div class="settings-body">
+      <div class="settings-app">
+        <span class="settings-mark"
+          ><Dumbbell :size="28" aria-hidden="true"
+        /></span>
+        <div class="settings-identity">
+          <strong>{{ t("settings.signoff.brand") }}</strong>
+          <span>{{ t("settings.signoff.tagline") }}</span>
+        </div>
+        <span class="settings-badge" :data-ready="offlineReady || undefined">{{
+          offlineReady
+            ? t("settings.hub.offlineReady")
+            : t("settings.hub.offlinePending")
+        }}</span>
       </div>
-      <span class="settings-badge" :data-ready="offlineReady || undefined">{{
-        offlineReady
-          ? t("settings.hub.offlineReady")
-          : t("settings.hub.offlinePending")
-      }}</span>
+      <BaseListGroup
+        v-for="group in groups"
+        :key="group.id"
+        :label="group.label"
+      >
+        <BaseListRow
+          v-for="row in group.rows"
+          :key="row.id"
+          as="a"
+          v-bind="sectionLink(row.id)"
+          :data-section="row.id"
+          chevron
+          :icon="row.icon"
+          :tone="row.tone"
+          :label="t(`settings.sections.${row.id}`)"
+          :value="row.value"
+        />
+      </BaseListGroup>
+      <p class="settings-privacy">
+        <ShieldCheck :size="16" aria-hidden="true" />
+        <span>{{ t("settings.hub.privacy") }}</span>
+      </p>
     </div>
-    <BaseListGroup v-for="group in groups" :key="group.id" :label="group.label">
-      <BaseListRow
-        v-for="row in group.rows"
-        :key="row.id"
-        as="a"
-        v-bind="sectionLink(row.id)"
-        :data-section="row.id"
-        chevron
-        :icon="row.icon"
-        :tone="row.tone"
-        :label="t(`settings.sections.${row.id}`)"
-        :value="row.value"
-      />
-    </BaseListGroup>
-    <p class="settings-privacy">
-      <ShieldCheck :size="16" aria-hidden="true" />
-      <span>{{ t("settings.hub.privacy") }}</span>
-    </p>
   </section>
 </template>

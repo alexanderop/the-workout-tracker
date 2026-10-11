@@ -80,7 +80,7 @@ const description = computed(() => {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: calc(var(--space-1) / 2);
   width: 100%;
   height: 54px;
   overflow: clip;
@@ -93,7 +93,7 @@ const description = computed(() => {
   inset-block-start: 50%;
   height: 12px;
   transform: translateY(-50%);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   background: var(--ui-muted-foreground);
   opacity: 0.45;
 }
@@ -102,9 +102,9 @@ const description = computed(() => {
 }
 .barbell-bar {
   flex-shrink: 0;
-  padding-inline: 4px 6px;
+  padding-inline: var(--space-1) var(--space-1);
   color: var(--ui-foreground);
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
@@ -112,7 +112,7 @@ const description = computed(() => {
   flex-shrink: 0;
   width: 5px;
   height: 22px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: var(--ui-muted-foreground);
 }
 .barbell-plate {
@@ -121,9 +121,9 @@ const description = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   writing-mode: vertical-rl;
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 650;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -137,11 +137,11 @@ const description = computed(() => {
 }
 .barbell-plate.is-medium {
   height: 34px;
-  font-size: 9px;
+  font-size: var(--text-xs);
 }
 .barbell-plate.is-small {
   height: 28px;
-  font-size: 8px;
+  font-size: var(--text-xs);
 }
 .is-red {
   background: var(--ui-plate-red);
@@ -173,11 +173,11 @@ const description = computed(() => {
 }
 .barbell-rest {
   flex-shrink: 0;
-  padding: 1px 3px;
-  border-radius: 4px;
+  padding: 1px var(--space-1);
+  border-radius: var(--radius-sm);
   background: var(--ui-background);
   color: var(--ui-destructive);
-  font-size: 10px;
+  font-size: var(--text-xs);
   font-weight: 650;
 }
 .barbell.is-below-bar {

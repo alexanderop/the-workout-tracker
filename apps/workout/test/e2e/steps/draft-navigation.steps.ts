@@ -130,7 +130,9 @@ When("I confirm a Back squat weight of 55 kilograms", async ({ page }) => {
   const editor = page.getByRole("dialog", { name: "Weight", exact: true });
   await editor.getByRole("group", { name: "Number editor" }).press("5");
   await editor.getByRole("group", { name: "Number editor" }).press("5");
-  await editor.getByRole("button", { name: "Use weight", exact: true }).click();
+  await editor
+    .getByRole("button", { name: "Done: weight", exact: true })
+    .click();
 });
 When("I switch to Bench press and review my input drafts", async ({ page }) => {
   await page

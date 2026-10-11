@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import {
   BaseFeedback,
-  BaseSheet,
+  BaseConfirmSheet,
   BaseButtonIcon,
   BaseButton,
+  BaseFieldError,
   BaseInputNumber,
+  BaseNotice,
 } from "@form/ui";
 import { computed, useTemplateRef, watch, nextTick, ref } from "vue";
 import { Check, MoreHorizontal, Save } from "@lucide/vue";
@@ -92,11 +94,10 @@ defineExpose({
       class="set-row"
       :class="{ completed: row.set.completed, edited: dirty }"
     >
-      <BaseButton
-        unstyled
-        type="button"
+      <BaseButtonIcon
+        variant="secondary"
         class="set-number"
-        :aria-label="
+        :label="
           t('training.setRow.select', {
             n: row.index + 1,
             exercise: row.exercise.name,
@@ -106,7 +107,7 @@ defineExpose({
         @click="emit('select')"
       >
         {{ row.index + 1 }}
-      </BaseButton>
+      </BaseButtonIcon>
       <BaseInputNumber
         :model-value="row.weight"
         :title="t('training.setRow.weight')"
@@ -147,12 +148,12 @@ defineExpose({
         @update:model-value="emit('edit', { reps: $event })"
         @open="emit('select')"
       />
-      <BaseButton
-        unstyled
+      <BaseButtonIcon
         type="submit"
+        :variant="current && !row.set.completed ? 'default' : 'secondary'"
         class="set-toggle"
         :class="{ logged: row.set.completed, 'has-draft': dirty }"
-        :aria-label="toggleLabel()"
+        :label="toggleLabel()"
         :aria-disabled="row.set.completed && !dirty"
         :disabled="busy"
       >
@@ -165,7 +166,7 @@ defineExpose({
         <span v-if="row.set.completed && !dirty" class="set-logged-label">{{
           t("training.setRow.logged")
         }}</span>
-      </BaseButton>
+      </BaseButtonIcon>
       <BaseButtonIcon
         type="button"
         class="set-options"
@@ -181,32 +182,30 @@ defineExpose({
         <MoreHorizontal :size="20" />
       </BaseButtonIcon>
     </div>
-    <p
+    <BaseFieldError
       v-if="row.issue"
       :id="`set-issue-${row.set.id}`"
-      class="field-error"
-      role="alert"
-    >
-      {{ row.issue }}
-    </p>
+      class="set-issue"
+      :errors="[row.issue]"
+    />
     <div v-if="conflict" class="draft-conflict">
       <p>{{ t("training.setRow.conflict") }}</p>
       <p>{{ savedSummary }}</p>
       <BaseButton
-        unstyled
         type="button"
-        class="text-button"
+        variant="link"
+        size="row"
         :disabled="busy"
         @click="emit('keep')"
       >
         {{ t("training.setRow.keepInput") }}
       </BaseButton>
       <BaseButton
-        unstyled
         v-for="draft in row.alternatives"
         :key="draft.id"
         type="button"
-        class="text-button"
+        variant="link"
+        size="row"
         @click="emit('recover', draft)"
       >
         {{
@@ -217,17 +216,17 @@ defineExpose({
         }}
       </BaseButton>
       <BaseButton
-        unstyled
         type="button"
-        class="text-button"
+        variant="link"
+        size="row"
         @click="discardOpen = true"
       >
         {{ t("training.setRow.useSaved") }}
       </BaseButton>
     </div>
-    <p v-if="row.storageIssue" class="field-error" role="alert">
-      {{ row.storageIssue }}
-    </p>
+    <BaseNotice v-if="row.storageIssue" class="set-issue" tone="danger">{{
+      row.storageIssue
+    }}</BaseNotice>
     <p v-else-if="row.touched && !conflict" class="draft-note">
       {{
         row.set.completed
@@ -236,25 +235,17 @@ defineExpose({
       }}
     </p>
   </form>
-  <BaseSheet
-    :open="discardOpen"
+  <BaseConfirmSheet
+    v-model:open="discardOpen"
+    intent="destructive"
     :title="t('training.discardInput.title')"
     :description="t('training.discardInput.description')"
-    @close="discardOpen = false"
-  >
-    <div class="form-actions">
-      <BaseButton variant="secondary" @click="discardOpen = false">
-        {{ t("training.discardInput.keepEditing") }}
-      </BaseButton>
-      <BaseButton
-        :disabled="busy"
-        @click="
-          emit('discard');
-          discardOpen = false;
-        "
-      >
-        {{ t("training.discardInput.action") }}
-      </BaseButton>
-    </div>
-  </BaseSheet>
+    :cancel-label="t('dialogs.actions.keepEditing')"
+    :confirm-label="t('training.discardInput.action')"
+    :busy="busy"
+    @confirm="
+      emit('discard');
+      discardOpen = false;
+    "
+  />
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BaseSheet, BaseButton } from "@form/ui";
+import { BaseSheet, BaseButton, BaseButtonIcon } from "@form/ui";
 import type { TrainingRow } from "./useTrainingSession";
 import { useTranslation } from "../../../i18n";
 
@@ -39,30 +39,28 @@ const { t } = useTranslation();
         >{{ t("dialogs.setOptions.undoLog") }}</BaseButton
       >
       <div class="repetition-adjuster">
-        <BaseButton
-          unstyled
-          class="btn secondary"
+        <BaseButtonIcon
+          variant="secondary"
           :disabled="saving || Number(row.reps) <= 0"
-          :aria-label="t('dialogs.setOptions.decreaseReps')"
+          :label="t('dialogs.setOptions.decreaseReps')"
           @click="emit('adjust', -1)"
         >
-          {{ "−" }}</BaseButton
+          {{ "−" }}</BaseButtonIcon
         ><strong>{{
           t("dialogs.setOptions.reps", { reps: row.reps || "—" })
         }}</strong
-        ><BaseButton
-          unstyled
-          class="btn secondary"
+        ><BaseButtonIcon
+          variant="secondary"
           :disabled="saving || Number(row.reps) >= 1000"
-          :aria-label="t('dialogs.setOptions.increaseReps')"
+          :label="t('dialogs.setOptions.increaseReps')"
           @click="emit('adjust', 1)"
         >
           +
-        </BaseButton>
+        </BaseButtonIcon>
       </div>
       <BaseButton
-        unstyled
-        class="btn secondary full-width"
+        variant="secondary"
+        class="full-width"
         :disabled="saving || row.exercise.sets.length <= 1"
         @click="emit('remove')"
       >

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { BaseButton, BaseSheet } from "@form/ui";
+import { BaseButton, BaseConfirmSheet, BaseNotice } from "@form/ui";
 import { Trash2 } from "@lucide/vue";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import type { DeleteError } from "../application";
@@ -16,7 +16,7 @@ const { t } = useTranslation();
 const { snapshot, saving, deleteAllData: deleteData } = workspace;
 type Deletion = { revision: number; issue: string; conflict: boolean };
 const deletion = ref<Deletion | null>(null);
-const deletionMessage = ref("");
+const deleted = ref(false);
 function requestDeletion() {
   if (!snapshot.value || saving.value || busy) return;
   deletion.value = {
@@ -24,13 +24,13 @@ function requestDeletion() {
     issue: "",
     conflict: false,
   };
-  deletionMessage.value = "";
+  deleted.value = false;
 }
 function completeDeletion(
   request: Deletion,
   pending: DraftCleanupPending | null,
 ) {
-  deletionMessage.value = t("settings.deleteData.done");
+  deleted.value = true;
   if (pending) {
     request.revision = pending.snapshot.revision;
     request.issue = describeFailure(pending, t).message;
@@ -78,34 +78,24 @@ async function deleteAllData() {
       t("settings.deleteData.button")
     }}
   </BaseButton>
-  <p role="status" class="settings-notice">{{ deletionMessage }}</p>
-  <BaseSheet
+  <BaseNotice v-if="deleted" tone="success">{{
+    t("settings.deleteData.done")
+  }}</BaseNotice>
+  <BaseConfirmSheet
     :open="deletion !== null"
+    intent="destructive"
     :title="t('settings.deleteData.sheetTitle')"
     :description="t('settings.deleteData.sheetDescription')"
-    @close="!saving && (deletion = null)"
-  >
-    <p v-if="deletion?.issue" role="alert" class="field-error">
-      {{ deletion.issue }}
-    </p>
-    <div class="form-actions">
-      <BaseButton
-        variant="secondary"
-        :disabled="saving"
-        @click="deletion = null"
-      >
-        {{ t("settings.deleteData.cancel") }}
-      </BaseButton>
-      <BaseButton
-        :disabled="saving || deletion?.conflict"
-        @click="deleteAllData"
-      >
-        {{
-          saving
-            ? t("settings.deleteData.deleting")
-            : t("settings.deleteData.button")
-        }}
-      </BaseButton>
-    </div>
-  </BaseSheet>
+    :cancel-label="t('dialogs.actions.cancel')"
+    :confirm-label="
+      saving
+        ? t('settings.deleteData.deleting')
+        : t('settings.deleteData.button')
+    "
+    :busy="saving"
+    :confirm-disabled="deletion?.conflict"
+    :error="deletion?.issue"
+    @cancel="deletion = null"
+    @confirm="deleteAllData"
+  />
 </template>

@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { BaseButton, BaseSelectNative } from "@form/ui";
+import {
+  BaseButton,
+  BaseEmptyState,
+  BasePageHeader,
+  BaseSelectNative,
+  BaseStat,
+  BaseStatGroup,
+} from "@form/ui";
 import { computed, watch } from "vue";
 import { TrendingUp, ArrowRight } from "@lucide/vue";
 import type { CompletedSession } from "../domain";
@@ -57,52 +64,49 @@ const records = computed(() =>
 </script>
 
 <template>
-  <div class="page-heading">
-    <div>
-      <h1>{{ t("progress.title") }}</h1>
-    </div>
-    <span class="pill">{{ t("progress.range") }}</span>
-  </div>
-  <section class="metrics progress-metrics">
-    <div>
-      <span class="muted">{{ t("progress.metrics.completedWorkouts") }}</span
-      ><strong
-        >{{ totals.workouts
-        }}<span>{{
-          t("progress.metrics.sessions", totals.workouts)
-        }}</span></strong
-      >
-    </div>
-    <div>
-      <span class="muted">{{ t("progress.metrics.totalVolume") }}</span
-      ><strong
-        >{{ format.number(totals.volume)
-        }}<span>{{ t("progress.metrics.kilograms") }}</span></strong
-      >
-    </div>
-    <div>
-      <span class="muted">{{ t("progress.metrics.completedSets") }}</span
-      ><strong
-        >{{ format.number(totals.sets)
-        }}<span>{{ t("progress.metrics.sets", totals.sets) }}</span></strong
-      >
-    </div>
-  </section>
-  <div v-if="!history.length" class="empty-state panel">
-    <TrendingUp :size="34" />
-    <h2>{{ t("progress.empty.title") }}</h2>
-    <p class="muted">{{ t("progress.empty.body") }}</p>
-    <BaseButton unstyled class="btn primary" @click="navigate('workouts')">
-      {{ t("progress.empty.start") }}<ArrowRight :size="17" />
-    </BaseButton>
-  </div>
-  <div v-else-if="!trainedExercises.length" class="empty-state panel">
-    <TrendingUp :size="34" />
-    <h2>{{ t("progress.noSuccessfulSets.title") }}</h2>
-    <p class="muted">
-      {{ t("progress.noSuccessfulSets.body") }}
-    </p>
-  </div>
+  <BasePageHeader variant="root" :title="t('progress.title')">
+    <template #action>
+      <span class="progress-range">{{ t("progress.range") }}</span>
+    </template>
+  </BasePageHeader>
+  <BaseStatGroup
+    class="progress-stats"
+    :aria-label="t('progress.metrics.group')"
+  >
+    <BaseStat
+      :value="totals.workouts"
+      :unit="t('progress.metrics.sessions', totals.workouts)"
+      :label="t('progress.metrics.completedWorkouts')"
+    />
+    <BaseStat
+      :value="format.number(totals.volume)"
+      :unit="t('progress.metrics.kilograms')"
+      :label="t('progress.metrics.totalVolume')"
+    />
+    <BaseStat
+      :value="format.number(totals.sets)"
+      :unit="t('progress.metrics.sets', totals.sets)"
+      :label="t('progress.metrics.completedSets')"
+    />
+  </BaseStatGroup>
+  <BaseEmptyState
+    v-if="!history.length"
+    :title="t('progress.empty.title')"
+    :body="t('progress.empty.body')"
+  >
+    <template #icon><TrendingUp :size="34" /></template>
+    <template #action
+      ><BaseButton @click="navigate('workouts')"
+        >{{ t("progress.empty.start") }}<ArrowRight :size="17" /></BaseButton
+    ></template>
+  </BaseEmptyState>
+  <BaseEmptyState
+    v-else-if="!trainedExercises.length"
+    :title="t('progress.noSuccessfulSets.title')"
+    :body="t('progress.noSuccessfulSets.body')"
+  >
+    <template #icon><TrendingUp :size="34" /></template>
+  </BaseEmptyState>
   <template v-else
     ><section class="chart-panel panel">
       <div class="section-heading">
@@ -116,7 +120,7 @@ const records = computed(() =>
         ><BaseSelectNative
           id="progress-exercise"
           v-model="progressExercise"
-          class="input compact-select"
+          class="compact-select"
         >
           <option
             v-for="exercise in trainedExercises"
@@ -181,11 +185,12 @@ const records = computed(() =>
       </div>
       <div class="records-grid">
         <article v-for="record in records" :key="record.id" class="record-card">
-          <span class="muted small">{{ record.name }}</span
-          ><strong
-            >{{ format.number(record.weight)
-            }}<span> {{ t("progress.metrics.kilograms") }}</span></strong
-          ><span class="muted small">{{
+          <BaseStat
+            :value="format.number(record.weight)"
+            :unit="t('progress.metrics.kilograms')"
+            :label="record.name"
+          />
+          <span class="muted small">{{
             t("progress.bests.repsAtWeight", record.reps)
           }}</span>
         </article>
@@ -193,3 +198,15 @@ const records = computed(() =>
     </section></template
   >
 </template>
+
+<style scoped>
+.progress-stats {
+  margin-block-end: var(--space-7);
+}
+/* A caption, not a control: the range is fixed, so it has no pill outline. */
+.progress-range {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+</style>

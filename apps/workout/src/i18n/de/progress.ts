@@ -4,6 +4,7 @@ export const deProgress: Catalog["progress"] = {
   title: "Fortschritt",
   range: "Gesamt",
   metrics: {
+    group: "Gesamtwerte",
     completedWorkouts: "Abgeschlossene Trainings",
     sessions: "Training | Trainings",
     totalVolume: "Gesamtvolumen",

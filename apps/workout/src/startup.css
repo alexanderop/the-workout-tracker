@@ -12,8 +12,8 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  padding: 24px;
+  gap: var(--space-4);
+  padding: var(--space-6);
   box-sizing: border-box;
   font:
     16px system-ui,

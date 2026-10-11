@@ -10,7 +10,7 @@ import { useWorkouts } from "./useWorkouts";
 import { useTrainingSession, type TrainingRow } from "./useTrainingSession";
 import type { DetachedDraft } from "./useDetachedDrafts";
 import { useWorkoutName } from "./useWorkoutName";
-import { duration } from "./presentation";
+import { clockTime } from "./presentation";
 /** What the active workout asks of the user next; shared by page and dock. */
 export type TrainingMode =
   | { kind: "resting"; remaining: number; next: TrainingRow | undefined }
@@ -129,9 +129,11 @@ export function useWorkoutWorkspace(
       !workoutName.dirty.value &&
       activeTotals.value.completedSets > 0,
   );
-  const elapsed = computed(() =>
-    duration(active.value ? (now.value - active.value.startedAt) / 1000 : 0),
+  const elapsedMs = computed(() =>
+    active.value ? Math.max(0, now.value - active.value.startedAt) : 0,
   );
+  /** The live session clock in the header; the finish sheet uses `elapsedMs`. */
+  const elapsed = computed(() => clockTime(elapsedMs.value / 1000));
   return {
     ...workouts,
     run,
@@ -148,6 +150,7 @@ export function useWorkoutWorkspace(
     trainingMode,
     canFinish,
     elapsed,
+    elapsedMs,
   };
 }
 export type WorkoutWorkspace = ReturnType<typeof useWorkoutWorkspace>;

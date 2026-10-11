@@ -13,11 +13,14 @@ import { describeFailure, describeReadFailure } from "./errorMessages";
 
 /**
  * The outcome shown after the latest action. A save confirmation and an error
- * cannot be visible together; a new outcome replaces the previous one.
+ * cannot be visible together; a new outcome replaces the previous one. A
+ * confirmation is feedback for one event: it disappears after
+ * `SAVED_MESSAGE_MS` and when the user leaves the route it belongs to. `page`
+ * names that route; without it the confirmation ends on any route change.
  */
 export type SaveNotice =
   | { kind: "none" }
-  | { kind: "saved"; message: string }
+  | { kind: "saved"; message: string; page?: string }
   | { kind: "failed"; message: string; reload: boolean };
 
 /** The newer snapshot a conflict or a partial deletion carries, if any. */
@@ -27,7 +30,23 @@ function reportedSnapshot(failure: Error): Snapshot | undefined {
     : undefined;
 }
 
-export function useWorkouts(service: Workouts, t: Translate) {
+/** How long a save confirmation stays before it clears itself. */
+export const SAVED_MESSAGE_MS = 8000;
+
+/** Runs `run` after `ms`; the returned function cancels it. Tests inject their own. */
+export type After = (run: () => void, ms: number) => () => void;
+const afterTimeout: After = (run, ms) => {
+  const id = setTimeout(run, ms);
+  return () => {
+    clearTimeout(id);
+  };
+};
+
+export function useWorkouts(
+  service: Workouts,
+  t: Translate,
+  after: After = afterTimeout,
+) {
   const state = shallowRef<LoadState>({ kind: "loading" });
   const saving = ref(false);
   const notice = shallowRef<SaveNotice>({ kind: "none" });
@@ -37,12 +56,30 @@ export function useWorkouts(service: Workouts, t: Translate) {
   const error = computed(() =>
     notice.value.kind === "failed" ? notice.value.message : "",
   );
-  /** Shows a saved confirmation, replacing any previous outcome. */
-  function notify(text: string) {
-    notice.value = { kind: "saved", message: text };
+  let cancelExpiry: (() => void) | undefined;
+  function stopExpiry() {
+    cancelExpiry?.();
+    cancelExpiry = undefined;
+  }
+  onScopeDispose(stopExpiry);
+  /**
+   * Shows a saved confirmation, replacing any previous outcome. It survives
+   * arriving on `page` (the route that follows the action) and ends on leaving
+   * it, or after `SAVED_MESSAGE_MS`.
+   */
+  function notify(text: string, page?: string) {
+    notice.value = { kind: "saved", message: text, page };
+    stopExpiry();
+    cancelExpiry = after(clearMessage, SAVED_MESSAGE_MS);
   }
   function clearMessage() {
+    stopExpiry();
     if (notice.value.kind === "saved") notice.value = { kind: "none" };
+  }
+  /** Ends a confirmation that does not belong to the route just entered. */
+  function enterPage(page: unknown) {
+    if (notice.value.kind === "saved" && notice.value.page !== page)
+      clearMessage();
   }
   function clearError() {
     if (notice.value.kind === "failed") notice.value = { kind: "none" };
@@ -132,6 +169,7 @@ export function useWorkouts(service: Workouts, t: Translate) {
     error,
     notify,
     clearMessage,
+    enterPage,
     clearError,
     fail,
     run,

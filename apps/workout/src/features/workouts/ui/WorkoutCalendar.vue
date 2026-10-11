@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useTemplateRef } from "vue";
-import { BaseSheet, BaseButtonIcon } from "@form/ui";
-import { CalendarDays, ChevronLeft, ChevronRight } from "@lucide/vue";
-import { sessionTotals, type CompletedSession } from "../domain";
+import {
+  BaseButtonIcon,
+  BaseDayCell,
+  BaseEmptyState,
+  BaseListGroup,
+  BaseSheet,
+} from "@form/ui";
+import { ChevronLeft, ChevronRight } from "@lucide/vue";
+import type { CompletedSession } from "../domain";
 import { useFormat, useTranslation } from "../../../i18n";
-import { sessionMinutes } from "./presentation";
+import SessionRow from "./SessionRow.vue";
 import {
   eligibleSessionCount,
   indexCompletedSessions,
@@ -15,12 +21,18 @@ import {
   weekdayStarts,
 } from "./workoutCalendar";
 
-const { sessions, now } = defineProps<{
+// The calendar button lives in the page header, so the page opens the sheet
+// through `open()` and names the button that focus returns to.
+const {
+  sessions,
+  now,
+  action = () => null,
+} = defineProps<{
   sessions: readonly CompletedSession[];
   now: number;
+  action?: () => HTMLElement | null | undefined;
 }>();
 const emit = defineEmits<{ detail: [id: string] }>();
-defineSlots<{ default?: () => unknown }>();
 const { t } = useTranslation();
 const format = useFormat();
 const today = computed(() => localDay(now));
@@ -35,7 +47,6 @@ const days = computed(() => rollingDays(today.value));
 const selected = ref(today.value);
 const month = ref(monthStart(today.value));
 const open = ref(false);
-const calendarHeading = useTemplateRef<HTMLElement>("calendarHeading");
 const monthGrid = useTemplateRef<HTMLElement>("monthGrid");
 const pendingDetail = ref<string | null>(null);
 let opener: HTMLElement | null = null;
@@ -81,6 +92,7 @@ function showMonth() {
 function close() {
   open.value = false;
 }
+defineExpose({ open: showMonth });
 function previousMonth() {
   month.value = monthStart(month.value, -1);
   selected.value = month.value;
@@ -97,14 +109,12 @@ function afterClose(event: Event) {
   if (!pendingDetail.value) {
     if (!opener?.isConnected) {
       event.preventDefault();
-      calendarHeading.value
-        ?.querySelector<HTMLButtonElement>("button")
-        ?.focus();
+      action()?.focus();
     }
     return;
   }
   event.preventDefault();
-  calendarHeading.value?.querySelector<HTMLButtonElement>("button")?.focus();
+  action()?.focus();
   const id = pendingDetail.value;
   pendingDetail.value = null;
   emit("detail", id);
@@ -113,36 +123,22 @@ function afterClose(event: Event) {
 
 <template>
   <section class="training-rhythm" :aria-label="t('workouts.calendar.rhythm')">
-    <header ref="calendarHeading" class="rhythm-heading">
-      <slot
-        ><h2>{{ t("workouts.calendar.rhythm") }}</h2></slot
-      >
-      <BaseButtonIcon
-        class="calendar-action"
-        :label="t('workouts.calendar.open')"
-        @click="showMonth"
-        ><CalendarDays :size="21"
-      /></BaseButtonIcon>
-    </header>
     <div class="calendar-scroll">
       <div
         class="rhythm-days"
         role="group"
         :aria-label="t('workouts.calendar.pastDays')"
       >
-        <button
+        <BaseDayCell
           v-for="day in days"
           :key="day"
-          type="button"
+          :weekday="format.weekdayShort(day)"
+          :day="new Date(day).getDate()"
+          :today="day === today"
+          :marked="index.has(day)"
           :aria-label="rhythmLabel(day)"
-          :aria-current="day === today ? 'date' : undefined"
-          :class="{ today: day === today, completed: index.has(day) }"
           @click="openDay(day)"
-        >
-          <small>{{ `${format.weekdayShort(day)} ` }}</small
-          ><span>{{ new Date(day).getDate() }}</span
-          ><i aria-hidden="true" />
-        </button>
+        />
       </div>
     </div>
   </section>
@@ -185,19 +181,15 @@ function afterClose(event: Event) {
         <template
           v-for="(day, position) in cells"
           :key="day ?? `empty-${position}`"
-          ><button
+          ><BaseDayCell
             v-if="day !== null"
-            type="button"
+            :day="new Date(day).getDate()"
+            :today="day === today"
+            :marked="index.has(day)"
+            :selected="day === selected"
             :disabled="day > today"
             :aria-label="label(day)"
-            :aria-current="day === today ? 'date' : undefined"
-            :aria-pressed="day === selected"
-            :class="{ today: day === today, completed: index.has(day) }"
-            @click="selected = day"
-          >
-            <span>{{ new Date(day).getDate() }}</span
-            ><i aria-hidden="true" /></button
-          ><span v-else
+            @click="selected = day" /><span v-else
         /></template>
       </div>
     </div>
@@ -210,54 +202,28 @@ function afterClose(event: Event) {
           })
         }}
       </p>
-      <p v-if="!selectedSessions.length" class="calendar-empty">
-        {{ t("workouts.calendar.noWorkouts") }}
-      </p>
-      <button
-        v-for="session in selectedSessions"
-        :key="session.id"
-        type="button"
-        class="calendar-session"
-        @click="showDetail(session.id)"
-      >
-        <span
-          ><strong>{{ session.name }}</strong
-          ><small>{{
-            t("workouts.calendar.sessionSummary", {
-              minutes: sessionMinutes(session),
-              sets: t(
-                "workouts.calendar.sessionSets",
-                sessionTotals(session).completedSets,
-              ),
-            })
-          }}</small></span
-        ><ChevronRight :size="18" />
-      </button>
+      <BaseEmptyState
+        v-if="!selectedSessions.length"
+        size="compact"
+        :heading-level="3"
+        :title="t('workouts.calendar.noWorkouts')"
+      />
+      <BaseListGroup v-if="selectedSessions.length">
+        <SessionRow
+          v-for="session in selectedSessions"
+          :key="session.id"
+          :session="session"
+          @click="showDetail(session.id)"
+        />
+      </BaseListGroup>
     </div>
   </BaseSheet>
 </template>
 
 <style scoped>
 .training-rhythm {
-  padding: 0 0 16px;
+  padding: 0 0 var(--space-4);
   border-block-end: 1px solid var(--border);
-}
-.rhythm-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.rhythm-heading {
-  margin-block-end: 16px;
-}
-.rhythm-heading h2 {
-  font-size: 20px;
-}
-.rhythm-days button {
-  min-height: 64px;
-}
-.rhythm-days small {
-  font-size: 10px;
 }
 .calendar-action {
   display: grid;
@@ -267,10 +233,9 @@ function afterClose(event: Event) {
   background: none;
   border: 0;
   color: var(--muted);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
-.calendar-action:disabled,
-.month-days button:disabled {
+.calendar-action:disabled {
   opacity: 0.35;
   cursor: default;
 }
@@ -282,100 +247,33 @@ function afterClose(event: Event) {
   display: grid;
   grid-template-columns: repeat(7, minmax(44px, 1fr));
   min-width: 308px;
-  gap: 3px 0;
-}
-.rhythm-days button,
-.month-days button {
-  min-height: 44px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: none;
-  color: var(--muted);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  font-size: 11px;
-}
-.rhythm-days i,
-.month-days i {
-  width: 9px;
-  height: 9px;
-  background: var(--border);
-  border-radius: 50%;
-}
-.completed i {
-  background: var(--accent);
-}
-button.today {
-  border-color: var(--accent);
-  color: var(--text);
-}
-button[aria-pressed="true"] {
-  background: var(--surface);
-  color: var(--text);
+  gap: var(--space-1) 0;
 }
 .calendar-month-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-block-end: 12px;
+  margin-block-end: var(--space-3);
 }
 .calendar-month-heading h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--text-base);
   font-weight: 500;
 }
 .weekday {
   text-align: center;
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--muted);
-  padding-block-end: 9px;
+  padding-block-end: var(--space-2);
 }
 .calendar-day-detail {
   border-block-start: 1px solid var(--border);
-  margin-block-start: 20px;
-  padding-block-start: 16px;
+  margin-block-start: var(--space-5);
+  padding-block-start: var(--space-4);
 }
 .calendar-day-detail > p {
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--text-sm);
   line-height: 1.5;
-}
-.calendar-empty {
-  margin-block-start: 18px;
-}
-.calendar-session {
-  width: 100%;
-  min-height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 0;
-  text-align: start;
-  border: 0;
-  background: none;
-  color: var(--text);
-}
-.calendar-session span {
-  min-width: 0;
-}
-.calendar-session strong {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  overflow-wrap: anywhere;
-}
-.calendar-session small {
-  display: block;
-  margin-block-start: 5px;
-  color: var(--muted);
-  font-size: 12px;
-}
-button:focus-visible {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: -2px;
 }
 </style>

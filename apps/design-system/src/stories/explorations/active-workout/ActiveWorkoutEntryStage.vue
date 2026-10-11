@@ -87,28 +87,28 @@ const emit = defineEmits<{
 .draft-note,
 .previous {
   color: var(--ui-muted-foreground);
-  font-size: 12px;
+  font-size: var(--text-sm);
   line-height: 1.6;
 }
 .eyebrow {
   margin: 0;
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 .entry-stage {
-  padding-top: 24px;
+  padding-top: var(--space-6);
 }
 .exercise-heading h3 {
-  font-size: 32px;
+  font-size: var(--text-2xl);
   line-height: 1.1;
   font-weight: 500;
   letter-spacing: -1.3px;
-  margin: 12px 0 18px;
+  margin: var(--space-3) 0 var(--space-4);
   overflow-wrap: anywhere;
 }
 .previous {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
   align-items: baseline;
 }
 .previous strong {
@@ -116,33 +116,33 @@ const emit = defineEmits<{
   font-weight: 500;
 }
 .previous span {
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 .set-trail {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin: 24px 0;
+  gap: var(--space-2);
+  margin: var(--space-6) 0;
 }
 .set-trail > div {
   border-top: 2px solid var(--ui-border);
-  padding-top: 10px;
+  padding-top: var(--space-2);
   color: var(--ui-muted-foreground);
   display: grid;
-  gap: 6px;
+  gap: var(--space-1);
 }
 .set-trail span {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 11px;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
 }
 .set-trail strong {
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 500;
 }
 .set-trail small {
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 .set-trail .logged {
   color: var(--ui-primary);
@@ -155,34 +155,34 @@ const emit = defineEmits<{
 .entry-values {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: var(--space-4);
 }
 .entry-values label {
   display: grid;
-  gap: 10px;
-  font-size: 12px;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
   color: var(--ui-muted-foreground);
   min-width: 0;
 }
 .entry-values :deep(.ui-numeric-trigger) {
   width: 100%;
   min-height: 76px;
-  font-size: 32px;
+  font-size: var(--text-2xl);
   font-variant-numeric: tabular-nums;
 }
 .draft-note {
-  font-size: 11px;
-  margin: 16px 0 24px;
+  font-size: var(--text-xs);
+  margin: var(--space-4) 0 var(--space-6);
 }
 .log-action {
   width: 100%;
   min-height: 52px;
 }
 .concept-overview .entry-stage {
-  padding-top: 18px;
+  padding-top: var(--space-4);
 }
 .concept-overview .exercise-heading h3 {
-  font-size: 24px;
+  font-size: var(--text-xl);
 }
 .complete-message {
   color: var(--ui-primary);
@@ -190,10 +190,10 @@ const emit = defineEmits<{
 }
 @media (max-width: 480px) {
   .exercise-heading h3 {
-    font-size: 28px;
+    font-size: var(--text-2xl);
   }
   .entry-values {
-    gap: 10px;
+    gap: var(--space-2);
   }
 }
 </style>

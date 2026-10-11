@@ -116,7 +116,9 @@ Then(
     await page
       .getByRole("button", { name: "View history", exact: true })
       .click();
-    await expect(page.getByRole("article")).toContainText("Name worth keeping");
+    await expect(
+      page.getByRole("button", { name: /Name worth keeping/ }),
+    ).toBeVisible();
   },
 );
 Then("the replacement workout keeps its own name", async ({ page }) => {

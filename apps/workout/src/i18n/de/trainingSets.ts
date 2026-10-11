@@ -42,7 +42,6 @@ export const deTrainingSets: Pick<
     title: "Eingabeänderungen verwerfen?",
     description:
       "Das löscht die Eingabeentwürfe für diesen Satz und stellt die gespeicherten Werte wieder her.",
-    keepEditing: "Weiter bearbeiten",
     action: "Eingabe verwerfen",
   },
   setEditor: {
@@ -60,7 +59,6 @@ export const deTrainingSets: Pick<
     clearTitle: "Erfassten Satz leeren?",
     clearDescription:
       "Das entfernt das erfasste Ergebnis und setzt den Satz auf offen zurück.",
-    cancel: "Abbrechen",
     clearAction: "Satz leeren",
   },
 };

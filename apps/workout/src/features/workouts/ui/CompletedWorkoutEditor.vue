@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { BaseSheet, BaseButton, BaseInput, BaseInputNumber } from "@form/ui";
+import {
+  BaseActions,
+  BaseButton,
+  BaseConfirmSheet,
+  BaseInput,
+  BaseInputNumber,
+  BaseNotice,
+  BaseSheet,
+} from "@form/ui";
 import type { CompletedSession } from "../domain";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import { useCompletedWorkoutEditor } from "./useCompletedWorkoutEditor";
@@ -167,27 +175,27 @@ defineExpose({ requestClose, requestLeave });
           </div>
         </section>
       </fieldset>
-      <div v-if="state !== 'ready'" class="draft-finish-notice" role="alert">
-        <p>
-          {{
-            state === "missing"
-              ? t("dialogs.completedEditor.missing")
-              : t("dialogs.completedEditor.conflict")
-          }}
-        </p>
-        <BaseButton
-          v-if="state === 'conflict'"
-          type="button"
-          variant="secondary"
-          :disabled="pending"
-          @click="requestReload"
-          >{{ t("dialogs.completedEditor.reload") }}</BaseButton
-        >
-      </div>
-      <p v-else-if="localError" class="field-error" role="alert">
-        {{ localError }}
-      </p>
-      <div class="form-actions completed-actions">
+      <BaseNotice v-if="state !== 'ready'" tone="danger">
+        {{
+          state === "missing"
+            ? t("dialogs.completedEditor.missing")
+            : t("dialogs.completedEditor.conflict")
+        }}
+        <template v-if="state === 'conflict'" #action>
+          <BaseButton
+            type="button"
+            variant="secondary"
+            size="sm"
+            :disabled="pending"
+            @click="requestReload"
+            >{{ t("dialogs.completedEditor.reload") }}</BaseButton
+          >
+        </template>
+      </BaseNotice>
+      <BaseNotice v-else-if="localError" tone="danger">{{
+        localError
+      }}</BaseNotice>
+      <BaseActions sticky>
         <BaseButton
           type="button"
           variant="secondary"
@@ -200,30 +208,28 @@ defineExpose({ requestClose, requestLeave });
             ? t("dialogs.actions.saving")
             : t("dialogs.completedEditor.save")
         }}</BaseButton>
-      </div>
+      </BaseActions>
     </form>
   </BaseSheet>
-  <BaseSheet
+  <BaseConfirmSheet
     :open="discardOpen"
+    intent="destructive"
     :title="t('dialogs.completedEditor.discardTitle')"
     :description="
       discardIntent === 'reload'
         ? t('dialogs.completedEditor.discardReloadDescription')
         : t('dialogs.completedEditor.discardLoseDescription')
     "
-    @close="keepEditing"
-  >
-    <div class="form-actions">
-      <BaseButton variant="secondary" @click="keepEditing">{{
-        t("dialogs.actions.keepEditing")
-      }}</BaseButton>
-      <BaseButton :disabled="pending" @click="discard">{{
-        discardIntent === "reload"
-          ? t("dialogs.completedEditor.discardAndReload")
-          : t("dialogs.actions.discardChanges")
-      }}</BaseButton>
-    </div>
-  </BaseSheet>
+    :cancel-label="t('dialogs.actions.keepEditing')"
+    :confirm-label="
+      discardIntent === 'reload'
+        ? t('dialogs.completedEditor.discardAndReload')
+        : t('dialogs.actions.discardChanges')
+    "
+    :busy="pending"
+    @cancel="keepEditing"
+    @confirm="discard"
+  />
 </template>
 <style scoped>
 .completed-fields {
@@ -233,23 +239,17 @@ defineExpose({ requestClose, requestLeave });
   min-width: 0;
 }
 .completed-exercise h3 {
-  font-size: 15px;
+  font-size: var(--text-base);
 }
 .completed-set {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) minmax(0, 1fr);
   align-items: center;
-  gap: 10px;
-  margin-block-start: 12px;
+  gap: var(--space-2);
+  margin-block-start: var(--space-3);
 }
 .unlogged {
   grid-column: 2 / -1;
-  font-size: 12px;
-}
-.completed-actions {
-  position: sticky;
-  inset-block-end: 0;
-  padding-block: 12px;
-  background: var(--background);
+  font-size: var(--text-sm);
 }
 </style>

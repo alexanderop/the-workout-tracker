@@ -14,10 +14,10 @@ export const deDialogs: Catalog["dialogs"] = {
     saving: "Speichern…",
   },
   stats: {
+    group: "Trainingssummen",
     setsLogged: "Sätze erfasst",
-    kgVolume: "kg Volumen",
-    minutes: "Minuten",
-    elapsed: "vergangen",
+    volume: "Volumen",
+    duration: "Dauer",
   },
   confirm: {
     fallbackTitle: "Bestätigen",
@@ -133,8 +133,6 @@ export const deDialogs: Catalog["dialogs"] = {
     createTemplate: "Vorlage erstellen",
     editAria: "{name} bearbeiten",
     edit: "Bearbeiten",
-    defaultDescription: "Ein Plan für deine nächste Einheit.",
-    setCount: "{n} Satz | {n} Sätze",
     more: "+ {count} weitere",
     exerciseCount: "{n} Übung | {n} Übungen",
     start: "Starten",

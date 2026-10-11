@@ -65,16 +65,16 @@ p {
   margin: 0;
 }
 .session {
-  padding: 22px;
-  border-radius: 20px;
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
   background: var(--surface);
 }
 .session-label {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: var(--space-2);
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--text-xs);
   font-weight: 600;
   letter-spacing: 1.3px;
 }
@@ -88,17 +88,17 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin: 25px 0 24px;
+  gap: var(--space-3);
+  margin: var(--space-6) 0 var(--space-6);
 }
 h2 {
-  font-size: 25px;
+  font-size: var(--text-xl);
   font-weight: 550;
   letter-spacing: -0.8px;
 }
 .session p {
-  margin-top: 9px;
-  font-size: 12px;
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
   color: var(--muted);
   line-height: 1.5;
 }
@@ -110,18 +110,18 @@ h2 {
   width: 100%;
   justify-content: space-between;
   min-height: 46px;
-  border-radius: 10px;
-  font-size: 13px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
 }
 .set-progress {
   display: flex;
-  gap: 4px;
-  margin: 0 0 24px;
+  gap: var(--space-1);
+  margin: 0 0 var(--space-6);
 }
 .set-progress span {
   height: 3px;
   flex: 1;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   background: var(--background);
 }
 .set-progress .logged {
@@ -133,14 +133,14 @@ h2 {
   border-radius: 0;
 }
 .next-home--journal .session-content {
-  margin: 20px 0 0;
+  margin: var(--space-5) 0 0;
 }
 .next-home--journal h2 {
-  font-size: 31px;
+  font-size: var(--text-2xl);
   letter-spacing: -1.2px;
 }
 .next-home--journal .set-progress {
-  margin-top: 24px;
+  margin-top: var(--space-6);
 }
 .next-home--journal .set-progress span {
   background: var(--surface);
@@ -149,14 +149,14 @@ h2 {
   background: var(--accent);
 }
 .editorial-continue {
-  margin-top: 18px;
-  padding: 0 0 22px;
+  margin-top: var(--space-4);
+  padding: 0 0 var(--space-5);
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
   color: var(--text);
-  font-size: 13px;
+  font-size: var(--text-sm);
   background: none;
   border: 0;
   border-bottom: 1px solid var(--border);
@@ -173,20 +173,20 @@ h2 {
 .next-home--compact .session {
   border: 1px solid var(--border);
   background: none;
-  padding: 18px;
-  border-radius: 12px;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
 }
 .session-date {
   margin-left: auto;
-  font-size: 10px;
+  font-size: var(--text-xs);
   letter-spacing: 0;
   font-weight: 400;
 }
 .next-home--compact .session-content {
-  margin: 16px 0 18px;
+  margin: var(--space-4) 0 var(--space-4);
 }
 .next-home--compact h2 {
-  font-size: 21px;
+  font-size: var(--text-lg);
 }
 .next-home--compact .set-progress span {
   background: var(--surface);
@@ -199,7 +199,7 @@ h2 {
 }
 @media (max-width: 350px) {
   .session {
-    padding: 18px;
+    padding: var(--space-4);
   }
   .session-symbol {
     display: none;

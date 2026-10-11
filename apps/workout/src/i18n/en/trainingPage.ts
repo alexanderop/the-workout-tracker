@@ -27,7 +27,6 @@ export const enTrainingPage = {
     lastTime: "Last time",
     lastTimeSet: "Set {n}",
     lastTimeResult: "{weight} kg × {reps} reps",
-    setLogged: "Set logged | All {n} sets logged",
     allLoggedEyebrow: "ALL SETS LOGGED",
     allLoggedTitle: "That’s your last set.",
     allLoggedText: "Review your sets, or add another exercise.",
@@ -73,7 +72,6 @@ export const enTrainingPage = {
     saveBeforeFinish: "Save or cancel your name change before finishing.",
     discardTitle: "Discard unsaved name?",
     discardDescription: "Your saved workout name stays unchanged.",
-    keepEditing: "Keep editing",
     discardAction: "Discard name change",
   },
   dock: {

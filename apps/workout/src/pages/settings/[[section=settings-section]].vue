@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { BaseScreenHeader } from "@form/ui";
-import { ChevronLeft } from "@lucide/vue";
+import { BaseBackLink, BasePageHeader } from "@form/ui";
 import { useRoute } from "vue-router";
 import {
   WorkoutSettingsDelete,
@@ -50,15 +49,13 @@ watch(section, (_, previous) => {
     :returned-from="previousSection"
   />
   <div v-else-if="section" :key="section" class="settings-screen">
-    <BaseScreenHeader :title="t(`settings.sections.${section}`)">
+    <BasePageHeader variant="detail" :title="t(`settings.sections.${section}`)">
       <template #back>
-        <a v-bind="sectionLink()"
-          ><ChevronLeft :size="22" aria-hidden="true" />{{
-            t("settings.back")
-          }}</a
-        >
+        <BaseBackLink v-bind="sectionLink()">{{
+          t("settings.back")
+        }}</BaseBackLink>
       </template>
-    </BaseScreenHeader>
+    </BasePageHeader>
     <div class="settings-body">
       <WorkoutSettingsTraining
         v-if="section === 'training'"

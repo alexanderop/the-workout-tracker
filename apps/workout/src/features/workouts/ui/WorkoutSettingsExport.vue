@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { BaseButton } from "@form/ui";
+import { BaseButton, BaseNotice, type NoticeTone } from "@form/ui";
 import { ArrowDownToLine } from "@lucide/vue";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import { download } from "./presentation";
@@ -12,24 +12,27 @@ const { workspace, busy, onBusyChange } = defineProps<{
   onBusyChange: (busy: boolean) => void;
 }>();
 const { t } = useTranslation();
-const message = ref("");
+const status = ref<{ tone: NoticeTone; text: string } | null>(null);
 
 async function exportBackup() {
   onBusyChange(true);
-  message.value = "";
+  status.value = null;
   try {
     const exported = await workspace.service.exportBackup();
     if (exported.isErr()) {
-      message.value = t("settings.backup.exportFailed");
+      status.value = {
+        tone: "danger",
+        text: t("settings.backup.exportFailed"),
+      };
       return;
     }
     download(
       exported.value,
       `the-workout-tracker-backup-${new Date().toISOString().slice(0, 10)}.json`,
     );
-    message.value = t("settings.backup.downloaded");
+    status.value = { tone: "success", text: t("settings.backup.downloaded") };
   } catch {
-    message.value = t("settings.backup.exportFailed");
+    status.value = { tone: "danger", text: t("settings.backup.exportFailed") };
   } finally {
     onBusyChange(false);
   }
@@ -47,5 +50,5 @@ async function exportBackup() {
       t("settings.backup.export")
     }}
   </BaseButton>
-  <p role="status" class="settings-notice">{{ message }}</p>
+  <BaseNotice v-if="status" :tone="status.tone">{{ status.text }}</BaseNotice>
 </template>

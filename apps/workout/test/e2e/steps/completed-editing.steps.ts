@@ -191,6 +191,8 @@ When("I cancel the completed weight keypad", async ({ page }) => {
 });
 When("I confirm the completed weight keypad", async ({ page }) => {
   const keypad = page.getByRole("dialog", { name: "Weight", exact: true });
-  await keypad.getByRole("button", { name: "Use weight", exact: true }).click();
+  await keypad
+    .getByRole("button", { name: "Done: weight", exact: true })
+    .click();
   await expect(keypad).toHaveCount(0);
 });

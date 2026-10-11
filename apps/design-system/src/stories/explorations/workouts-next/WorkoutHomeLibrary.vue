@@ -134,24 +134,24 @@ p {
   margin: 0;
 }
 .journal-section {
-  margin-top: 32px;
+  margin-top: var(--space-7);
 }
 .section-switch {
   display: flex;
   align-items: center;
-  gap: 23px;
+  gap: var(--space-6);
   border-bottom: 1px solid var(--border);
 }
 .section-switch button {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: var(--space-2);
   min-height: 44px;
-  padding: 0 0 13px;
+  padding: 0 0 var(--space-3);
   border: 0;
   border-bottom: 2px solid transparent;
   background: none;
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 500;
   color: var(--muted);
 }
@@ -160,25 +160,25 @@ p {
   border-bottom-color: var(--text);
 }
 .section-switch span {
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--muted);
 }
 .empty-library {
-  padding: 38px 8px;
+  padding: var(--space-7) var(--space-2);
   text-align: center;
 }
 .empty-mark {
   display: inline-flex;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
   color: var(--muted);
 }
 h3 {
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 500;
 }
 .empty-library p {
-  margin-top: 8px;
-  font-size: 12px;
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
   color: var(--muted);
   line-height: 1.5;
 }
@@ -186,47 +186,47 @@ h3 {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: var(--space-3);
   text-align: left;
   color: var(--text);
   background: none;
   border: 0;
   border-bottom: 1px solid var(--border);
   min-height: 83px;
-  padding: 14px 0;
+  padding: var(--space-3) 0;
 }
 .history-row:hover {
   background: var(--surface);
 }
 .calendar-date {
   display: grid;
-  gap: 4px;
+  gap: var(--space-1);
   text-align: center;
   min-width: 28px;
 }
 .calendar-date strong {
-  font-size: 20px;
+  font-size: var(--text-lg);
   font-weight: 500;
   letter-spacing: -0.8px;
 }
 .calendar-date small {
-  font-size: 8px;
+  font-size: var(--text-xs);
   letter-spacing: 1px;
   color: var(--muted);
 }
 .workout-info {
   display: grid;
-  gap: 6px;
+  gap: var(--space-1);
   flex: 1;
 }
 .workout-info strong {
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 500;
 }
 .workout-info small,
 .duration {
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 .history-row > svg {
   color: var(--muted);
@@ -246,10 +246,10 @@ h3 {
 }
 .next-home--compact .section-switch {
   border: 0;
-  gap: 4px;
-  padding: 4px;
+  gap: var(--space-1);
+  padding: var(--space-1);
   background: var(--surface);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
 }
 .next-home--compact .section-switch button {
   flex: 1;
@@ -257,7 +257,7 @@ h3 {
   padding: 0;
   min-height: 38px;
   border: 0;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
 }
 .next-home--compact .section-switch button[aria-pressed="true"] {
   background: var(--background);

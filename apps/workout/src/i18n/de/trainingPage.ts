@@ -43,7 +43,6 @@ export const deTrainingPage: Pick<
     lastTime: "Letztes Mal",
     lastTimeSet: "Satz {n}",
     lastTimeResult: "{weight} kg × {reps} Wdh.",
-    setLogged: "Satz erfasst | Alle {n} Sätze erfasst",
     allLoggedEyebrow: "ALLE SÄTZE ERFASST",
     allLoggedTitle: "Das war dein letzter Satz.",
     allLoggedText:
@@ -92,7 +91,6 @@ export const deTrainingPage: Pick<
       "Speichere oder verwirf deine Namensänderung, bevor du das Training beendest.",
     discardTitle: "Ungespeicherten Namen verwerfen?",
     discardDescription: "Der gespeicherte Trainingsname bleibt unverändert.",
-    keepEditing: "Weiter bearbeiten",
     discardAction: "Namensänderung verwerfen",
   },
   dock: {

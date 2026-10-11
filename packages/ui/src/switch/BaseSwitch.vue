@@ -1,19 +1,20 @@
 <script setup lang="ts">
-// Adapted from shadcn-vue; see THIRD_PARTY_NOTICES.md.
-import { SwitchRoot, SwitchThumb } from "reka-ui";
+// A native checkbox with the ARIA switch role, drawn as a track and thumb. The
+// browser supplies the state, Space, label clicks and form submission, so the
+// component needs no extra runtime. `id` and `aria-*` reach the input.
 defineProps<{ disabled?: boolean; required?: boolean; name?: string }>();
 const model = defineModel<boolean>({ default: false });
 </script>
 
 <template>
-  <SwitchRoot
+  <input
     v-model="model"
+    type="checkbox"
+    role="switch"
+    class="ui-switch"
+    data-slot="switch"
     :disabled="disabled"
     :required="required"
     :name="name"
-    class="ui-switch"
-    data-slot="switch"
-  >
-    <SwitchThumb class="ui-switch-thumb" data-slot="switch-thumb" />
-  </SwitchRoot>
+  />
 </template>

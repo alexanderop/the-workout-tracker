@@ -110,7 +110,9 @@ export default defineConfig(({ mode, command }) => {
         dts: "src/route-map.d.ts",
         experimental: { paramParsers: { dir: "src/app/route-params" } },
       }),
-      vue(),
+      // Every component is <script setup>, so Vue's Options API support (data,
+      // methods, mixins and the legacy lifecycle hooks) is dead weight.
+      vue({ features: { optionsAPI: false } }),
       tailwindcss(),
       catalogs(),
       routeChunkFiles(),

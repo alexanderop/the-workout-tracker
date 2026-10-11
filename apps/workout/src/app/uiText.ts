@@ -30,6 +30,7 @@ function numericText(t: Translate, locale: Locale): UiText["numeric"] {
     decimalPoint: t("common.ui.numeric.decimalPoint"),
     decimalSeparator,
     backspace: t("common.ui.numeric.backspace"),
+    done: t("common.ui.numeric.done"),
     confirm: (title) =>
       t("common.ui.numeric.confirm", { title: midSentence(locale, title) }),
     announce: ({ title, value, unit }) =>

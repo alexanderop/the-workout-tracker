@@ -16,7 +16,7 @@ const confirmed = () => page.getByTestId("confirmed-value");
 const draft = () => editor();
 const announcement = () =>
   page.getByRole("status").filter({ hasText: "Weight set to" });
-const confirm = () => page.getByRole("button", { name: "Use weight" });
+const confirm = () => page.getByRole("button", { name: "Done: weight" });
 const suggestions = () =>
   page.getByRole("region", { name: "Suggested values" });
 const seventyFive = () =>
@@ -38,6 +38,12 @@ async function settled() {
 }
 
 describe("given a weight input", () => {
+  it("should confirm with a labelled Done, not the check that logs a set", async () => {
+    await openEditor();
+    await expect.element(confirm()).toHaveTextContent("Done");
+    expect(confirm().element().querySelector("svg")).toBeNull();
+  });
+
   it("should include the visible value in the trigger's accessible name", async () => {
     await render(NumberInput);
     // WCAG 2.5.3 Label in Name: voice control users can say what they see.
@@ -105,7 +111,7 @@ describe("given a weight input", () => {
             - button "117.5 kg"
             - button "120 kg"
           - group "Number editor": 70.25 kg
-          - button "Use weight"
+          - button "Done: weight"
           - paragraph: Type a new value to replace this one.
           - group "Numeric keypad":
             - button "1"
@@ -226,6 +232,27 @@ describe("given a weight input", () => {
         .not.toBeInViewport();
     });
 
+    it("should draw the matching value with the shared selected tokens", async () => {
+      await openEditor();
+      await userEvent.keyboard("75");
+      await expect
+        .element(seventyFive())
+        .toHaveAttribute("aria-current", "true");
+      const probe = document.createElement("div");
+      probe.style.background = "var(--ui-selected-bg)";
+      probe.style.color = "var(--ui-selected-text)";
+      document.body.append(probe);
+      const expected = getComputedStyle(probe);
+      // Colors transition when the match changes, so wait for them to settle.
+      await expect
+        .poll(() => {
+          const selected = getComputedStyle(seventyFive().element());
+          return [selected.backgroundColor, selected.color];
+        })
+        .toEqual([expected.backgroundColor, expected.color]);
+      probe.remove();
+    });
+
     it("should highlight the value that matches the draft", async () => {
       await openEditor();
       await expect.element(seventyFive()).not.toHaveAttribute("aria-current");
@@ -293,7 +320,7 @@ describe("given a repetitions input with a minimum of one", () => {
       await page.getByRole("button", { name: "Set 1 repetitions: 8" }).click();
       await userEvent.keyboard("0");
       await expect
-        .element(page.getByRole("button", { name: "Use reps" }))
+        .element(page.getByRole("button", { name: "Done: reps" }))
         .toBeDisabled();
       await expect
         .element(page.getByRole("group", { name: "Number editor" }))

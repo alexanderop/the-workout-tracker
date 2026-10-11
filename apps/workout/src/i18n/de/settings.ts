@@ -12,7 +12,11 @@ export const deSettings: Catalog["settings"] = {
     import: "Backup importieren",
     delete: "Alle Daten löschen",
   },
-  groups: { device: "Dieses Gerät", data: "Deine Daten" },
+  groups: {
+    preferences: "Allgemein",
+    device: "Dieses Gerät",
+    data: "Deine Daten",
+  },
   hub: {
     restOn: "Pause {seconds} Sek.",
     restOff: "Pause aus",
@@ -77,7 +81,6 @@ export const deSettings: Catalog["settings"] = {
       "Lösche deine Trainings, Vorlagen, eigenen Übungen und Einstellungen dauerhaft aus diesem Browser. Exportiere vorher ein Backup, wenn du eine Kopie behalten willst.",
     button: "Alle Daten löschen",
     deleting: "Lösche…",
-    cancel: "Abbrechen",
     done: "Alle deine Daten wurden aus diesem Browser gelöscht.",
     conflict:
       "Deine Daten wurden in einem anderen Tab geändert. Schließe diesen Dialog und prüfe das Löschen erneut.",

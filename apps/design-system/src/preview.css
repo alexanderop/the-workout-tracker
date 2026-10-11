@@ -8,30 +8,30 @@ body {
   background: var(--ui-background);
   color: var(--ui-foreground);
   box-sizing: border-box;
-  padding: 28px;
+  padding: var(--space-6);
   min-height: 100vh;
 }
 .stack {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-6);
   max-width: 620px;
 }
 .row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 .note {
   color: var(--ui-muted-foreground);
-  font-size: 13px;
+  font-size: var(--text-sm);
   line-height: 1.6;
 }
 .token-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
+  gap: var(--space-4);
 }
 .token {
   border: 1px solid var(--ui-border);
@@ -43,27 +43,27 @@ body {
   border-block-end: 1px solid var(--ui-border);
 }
 .token figcaption {
-  padding: 12px;
+  padding: var(--space-3);
   display: grid;
-  gap: 8px;
-  font-size: 13px;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
 }
 .token code {
   color: var(--ui-muted-foreground);
-  font-size: 11px;
+  font-size: var(--text-xs);
 }
 figure {
   margin: 0;
 }
 .story-preview h1 {
   margin: 0;
-  font-size: 28px;
+  font-size: var(--text-2xl);
   font-weight: 550;
   letter-spacing: -0.8px;
 }
 .story-preview h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: var(--text-lg);
   font-weight: 550;
 }
 .story-preview p {
@@ -71,40 +71,40 @@ figure {
   line-height: 1.6;
 }
 .pattern-card {
-  padding: 24px;
+  padding: var(--space-6);
   border: 1px solid var(--ui-border);
   border-radius: var(--ui-radius);
 }
 .pattern-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: var(--space-4);
 }
 .pattern-grid .ui-numeric-trigger {
   width: 100%;
 }
 .eyebrow {
-  font-size: 11px;
+  font-size: var(--text-xs);
   letter-spacing: 1.5px;
   color: var(--ui-muted-foreground);
 }
 .type-body {
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 .number-sample {
-  font-size: 46px;
+  font-size: var(--text-3xl);
   font-variant-numeric: tabular-nums;
 }
 .number-sample small {
-  font-size: 16px;
+  font-size: var(--text-base);
   color: var(--ui-muted-foreground);
 }
 .story-preview .token-grid {
-  gap: 16px;
+  gap: var(--space-4);
 }
 @media (max-width: 400px) {
   .story-preview {
-    padding: 20px;
+    padding: var(--space-5);
   }
   .pattern-grid {
     grid-template-columns: 1fr;

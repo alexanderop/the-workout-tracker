@@ -37,12 +37,9 @@ export const deTrainingConfig: Catalog["training"]["config"] = {
   replaceRemaining: "Offene Sätze ersetzen",
   saveFailed: "Speichern fehlgeschlagen. Deine Eingabe ist noch da.",
   reload: "Gespeicherte Werte neu laden",
-  cancel: "Abbrechen",
   discardTitle: "Ungespeicherte Änderungen verwerfen?",
   discardDescription:
     "Das löscht deine ungespeicherte Notiz oder Einstellungsänderungen. Gespeicherte Trainingswerte bleiben unverändert.",
-  keepEditing: "Weiter bearbeiten",
-  discardAction: "Änderungen verwerfen",
   removeSetsTitle: "Offene Sätze entfernen?",
   removeSetsDescription:
     "Wenn du die Anzahl der Sätze verringerst, werden offene Sätze und ihre Zielwerte entfernt. Erfasste Sätze bleiben in deinem Training.",

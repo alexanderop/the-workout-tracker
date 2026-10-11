@@ -2,7 +2,7 @@
   background: var(--ui-background);
   color: var(--ui-foreground);
   min-height: 100vh;
-  padding: 40px 28px;
+  padding: var(--space-7) var(--space-6);
   font-family: "Geist Variable", system-ui, sans-serif;
 }
 .sl-intro,
@@ -11,33 +11,33 @@
   margin: auto;
 }
 .sl-intro {
-  margin-bottom: 32px;
+  margin-bottom: var(--space-7);
 }
 .sl-eyebrow {
-  font-size: 10px;
+  font-size: var(--text-xs);
   letter-spacing: 0.13em;
   color: var(--ui-muted-foreground);
   font-weight: 600;
 }
 .sl-intro h1 {
-  font-size: clamp(32px, 5vw, 54px);
+  font-size: clamp(var(--text-2xl), 5vw, var(--text-3xl));
   letter-spacing: -0.055em;
   line-height: 1.02;
-  margin: 18px 0;
+  margin: var(--space-4) 0;
 }
 .sl-intro > p:last-child {
   color: var(--ui-muted-foreground);
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 .sl-layout {
   display: grid;
   grid-template-columns: minmax(300px, 390px) minmax(230px, 1fr);
-  gap: 48px;
+  gap: var(--space-8);
   align-items: start;
 }
 .sl-phone {
   border: 1px solid var(--ui-border);
-  border-radius: 28px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--ui-background);
   min-height: 700px;
@@ -48,53 +48,53 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 20px;
+  padding: var(--space-3) var(--space-5);
   border-bottom: 1px solid var(--ui-border);
 }
 .sl-brand {
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 800;
   letter-spacing: 0.08em;
 }
 .sl-brand small {
-  font-size: 9px;
+  font-size: var(--text-xs);
   font-weight: 500;
   color: var(--ui-muted-foreground);
-  margin-left: 10px;
+  margin-left: var(--space-2);
 }
 .sl-text-action {
   border: 0;
   background: transparent;
   color: var(--ui-primary);
   min-height: 44px;
-  padding: 0 8px;
-  font-size: 12px;
+  padding: 0 var(--space-2);
+  font-size: var(--text-sm);
   cursor: pointer;
   font-weight: 600;
 }
 .sl-session {
-  padding: 20px 20px 14px;
+  padding: var(--space-5) var(--space-5) var(--space-3);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 .sl-session h2 {
-  font-size: 26px;
+  font-size: var(--text-xl);
   letter-spacing: -0.04em;
-  margin: 6px 0 0;
+  margin: var(--space-1) 0 0;
 }
 .sl-session > span {
-  font-size: 20px;
+  font-size: var(--text-lg);
   font-weight: 600;
 }
 .sl-session small {
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--ui-muted-foreground);
 }
 .sl-progress {
   height: 3px;
   background: var(--ui-secondary);
-  margin: 0 20px;
+  margin: 0 var(--space-5);
 }
 .sl-progress span {
   display: block;
@@ -103,32 +103,32 @@
   transition: width 0.2s;
 }
 .sl-exercises {
-  padding: 0 20px;
+  padding: 0 var(--space-5);
 }
 .sl-exercise {
-  padding: 21px 0;
+  padding: var(--space-5) 0;
   border-bottom: 1px solid var(--ui-border);
 }
 .sl-exercise header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 4px;
-  margin-bottom: 12px;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
 }
 .sl-exercise h3 {
-  font-size: 16px;
+  font-size: var(--text-base);
   margin: 0;
   letter-spacing: -0.03em;
 }
 .sl-weight {
   display: flex;
-  gap: 5px;
+  gap: var(--space-1);
   align-items: center;
   background: transparent;
   border: 0;
   color: var(--ui-primary);
-  font-size: 13px;
+  font-size: var(--text-sm);
   cursor: pointer;
   min-height: 44px;
   padding: 0;
@@ -136,14 +136,14 @@
   white-space: nowrap;
 }
 .sl-weight small {
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--ui-muted-foreground);
-  margin-right: 5px;
+  margin-right: var(--space-1);
 }
 .sl-set-row {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 10px;
+  gap: var(--space-2);
 }
 .sl-circle {
   aspect-ratio: 1;
@@ -161,13 +161,13 @@
   touch-action: pan-y;
 }
 .sl-circle span {
-  font-size: 23px;
+  font-size: var(--text-xl);
   font-weight: 650;
   line-height: 1;
 }
 .sl-circle small {
-  font-size: 8px;
-  margin-top: 4px;
+  font-size: var(--text-xs);
+  margin-top: var(--space-1);
   letter-spacing: 0.02em;
 }
 .sl-circle.sl-logged {
@@ -186,20 +186,20 @@
   outline-offset: 3px;
 }
 .sl-set-weights {
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--ui-muted-foreground);
-  margin: 12px 0 0;
+  margin: var(--space-3) 0 0;
 }
 .sl-helper {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
-  padding: 6px 14px 12px 20px;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3) var(--space-3) var(--space-5);
 }
 .sl-helper p {
   color: var(--ui-muted-foreground);
-  font-size: 10px;
+  font-size: var(--text-xs);
   max-width: 185px;
   line-height: 1.5;
 }
@@ -208,26 +208,26 @@
 }
 .sl-bottom {
   margin-top: auto;
-  padding: 12px 16px 18px;
+  padding: var(--space-3) var(--space-4) var(--space-4);
 }
 .sl-rest {
   background: var(--ui-secondary);
-  padding: 0 12px 12px;
-  border-radius: 15px;
+  padding: 0 var(--space-3) var(--space-3);
+  border-radius: var(--radius-lg);
 }
 .sl-rest-heading {
   display: flex;
-  gap: 9px;
+  gap: var(--space-2);
   align-items: center;
   min-height: 56px;
 }
 .sl-rest-heading strong {
-  font-size: 27px;
+  font-size: var(--text-xl);
   letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
 }
 .sl-rest-heading > span {
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--ui-muted-foreground);
 }
 .sl-rest-heading button {
@@ -240,56 +240,56 @@
   display: block;
 }
 .sl-rest p {
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--ui-muted-foreground);
-  margin: 10px 0 0;
+  margin: var(--space-2) 0 0;
 }
 .sl-idle {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-2);
   color: var(--ui-muted-foreground);
-  padding: 10px 4px;
+  padding: var(--space-2) var(--space-1);
 }
 .sl-idle p {
-  font-size: 11px;
+  font-size: var(--text-xs);
 }
 .sl-bottom-meta {
   display: flex;
   justify-content: space-between;
-  font-size: 9px;
+  font-size: var(--text-xs);
   color: var(--ui-muted-foreground);
-  padding: 17px 4px 0;
+  padding: var(--space-4) var(--space-1) 0;
 }
 .sl-notes {
-  padding-top: 16px;
+  padding-top: var(--space-4);
 }
 .sl-notes h2 {
-  font-size: 34px;
+  font-size: var(--text-2xl);
   letter-spacing: -0.045em;
   line-height: 1.1;
-  margin: 15px 0 25px;
+  margin: var(--space-4) 0 var(--space-6);
 }
 .sl-notes ol {
-  padding-left: 18px;
-  font-size: 13px;
+  padding-left: var(--space-4);
+  font-size: var(--text-sm);
   line-height: 1.7;
   color: var(--ui-muted-foreground);
 }
 .sl-notes li {
-  margin: 14px 0;
-  padding-left: 6px;
+  margin: var(--space-3) 0;
+  padding-left: var(--space-1);
 }
 .sl-demo-controls {
   border-top: 1px solid var(--ui-border);
-  padding: 22px 0;
-  margin-top: 25px;
+  padding: var(--space-5) 0;
+  margin-top: var(--space-6);
 }
 .sl-demo-controls label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
   min-height: 44px;
   cursor: pointer;
 }
@@ -301,55 +301,55 @@
 .sl-demo-controls p,
 .sl-evidence p {
   color: var(--ui-muted-foreground);
-  font-size: 12px;
+  font-size: var(--text-sm);
   line-height: 1.6;
 }
 .sl-evidence {
   border-top: 1px solid var(--ui-border);
-  padding-top: 20px;
+  padding-top: var(--space-5);
 }
 .sl-evidence summary {
-  font-size: 13px;
+  font-size: var(--text-sm);
   cursor: pointer;
   min-height: 44px;
 }
 .sl-evidence a {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 12px;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
   color: var(--ui-primary);
-  margin: 12px 0;
+  margin: var(--space-3) 0;
 }
 .sl-editor {
   display: grid;
-  gap: 16px;
-  padding: 12px 0;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
 }
 .sl-editor p {
-  font-size: 13px;
+  font-size: var(--text-sm);
   line-height: 1.6;
   color: var(--ui-muted-foreground);
 }
 .sl-actions {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
 }
 .sl-summary {
   display: grid;
-  gap: 18px;
-  padding: 50px 24px;
+  gap: var(--space-4);
+  padding: var(--space-8) var(--space-6);
 }
 .sl-summary h2 {
-  font-size: 32px;
+  font-size: var(--text-2xl);
   margin: 0;
 }
 .sl-summary > strong {
-  font-size: 42px;
+  font-size: var(--text-3xl);
   color: var(--ui-primary);
 }
 .sl-summary p {
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--ui-muted-foreground);
 }
 .sl-sr {
@@ -363,7 +363,7 @@
   .sl-layout {
     grid-template-columns: minmax(0, 390px);
     justify-content: center;
-    gap: 25px;
+    gap: var(--space-6);
   }
   .sl-intro {
     max-width: 390px;
@@ -371,14 +371,14 @@
 }
 @media (max-width: 430px) {
   .sl-study {
-    padding: 20px 0;
+    padding: var(--space-5) 0;
   }
   .sl-intro,
   .sl-notes {
-    padding: 0 20px;
+    padding: 0 var(--space-5);
   }
   .sl-intro h1 {
-    font-size: 34px;
+    font-size: var(--text-2xl);
   }
   .sl-phone {
     border-radius: 0;
@@ -386,10 +386,10 @@
     border-right: 0;
   }
   .sl-set-row {
-    gap: 8px;
+    gap: var(--space-2);
   }
   .sl-exercises {
-    padding: 0 16px;
+    padding: 0 var(--space-4);
   }
 }
 @media (max-width: 430px) {
@@ -400,31 +400,31 @@
     display: none;
   }
   .sl-exercise {
-    padding: 14px 0;
+    padding: var(--space-3) 0;
   }
   .sl-exercise header {
-    margin-bottom: 6px;
+    margin-bottom: var(--space-1);
   }
   .sl-phone {
     min-height: 100svh;
   }
   .sl-notes {
-    padding-top: 20px;
+    padding-top: var(--space-5);
   }
 }
 .sl-worklist {
-  padding: 0 20px;
+  padding: 0 var(--space-5);
 }
 .sl-stage,
 .sl-completed > header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 20px;
+  padding-top: var(--space-5);
 }
 .sl-stage h3,
 .sl-completed h3 {
-  font-size: 11px;
+  font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin: 0;
@@ -432,22 +432,22 @@
 }
 .sl-stage > span,
 .sl-completed > header > span {
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--ui-muted-foreground);
 }
 .sl-beginning {
-  padding: 16px 20px 0;
+  padding: var(--space-4) var(--space-5) 0;
   color: var(--ui-muted-foreground);
-  font-size: 12px;
+  font-size: var(--text-sm);
   line-height: 1.6;
 }
 .sl-add {
   width: 100%;
-  margin: 20px 0;
+  margin: var(--space-5) 0;
 }
 .sl-completed {
   border-top: 1px solid var(--ui-border);
-  padding-bottom: 12px;
+  padding-bottom: var(--space-3);
 }
 .sl-completed details {
   border-bottom: 1px solid var(--ui-border);
@@ -456,53 +456,53 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 18px 0;
+  gap: var(--space-2);
+  padding: var(--space-4) 0;
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--text-sm);
 }
 .sl-completed summary small {
   display: block;
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--ui-muted-foreground);
-  margin: 6px 0 0 15px;
+  margin: var(--space-1) 0 0 var(--space-4);
 }
 .sl-completed summary > span:last-child {
   color: var(--ui-primary);
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 .sl-completed > p,
 .sl-start p {
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--ui-muted-foreground);
   line-height: 1.6;
 }
 .sl-start {
-  padding: 24px 0 4px;
+  padding: var(--space-6) 0 var(--space-1);
 }
 .sl-start h3 {
-  font-size: 22px;
+  font-size: var(--text-xl);
   letter-spacing: -0.04em;
   margin: 0;
 }
 .sl-start .ui-button {
-  margin-top: 12px;
+  margin-top: var(--space-3);
 }
 .sl-picker {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
 }
 .sl-search {
   display: grid;
-  gap: 8px;
-  font-size: 12px;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
 }
 .sl-search input {
   background: var(--ui-secondary);
   color: var(--ui-foreground);
   border: 1px solid var(--ui-border);
-  border-radius: 8px;
-  padding: 12px;
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
   font: inherit;
 }
 .sl-search input:focus-visible {
@@ -520,5 +520,5 @@
 }
 .sl-set-row {
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  row-gap: 12px;
+  row-gap: var(--space-3);
 }

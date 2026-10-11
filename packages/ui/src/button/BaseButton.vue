@@ -3,7 +3,15 @@ import { Primitive, type PrimitiveProps } from "reka-ui";
 export type ButtonVariant =
   "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
 export type ButtonSize =
-  "default" | "xs" | "sm" | "lg" | "icon" | "icon-xs" | "icon-sm" | "icon-lg";
+  | "default"
+  | "xs"
+  | "sm"
+  | "lg"
+  | "row"
+  | "icon"
+  | "icon-xs"
+  | "icon-sm"
+  | "icon-lg";
 const { as = "button" } = defineProps<
   PrimitiveProps & {
     variant?: ButtonVariant;

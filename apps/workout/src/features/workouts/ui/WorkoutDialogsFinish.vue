@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { BaseSheet, BaseButton } from "@form/ui";
-import { Check } from "@lucide/vue";
+import { BaseButton, BaseConfirmSheet, BaseNotice } from "@form/ui";
 import type { TrainingRow } from "./useTrainingSession";
-import { useFormat, useTranslation } from "../../../i18n";
+import { useTranslation } from "../../../i18n";
+import SessionStats from "./SessionStats.vue";
 
-const { open, totals, elapsed, pending, saving, error } = defineProps<{
+const { open, totals, elapsedMs, pending, saving, error } = defineProps<{
   open: boolean;
   totals: { readonly completedSets: number; readonly volumeKg: number };
-  elapsed: string;
+  elapsedMs: number;
   pending: readonly TrainingRow[];
   saving: boolean;
   error: string;
@@ -20,31 +20,25 @@ const emit = defineEmits<{
   finish: [];
 }>();
 const { t } = useTranslation();
-const format = useFormat();
 </script>
 
 <template>
-  <BaseSheet
+  <BaseConfirmSheet
     :open="open"
+    intent="neutral"
     :title="t('dialogs.finish.title')"
     :description="t('dialogs.finish.description')"
-    @close="emit('close')"
+    :cancel-label="t('dialogs.finish.keepTraining')"
+    :confirm-label="t('dialogs.finish.save')"
+    :busy="saving"
+    :confirm-disabled="!!pending.length"
+    :error="error"
+    @cancel="emit('close')"
+    @confirm="emit('finish')"
     @close-auto-focus="emit('close-auto-focus', $event)"
-    ><div class="finish-stats">
-      <div>
-        <strong>{{ totals.completedSets }}</strong
-        ><span>{{ t("dialogs.stats.setsLogged") }}</span>
-      </div>
-      <div>
-        <strong>{{ format.number(totals.volumeKg) }}</strong
-        ><span>{{ t("dialogs.stats.kgVolume") }}</span>
-      </div>
-      <div>
-        <strong>{{ elapsed }}</strong
-        ><span>{{ t("dialogs.stats.elapsed") }}</span>
-      </div>
-    </div>
-    <div v-if="pending.length" class="draft-finish-notice">
+  >
+    <SessionStats :totals="totals" :duration-ms="elapsedMs" />
+    <BaseNotice v-if="pending.length">
       <p>
         {{ t("dialogs.finish.retained") }}
       </p>
@@ -58,46 +52,27 @@ const format = useFormat();
           }}
         </li>
       </ul>
-      <BaseButton
-        unstyled
-        class="btn secondary"
-        :disabled="saving"
-        @click="emit('apply')"
-      >
-        {{ t("dialogs.finish.apply") }}
-      </BaseButton>
-      <BaseButton
-        unstyled
-        class="text-button"
-        :disabled="saving"
-        @click="emit('review')"
-      >
-        {{ t("dialogs.finish.review") }}
-      </BaseButton>
-      <p
-        v-if="pending.some((row) => row.issue)"
-        class="field-error"
-        role="alert"
-      >
-        {{ t("dialogs.finish.attention") }}
-      </p>
-    </div>
-    <p v-if="error" class="field-error" role="alert">{{ error }}</p>
-    <div class="form-actions">
-      <BaseButton
-        unstyled
-        class="btn secondary"
-        :disabled="saving"
-        @click="emit('close')"
-      >
-        {{ t("dialogs.finish.keepTraining") }}</BaseButton
-      ><BaseButton
-        unstyled
-        class="btn primary"
-        :disabled="saving || !!pending.length"
-        @click="emit('finish')"
-      >
-        {{ t("dialogs.finish.save") }}<Check :size="17" />
-      </BaseButton></div
-  ></BaseSheet>
+      <template #action>
+        <BaseButton
+          variant="secondary"
+          size="sm"
+          :disabled="saving"
+          @click="emit('apply')"
+        >
+          {{ t("dialogs.finish.apply") }}
+        </BaseButton>
+        <BaseButton
+          variant="link"
+          size="sm"
+          :disabled="saving"
+          @click="emit('review')"
+        >
+          {{ t("dialogs.finish.review") }}
+        </BaseButton>
+      </template>
+    </BaseNotice>
+    <BaseNotice v-if="pending.some((row) => row.issue)" tone="danger">
+      {{ t("dialogs.finish.attention") }}
+    </BaseNotice>
+  </BaseConfirmSheet>
 </template>

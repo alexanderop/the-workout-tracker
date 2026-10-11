@@ -106,6 +106,48 @@ export default [
     },
   },
   {
+    // The design system owns these jobs (docs/design.md, Pattern catalog).
+    // packages/ui implements the primitives, so only the app is restricted.
+    files: ["apps/workout/src/**/*.vue"],
+    rules: {
+      "vue/no-restricted-html-elements": [
+        "error",
+        ...["button", "input", "select", "textarea"].map((element) => ({
+          element,
+          message: `Use the @form/ui Base* component instead of a native <${element}>.`,
+        })),
+      ],
+      // The rule takes class names only; the pattern catalog names the
+      // component that replaces each one.
+      "vue/no-restricted-class": [
+        "error",
+        "btn",
+        "text-button",
+        "notice",
+        "empty-state",
+        "field-error",
+      ],
+      "vue/no-restricted-static-attribute": [
+        "error",
+        {
+          key: "unstyled",
+          element: "/^(?:BaseButton|base-button)$/",
+          message:
+            "Add a BaseButton variant instead of opting out of its styles.",
+        },
+      ],
+      "vue/no-restricted-v-bind": [
+        "error",
+        {
+          argument: "unstyled",
+          // Also catches <component :is="BaseButton" :unstyled="...">.
+          message:
+            "Add a BaseButton variant instead of opting out of its styles.",
+        },
+      ],
+    },
+  },
+  {
     files: ["**/*.story.vue"],
     rules: { "vue/multi-word-component-names": "off" },
   },

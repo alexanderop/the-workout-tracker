@@ -47,6 +47,16 @@ Feature: A workout journal stays on this device
     And I open my workout history
     Then my history contains one logged set with 400 kilograms of volume
 
+  Scenario: Logging a set says so once and the saved message ends with its page
+    Given I have a fresh workout journal
+    When I start a workout with Bench press
+    And I log the first set
+    Then the set log is reported once
+    When I finish my workout
+    Then Workouts home announces that the workout was saved
+    When I open the Progress page
+    Then no workout saved message remains
+
   Scenario: A finished rest period can be dismissed
     Given I have a fresh workout journal on a controlled clock
     And automatic rest is on with 30 seconds between sets

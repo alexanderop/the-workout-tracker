@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test";
 import { createBdd } from "playwright-bdd";
 import { test } from "../fixtures";
 import { seedWorkoutStorage } from "../seed";
@@ -141,4 +142,20 @@ When(
 
 Then("I have no active workout", async ({ workout }) => {
   await workout.expectNoActiveWorkout();
+});
+
+Then("the set log is reported once", async ({ workout }) => {
+  await workout.expectSetLoggedReportedOnce();
+});
+Then(
+  "Workouts home announces that the workout was saved",
+  async ({ workout }) => {
+    await expect(workout.savedMessage()).toBeVisible();
+  },
+);
+When("I open the Progress page", async ({ workout }) => {
+  await workout.openProgress();
+});
+Then("no workout saved message remains", async ({ workout }) => {
+  await expect(workout.savedMessage()).toHaveCount(0);
 });

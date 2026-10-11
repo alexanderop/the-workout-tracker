@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { watch } from "vue";
-import { BaseButton, BaseInput, BaseSheet } from "@form/ui";
+import {
+  BaseActions,
+  BaseButton,
+  BaseConfirmSheet,
+  BaseInput,
+  BaseSheet,
+  BaseNotice,
+} from "@form/ui";
 import { useTranslation } from "../../../i18n";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
 import { useLeaveConfirmation } from "./useLeaveConfirmation";
@@ -67,45 +74,40 @@ defineExpose({ requestDiscard });
         @keydown.enter.prevent="save"
       />
     </label>
-    <div v-if="nameDirty" class="form-actions">
+    <p v-if="nameDirty && nameConflict" role="status">
+      {{ t("training.rename.conflict", { name: active?.name ?? "" }) }}
+    </p>
+    <BaseActions v-if="nameDirty">
       <template v-if="nameConflict">
-        <p role="status">
-          {{ t("training.rename.conflict", { name: active?.name ?? "" }) }}
-        </p>
-        <BaseButton :disabled="saving" @click="keep">{{
-          t("training.rename.keepMine")
-        }}</BaseButton>
         <BaseButton variant="secondary" :disabled="saving" @click="adopt">{{
           t("training.rename.useSaved")
         }}</BaseButton>
+        <BaseButton :disabled="saving" @click="keep">{{
+          t("training.rename.keepMine")
+        }}</BaseButton>
       </template>
       <template v-else>
+        <BaseButton variant="secondary" :disabled="saving" @click="close">{{
+          t("training.rename.cancel")
+        }}</BaseButton>
         <BaseButton :disabled="saving" @click="save">{{
           t("training.rename.save")
         }}</BaseButton>
-        <BaseButton variant="ghost" :disabled="saving" @click="close">{{
-          t("training.rename.cancel")
-        }}</BaseButton>
       </template>
-    </div>
+    </BaseActions>
     <p v-if="nameDirty" class="muted small">
       {{ t("training.rename.saveBeforeFinish") }}
     </p>
-    <p v-if="nameIssue" class="field-error" role="alert">{{ nameIssue }}</p>
+    <BaseNotice v-if="nameIssue" tone="danger">{{ nameIssue }}</BaseNotice>
   </BaseSheet>
-  <BaseSheet
+  <BaseConfirmSheet
     :open="dismiss"
+    intent="destructive"
     :title="t('training.rename.discardTitle')"
     :description="t('training.rename.discardDescription')"
-    @close="settleLeave(false)"
-  >
-    <div class="form-actions">
-      <BaseButton variant="secondary" @click="settleLeave(false)">{{
-        t("training.rename.keepEditing")
-      }}</BaseButton>
-      <BaseButton @click="settleLeave(true)">{{
-        t("training.rename.discardAction")
-      }}</BaseButton>
-    </div>
-  </BaseSheet>
+    :cancel-label="t('dialogs.actions.keepEditing')"
+    :confirm-label="t('training.rename.discardAction')"
+    @cancel="settleLeave(false)"
+    @confirm="settleLeave(true)"
+  />
 </template>

@@ -51,9 +51,9 @@ function resetExample() {
 <style scoped>
 .preview-controls {
   display: grid;
-  gap: 16px;
-  padding: 20px;
-  font-size: 14px;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  font-size: var(--text-sm);
   line-height: 1.6;
 }
 .preview-controls h2,
@@ -63,16 +63,16 @@ function resetExample() {
   margin: 0;
 }
 .preview-controls h2 {
-  font-size: 20px;
+  font-size: var(--text-lg);
 }
 .preview-controls h3 {
-  font-size: 15px;
+  font-size: var(--text-base);
 }
 .preview-controls ol {
-  padding-inline-start: 20px;
+  padding-inline-start: var(--space-5);
 }
 .preview-controls li + li {
-  margin-block-start: 8px;
+  margin-block-start: var(--space-2);
 }
 .preview-controls a {
   color: var(--ui-primary);
@@ -84,6 +84,6 @@ function resetExample() {
 }
 .preview-controls-label {
   color: var(--ui-muted-foreground);
-  font-size: 12px;
+  font-size: var(--text-sm);
 }
 </style>

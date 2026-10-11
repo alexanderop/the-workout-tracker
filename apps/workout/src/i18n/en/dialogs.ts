@@ -12,10 +12,10 @@ export const enDialogs = {
     saving: "Saving…",
   },
   stats: {
+    group: "Workout totals",
     setsLogged: "sets logged",
-    kgVolume: "kg volume",
-    minutes: "minutes",
-    elapsed: "elapsed",
+    volume: "volume",
+    duration: "duration",
   },
   confirm: {
     fallbackTitle: "Confirm",
@@ -127,8 +127,6 @@ export const enDialogs = {
     createTemplate: "Create template",
     editAria: "Edit {name}",
     edit: "Edit",
-    defaultDescription: "A plan for your next session.",
-    setCount: "{n} set | {n} sets",
     more: "+ {count} more",
     exerciseCount: "{n} exercise | {n} exercises",
     start: "Start",

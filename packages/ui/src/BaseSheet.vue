@@ -27,6 +27,7 @@ const {
 }>();
 const emit = defineEmits<{
   close: [];
+  "open-auto-focus": [event: Event];
   "close-auto-focus": [event: Event];
 }>();
 defineSlots<{ default?: () => unknown }>();
@@ -153,6 +154,7 @@ onBeforeUnmount(() => {
       class="sheet"
       :show-close-button="false"
       :class="{ wide }"
+      @open-auto-focus="emit('open-auto-focus', $event)"
       @close-auto-focus="restoreFocus"
     >
       <div
@@ -208,8 +210,8 @@ onBeforeUnmount(() => {
   scrollbar-gutter: stable;
   background: var(--background);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 28px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
   box-shadow: 0 12px 60px var(--ui-shadow-dialog);
 }
 :global(.sheet.wide) {
@@ -221,45 +223,45 @@ onBeforeUnmount(() => {
   position: sticky;
   inset-block-start: -28px;
   z-index: 1;
-  margin: -28px -28px 0;
-  padding: 28px 28px 0;
+  margin: calc(-1 * var(--space-6)) calc(-1 * var(--space-6)) 0;
+  padding: var(--space-6) var(--space-6) 0;
   background: var(--background);
 }
-:global(.sheet > .form-actions),
-:global(.sheet > form > .form-actions) {
+:global(.sheet > .ui-actions[data-sticky]),
+:global(.sheet > form > .ui-actions[data-sticky]) {
   position: sticky;
   inset-block-end: -28px;
   z-index: 1;
-  margin-inline: -28px;
-  margin-block-end: -28px;
-  padding: 12px 28px 28px;
+  margin-inline: calc(-1 * var(--space-6));
+  margin-block-end: calc(-1 * var(--space-6));
+  padding: var(--space-3) var(--space-6) var(--space-6);
   background: var(--background);
 }
 .sheet-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 18px;
-  margin-block-end: 28px;
+  gap: var(--space-4);
+  margin-block-end: var(--space-6);
 }
 .sheet-title {
-  font-size: 22px;
+  font-size: var(--text-xl);
   letter-spacing: -0.7px;
   font-weight: 550;
 }
 .sheet-description {
-  font-size: 12px;
-  margin-block-start: 9px;
+  font-size: var(--text-sm);
+  margin-block-start: var(--space-2);
 }
 .sheet-header .icon-button {
-  margin: -7px -10px 0 0;
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-2)) 0 0;
 }
 .sr-only {
   position: absolute;
   width: 1px;
   height: 1px;
   padding: 0;
-  margin: -1px;
+  margin: calc(-1 * -1 * calc(var(--space-1) / 2));
   overflow: clip;
   clip-path: inset(50%);
   white-space: nowrap;
@@ -271,7 +273,7 @@ onBeforeUnmount(() => {
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   flex-shrink: 0;
   color: var(--muted);
 }
@@ -310,22 +312,25 @@ onBeforeUnmount(() => {
   .sheet-drag-area {
     touch-action: none;
     inset-block-start: -24px;
-    margin: -24px -20px 0;
-    padding: 8px 20px 0;
+    margin: calc(-1 * var(--space-6)) calc(-1 * var(--space-5)) 0;
+    padding: var(--space-2) var(--space-5) 0;
   }
-  :global(.sheet > .form-actions),
-  :global(.sheet > form > .form-actions) {
+  :global(.sheet > .ui-actions[data-sticky]),
+  :global(.sheet > form > .ui-actions[data-sticky]) {
     inset-block-end: calc(-24px - env(safe-area-inset-bottom, 0px));
-    margin-inline: -20px;
-    margin-block-end: calc(-24px - env(safe-area-inset-bottom, 0px));
-    padding: 12px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+    margin-inline: calc(-1 * var(--space-5));
+    margin-block-end: calc(
+      calc(-1 * var(--space-6)) - env(safe-area-inset-bottom, 0px)
+    );
+    padding: var(--space-3) var(--space-5)
+      calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
   }
   .sheet-grabber {
     display: block;
     width: 36px;
     height: 5px;
-    margin: 0 auto 14px;
-    border-radius: 3px;
+    margin: 0 auto var(--space-3);
+    border-radius: var(--radius-sm);
     background: var(--muted);
     opacity: 0.45;
   }
@@ -349,14 +354,15 @@ onBeforeUnmount(() => {
     inset-block-end: 0;
     inset-inline-start: 0;
     max-height: calc(100dvh - 30px);
-    padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 0px));
-    border-radius: 16px 16px 0 0;
+    padding: var(--space-6) var(--space-5)
+      calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
   .sheet-title {
-    font-size: 21px;
+    font-size: var(--text-lg);
   }
   .sheet-header {
-    margin-block-end: 24px;
+    margin-block-end: var(--space-6);
   }
   .icon-button {
     width: 44px;

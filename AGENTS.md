@@ -4,16 +4,17 @@
 
 Start with [README.md](README.md) for the product overview and run commands. Read the documents relevant to the change:
 
-| Question                                                        | Read                                       |
-| --------------------------------------------------------------- | ------------------------------------------ |
-| Which words do we use for workout concepts?                     | [Glossary](docs/glossary.md)               |
-| What are the workout rules and state transitions?               | [Domain context](docs/context.md)          |
-| Which module owns this behavior or dependency?                  | [Architecture](docs/architecture.md)       |
-| How should the interface look and behave?                       | [Design](docs/design.md)                   |
-| How do I add a command, component, or storage change?           | [Development workflows](docs/workflows.md) |
-| What does each test or check prove, and what does it not claim? | [Verification](docs/verification.md)       |
-| Which references informed our choices?                          | [Prior art](docs/prior-art.md)             |
-| Why did an earlier implementation take this approach?           | [History](docs/history/README.md)          |
+| Question                                                        | Read                                              |
+| --------------------------------------------------------------- | ------------------------------------------------- |
+| Which words do we use for workout concepts?                     | [Glossary](docs/glossary.md)                      |
+| What are the workout rules and state transitions?               | [Domain context](docs/context.md)                 |
+| Which module owns this behavior or dependency?                  | [Architecture](docs/architecture.md)              |
+| How should the interface look and behave?                       | [Design](docs/design.md)                          |
+| How do I add a command, component, or storage change?           | [Development workflows](docs/workflows.md)        |
+| What does each test or check prove, and what does it not claim? | [Verification](docs/verification.md)              |
+| Which component or token do I use for this UI job?              | [Pattern catalog](docs/design.md#pattern-catalog) |
+| Which references informed our choices?                          | [Prior art](docs/prior-art.md)                    |
+| Why did an earlier implementation take this approach?           | [History](docs/history/README.md)                 |
 
 Current contracts live in the glossary, context, architecture, and design. Historical plans and findings are evidence, not current instructions. Use the [glossary](docs/glossary.md) terms consistently; it records where existing code names differ from product language.
 
@@ -33,12 +34,14 @@ Write clear, maintainable production code. Keep changes focused and dependencies
 - Use strict types, small cohesive modules and explicit dependencies.
 - Preserve workspace exports, feature boundaries and layer direction.
 - Validate external data at boundaries and handle failures explicitly. Expected failures are `Result` values with one `TaggedError` per failure ([Expected failures](docs/architecture.md#expected-failures)); every UI message goes through the exhaustive table in `ui/errorMessages.ts`. Programmer errors may still throw.
+- Build UI from the [pattern catalog](docs/design.md#pattern-catalog): `Base*` components, not native controls, `BaseButton unstyled` or the legacy app classes (blocking lint rules in `apps/workout/src`), and the `--text-*`, `--radius-*` and `--space-*` tokens, not literal lengths. `pnpm lint:design` rejects literal lengths (its baseline is empty); never add entries to `tooling/lint/design-baseline.json`.
 - Preserve accessible native semantics, keyboard navigation and focus management.
 - Put every user-visible string in the English and German catalogs in `apps/workout/src/i18n` and read it with `t()`; see [Add or change a user-visible string](docs/workflows.md#add-or-change-a-user-visible-string). `@form/ui` stays text-free, and domain, ports, application and adapters return codes instead of text.
 - For new reusable UI components, follow the [Histoire-first component workflow](docs/workflows.md#add-a-reusable-component-and-story): iterate in the explorer, then inspect the real app flow when integrating.
 - Deliver changes directly on `main` or merge the working branch into `main`; no pull request is required. Follow [Verification and delivery](docs/workflows.md#verification-and-delivery).
 - Clean up subscriptions, event listeners and owned resources.
 - Use `pnpm verify` for type checking and linting only. Do not add tests, formatting checks or production builds to this verification command. Linting includes the architecture and workspace-boundary checks. Build only when needed to run or deploy the application.
+- Performance is not a strict priority. A small performance-budget overrun from a UX, consistency or correctness change is acceptable: report it with the numbers and move on instead of spending time optimizing. Do not degrade performance on purpose, and leave the budget file to the owner.
 - Never weaken a guardrail to make a change pass: do not edit lint configs, `tooling/`, hooks, CI, budgets, baselines or coverage thresholds to loosen them. Fix the code, or stop and ask the owner.
 
 ## Enforced correction rules

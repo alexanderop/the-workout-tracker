@@ -5,11 +5,13 @@ import { render } from "vitest-browser-vue";
 import { Result } from "@form/result";
 import "@form/ui/tokens.css";
 import "@form/ui/styles.css";
+import WorkoutSettingsExport from "../../src/features/workouts/ui/WorkoutSettingsExport.vue";
 import WorkoutSettingsDelete from "../../src/features/workouts/ui/WorkoutSettingsDelete.vue";
 import WorkoutSettingsImport from "../../src/features/workouts/ui/WorkoutSettingsImport.vue";
 import WorkoutSettingsTraining from "../../src/features/workouts/ui/WorkoutSettingsTraining.vue";
 import {
   Conflict,
+  StorageClosed,
   initialSnapshot,
   type Snapshot,
 } from "../../src/features/workouts/domain";
@@ -79,11 +81,27 @@ describe("given the Delete all data page", () => {
       expect(deletedAt).toEqual([]);
     });
 
+    it("should draw the confirmation as destructive, with the safe choice focused first", async () => {
+      mountDelete();
+      await deleteButton().click();
+      await expect
+        .element(
+          deleteDialog().getByRole("button", {
+            name: t("dialogs.actions.cancel"),
+          }),
+        )
+        .toHaveFocus();
+      const confirm = deleteDialog()
+        .getByRole("button", { name: t("settings.deleteData.button") })
+        .element();
+      expect(confirm.getAttribute("data-variant")).toBe("destructive");
+    });
+
     it("should keep the data when the dialog is cancelled", async () => {
       const { deletedAt } = mountDelete();
       await deleteButton().click();
       await page
-        .getByRole("button", { name: t("settings.deleteData.cancel") })
+        .getByRole("button", { name: t("dialogs.actions.cancel") })
         .click();
       await expect.element(deleteDialog()).not.toBeInTheDocument();
       expect(deletedAt).toEqual([]);
@@ -204,6 +222,40 @@ describe("given the Import backup page", () => {
       .element(page.getByRole("status"))
       .toHaveTextContent(t("settings.backup.changed"));
     await expect.element(pendingFile()).not.toBeInTheDocument();
+  });
+});
+
+const mountExport = (exported: Result<string, StorageClosed>) =>
+  render(WorkoutSettingsExport, {
+    global,
+    props: {
+      busy: false,
+      onBusyChange: () => undefined,
+      workspace: {
+        saving: computed(() => false),
+        service: { exportBackup: () => Promise.resolve(exported) },
+      },
+    },
+  });
+const exportButton = () =>
+  page.getByRole("button", { name: t("settings.backup.export") });
+
+describe("given the Export backup page", () => {
+  it("should confirm a download in a status notice", async () => {
+    await mountExport(Result.ok("{}"));
+    await expect.element(page.getByRole("status")).not.toBeInTheDocument();
+    await exportButton().click();
+    await expect
+      .element(page.getByRole("status"))
+      .toHaveTextContent(t("settings.backup.downloaded"));
+  });
+
+  it("should report a failed export in an alert notice", async () => {
+    await mountExport(Result.err(new StorageClosed()));
+    await exportButton().click();
+    await expect
+      .element(page.getByRole("alert"))
+      .toHaveTextContent(t("settings.backup.exportFailed"));
   });
 });
 

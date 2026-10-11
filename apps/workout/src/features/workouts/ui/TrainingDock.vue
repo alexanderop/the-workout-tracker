@@ -40,7 +40,8 @@ function showNext() {
     >
     <template v-else-if="trainingMode.kind === 'next'"
       ><BaseButton
-        unstyled
+        variant="ghost"
+        size="row"
         class="training-bar-next"
         :disabled="saving"
         @click="showNext"

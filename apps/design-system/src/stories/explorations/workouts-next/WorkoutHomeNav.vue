@@ -26,31 +26,47 @@ const emit = defineEmits<{ action: [label: string]; home: [] }>();
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   border-top: 1px solid var(--border);
-  padding: 11px 12px 17px;
-  gap: 4px;
+  padding: var(--space-3) var(--space-3) var(--space-4);
+  gap: var(--space-1);
 }
 .home-nav button {
   display: grid;
   justify-items: center;
   align-content: center;
-  gap: 7px;
+  gap: var(--space-2);
   min-height: 48px;
-  padding: 4px;
+  padding: var(--space-1);
   border: 0;
   background: none;
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 .home-nav button[aria-current] {
   color: var(--accent);
 }
 .next-home--compact .home-nav button[aria-current] {
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: var(--surface);
 }
 @media (min-width: 700px) {
   .next-home:not(.is-framed) .home-nav {
-    padding-inline: max(24px, calc((100% - 700px) / 2));
+    padding-inline: max(
+      var(--space-6),
+      calc(
+        (
+            100% -
+              calc(
+                var(--space-8) + var(--space-8) + var(--space-8) +
+                  var(--space-8) + var(--space-8) + var(--space-8) +
+                  var(--space-8) + var(--space-8) + var(--space-8) +
+                  var(--space-8) + var(--space-8) + var(--space-8) +
+                  var(--space-8) + var(--space-8) + var(--space-6) +
+                  var(--space-1)
+              )
+          ) /
+          2
+      )
+    );
   }
 }
 </style>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {
-  BaseButton,
+  BaseChoiceChip,
   BaseListGroup,
   BaseListRow,
   BaseSelectNative,
@@ -75,33 +75,37 @@ function changeRestDuration(event: Event) {
       :label="t('settings.training.autoRest.label')"
       :description="t('settings.training.autoRest.hint')"
     >
-      <BaseSwitch
-        :aria-label="t('settings.training.autoRest.label')"
-        :model-value="snapshot.settings.autoRest"
-        :disabled="saving"
-        @update:model-value="changeAutoRest"
-      />
+      <template #trailing>
+        <BaseSwitch
+          :aria-label="t('settings.training.autoRest.label')"
+          :model-value="snapshot.settings.autoRest"
+          :disabled="saving"
+          @update:model-value="changeAutoRest"
+        />
+      </template>
     </BaseListRow>
     <BaseListRow
       as="label"
       :label="t('settings.training.restDuration.label')"
       :description="t('settings.training.restDuration.hint')"
     >
-      <BaseSelectNative
-        class="input rest-select"
-        :aria-label="t('settings.training.restDuration.ariaLabel')"
-        :model-value="snapshot.settings.restSeconds"
-        :disabled="saving"
-        @change="changeRestDuration"
-      >
-        <option
-          v-for="seconds in [30, 60, 90, 120, 180, 300]"
-          :key="seconds"
-          :value="seconds"
+      <template #trailing>
+        <BaseSelectNative
+          class="rest-select"
+          :aria-label="t('settings.training.restDuration.ariaLabel')"
+          :model-value="snapshot.settings.restSeconds"
+          :disabled="saving"
+          @change="changeRestDuration"
         >
-          {{ t("settings.training.restDuration.option", { seconds }) }}
-        </option>
-      </BaseSelectNative>
+          <option
+            v-for="seconds in [30, 60, 90, 120, 180, 300]"
+            :key="seconds"
+            :value="seconds"
+          >
+            {{ t("settings.training.restDuration.option", { seconds }) }}
+          </option>
+        </BaseSelectNative>
+      </template>
     </BaseListRow>
     <BaseListRow
       :label="t('settings.training.weightUnit.label')"
@@ -113,17 +117,21 @@ function changeRestDuration(event: Event) {
       :label="t('settings.training.bar.label')"
       :description="t('settings.training.bar.hint')"
     >
-      <BaseSelectNative
-        class="input rest-select"
-        :aria-label="t('settings.training.bar.ariaLabel')"
-        :model-value="barbell.barKg"
-        :disabled="saving"
-        @change="changeBar"
-      >
-        <option v-for="kg in barWeightsKg" :key="kg" :value="kg">
-          {{ t("settings.training.bar.option", { weight: format.number(kg) }) }}
-        </option>
-      </BaseSelectNative>
+      <template #trailing>
+        <BaseSelectNative
+          class="rest-select"
+          :aria-label="t('settings.training.bar.ariaLabel')"
+          :model-value="barbell.barKg"
+          :disabled="saving"
+          @change="changeBar"
+        >
+          <option v-for="kg in barWeightsKg" :key="kg" :value="kg">
+            {{
+              t("settings.training.bar.option", { weight: format.number(kg) })
+            }}
+          </option>
+        </BaseSelectNative>
+      </template>
     </BaseListRow>
     <div
       v-if="barbell"
@@ -139,23 +147,21 @@ function changeRestDuration(event: Event) {
         {{ t("settings.training.plates.hint") }}
       </p>
       <div class="plate-options">
-        <BaseButton
+        <BaseChoiceChip
           v-for="kg in plateSizesKg"
           :key="kg"
-          type="button"
-          variant="secondary"
           class="plate-option"
-          :aria-pressed="barbell.platesKg.includes(kg)"
+          :model-value="barbell.platesKg.includes(kg)"
           :aria-label="
             t('settings.training.plates.toggleLabel', {
               weight: format.number(kg),
             })
           "
           :disabled="saving"
-          @click="togglePlate(kg)"
+          @update:model-value="togglePlate(kg)"
           >{{
             t("settings.training.plates.toggle", { weight: format.number(kg) })
-          }}</BaseButton
+          }}</BaseChoiceChip
         >
       </div>
     </div>
@@ -165,38 +171,33 @@ function changeRestDuration(event: Event) {
 <style scoped>
 .plate-settings {
   display: grid;
-  gap: 4px;
-  padding: 12px 16px 16px;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4) var(--space-4);
   border-block-start: 1px solid var(--rule);
 }
 .plate-settings-label {
   margin: 0;
   color: var(--text);
-  font-size: 16px;
+  font-size: var(--text-base);
 }
 .plate-settings-hint {
   margin: 0;
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--text-sm);
   line-height: 1.45;
 }
 .plate-options {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
-  gap: 8px;
-  margin-block-start: 8px;
+  gap: var(--space-2);
+  margin-block-start: var(--space-2);
 }
 .plate-option {
-  min-height: 44px;
   font-variant-numeric: tabular-nums;
-}
-.plate-option[aria-pressed="true"] {
-  background: var(--ui-primary);
-  color: var(--ui-primary-foreground);
 }
 .rest-select {
   width: 104px;
   flex-shrink: 0;
-  font-size: 16px;
+  font-size: var(--text-base);
 }
 </style>

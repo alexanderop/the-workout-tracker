@@ -111,50 +111,50 @@ function clearFeedback() {
   outline-offset: 4px;
 }
 .home-heading {
-  padding: 34px 24px 30px;
+  padding: var(--space-7) var(--space-6) var(--space-7);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 }
 h1 {
   margin: 0;
 }
 h1 {
-  font-size: 27px;
+  font-size: var(--text-xl);
   font-weight: 600;
   letter-spacing: -1.1px;
   line-height: 1.2;
 }
 .date-label {
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--text-xs);
   letter-spacing: 0.8px;
   white-space: nowrap;
 }
 .home-main {
-  padding: 0 24px 28px;
+  padding: 0 var(--space-6) var(--space-6);
   flex: 1;
 }
 .secondary-start {
   min-height: 44px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 20px;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
   border: 0;
   background: none;
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--text-sm);
 }
 .recovery,
 .demo-feedback {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 0;
-  margin-bottom: 16px;
-  font-size: 11px;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+  margin-bottom: var(--space-4);
+  font-size: var(--text-xs);
   line-height: 1.5;
   color: var(--muted);
 }
@@ -171,13 +171,13 @@ h1 {
   color: var(--text);
 }
 .demo-feedback {
-  margin: 14px 0 0;
+  margin: var(--space-3) 0 0;
   border-top: 1px solid var(--border);
 }
 .eyebrow {
   display: block;
-  margin-bottom: 17px;
-  font-size: 9px;
+  margin-bottom: var(--space-4);
+  font-size: var(--text-xs);
   letter-spacing: 1.8px;
   color: var(--muted);
 }
@@ -186,22 +186,22 @@ h1 {
 }
 .next-home--journal .home-heading {
   align-items: end;
-  padding-top: 35px;
-  padding-bottom: 39px;
+  padding-top: var(--space-7);
+  padding-bottom: var(--space-7);
 }
 .next-home--journal h1 {
-  font-size: 42px;
+  font-size: var(--text-3xl);
   letter-spacing: -2px;
 }
 .next-home--journal .date-label {
-  padding-bottom: 5px;
-  font-size: 9px;
+  padding-bottom: var(--space-1);
+  font-size: var(--text-xs);
 }
 .next-home--compact .home-heading {
-  padding-bottom: 22px;
+  padding-bottom: var(--space-5);
 }
 .next-home--compact h1 {
-  font-size: 23px;
+  font-size: var(--text-xl);
 }
 @media (min-width: 700px) {
   .next-home:not(.is-framed) .home-heading,
@@ -214,18 +214,18 @@ h1 {
     min-height: 100vh;
   }
   .next-home:not(.is-framed) .home-heading {
-    padding-top: 48px;
+    padding-top: var(--space-8);
   }
 }
 @media (max-width: 350px) {
   .home-heading {
-    padding-inline: 18px;
+    padding-inline: var(--space-4);
   }
   .home-main {
-    padding-inline: 18px;
+    padding-inline: var(--space-4);
   }
   .next-home--journal h1 {
-    font-size: 35px;
+    font-size: var(--text-2xl);
   }
 }
 </style>

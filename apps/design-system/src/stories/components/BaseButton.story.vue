@@ -15,6 +15,7 @@ const sizes: ButtonSize[] = [
   "xs",
   "sm",
   "lg",
+  "row",
   "icon",
   "icon-xs",
   "icon-sm",
@@ -85,7 +86,7 @@ Trigger an action. Use one prominent primary action per section.
 
 ## Variants
 
-Primary, secondary, outline, ghost, destructive and link; eight sizes.
+Primary, secondary, outline, ghost, destructive and link; nine sizes. `row` is a full-width, left-aligned button as tall as its content, for a two-line target or a sidebar entry.
 
 ## States
 

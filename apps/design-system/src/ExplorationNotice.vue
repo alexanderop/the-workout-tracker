@@ -12,12 +12,12 @@
 .exploration-notice {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 16px;
-  padding: 14px 20px;
+  gap: var(--space-1) var(--space-4);
+  padding: var(--space-3) var(--space-5);
   border-block-end: 1px solid var(--ui-border);
   color: var(--ui-muted-foreground);
   background: var(--ui-background);
-  font-size: 13px;
+  font-size: var(--text-sm);
   line-height: 1.5;
 }
 .exploration-notice strong {

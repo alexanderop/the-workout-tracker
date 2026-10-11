@@ -19,7 +19,9 @@ export type NumericText = Readonly<{
   /** The mark that splits whole and fraction digits, such as "," in German. */
   decimalSeparator: string;
   backspace: string;
-  /** The button that confirms the draft, named after the field. */
+  /** The visible label of the button that confirms the draft. */
+  done: string;
+  /** Its accessible name, starting with the visible label and naming the field. */
   confirm: (title: string) => string;
   /** The status text announced once a value is confirmed. */
   announce: (value: { title: string; value: number; unit: string }) => string;
@@ -89,7 +91,8 @@ export const defaultUiText: UiText = {
     decimalPoint: "Decimal point",
     decimalSeparator: ".",
     backspace: "Backspace",
-    confirm: (title) => `Use ${title.toLowerCase()}`,
+    done: "Done",
+    confirm: (title) => `Done: ${title.toLowerCase()}`,
     announce: ({ title, value, unit }) =>
       `${title} set to ${value}${inUnit(unit)}`,
     trigger: ({ label, value, unit }) =>
