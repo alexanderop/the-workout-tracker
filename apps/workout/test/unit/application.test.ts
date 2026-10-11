@@ -64,6 +64,43 @@ describe("workout application", () => {
     });
   });
 
+  it("saves secondary muscle groups and the exercise type of a custom exercise", async () => {
+    const { app, memory } = setup();
+    const exercise = {
+      name: "Landmine press",
+      category: "Shoulders",
+      secondaryCategories: ["Chest", "Arms"],
+      kind: "compound",
+      equipment: "Barbell",
+    } as const;
+    expect(
+      (await app.execute({ type: "create-exercise", exercise }, 0)).isOk(),
+    ).toBe(true);
+    expect(memory.current().exercises["application-1"]).toEqual({
+      ...exercise,
+      id: "application-1",
+      custom: true,
+    });
+  });
+
+  it("rejects a secondary muscle group that repeats the main one", async () => {
+    const { app, memory } = setup();
+    const result = await app.execute(
+      {
+        type: "create-exercise",
+        exercise: {
+          name: "Landmine press",
+          category: "Shoulders",
+          secondaryCategories: ["Shoulders"],
+          equipment: "Barbell",
+        },
+      },
+      0,
+    );
+    expect(failure(result)).toMatchObject({ _tag: "InvalidChange" });
+    expect(memory.current().revision).toBe(0);
+  });
+
   it("assigns persistent creation identities through the injected ID source", async () => {
     const { app, memory } = setup();
     expect(

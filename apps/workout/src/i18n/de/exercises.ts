@@ -21,6 +21,12 @@ export const deExercises: Catalog["exercises"] = {
     egym: "EGYM",
     other: "Sonstiges",
   },
+  kinds: {
+    compound: "Mehrgelenkig",
+    compoundHint: "Mehrere Gelenke, wie Kniebeuge oder Rudern",
+    isolation: "Isolation",
+    isolationHint: "Ein Gelenk, wie Curls oder Seitheben",
+  },
   page: {
     title: "Übungen",
     create: "Erstellen",

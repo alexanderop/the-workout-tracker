@@ -6,7 +6,7 @@ The [glossary](glossary.md) owns our shared core vocabulary. This document owns 
 
 ## Exercise and session exercise
 
-An **exercise** is a catalog definition, represented by `Exercise`: identity, name, category (shown as muscle group), equipment, and whether it is custom.
+An **exercise** is a catalog definition, represented by `Exercise`: identity, name, category (shown as muscle group), equipment, and whether it is custom. A custom exercise may also record **secondary muscles** (`secondaryCategories`: other muscle groups that work, never repeating the main group or each other) and an **exercise type** (`kind`: `compound` or `isolation`). Both are optional and descriptive: built-in exercises, earlier journals and backups have neither, and they do not change logging, volume or progress. Session exercises do not capture them.
 
 EGYM Smart Strength exercises use **EGYM** as their equipment value and retain their muscle group. EGYM Abdominal crunch and EGYM Rotary torso belong to Core and have their own catalog identities, separate from other core exercises. EGYM Squat belongs to Legs; Seated row and Lat pulldown to Back; Shoulder press to Shoulders; and Chest press to Chest. Each has a separate EGYM catalog identity. Sets are recorded manually; there is no EGYM account connection. On opening browser storage, missing built-in exercises are added atomically with a revision increment; existing exercise definitions and journal data are preserved.
 

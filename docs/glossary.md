@@ -5,6 +5,8 @@ Use these terms in our conversations, product copy, and documentation. This docu
 | Term                  | Meaning                                                                                                           |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | **Exercise**          | A catalog definition, such as Bench Press.                                                                        |
+| **Secondary muscles** | Other muscle groups an exercise works besides its main one, e.g. Arms for a row. `secondaryCategories` in code.   |
+| **Exercise type**     | Compound (several joints, like a squat) or Isolation (one joint, like a curl). `kind` in code.                    |
 | **Workout exercise**  | An exercise added to a specific workout, with its own sets and optional note. Called `SessionExercise` in code.   |
 | **Template**          | A reusable plan for starting workouts. Called `Routine` in code.                                                  |
 | **Active workout**    | The workout currently being recorded. Called `ActiveSession` in code.                                             |
@@ -44,6 +46,8 @@ The app ships English and German catalogs. German copy uses the informal "du" an
 | History                          | Verlauf                                                             |
 | Progress                         | Fortschritt                                                         |
 | Muscle group                     | Muskelgruppe                                                        |
+| Secondary muscles                | Hilfsmuskeln                                                        |
+| Exercise type                    | Übungsart (Mehrgelenkig, Isolation)                                 |
 | Equipment                        | Gerät                                                               |
 | Barbell, bar weight              | Langhantel, Langhantelgewicht (the bar itself: Stange)              |
 | Plate                            | Scheibe                                                             |

@@ -1,5 +1,6 @@
 // Public domain API. Each concern lives in its own module under domain/.
 export {
+  exerciseKinds,
   exerciseSchema,
   routineSchema,
   snapshotSchema,
@@ -9,6 +10,7 @@ export {
   type Barbell,
   type CompletedSession,
   type Exercise,
+  type ExerciseKind,
   type Routine,
   type SessionExercise,
   type Snapshot,

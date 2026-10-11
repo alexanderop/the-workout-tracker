@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   categoryLabel,
   equipmentLabel,
+  kindLabel,
 } from "../../src/features/workouts/ui/exerciseLabels";
 import { t, translator } from "../../src/i18n/testing";
 
@@ -53,5 +54,17 @@ describe("given the stored equipment", () => {
 
   it("should show custom equipment as typed", () => {
     expect(equipmentLabel("Sandbag", german)).toBe("Sandbag");
+  });
+});
+
+describe("given an exercise type", () => {
+  it("should name each type in English and German", () => {
+    expect(kindLabel("compound", t)).toBe("Compound");
+    expect(kindLabel("isolation", german)).toBe("Isolation");
+    expect(kindLabel("compound", german)).toBe("Mehrgelenkig");
+  });
+
+  it("should say when no type is chosen", () => {
+    expect(kindLabel(undefined, t)).toBe("Not set");
   });
 });

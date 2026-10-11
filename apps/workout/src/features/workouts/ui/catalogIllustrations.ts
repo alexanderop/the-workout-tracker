@@ -41,3 +41,18 @@ export const muscleIllustrations: ReadonlyMap<string, GroupIllustration> =
     ["Core", group("front", ["abs"])],
     ["Legs", group("both", ["quads", "hamstrings", "glutes", "calves"])],
   ]);
+
+/** Highlights the main group's muscles and those of every secondary group. */
+export function exerciseMuscleHighlights(
+  category: string,
+  secondaryCategories: readonly string[],
+): readonly MuscleHighlight[] {
+  return [
+    ...(muscleIllustrations.get(category)?.highlights ?? []),
+    ...secondaryCategories.flatMap((secondary) =>
+      (muscleIllustrations.get(secondary)?.highlights ?? []).map(
+        ({ muscle }) => ({ muscle, role: "supporting" as const }),
+      ),
+    ),
+  ];
+}

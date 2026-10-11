@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { BaseSheet, BaseButton, BaseInput, BaseSelectNative } from "@form/ui";
+import { computed, ref, useTemplateRef } from "vue";
+import { BaseSheet, BaseButton } from "@form/ui";
 import { Plus, Check } from "@lucide/vue";
 import ExerciseCatalog from "./ExerciseCatalog.vue";
 import type { WorkoutWorkspace } from "./useWorkoutWorkspace";
-import { categoryLabel, equipmentLabel } from "./exerciseLabels";
+import ExerciseCreateSheet from "./ExerciseCreateSheet.vue";
+import type { Exercise } from "../domain";
 import { useTranslation } from "../../../i18n";
 
 const { workspace } = defineProps<{
@@ -17,35 +18,14 @@ const emit = defineEmits<{ started: [] }>();
 const { t } = useTranslation();
 const { snapshot, saving, error, run, training, active, catalog } = workspace;
 
-const muscleGroups = [
-  "Chest",
-  "Back",
-  "Legs",
-  "Shoulders",
-  "Arms",
-  "Core",
-  "Other",
-];
-// Stored values stay English; only their display text is translated.
-const equipmentTypes = [
-  "Barbell",
-  "Dumbbell",
-  "Cable",
-  "Machine",
-  "Bodyweight",
-  "Band",
-  "Kettlebell",
-  "Other",
-];
 const picker = ref<
   { kind: "start" } | { kind: "add"; sessionId: string } | null
 >(null);
 const pickerOpen = computed(() => picker.value !== null);
 const selectedExercises = ref<string[]>([]);
-const customName = ref("");
-const customCategory = ref("Other");
-const customEquipment = ref("Other");
 const createOpen = ref(false);
+const createSheet =
+  useTemplateRef<InstanceType<typeof ExerciseCreateSheet>>("createSheet");
 function toggleExercise(id: string) {
   selectedExercises.value = selectedExercises.value.includes(id)
     ? selectedExercises.value.filter((value) => value !== id)
@@ -84,22 +64,15 @@ async function addExercises() {
   selectedExercises.value = [];
   if (intent.kind === "start") emit("started");
 }
-async function createExercise() {
-  if (!customName.value.trim() || saving.value) return;
+async function createExercise(exercise: Omit<Exercise, "id" | "custom">) {
+  if (saving.value) return;
   const previousIds = new Set(Object.keys(snapshot.value?.exercises ?? {}));
-  const saved = await run({
-    type: "create-exercise",
-    exercise: {
-      name: customName.value.trim(),
-      category: customCategory.value,
-      equipment: customEquipment.value,
-    },
-  });
+  const saved = await run({ type: "create-exercise", exercise });
   if (!saved) return;
-  customName.value = "";
+  createSheet.value?.reset();
   createOpen.value = false;
   const created = Object.values(saved.exercises).find(
-    (exercise) => !previousIds.has(exercise.id),
+    (candidate) => !previousIds.has(candidate.id),
   );
   if (pickerOpen.value && created)
     selectedExercises.value = [...selectedExercises.value, created.id];
@@ -162,47 +135,12 @@ defineExpose({
     </div>
     <p v-if="error" class="field-error" role="alert">{{ error }}</p>
   </BaseSheet>
-  <BaseSheet
+  <ExerciseCreateSheet
+    ref="createSheet"
     :open="createOpen"
-    :title="t('dialogs.picker.createTitle')"
-    :description="t('dialogs.picker.createDescription')"
+    :saving="saving"
+    :error="error"
     @close="createOpen = false"
-  >
-    <form class="form-stack" @submit.prevent="createExercise">
-      <label class="field"
-        ><span>{{ t("dialogs.picker.nameLabel") }}</span
-        ><BaseInput
-          v-model="customName"
-          class="input"
-          required
-          maxlength="80"
-          :placeholder="t('dialogs.picker.namePlaceholder')"
-      /></label>
-      <label class="field"
-        ><span>{{ t("dialogs.picker.muscleGroup") }}</span
-        ><BaseSelectNative v-model="customCategory" class="input">
-          <option v-for="group in muscleGroups" :key="group" :value="group">
-            {{ categoryLabel(group, t) }}
-          </option>
-        </BaseSelectNative></label
-      >
-      <label class="field"
-        ><span>{{ t("dialogs.picker.equipment") }}</span
-        ><BaseSelectNative v-model="customEquipment" class="input">
-          <option v-for="item in equipmentTypes" :key="item" :value="item">
-            {{ equipmentLabel(item, t) }}
-          </option>
-        </BaseSelectNative></label
-      >
-      <BaseButton
-        unstyled
-        class="btn primary full-width"
-        type="submit"
-        :disabled="saving || !customName.trim()"
-      >
-        <Plus :size="17" />{{ t("dialogs.picker.createSubmit") }}
-      </BaseButton>
-      <p v-if="error" class="field-error" role="alert">{{ error }}</p>
-    </form>
-  </BaseSheet>
+    @submit="createExercise"
+  />
 </template>

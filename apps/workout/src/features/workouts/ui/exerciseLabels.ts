@@ -1,4 +1,5 @@
 import type { Translate } from "../../../i18n";
+import type { ExerciseKind } from "../domain";
 
 /**
  * Display text for the muscle groups and equipment of the built-in exercises.
@@ -48,5 +49,19 @@ export function equipmentLabel(equipment: string, t: Translate): string {
       return t("exercises.equipment.other");
     default:
       return equipment;
+  }
+}
+
+export function kindLabel(
+  kind: ExerciseKind | undefined,
+  t: Translate,
+): string {
+  switch (kind) {
+    case "compound":
+      return t("exercises.kinds.compound");
+    case "isolation":
+      return t("exercises.kinds.isolation");
+    case undefined:
+      return t("dialogs.picker.notSet");
   }
 }

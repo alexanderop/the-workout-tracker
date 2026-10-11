@@ -19,6 +19,12 @@ export const enExercises = {
     egym: "EGYM",
     other: "Other",
   },
+  kinds: {
+    compound: "Compound",
+    compoundHint: "Several joints, like a squat or row",
+    isolation: "Isolation",
+    isolationHint: "One joint, like a curl or raise",
+  },
   page: {
     title: "Exercises",
     create: "Create",

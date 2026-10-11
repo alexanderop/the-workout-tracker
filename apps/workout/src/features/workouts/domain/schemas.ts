@@ -24,11 +24,16 @@ export const weight = z.number().min(0).max(1000);
 export const reps = z.number().int().min(1).max(1000);
 export const actualReps = z.number().int().min(0).max(1000);
 export const timestamp = z.number().int().min(0).max(8640000000000000);
+/** Whether an exercise moves several joints or isolates one muscle group. */
+export const exerciseKinds = ["compound", "isolation"] as const;
 export const exerciseSchema = z
   .object({
     id: identifier,
     name,
     category: name,
+    // Optional so built-in exercises and journals saved before they existed still load.
+    secondaryCategories: z.array(name).min(1).max(10).readonly().optional(),
+    kind: z.enum(exerciseKinds).optional(),
     custom: z.boolean(),
     equipment: name,
   })
@@ -145,6 +150,7 @@ export const settingsSchema = z
   .readonly();
 export type Barbell = z.infer<typeof barbellSchema>;
 export type Exercise = z.infer<typeof exerciseSchema>;
+export type ExerciseKind = (typeof exerciseKinds)[number];
 export type Routine = z.infer<typeof routineSchema>;
 export type WorkoutSet = z.infer<typeof setSchema>;
 export type SessionExercise = z.infer<typeof sessionExerciseSchema>;
@@ -163,6 +169,22 @@ const snapshotShape = z
   .strict();
 type SnapshotShape = z.infer<typeof snapshotShape>;
 type ReportIssue = (message: string) => void;
+/** The main muscle group is not repeated among the secondary ones. */
+function distinctMuscleGroups({
+  category,
+  secondaryCategories = [],
+}: Exercise): boolean {
+  return (
+    new Set(secondaryCategories).size === secondaryCategories.length &&
+    !secondaryCategories.includes(category)
+  );
+}
+function validateExercises(snapshot: SnapshotShape, issue: ReportIssue) {
+  if (!Object.values(snapshot.exercises).every(distinctMuscleGroups))
+    issue(
+      "Secondary muscle groups must be unique and differ from the main one.",
+    );
+}
 function validateRecords(snapshot: SnapshotShape, issue: ReportIssue) {
   const keyed: readonly Readonly<Record<string, { readonly id: string }>>[] = [
     snapshot.exercises,
@@ -235,6 +257,7 @@ export const snapshotSchema = snapshotShape
     const issue: ReportIssue = (message) =>
       context.addIssue({ code: "custom", message });
     validateRecords(snapshot, issue);
+    validateExercises(snapshot, issue);
     for (const session of [
       ...Object.values(snapshot.completed),
       ...(snapshot.active ? [snapshot.active] : []),
