@@ -3,7 +3,7 @@ import {
   BaseChoiceChip,
   BaseListGroup,
   BaseListRow,
-  BaseSelectNative,
+  BaseSelect,
   BaseSwitch,
 } from "@form/ui";
 import { computed, useId } from "vue";
@@ -36,9 +36,8 @@ function changeBarbell(change: Partial<Barbell>) {
     },
   });
 }
-function changeBar(event: Event) {
-  if (event.target instanceof HTMLSelectElement)
-    changeBarbell({ barKg: Number(event.target.value) });
+function changeBar(barKg: number | undefined) {
+  if (barKg !== undefined) changeBarbell({ barKg });
 }
 function togglePlate(kg: number) {
   const owned = barbell.value?.platesKg ?? [];
@@ -56,14 +55,25 @@ function changeAutoRest(autoRest: boolean) {
     settings: { ...snapshot.value.settings, autoRest },
   });
 }
-function changeRestDuration(event: Event) {
-  if (event.target instanceof HTMLSelectElement && snapshot.value)
+const restDurations = computed(() =>
+  [30, 60, 90, 120, 180, 300].map((seconds) => ({
+    value: seconds,
+    label: t("settings.training.restDuration.option", { seconds }),
+  })),
+);
+const barWeights = computed(() =>
+  barWeightsKg.map((kg) => ({
+    value: kg,
+    label: t("settings.training.bar.option", {
+      weight: format.value.number(kg),
+    }),
+  })),
+);
+function changeRestDuration(restSeconds: number | undefined) {
+  if (restSeconds !== undefined && snapshot.value)
     void run({
       type: "settings",
-      settings: {
-        ...snapshot.value.settings,
-        restSeconds: Number(event.target.value),
-      },
+      settings: { ...snapshot.value.settings, restSeconds },
     });
 }
 </script>
@@ -85,26 +95,19 @@ function changeRestDuration(event: Event) {
       </template>
     </BaseListRow>
     <BaseListRow
-      as="label"
       :label="t('settings.training.restDuration.label')"
       :description="t('settings.training.restDuration.hint')"
     >
       <template #trailing>
-        <BaseSelectNative
-          class="rest-select"
-          :aria-label="t('settings.training.restDuration.ariaLabel')"
-          :model-value="snapshot.settings.restSeconds"
-          :disabled="saving"
-          @change="changeRestDuration"
-        >
-          <option
-            v-for="seconds in [30, 60, 90, 120, 180, 300]"
-            :key="seconds"
-            :value="seconds"
-          >
-            {{ t("settings.training.restDuration.option", { seconds }) }}
-          </option>
-        </BaseSelectNative>
+        <div class="rest-select">
+          <BaseSelect
+            :aria-label="t('settings.training.restDuration.ariaLabel')"
+            :options="restDurations"
+            :model-value="snapshot.settings.restSeconds"
+            :disabled="saving"
+            @update:model-value="changeRestDuration"
+          />
+        </div>
       </template>
     </BaseListRow>
     <BaseListRow
@@ -113,24 +116,19 @@ function changeRestDuration(event: Event) {
     />
     <BaseListRow
       v-if="barbell"
-      as="label"
       :label="t('settings.training.bar.label')"
       :description="t('settings.training.bar.hint')"
     >
       <template #trailing>
-        <BaseSelectNative
-          class="rest-select"
-          :aria-label="t('settings.training.bar.ariaLabel')"
-          :model-value="barbell.barKg"
-          :disabled="saving"
-          @change="changeBar"
-        >
-          <option v-for="kg in barWeightsKg" :key="kg" :value="kg">
-            {{
-              t("settings.training.bar.option", { weight: format.number(kg) })
-            }}
-          </option>
-        </BaseSelectNative>
+        <div class="rest-select">
+          <BaseSelect
+            :aria-label="t('settings.training.bar.ariaLabel')"
+            :options="barWeights"
+            :model-value="barbell.barKg"
+            :disabled="saving"
+            @update:model-value="changeBar"
+          />
+        </div>
       </template>
     </BaseListRow>
     <div
@@ -196,7 +194,7 @@ function changeRestDuration(event: Event) {
   font-variant-numeric: tabular-nums;
 }
 .rest-select {
-  width: 104px;
+  min-width: 8.5em;
   flex-shrink: 0;
   font-size: var(--text-base);
 }

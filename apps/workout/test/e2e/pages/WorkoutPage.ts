@@ -132,8 +132,11 @@ export class WorkoutPage {
     await autoRest.check();
     await expect(autoRest).toBeChecked();
     const duration = this.page.getByRole("combobox", { name: "Rest duration" });
-    await duration.selectOption(String(seconds));
-    await expect(duration).toHaveValue(String(seconds));
+    await duration.click();
+    await this.page
+      .getByRole("option", { name: `${seconds} sec`, exact: true })
+      .click();
+    await expect(duration).toHaveText(`${seconds} sec`);
     await this.page
       .getByRole("navigation", { name: "Mobile navigation" })
       .getByRole("link", { name: "Workouts", exact: true })

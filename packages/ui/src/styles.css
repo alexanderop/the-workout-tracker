@@ -711,6 +711,140 @@
   }
 }
 
+/* BaseSelect: a trigger shaped like the other fields and a listbox popover
+   drawn with the app surfaces, so phones show the same picker as desktops. */
+.ui-select-trigger {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  margin: 0;
+  border: 1px solid var(--ui-input);
+  border-radius: calc(var(--ui-radius) - var(--radius-sm));
+  background: var(--ui-card);
+  color: var(--ui-foreground);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+  font: inherit;
+  font-size: var(--text-base);
+  text-align: start;
+  cursor: pointer;
+}
+.ui-select-trigger:focus-visible {
+  outline: 3px solid var(--ui-ring);
+  outline-offset: 3px;
+}
+.ui-select-trigger[data-state="open"] {
+  border-color: var(--ui-selected-border);
+}
+.ui-select-trigger[aria-invalid="true"] {
+  border-color: var(--ui-destructive);
+}
+.ui-select-trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ui-select-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ui-select-trigger[data-placeholder] .ui-select-value {
+  color: var(--ui-muted-foreground);
+}
+.ui-select-chevron {
+  flex-shrink: 0;
+  color: var(--ui-muted-foreground);
+}
+.ui-select-trigger[data-state="open"] .ui-select-chevron {
+  rotate: 180deg;
+}
+.ui-select-content {
+  /* Reka sets these inline on the content once it measures the trigger; the
+     declarations only name them for the token lint. */
+  --reka-select-trigger-width: auto;
+  --reka-select-content-available-height: none;
+  --reka-select-content-transform-origin: top right;
+  box-sizing: border-box;
+  z-index: 60;
+  min-width: var(--reka-select-trigger-width);
+  max-width: calc(100vw - var(--space-4));
+  max-height: min(
+    var(--reka-select-content-available-height),
+    calc(var(--space-8) * 7)
+  );
+  overflow: hidden;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--radius-md);
+  background: var(--ui-popover);
+  color: var(--ui-popover-foreground);
+  box-shadow:
+    0 10px 15px -3px var(--ui-shadow-dialog),
+    0 4px 6px -4px var(--ui-shadow-dialog);
+  transform-origin: var(--reka-select-content-transform-origin);
+}
+.ui-select-viewport {
+  padding: var(--space-1);
+}
+.ui-select-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius-md) - var(--radius-sm) / 2);
+  font-size: var(--text-base);
+  font-variant-numeric: tabular-nums;
+  outline: none;
+  cursor: pointer;
+  user-select: none;
+}
+/* The highlight background marks the active option, so the focus ring Reka's
+   roving focus would add on open is not drawn. */
+.ui-select-item:focus-visible {
+  outline: none;
+}
+.ui-select-item[data-highlighted] {
+  background: var(--ui-muted);
+}
+.ui-select-item[data-state="checked"] {
+  border-color: var(--ui-selected-border);
+  background: var(--ui-selected-bg);
+  color: var(--ui-selected-text);
+  font-weight: 600;
+}
+.ui-select-item[data-state="checked"][data-highlighted] {
+  background: color-mix(in srgb, var(--ui-selected-border) 22%, transparent);
+}
+.ui-select-item[data-disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ui-select-indicator {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ui-select-chevron {
+    transition: rotate var(--ui-motion-press) var(--ui-motion-ease);
+  }
+  .ui-select-content[data-state="open"] {
+    animation: ui-select-in var(--ui-motion-press) var(--ui-motion-ease);
+  }
+}
+@keyframes ui-select-in {
+  from {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+
 .ui-muscle-map {
   width: 100%;
   color: var(--ui-foreground);

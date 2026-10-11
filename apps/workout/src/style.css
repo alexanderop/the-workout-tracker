@@ -93,7 +93,7 @@ textarea,
 select {
   color: inherit;
 }
-button:not(.ui-button) {
+button:not(.ui-button, .ui-select-trigger) {
   border: 0;
   background: none;
 }
@@ -113,7 +113,8 @@ button:disabled svg {
   background: var(--accent);
   border-color: var(--accent);
 }
-:focus-visible {
+/* Select options show the active option with their highlight instead. */
+:focus-visible:not(.ui-select-item) {
   outline: 3px solid var(--focus-ring);
   outline-offset: 3px;
 }

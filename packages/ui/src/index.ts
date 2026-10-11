@@ -12,6 +12,7 @@ export { default as BaseButtonIcon } from "./button/BaseButtonIcon.vue";
 export { default as BaseInput } from "./input/BaseInput.vue";
 export { default as BaseTextarea } from "./textarea/BaseTextarea.vue";
 export { default as BaseSelectNative } from "./native-select/BaseSelectNative.vue";
+export { default as BaseSelect } from "./select/BaseSelect.vue";
 export { default as BaseSwitch } from "./switch/BaseSwitch.vue";
 export { default as BaseListGroup } from "./list/BaseListGroup.vue";
 export type { ListRowDensity, ListRowTone } from "./list/BaseListRow.vue";

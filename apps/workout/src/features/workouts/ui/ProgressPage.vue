@@ -3,7 +3,7 @@ import {
   BaseButton,
   BaseEmptyState,
   BasePageHeader,
-  BaseSelectNative,
+  BaseSelect,
   BaseStat,
   BaseStatGroup,
 } from "@form/ui";
@@ -23,6 +23,9 @@ const totals = computed(() => trainingTotals(history));
 const progress = computed(() => successfulProgress(history));
 const trainedExercises = computed(() =>
   progress.value.map(({ id, name }) => ({ id, name })),
+);
+const exerciseOptions = computed(() =>
+  trainedExercises.value.map(({ id, name }) => ({ value: id, label: name })),
 );
 watch(
   trainedExercises,
@@ -117,19 +120,12 @@ const records = computed(() =>
         <label class="sr-only" for="progress-exercise">{{
           t("progress.chart.exerciseLabel")
         }}</label
-        ><BaseSelectNative
+        ><BaseSelect
           id="progress-exercise"
           v-model="progressExercise"
           class="compact-select"
-        >
-          <option
-            v-for="exercise in trainedExercises"
-            :key="exercise.id"
-            :value="exercise.id"
-          >
-            {{ exercise.name }}
-          </option>
-        </BaseSelectNative>
+          :options="exerciseOptions"
+        />
       </div>
       <div v-if="firstPoint" class="first-progress-point">
         <strong
