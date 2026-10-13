@@ -360,13 +360,19 @@
   font-weight: 500;
 }
 
-.set-toggle.logged:not(.has-draft) .ui-icon-button-content {
-  flex-direction: column;
-  gap: 1px;
+/* A logged set shows a tinted check; the word stays for assistive tech. */
+.set-toggle.logged:not(.has-draft) {
+  background: var(--accent-soft);
+  border-color: transparent;
+  color: var(--accent);
 }
 .set-logged-label {
-  font-size: var(--text-xs);
-  line-height: 1.2;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: clip;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 .workout-add-set {
   width: 100%;
