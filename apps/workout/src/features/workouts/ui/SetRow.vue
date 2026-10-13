@@ -9,12 +9,13 @@ import {
   BaseNotice,
 } from "@form/ui";
 import { computed, useTemplateRef, watch, nextTick, ref } from "vue";
-import { Check, MoreHorizontal, Save, Target } from "@lucide/vue";
+import { Check, MoreHorizontal, Save } from "@lucide/vue";
 import type { TrainingRow } from "./useTrainingSession";
 import type { RawValues, SetDraft } from "../domain/drafts";
 import type { Barbell } from "../domain";
 import type { SetSuggestion } from "../domain/exerciseHistory";
 import BarbellPlates from "./BarbellPlates.vue";
+import SetSuggestionRow from "./SetSuggestionRow.vue";
 import { useFormat, useTranslation } from "../../../i18n";
 const { row, barbell, busy, current, dirty, conflict, suggestion } =
   defineProps<{
@@ -53,19 +54,20 @@ const savedSummary = computed(() =>
 );
 const offered = computed(() => {
   if (!current || conflict || !suggestion) return null;
-  const weight = String(suggestion.weightKg);
-  const reps = String(suggestion.reps);
-  if (row.weight === weight && row.reps === reps) return null;
-  return {
-    values: { weight, reps },
-    text: t("training.setRow.suggestion", {
-      weight: format.value.number(suggestion.weightKg),
-      reps,
-    }),
+  const values = {
+    weight: String(suggestion.weightKg),
+    reps: String(suggestion.reps),
   };
+  return row.weight === values.weight && row.reps === values.reps
+    ? null
+    : values;
 });
-async function applySuggestion(values: RawValues) {
+async function applySuggestion(values: RawValues, log: boolean) {
   emit("edit", values);
+  if (log) {
+    emit("commit");
+    return;
+  }
   await nextTick();
   form.value
     ?.querySelector<HTMLButtonElement>(".set-toggle")
@@ -206,23 +208,15 @@ defineExpose({
         <MoreHorizontal :size="20" />
       </BaseButtonIcon>
     </div>
-    <BaseButton
-      v-if="offered"
-      type="button"
-      variant="secondary"
-      size="sm"
-      class="set-suggestion"
-      :aria-label="
-        t('training.setRow.suggestionLabel', {
-          n: row.index + 1,
-          exercise: row.exercise.name,
-          values: offered.text,
-        })
-      "
-      :disabled="busy"
-      @click="applySuggestion(offered.values)"
-      ><Target :size="16" />{{ offered.text }}</BaseButton
-    >
+    <SetSuggestionRow
+      v-if="offered && suggestion"
+      :suggestion="suggestion"
+      :set-number="row.index + 1"
+      :exercise="row.exercise.name"
+      :busy="busy"
+      @fill="applySuggestion(offered, false)"
+      @log="applySuggestion(offered, true)"
+    />
     <BaseFieldError
       v-if="row.issue"
       :id="`set-issue-${row.set.id}`"

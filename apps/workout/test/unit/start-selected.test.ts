@@ -162,6 +162,7 @@ describe("suggested set values", () => {
     expect(suggestedSet(current, 1, history)).toEqual({
       weightKg: 110,
       reps: 8,
+      source: "previous",
     });
   });
 
@@ -174,10 +175,12 @@ describe("suggested set values", () => {
     expect(suggestedSet(current, 0, history)).toEqual({
       weightKg: 100,
       reps: 8,
+      source: "lastTime",
     });
     expect(suggestedSet(current, 2, history)).toEqual({
       weightKg: 105,
       reps: 7,
+      source: "lastTime",
     });
   });
 

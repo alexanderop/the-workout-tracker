@@ -19,6 +19,8 @@ export function lastExercisePerformance(
 export type SetSuggestion = {
   readonly weightKg: number;
   readonly reps: number;
+  /** `previous`: an earlier set of this workout; `lastTime`: history. */
+  readonly source: "previous" | "lastTime";
 };
 
 /**
@@ -34,17 +36,25 @@ export function suggestedSet(
 ): SetSuggestion | null {
   const set = exercise.sets[index];
   if (!set || set.completed) return null;
-  const earlier = exercise.sets.slice(0, index).filter((row) => row.completed);
-  const source =
-    earlier.at(-1) ??
-    lastSet(lastExercisePerformance(completed, exercise.exerciseId), index);
-  if (!source) return null;
-  if (source.weightKg === set.weightKg && source.reps === set.reps) return null;
-  return { weightKg: source.weightKg, reps: source.reps };
+  // The latest logged set before this one.
+  const previous = exercise.sets
+    .slice(0, index)
+    .reverse()
+    .find((row) => row.completed);
+  const found = previous
+    ? { values: previous, source: "previous" as const }
+    : lastTime(completed, exercise.exerciseId, index);
+  if (!found) return null;
+  const { values, source } = found;
+  if (values.weightKg === set.weightKg && values.reps === set.reps) return null;
+  return { weightKg: values.weightKg, reps: values.reps, source };
 }
-function lastSet(
-  performance: ReturnType<typeof lastExercisePerformance>,
+function lastTime(
+  completed: Readonly<Record<string, CompletedSession>>,
+  exerciseId: string,
   index: number,
 ) {
-  return performance?.sets[index] ?? performance?.sets.at(-1);
+  const sets = lastExercisePerformance(completed, exerciseId)?.sets;
+  const values = sets?.[index] ?? sets?.at(-1);
+  return values ? { values, source: "lastTime" as const } : null;
 }

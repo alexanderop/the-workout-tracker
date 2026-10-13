@@ -180,11 +180,55 @@
 .workout-inline-sets .set-issue {
   margin-block: var(--space-3);
 }
+/* The suggestion sits on the set grid; its bar leaves out the options
+   column, so its values line up under kg and reps and its check under Log. */
 .workout-inline-sets .set-suggestion {
+  display: grid;
+  grid-template-columns: 44px minmax(48px, 1fr) minmax(48px, 1fr) 44px 44px;
   gap: var(--space-2);
   margin-block: var(--space-2) var(--space-3);
+}
+.workout-inline-sets .set-suggestion-bar {
+  display: grid;
+  grid-column: 1 / 5;
+  grid-template-columns: subgrid;
+  border-radius: var(--radius-lg);
+  background: var(--accent-soft);
   color: var(--accent);
+}
+/* A notch under the set number ties the suggestion to its set. */
+.workout-inline-sets .set-suggestion-source::before {
+  content: "";
+  position: absolute;
+  inset-block-start: calc(var(--space-2) * -1);
+  inset-inline-start: calc(50% - var(--space-2));
+  inline-size: calc(var(--space-2) * 2);
+  block-size: var(--space-2);
+  background: var(--accent-soft);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+.workout-inline-sets .set-suggestion-fill {
+  display: grid;
+  grid-column: 1 / 4;
+  grid-template-columns: subgrid;
+  height: 44px;
+  padding: 0;
+  border-radius: var(--radius-lg);
+  color: inherit;
+  font-size: var(--text-lg);
   font-variant-numeric: tabular-nums;
+}
+.workout-inline-sets .set-suggestion-source {
+  position: relative;
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+}
+.workout-inline-sets .set-suggestion-log {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-lg);
+  color: inherit;
 }
 .workout-inline-sets .set-number {
   font-size: var(--text-base);
@@ -289,6 +333,9 @@
   }
   .workout-inline-sets .set-row,
   .workout-inline-sets .set-labels {
+    gap: var(--space-1);
+  }
+  .workout-inline-sets .set-suggestion {
     gap: var(--space-1);
   }
   .active-workout-finish {
