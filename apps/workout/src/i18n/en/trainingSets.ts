@@ -8,6 +8,8 @@ export const enTrainingSets = {
     repsLabel: "Set {n} repetitions for {exercise}",
     saveSet: "Save set {n} of {exercise}",
     loggedSet: "Logged set {n} of {exercise}",
+    suggestion: "{weight} kg × {reps} reps",
+    suggestionLabel: "Use for set {n} of {exercise}: {values}",
     logSet: "Log set {n} of {exercise}",
     logged: "Logged",
     options: "Options for set {n} of {exercise}",

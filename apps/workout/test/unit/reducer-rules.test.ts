@@ -299,8 +299,9 @@ describe("given identifiers that name inherited object properties", () => {
   });
 
   it("should accept a new workout whose generated identity matches one", () => {
-    // Selected exercise rows take the first identities; the workout takes the next.
-    const ids = ["rules-a", "rules-b", "toString"];
+    // The exercise row and its three sets take the first identities; the
+    // workout takes the next.
+    const ids = ["rules-a", "rules-b", "rules-c", "rules-d", "toString"];
     const result = reduceWorkout(
       initialSnapshot(),
       { type: "start-selected", exerciseIds: ["bench-press"] },

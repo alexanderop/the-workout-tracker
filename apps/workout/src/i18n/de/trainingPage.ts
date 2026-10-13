@@ -7,6 +7,7 @@ export const deTrainingPage: Pick<
   | "page"
   | "removeExercise"
   | "discardWorkout"
+  | "reloadRequired"
   | "rest"
   | "rename"
   | "dock"
@@ -64,6 +65,13 @@ export const deTrainingPage: Pick<
     description:
       "Das löscht das aktive Training und seine erfassten Sätze. Abgeschlossene Trainings bleiben gespeichert.",
     action: "Training verwerfen",
+  },
+  reloadRequired: {
+    title: "Neu laden, um weiterzumachen",
+    description:
+      "Die Daten dieses Trainings wurden in einem anderen Tab gelöscht, daher kann hier keine neue Eingabe gespeichert werden. Lade neu, um den aktuellen Stand zu sehen.",
+    reload: "Neu laden",
+    later: "Nicht jetzt",
   },
   rest: {
     remaining: "{time} Pause",

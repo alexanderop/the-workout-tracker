@@ -48,6 +48,13 @@ export const enTrainingPage = {
       "This deletes the active workout and its logged sets. Completed history stays saved.",
     action: "Discard workout",
   },
+  reloadRequired: {
+    title: "Reload to keep editing",
+    description:
+      "This workout's data was deleted in another tab, so new input can't be saved here. Reload to see the current data.",
+    reload: "Reload",
+    later: "Not now",
+  },
   rest: {
     remaining: "{time} rest",
     complete: "Rest complete",

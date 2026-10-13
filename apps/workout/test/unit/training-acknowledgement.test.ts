@@ -28,6 +28,7 @@ function setup() {
   ];
   const journal: DraftJournal = {
     write: writers[0]!.journal.write,
+    reconcile: () => Result.ok(undefined),
     recover: (sessionId, setId) =>
       Result.ok(
         writers.flatMap(({ journal: writer }) =>

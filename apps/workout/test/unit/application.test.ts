@@ -198,13 +198,14 @@ describe("workout application", () => {
       memory.current().active?.exercises.map((exercise) => exercise.exerciseId),
     ).toEqual(["bench-press", "squat"]);
     const sets = memory.current().active?.exercises[0]?.sets;
-    expect(sets).toHaveLength(1);
-    expect(sets?.[0]).toMatchObject({
-      weightKg: 0,
-      reps: 8,
-      targetReps: 8,
-      completed: false,
-    });
+    expect(sets).toHaveLength(3);
+    for (const set of sets ?? [])
+      expect(set).toMatchObject({
+        weightKg: 0,
+        reps: 8,
+        targetReps: 8,
+        completed: false,
+      });
   });
 
   it("leaves no partial workout when selected creation cannot save", async () => {

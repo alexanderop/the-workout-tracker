@@ -33,7 +33,12 @@ import TrainingLastTime from "./TrainingLastTime.vue";
 import TrainingSetEditor from "./TrainingSetEditor.vue";
 import TrainingRenameSheets from "./TrainingRenameSheets.vue";
 import TrainingRestPanel from "./TrainingRestPanel.vue";
+import TrainingReloadSheet from "./TrainingReloadSheet.vue";
 import { equipmentLabel } from "./exerciseLabels";
+import {
+  discardWorkoutConfirmation,
+  removeExerciseConfirmation,
+} from "./trainingConfirmations";
 import "./training.css";
 const { workspace, workoutsHref } = defineProps<{
   workspace: WorkoutWorkspace;
@@ -149,8 +154,15 @@ watch(training.reviewFocus, async (request) => {
   row?.scrollIntoView();
   row?.focus();
 });
+// Logging the last open set offers to finish; Keep training returns here to
+// add sets or exercises.
 async function commit(id: string) {
+  const wasDone = allDone.value;
   await training.commit(id);
+  if (!wasDone && allDone.value && canFinish.value) {
+    emit("finish");
+    return;
+  }
   await nextTick();
   setRows.value?.find((row) => row.setId === id)?.focusLog();
 }
@@ -178,21 +190,8 @@ watch(
 );
 function remove(exercise: SessionExercise) {
   configId.value = null;
-  if (!active.value) return;
-  emit("confirm", {
-    intent: "destructive",
-    title: t("training.removeExercise.title"),
-    description: t("training.removeExercise.description", {
-      exercise: exercise.name,
-      logged: exercise.sets.filter((set) => set.completed).length,
-    }),
-    actionLabel: t("training.removeExercise.action"),
-    command: {
-      type: "remove-exercise",
-      sessionId: active.value.id,
-      exerciseId: exercise.id,
-    },
-  });
+  if (active.value)
+    emit("confirm", removeExerciseConfirmation(t, active.value.id, exercise));
 }
 async function editFromOptions(id: string) {
   configId.value = null;
@@ -216,14 +215,8 @@ watch(configuration, (value) => {
   }
 });
 function discard() {
-  if (!active.value) return;
-  emit("confirm", {
-    intent: "destructive",
-    title: t("training.discardWorkout.title"),
-    description: t("training.discardWorkout.description"),
-    actionLabel: t("training.discardWorkout.action"),
-    command: { type: "discard", sessionId: active.value.id },
-  });
+  if (active.value)
+    emit("confirm", discardWorkoutConfirmation(t, active.value.id));
 }
 </script>
 <template>
@@ -312,6 +305,7 @@ function discard() {
               :barbell="barbellFor(row.exercise.exerciseId)"
               :busy="saving"
               :current="training.current.value?.set.id === row.set.id"
+              :suggestion="training.suggestion(row)"
               :dirty="training.dirty(row)"
               :conflict="training.conflict(row)"
               @edit="training.edit(row.set.id, $event)"
@@ -373,6 +367,7 @@ function discard() {
       v-model:open="renameOpen"
       :workspace="workspace"
     />
+    <TrainingReloadSheet v-model:open="training.reloadRequired.value" />
     <TrainingSetEditor
       :set-id="editorSet"
       :training="training"

@@ -14,6 +14,7 @@ import {
   addedSetValues,
   tappedSetReps,
 } from "../domain/trainingDrafts";
+import { suggestedSet } from "../domain/exerciseHistory";
 import { useTrainingDrafts, type TrainingRow } from "./useTrainingDrafts";
 import { useTrainingSelection } from "./useTrainingSelection";
 
@@ -363,12 +364,19 @@ export function useTrainingSession(options: {
     },
     conflict,
     dirty,
+    suggestion: (row: TrainingRow) =>
+      suggestedSet(
+        row.exercise,
+        row.index,
+        options.snapshot.value?.completed ?? {},
+      ),
     edit,
     useSaved: drafts.useSaved,
     keepInput: drafts.keepInput,
     chooseDraft: drafts.chooseDraft,
     detached: drafts.detached,
     dismissDetached: drafts.dismissDetached,
+    reloadRequired: drafts.reloadRequired,
     commit,
     addSet,
     undo,

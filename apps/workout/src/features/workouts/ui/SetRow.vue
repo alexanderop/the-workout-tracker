@@ -9,21 +9,25 @@ import {
   BaseNotice,
 } from "@form/ui";
 import { computed, useTemplateRef, watch, nextTick, ref } from "vue";
-import { Check, MoreHorizontal, Save } from "@lucide/vue";
+import { Check, MoreHorizontal, Save, Target } from "@lucide/vue";
 import type { TrainingRow } from "./useTrainingSession";
 import type { RawValues, SetDraft } from "../domain/drafts";
 import type { Barbell } from "../domain";
+import type { SetSuggestion } from "../domain/exerciseHistory";
 import BarbellPlates from "./BarbellPlates.vue";
 import { useFormat, useTranslation } from "../../../i18n";
-const { row, barbell, busy, current, dirty, conflict } = defineProps<{
-  row: TrainingRow;
-  /** The lifter's bar and plates, for barbell exercises only. */
-  barbell?: Barbell | null;
-  busy: boolean;
-  current: boolean;
-  dirty: boolean;
-  conflict: boolean;
-}>();
+const { row, barbell, busy, current, dirty, conflict, suggestion } =
+  defineProps<{
+    row: TrainingRow;
+    /** Earlier values offered for this unlogged set; applied only on tap. */
+    suggestion?: SetSuggestion | null;
+    /** The lifter's bar and plates, for barbell exercises only. */
+    barbell?: Barbell | null;
+    busy: boolean;
+    current: boolean;
+    dirty: boolean;
+    conflict: boolean;
+  }>();
 const emit = defineEmits<{
   edit: [values: Partial<RawValues>];
   commit: [];
@@ -47,6 +51,26 @@ const savedSummary = computed(() =>
     },
   ),
 );
+const offered = computed(() => {
+  if (!current || conflict || !suggestion) return null;
+  const weight = String(suggestion.weightKg);
+  const reps = String(suggestion.reps);
+  if (row.weight === weight && row.reps === reps) return null;
+  return {
+    values: { weight, reps },
+    text: t("training.setRow.suggestion", {
+      weight: format.value.number(suggestion.weightKg),
+      reps,
+    }),
+  };
+});
+async function applySuggestion(values: RawValues) {
+  emit("edit", values);
+  await nextTick();
+  form.value
+    ?.querySelector<HTMLButtonElement>(".set-toggle")
+    ?.focus({ preventScroll: true });
+}
 const toggleLabel = () => {
   const values = { n: row.index + 1, exercise: row.exercise.name };
   if (!row.set.completed) return t("training.setRow.logSet", values);
@@ -182,6 +206,23 @@ defineExpose({
         <MoreHorizontal :size="20" />
       </BaseButtonIcon>
     </div>
+    <BaseButton
+      v-if="offered"
+      type="button"
+      variant="secondary"
+      size="sm"
+      class="set-suggestion"
+      :aria-label="
+        t('training.setRow.suggestionLabel', {
+          n: row.index + 1,
+          exercise: row.exercise.name,
+          values: offered.text,
+        })
+      "
+      :disabled="busy"
+      @click="applySuggestion(offered.values)"
+      ><Target :size="16" />{{ offered.text }}</BaseButton
+    >
     <BaseFieldError
       v-if="row.issue"
       :id="`set-issue-${row.set.id}`"

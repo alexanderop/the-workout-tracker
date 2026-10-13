@@ -35,6 +35,13 @@ export type WorkoutStorage = {
 export type DraftJournal = {
   readonly clearBefore: (revision: number) => Result<void, DraftStorageFailed>;
   /**
+   * Lowers a deletion marker that is newer than `revision`, a revision just
+   * read from confirmed storage. Confirmed revisions only grow and a deletion
+   * commits before its marker is written, so such a marker belongs to a
+   * journal that no longer exists, and would otherwise refuse every draft.
+   */
+  readonly reconcile: (revision: number) => Result<void, DraftStorageFailed>;
+  /**
    * Removes obsolete drafts and returns, without removing them, the drafts
    * that belong to a set of a finished workout. Such input arrived too late
    * for the finish and needs explicit recovery.

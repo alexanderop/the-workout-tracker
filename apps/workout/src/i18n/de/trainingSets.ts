@@ -15,6 +15,8 @@ export const deTrainingSets: Pick<
     repsLabel: "Satz {n} Wiederholungen für {exercise}",
     saveSet: "Satz {n} von {exercise} speichern",
     loggedSet: "Satz {n} von {exercise} erfasst",
+    suggestion: "{weight} kg × {reps} Wdh.",
+    suggestionLabel: "Für Satz {n} von {exercise} übernehmen: {values}",
     logSet: "Satz {n} von {exercise} erfassen",
     logged: "Erfasst",
     options: "Optionen für Satz {n} von {exercise}",

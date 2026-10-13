@@ -3,7 +3,10 @@ import {
   commandSchema,
   reduceWorkout,
 } from "../../src/features/workouts/domain";
-import { lastExercisePerformance } from "../../src/features/workouts/domain/exerciseHistory";
+import {
+  lastExercisePerformance,
+  suggestedSet,
+} from "../../src/features/workouts/domain/exerciseHistory";
 import { createWorkoutFactory, FIXED_NOW } from "../support/factories";
 
 describe("selected workout start", () => {
@@ -129,6 +132,64 @@ describe("last exercise performance", () => {
     ).toEqual({ finishedAt: FIXED_NOW, sets: [first, failed] });
     expect(
       lastExercisePerformance({ [latest.id]: latest }, "squat"),
+    ).toBeNull();
+  });
+});
+
+describe("suggested set values", () => {
+  const f = createWorkoutFactory("suggest");
+  const finishedAt = FIXED_NOW - 86_400_000;
+  const exercise = (sets: Parameters<typeof f.set>[0][]) =>
+    f.sessionExercise({ exerciseId: "bench-press", sets: sets.map(f.set) });
+  const history = {
+    past: f.completedSession({
+      id: "past",
+      finishedAt,
+      exercises: [
+        exercise([
+          { weightKg: 100, reps: 8, completed: true },
+          { weightKg: 105, reps: 7, completed: true },
+        ]),
+      ],
+    }),
+  };
+
+  it("offers the previous logged set of this workout first", () => {
+    const current = exercise([
+      { weightKg: 110, reps: 8, completed: true },
+      { weightKg: 0, reps: 8, completed: false },
+    ]);
+    expect(suggestedSet(current, 1, history)).toEqual({
+      weightKg: 110,
+      reps: 8,
+    });
+  });
+
+  it("falls back to the same set last time, then the last one", () => {
+    const current = exercise([
+      { weightKg: 0, reps: 8, completed: false },
+      { weightKg: 0, reps: 8, completed: false },
+      { weightKg: 0, reps: 8, completed: false },
+    ]);
+    expect(suggestedSet(current, 0, history)).toEqual({
+      weightKg: 100,
+      reps: 8,
+    });
+    expect(suggestedSet(current, 2, history)).toEqual({
+      weightKg: 105,
+      reps: 7,
+    });
+  });
+
+  it("offers nothing for logged sets, matching plans or no history", () => {
+    const current = exercise([
+      { weightKg: 110, reps: 8, completed: true },
+      { weightKg: 110, reps: 8, completed: false },
+    ]);
+    expect(suggestedSet(current, 0, history)).toBeNull();
+    expect(suggestedSet(current, 1, history)).toBeNull();
+    expect(
+      suggestedSet(exercise([{ weightKg: 0, reps: 8 }]), 0, {}),
     ).toBeNull();
   });
 });

@@ -20,11 +20,11 @@ A **target set** contains planned weight in kilograms and repetitions. Templates
 
 ## Active workout
 
-An **active workout** (`ActiveSession`) is the session currently being recorded. There can be at most one. It owns session exercises, sets, its start time, and an optional rest deadline. A new exercise starts with zero weight; previous performance is shown as a reference rather than applied implicitly.
+An **active workout** (`ActiveSession`) is the session currently being recorded. There can be at most one. It owns session exercises, sets, its start time, and an optional rest deadline. A newly selected exercise starts with three planned sets of eight repetitions at zero weight; previous performance is shown as a reference rather than applied implicitly. The current unlogged set offers a suggestion: the latest logged set before it in this workout, otherwise the same set (or the last one) of that exercise last time. Tapping the suggestion fills the set's input; logging it is still a separate confirmation.
 
 Starting a new workout first opens temporary exercise selection. Start requires at least one exercise and creates the complete active workout in one revision. Cancelling selection creates no workout. The clock becomes visible after the save succeeds; its start time is sampled during command execution. Failed saves retain selection for retry. Adding exercises captures the active workout identity when the picker opens and cannot silently target a different workout. Template starts continue to copy their prescribed targets.
 
-**Discarding** removes the active workout without adding a history record. **Finishing** creates a completed workout with the same session identity. Finishing requires at least one logged set, and the interface requires unresolved input to be handled first.
+**Discarding** removes the active workout without adding a history record. **Finishing** creates a completed workout with the same session identity. Finishing requires at least one logged set, and the interface requires unresolved input to be handled first. Logging the last unlogged set offers to finish; Keep training returns to the workout to add sets or exercises.
 
 ## Editing an active exercise
 
@@ -88,4 +88,4 @@ A **recovery export** preserves unreadable stored data for recovery. It does not
 
 Settings can delete the journal in this browser after explicit confirmation. It removes completed workouts, the active workout, templates, custom exercises and input drafts, and restores default preferences and the built-in exercise catalog. Downloaded backup files and data on other devices are unaffected. The confirmed snapshot retains an increasing revision so older tabs cannot overwrite the deletion. An empty default journal can restore a backup even after deletion.
 
-Confirmed data and input drafts use separate storage systems. If draft cleanup fails after the journal was deleted, the app reports that partial outcome and offers retry. Retrying still checks the reviewed revision, so another tab's newer changes require a fresh confirmation. A nonpersonal revision marker remains to prevent stale tabs from recreating deleted drafts. A stale tab that tries to save input after a deletion is asked to reload.
+Confirmed data and input drafts use separate storage systems. If draft cleanup fails after the journal was deleted, the app reports that partial outcome and offers retry. Retrying still checks the reviewed revision, so another tab's newer changes require a fresh confirmation. A nonpersonal revision marker remains to prevent stale tabs from recreating deleted drafts. A stale tab that tries to save input after a deletion is asked to reload, once, in a sheet; the set keeps its notice if the user declines. A marker newer than the confirmed journal (for example after the browser reset IndexedDB but kept localStorage) is lowered on startup, so it cannot refuse every draft.
