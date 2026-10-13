@@ -1,4 +1,5 @@
 import type { Exercise } from "../domain";
+import { matchesSearch } from "./textSearch";
 
 export type CatalogFilters = Readonly<{
   equipment: string;
@@ -10,8 +11,8 @@ export type CatalogView = Readonly<{
   search: string;
   filters: CatalogFilters;
   sort: CatalogSort;
-  /** Extra searchable text per exercise, such as translated category names. */
-  labels?: (exercise: Exercise) => string;
+  /** Extra searchable fields per exercise, such as translated category names. */
+  labels?: (exercise: Exercise) => readonly string[];
 }>;
 export const emptyCatalogFilters: CatalogFilters = {
   equipment: "",
@@ -23,13 +24,15 @@ export function filterCatalog(
   exercises: readonly Exercise[],
   { search, filters, sort, labels }: CatalogView,
 ): Exercise[] {
-  const query = search.trim().toLowerCase();
   return exercises
     .filter((exercise) => matchesFilters(exercise, filters))
     .filter((exercise) =>
-      `${exercise.name} ${exercise.category} ${exercise.equipment} ${labels?.(exercise) ?? ""}`
-        .toLowerCase()
-        .includes(query),
+      matchesSearch(search, [
+        exercise.name,
+        exercise.category,
+        exercise.equipment,
+        ...(labels?.(exercise) ?? []),
+      ]),
     )
     .sort((a, b) => {
       const order = a.name.localeCompare(b.name) || a.id.localeCompare(b.id);

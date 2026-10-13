@@ -19,6 +19,7 @@ import {
 } from "../domain";
 import { useTranslation } from "../../../i18n";
 import SessionRow from "./SessionRow.vue";
+import { filterHistory } from "./textSearch";
 import WorkoutCalendar from "./WorkoutCalendar.vue";
 const {
   routines,
@@ -51,11 +52,7 @@ const latest = computed(() => allHistory[0]);
 const isFreshJournal = computed(
   () => !active && !routines.length && !allHistory.length,
 );
-const history = computed(() =>
-  allHistory.filter((session) =>
-    session.name.toLowerCase().includes(search.value.toLowerCase()),
-  ),
-);
+const history = computed(() => filterHistory(allHistory, search.value, t));
 </script>
 <template>
   <div class="workouts-dashboard">

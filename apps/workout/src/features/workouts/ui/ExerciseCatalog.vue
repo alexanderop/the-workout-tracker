@@ -103,8 +103,10 @@ const results = computed(() =>
     search: search.value,
     filters: filters.value,
     sort: sort.value,
-    labels: (exercise) =>
-      `${categoryLabel(exercise.category, t)} ${equipmentLabel(exercise.equipment, t)}`,
+    labels: (exercise) => [
+      categoryLabel(exercise.category, t),
+      equipmentLabel(exercise.equipment, t),
+    ],
   }),
 );
 const summary = computed(() => {

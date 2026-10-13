@@ -80,8 +80,10 @@ describe("catalog browsing", () => {
         search: text,
         filters: emptyCatalogFilters,
         sort: "ascending",
-        labels: (exercise) =>
-          `${categoryLabel(exercise.category, t)} ${equipmentLabel(exercise.equipment, t)}`,
+        labels: (exercise) => [
+          categoryLabel(exercise.category, t),
+          equipmentLabel(exercise.equipment, t),
+        ],
       }).map((exercise) => exercise.id);
     expect(search("brust")).toEqual(["built-in", "dumbbell", "custom"]);
     expect(search("langhantel")).toEqual(["arms", "built-in", "custom"]);
