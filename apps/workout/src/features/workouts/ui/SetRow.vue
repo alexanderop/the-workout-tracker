@@ -13,17 +13,22 @@ import { Check, MoreHorizontal, Save } from "@lucide/vue";
 import type { TrainingRow } from "./useTrainingSession";
 import type { RawValues, SetDraft } from "../domain/drafts";
 import type { Barbell } from "../domain";
+import type { SetSuggestion } from "../domain/exerciseHistory";
 import BarbellPlates from "./BarbellPlates.vue";
+import SetSuggestionRow from "./SetSuggestionRow.vue";
 import { useFormat, useTranslation } from "../../../i18n";
-const { row, barbell, busy, current, dirty, conflict } = defineProps<{
-  row: TrainingRow;
-  /** The lifter's bar and plates, for barbell exercises only. */
-  barbell?: Barbell | null;
-  busy: boolean;
-  current: boolean;
-  dirty: boolean;
-  conflict: boolean;
-}>();
+const { row, barbell, busy, current, dirty, conflict, suggestion } =
+  defineProps<{
+    row: TrainingRow;
+    /** Earlier values offered for this unlogged set; applied only on tap. */
+    suggestion?: SetSuggestion | null;
+    /** The lifter's bar and plates, for barbell exercises only. */
+    barbell?: Barbell | null;
+    busy: boolean;
+    current: boolean;
+    dirty: boolean;
+    conflict: boolean;
+  }>();
 const emit = defineEmits<{
   edit: [values: Partial<RawValues>];
   commit: [];
@@ -47,6 +52,27 @@ const savedSummary = computed(() =>
     },
   ),
 );
+const offered = computed(() => {
+  if (!current || conflict || !suggestion) return null;
+  const values = {
+    weight: String(suggestion.weightKg),
+    reps: String(suggestion.reps),
+  };
+  return row.weight === values.weight && row.reps === values.reps
+    ? null
+    : values;
+});
+async function applySuggestion(values: RawValues, log: boolean) {
+  emit("edit", values);
+  if (log) {
+    emit("commit");
+    return;
+  }
+  await nextTick();
+  form.value
+    ?.querySelector<HTMLButtonElement>(".set-toggle")
+    ?.focus({ preventScroll: true });
+}
 const toggleLabel = () => {
   const values = { n: row.index + 1, exercise: row.exercise.name };
   if (!row.set.completed) return t("training.setRow.logSet", values);
@@ -182,6 +208,15 @@ defineExpose({
         <MoreHorizontal :size="20" />
       </BaseButtonIcon>
     </div>
+    <SetSuggestionRow
+      v-if="offered && suggestion"
+      :suggestion="suggestion"
+      :set-number="row.index + 1"
+      :exercise="row.exercise.name"
+      :busy="busy"
+      @fill="applySuggestion(offered, false)"
+      @log="applySuggestion(offered, true)"
+    />
     <BaseFieldError
       v-if="row.issue"
       :id="`set-issue-${row.set.id}`"

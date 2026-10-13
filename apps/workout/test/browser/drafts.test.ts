@@ -43,6 +43,24 @@ describe("browser draft journal", () => {
       ).toEqual(["50"]);
     });
 
+    it("accepts drafts again when the marker outlived a reset journal", () => {
+      const { first, input } = setup();
+      success(first.clearBefore(50));
+      localStorage.setItem("form-workout:drafts-deleted-before:60", "");
+      expect(errorTag(first.write({ ...input, revision: 4 }))).toBe(
+        "DraftsDeleted",
+      );
+      success(first.reconcile(4));
+      success(first.write({ ...input, revision: 4 }));
+      expect(localStorage.getItem("form-workout:drafts-deleted-before")).toBe(
+        "4",
+      );
+      success(first.reconcile(10));
+      expect(localStorage.getItem("form-workout:drafts-deleted-before")).toBe(
+        "4",
+      );
+    });
+
     it("blocks stale writers after deletion while retaining newer drafts and unrelated keys", () => {
       const { first, second, input } = setup();
       localStorage.setItem("other-app", "keep");

@@ -231,6 +231,11 @@ export function createWorkouts({
       });
     },
     subscribe: storage.subscribe,
+    /** Clears a draft deletion marker left behind by a journal that was reset. */
+    async reconcileDrafts(): Promise<void> {
+      const current = await readCurrent();
+      if (current.isOk()) journal.reconcile(current.value.revision);
+    },
     async exportBackup(): Promise<Result<string, ExportError>> {
       if (closed) return Result.err(new StorageClosed());
       const current = await readCurrent();

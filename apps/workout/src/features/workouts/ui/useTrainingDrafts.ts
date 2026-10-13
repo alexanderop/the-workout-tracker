@@ -1,5 +1,5 @@
 import { matchError } from "@form/result";
-import { computed, reactive, type Ref } from "vue";
+import { computed, reactive, ref, type Ref } from "vue";
 import type { Translate } from "../../../i18n";
 import type { DraftJournal } from "../application";
 import type { Command, SessionExercise, Snapshot, WorkoutSet } from "../domain";
@@ -44,6 +44,9 @@ export function useTrainingDrafts(options: {
   let sessionId: string | undefined;
   /** Records of removed rows whose acknowledgement failed; retried later. */
   let stranded: SetDraft[] = [];
+  /** Asks once to reload after a deletion elsewhere; the row notice remains. */
+  const reloadRequired = ref(false);
+  let reloadRequested = false;
   function consume(row: TrainingRow, records = row.records) {
     if (options.journal.consume(records).isErr()) {
       row.storageIssue = t("training.notices.recoveryNotCleared");
@@ -191,7 +194,10 @@ export function useTrainingDrafts(options: {
     });
     if (written.isErr()) {
       row.storageIssue = matchError(written.error, {
-        DraftsDeleted: () => t("training.notices.deleted"),
+        DraftsDeleted: () => {
+          if (!reloadRequested) reloadRequired.value = reloadRequested = true;
+          return t("training.notices.deleted");
+        },
         DraftStorageFailed: () => t("training.notices.unsaved"),
       });
       return;
@@ -310,5 +316,6 @@ export function useTrainingDrafts(options: {
     acknowledge,
     detached: detached.entries,
     dismissDetached: detached.dismiss,
+    reloadRequired,
   };
 }

@@ -88,6 +88,10 @@ export function createMemoryDraftJournal(id: () => string): DraftJournal {
       owned.clear();
       return Result.ok(undefined);
     },
+    reconcile(revision) {
+      minimumRevision = Math.min(minimumRevision, revision);
+      return Result.ok(undefined);
+    },
     prune(snapshot) {
       const finished = drafts.filter((draft) => finishedDraft(draft, snapshot));
       drafts = drafts.filter(

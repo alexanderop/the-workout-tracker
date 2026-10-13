@@ -106,6 +106,13 @@ export function createDraftJournal(deps: {
     }
     owned.clear();
   };
+  const reconcile = (revision: number) => {
+    const storage = deps.storage();
+    if (minimumRevision(storage) <= revision) return;
+    for (const name of appKeys(storage, legacyDeletedBeforePrefix))
+      storage.removeItem(name);
+    storage.setItem(deletedBeforeKey, String(revision));
+  };
   const recover = (sessionId: string, setId: string) => {
     const storage = deps.storage();
     const minimum = minimumRevision(storage);
@@ -143,6 +150,7 @@ export function createDraftJournal(deps: {
   };
   return {
     clearBefore: (revision) => attempt(() => clearBefore(revision)),
+    reconcile: (revision) => attempt(() => reconcile(revision)),
     recover: (sessionId, setId) => attempt(() => recover(sessionId, setId)),
     prune: (snapshot) => attempt(() => prune(snapshot)),
     consume: (drafts) => attempt(() => consume(drafts)),

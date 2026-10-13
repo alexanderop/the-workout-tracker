@@ -14,13 +14,15 @@ const writerKey = "form-workout:draft-writer";
 const sessionStorageOfTab = () => sessionStorage;
 
 export function createWorkoutApp(journal: DraftJournal) {
-  return createWorkouts({
+  const workouts = createWorkouts({
     journal,
     storage: openDexieWorkoutStorage("form-workout-v1", initialSnapshot()),
     now: Date.now,
     id: () => crypto.randomUUID(),
     reportError: (context, error) => console.error(context, error),
   });
+  void workouts.reconcileDrafts();
+  return workouts;
 }
 
 export function createWorkoutDrafts() {

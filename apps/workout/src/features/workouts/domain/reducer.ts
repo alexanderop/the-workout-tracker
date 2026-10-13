@@ -17,6 +17,8 @@ import {
   type Snapshot,
 } from "./schemas";
 
+/** A freshly selected exercise starts with this many planned sets. */
+const DEFAULT_SET_COUNT = 3;
 const reject = (code: RejectionCode): Transition => ({
   kind: "rejected",
   code,
@@ -250,15 +252,13 @@ export function reduceWorkout(
         exerciseId: exercise.id,
         name: exercise.name,
         category: exercise.category,
-        sets: [
-          {
-            id: inputs.id(),
-            weightKg: 0,
-            reps: 8,
-            targetReps: 8,
-            completed: false,
-          },
-        ],
+        sets: Array.from({ length: DEFAULT_SET_COUNT }, () => ({
+          id: inputs.id(),
+          weightKg: 0,
+          reps: 8,
+          targetReps: 8,
+          completed: false,
+        })),
       });
     }
     return additions;

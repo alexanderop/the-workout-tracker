@@ -50,6 +50,10 @@ export function createMemoryJournal(
       owned.clear();
       return Result.ok(undefined);
     },
+    reconcile(revision) {
+      minimumRevision = Math.min(minimumRevision, revision);
+      return Result.ok(undefined);
+    },
     prune(snapshot) {
       const active = snapshot.active;
       const finished = drafts.filter((draft) => finishedDraft(draft, snapshot));
